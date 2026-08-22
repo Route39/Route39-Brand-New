@@ -1,0 +1,44 @@
+query Wallet {
+  paymentMethods {
+    ...PaymentMethod
+  }
+  driverTransacions(sorting: { field: id, direction: DESC }) {
+    edges {
+      node {
+        ...DriverTransacion
+      }
+    }
+  }
+}
+
+query PaymentMethods {
+  paymentMethods {
+    ...PaymentMethod
+  }
+}
+
+mutation SetupPaymentMethodLink($gatewayId: ID!) {
+  setupPaymentMethod(gatewayId: $gatewayId) {
+    url
+  }
+}
+
+mutation RedeemGiftCard($code: String!) {
+  redeemGiftCard(code: $code) {
+    id
+    amount
+    currency
+  }
+}
+
+mutation MarkAsDefault($id: ID!) {
+  markPaymentMethodAsDefault(id: $id) {
+    ...PaymentMethod
+  }
+}
+
+mutation TopUpWallet($input: TopUpWalletInput!) {
+  topUpWallet(input: $input) {
+    ...IntentResult
+  }
+}

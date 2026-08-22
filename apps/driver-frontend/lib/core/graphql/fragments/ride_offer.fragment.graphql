@@ -1,0 +1,22 @@
+fragment RideOffer on RideOffer {
+  id
+  type
+  waypoints {
+    ...Waypoint
+  }
+  currency
+  fareEstimate
+  dispatchedToUserAt
+  expiresAt
+  distance
+  duration
+  serviceName
+  serviceImageAddress
+  options {
+    name
+    icon
+  }
+  directions {
+    ...Coordinate
+  }
+}

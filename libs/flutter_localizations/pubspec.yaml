@@ -1,0 +1,30 @@
+name: better_localization
+description: The shared translation library for the monorepo.
+version: 0.0.1
+homepage: https://bettersuite.io
+
+environment:
+  sdk: ">=3.9.0 <4.0.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  lottie: any
+  json_annotation: any
+  dlibphonenumber: any
+  collection: any
+
+dev_dependencies:
+  flutter_gen_runner: any
+  flutter_gen: any
+  build_runner: any
+
+flutter:
+  generate: true
+  assets:
+    - assets/countries/

@@ -1,0 +1,4 @@
+fragment CancelReason on OrderCancelReason {
+  id
+  title
+}

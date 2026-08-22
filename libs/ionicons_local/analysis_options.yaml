@@ -1,0 +1,10 @@
+analyzer:
+  exclude:
+    - bin/**
+  errors:
+    # ignore snake_case identifier naming violations (we add them intentionally)
+    non_constant_identifier_names: ignore
+
+linter:
+  rules:
+    - prefer_const_constructors

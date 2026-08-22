@@ -1,0 +1,5 @@
+mutation SendMessage($orderId: ID!, $message: String!) {
+  sendChatMessage(message: $message, orderId: $orderId) {
+    ...ChatMessage
+  }
+}

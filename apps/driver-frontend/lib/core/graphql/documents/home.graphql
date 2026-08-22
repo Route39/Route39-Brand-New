@@ -1,0 +1,97 @@
+subscription DriverEvents {
+  driverEvents {
+    type
+    orderId
+    message {
+      ...ChatMessage
+    }
+    waitTime
+    status
+    totalCost
+    unreadMessagesCount
+    rideOffer {
+      ...RideOffer
+    }
+  }
+}
+
+query RideOffers {
+  rideOffers {
+    ...RideOffer
+  }
+}
+
+query ActiveOrders {
+  activeOrders {
+    ...ActiveOrder
+  }
+}
+
+mutation UpdateDriverLocation($point: PointInput!) {
+  updateDriverLocation(point: $point)
+}
+
+mutation acceptRideOffer($offerId: ID!) {
+  acceptRideOffer(orderId: $offerId) {
+    ...ActiveOrder
+  }
+}
+mutation arrivedToPickup($id: ID!) {
+  arrivedToPickup(orderId: $id) {
+    ...UpdateStatus
+  }
+}
+mutation initiateRide($id: ID!) {
+  initiateRide(orderId: $id) {
+    ...UpdateStatus
+  }
+}
+
+mutation arrivedToDestination($id: ID!) {
+  arrivedToDestination(orderId: $id) {
+    ...UpdateStatus
+  }
+}
+
+query CancelReasons {
+  cancelReasons {
+    ...CancelReason
+  }
+}
+
+mutation SendSOS($id: ID!) {
+  sosSignal(orderId: $id) {
+    id
+  }
+}
+mutation riderPaidInCash($orderId: ID!) {
+  riderPaidInCash(orderId: $orderId) {
+    ...UpdateStatus
+  }
+}
+
+mutation CancelRide($rideId: ID!, $reasonId: ID!, $reasonNote: String) {
+  cancelRide(orderId: $rideId, reasonId: $reasonId, reasonNote: $reasonNote) {
+    ...UpdateStatus
+  }
+}
+
+mutation updateLastSeenMessagesAt($orderId: ID!) {
+  updateLastSeenMessagesAt(orderId: $orderId)
+}
+
+mutation SubmitReview($orderId: ID!, $rating: Int!, $review: String) {
+  submitReview(
+    input: { orderId: $orderId, score: $rating, description: $review }
+  )
+}
+
+query EphemeralMessages {
+  ephemeralMessages {
+    ...EphemeralMessage
+  }
+}
+
+mutation MarkEphemeralMessageAsRead($messageId: ID!) {
+  markEphemeralMessagesAsRead(messageId: $messageId)
+}

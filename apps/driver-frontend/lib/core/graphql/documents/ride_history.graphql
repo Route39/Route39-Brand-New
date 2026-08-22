@@ -1,0 +1,11 @@
+query RideHistory {
+  pastOrders {
+    ...PastOrder
+  }
+}
+
+mutation SubmitIssue($input: CreateOneComplaintInput!) {
+  createOneComplaint(input: $input) {
+    id
+  }
+}

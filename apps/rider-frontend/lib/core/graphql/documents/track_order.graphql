@@ -1,0 +1,54 @@
+query ActiveOrders {
+  activeOrders {
+    ...ActiveOrder
+  }
+}
+
+mutation CreateOrder($input: CreateOrderInput!) {
+  createOrder(input: $input) {
+    ...ActiveOrder
+  }
+}
+
+mutation CancelOrder(
+  $orderId: ID!
+  $cancelReasonId: ID
+  $cancelReasonNote: String
+) {
+  cancelOrder(
+    orderId: $orderId
+    cancelReasonId: $cancelReasonId
+    cancelReasonNote: $cancelReasonNote
+  )
+}
+
+mutation UpdateLastSeenMessagesAt($orderId: ID!) {
+  updateLastSeenMessagesAt(orderId: $orderId)
+}
+
+mutation updateOrderWaitTime($orderId: ID!, $waitTime: Int!) {
+  updateOrderWaitTime(orderId: $orderId, waitTime: $waitTime) {
+    totalCost
+    waitTime
+  }
+}
+
+query verifyCouponCode($code: String!) {
+  couponInfo(code: $code) {
+    description
+    title
+  }
+}
+
+mutation applyCoupon($orderId: ID!, $code: String!) {
+  applyCoupon(orderId: $orderId, couponCode: $code) {
+    couponDiscount
+    totalCost
+  }
+}
+
+query CancelReasons {
+  cancelReasons {
+    ...cancelReason
+  }
+}

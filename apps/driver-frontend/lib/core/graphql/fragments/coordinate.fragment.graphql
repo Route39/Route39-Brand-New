@@ -1,0 +1,60 @@
+fragment Coordinate on Point {
+  lat
+  lng
+  heading
+}
+
+fragment place on PlaceDTO {
+  point {
+    ...Coordinate
+  }
+  title
+  address
+}
+
+fragment Waypoint on WaypointBase {
+  __typename
+  location {
+    ...Coordinate
+  }
+  address
+  role
+  ... on RideWaypoint {
+    ...RideWaypoint
+  }
+  ... on DeliveryWaypoint {
+    ...DeliveryWaypoint
+  }
+  ... on ShopWaypoint {
+    ...ShopWaypoint
+  }
+}
+
+fragment RideWaypoint on RideWaypoint {
+  location {
+    ...Coordinate
+  }
+  address
+}
+fragment DeliveryWaypoint on DeliveryWaypoint {
+  location {
+    ...Coordinate
+  }
+  address
+  deliveryContact {
+    name
+    companyName
+    addressLine1
+    phoneNumber {
+      ...phoneNumber
+    }
+  }
+}
+fragment ShopWaypoint on ShopWaypoint {
+  location {
+    ...Coordinate
+  }
+  address
+  shopName
+  shopImageUrl
+}

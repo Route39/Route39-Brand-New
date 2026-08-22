@@ -1,0 +1,1157 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+interface WaypointBase {
+  location: Point!
+  address: String!
+  role: WaypointRole!
+  service: WaypointService!
+  deliveryContact: DeliveryContact
+  shopName: String
+  shopAddress: String
+  shopImageUrl: String
+}
+
+enum WaypointRole {
+  Pickup
+  Stop
+  Dropoff
+}
+
+enum WaypointService {
+  Ride
+  Delivery
+  Shop
+}
+
+interface PaymentMethodBase {
+  mode: PaymentMode!
+  id: ID
+}
+
+"""The means of payment for an order."""
+enum PaymentMode {
+  Cash
+  SavedPaymentMethod
+  PaymentGateway
+  Wallet
+}
+
+type Point {
+  lat: Float!
+  lng: Float!
+  heading: Int
+}
+
+type AppConfigInfo {
+  logo: String
+  name: String
+  color: AppColorScheme
+}
+
+enum AppColorScheme {
+  Cobalt
+  CoralRed
+  EarthyGreen
+  SunburstYellow
+  HyperPink
+  ElectricIndigo
+  AutumnOrange
+  Noir
+}
+
+type License {
+  buyerName: String!
+  licenseType: LicenseType!
+  supportExpireDate: DateTime
+  connectedApps: [AppType!]!
+  platformAddons: [PlatformAddOn!]!
+}
+
+enum LicenseType {
+  Regular
+  Extended
+  Bronze
+  Silver
+  Gold
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+enum AppType {
+  Taxi
+  Shop
+  Parking
+}
+
+enum PlatformAddOn {
+  FleetAddOn
+}
+
+type CurrentConfiguration {
+  purchaseCode: String
+  backendMapsAPIKey: String
+  adminPanelAPIKey: String
+  firebaseProjectPrivateKey: String
+  versionNumber: String
+  companyLogo: String
+  companyName: String
+  companyColor: AppColorScheme
+  taxi: AppConfigInfo
+  shop: AppConfigInfo
+  parking: AppConfigInfo
+  mysqlHost: String
+  mysqlPort: Int
+  mysqlUser: String
+  mysqlPassword: String
+  mysqlDatabase: String
+  redisHost: String
+  redisPort: Int
+  redisPassword: String
+  redisDb: Int
+}
+
+type AvaialbeUpgrade {
+  type: String!
+  price: Float!
+  benefits: [String!]!
+}
+
+type UpdatePurchaseCodeClient {
+  id: ID!
+  enabled: Boolean!
+  ip: String!
+  port: Float!
+  token: String!
+  purchaseId: ID!
+  firstVerifiedAt: DateTime!
+  lastVerifiedAt: DateTime!
+}
+
+type LicenseInformation {
+  license: License
+  benefits: [String!]
+  drawbacks: [String!]
+  availableUpgrades: [AvaialbeUpgrade!]
+}
+
+type TimeRange {
+  open: String!
+  close: String!
+}
+
+type RideOffer {
+  id: ID!
+  type: TaxiOrderType!
+  currency: String!
+  waypoints: [WaypointBase!]!
+
+  """The total distance in meters for the order."""
+  distance: Int!
+
+  """The minimum cost estimate for the order."""
+  costMin: Float
+
+  """The maximum cost estimate for the order."""
+  costMax: Float
+  pricingMode: PricingMode!
+  rangePolicy: RangePolicy
+
+  """The total duration in seconds for the order"""
+  duration: Int!
+
+  """The directions for the order from driver to passenger."""
+  directions: [Point!]!
+  dispatchedToUserAt: DateTime
+  expiresAt: DateTime
+  fareEstimate: Float!
+  serviceName: String!
+  serviceImageAddress: String!
+  options: [RideOption!]!
+  passenger: PassengerInformation
+}
+
+"""
+Different types of taxi orders, including ride, rideshare, parcel delivery, food delivery, and shop delivery.
+"""
+enum TaxiOrderType {
+  Ride
+  Rideshare
+  ParcelDelivery
+  FoodDelivery
+  ShopDelivery
+}
+
+enum PricingMode {
+  FIXED
+  RANGE
+}
+
+enum RangePolicy {
+  ENFORCE
+  SOFT
+  OPEN
+}
+
+type RideOption {
+  name: String!
+  icon: ServiceOptionIcon!
+}
+
+enum ServiceOptionIcon {
+  Pet
+  TwoWay
+  Luggage
+  PackageDelivery
+  Shopping
+  Custom1
+  Custom2
+  Custom3
+  Custom4
+  Custom5
+}
+
+type PassengerInformation {
+  firstName: String
+  lastName: String
+  profilePicture: String
+}
+
+type ChatMessage {
+  message: String!
+  createdAt: DateTime!
+  isFromMe: Boolean!
+  seenAt: DateTime
+  senderFullName: String
+}
+
+type PhoneNumber {
+  countryCode: String!
+  number: String!
+}
+
+type DeliveryContact {
+  name: String!
+  phoneNumber: PhoneNumber!
+  email: String
+  addressLine1: String!
+  addressLine2: String
+  zone: String
+  buildingNumber: String
+  apartmentNumber: String
+  city: String
+  state: String
+  instructions: String
+  postalCode: String
+  companyName: String
+}
+
+type RideWaypoint implements WaypointBase {
+  location: Point!
+  address: String!
+  role: WaypointRole!
+  service: WaypointService!
+  deliveryContact: DeliveryContact
+  shopName: String
+  shopAddress: String
+  shopImageUrl: String
+}
+
+type DeliveryWaypoint implements WaypointBase {
+  location: Point!
+  address: String!
+  role: WaypointRole!
+  service: WaypointService!
+  deliveryContact: DeliveryContact
+  shopName: String
+  shopAddress: String
+  shopImageUrl: String
+}
+
+type ShopWaypoint implements WaypointBase {
+  location: Point!
+  address: String!
+  role: WaypointRole!
+  service: WaypointService!
+  deliveryContact: DeliveryContact
+  shopName: String!
+  shopAddress: String!
+  shopImageUrl: String!
+}
+
+type PlaceDTO {
+  point: Point!
+  title: String
+  address: String!
+}
+
+type CashPaymentMethod implements PaymentMethodBase {
+  mode: PaymentMode!
+  id: ID
+}
+
+type WalletPaymentMethod implements PaymentMethodBase {
+  mode: PaymentMode!
+  id: ID
+}
+
+type SavedAccount implements PaymentMethodBase {
+  mode: PaymentMode!
+  id: ID!
+  name: String!
+  providerBrand: ProviderBrand
+  isDefault: Boolean!
+}
+
+"""Brand of the provider wether bank name or card provider"""
+enum ProviderBrand {
+  Visa
+  Mastercard
+  Amex
+  Discover
+  Diners
+  EftPosAu
+  JCB
+  UnionPay
+  Unknown
+}
+
+type OnlinePaymentMethod implements PaymentMethodBase {
+  mode: PaymentMode!
+  id: ID!
+  name: String!
+  imageUrl: String
+  linkMethod: GatewayLinkMethod!
+}
+
+"""Method of connecting to a payout or saved payment method."""
+enum GatewayLinkMethod {
+  none
+  redirect
+  manual
+}
+
+type ActiveOrderDriver {
+  location: Point
+  fullName: String
+  profileImageUrl: ID
+
+  """Driver Rating. Between 0 to 100"""
+  rating: Int
+  mobileNumber: String
+  vehicleName: String
+  vehicleColor: String
+  vehiclePlate: String
+}
+
+type RiderActiveOrderUpdate {
+  type: RiderOrderUpdateType!
+  orderId: ID!
+  riderId: ID!
+  message: ChatMessage
+  unreadMessagesCount: Int
+  status: OrderStatus
+  cost: Float
+  driverLocation: Point
+  pickupEta: DateTime
+  directions: [Point!]
+  driver: ActiveOrderDriver
+  nextDestination: WaypointBase
+}
+
+"""Types of updates for taxi orders"""
+enum RiderOrderUpdateType {
+  StatusUpdated
+  NewMessageReceived
+  DriverLocationUpdated
+  DriverAssigned
+  DriverCancelled
+  OrderCompleted
+  NewEphemeralMessage
+  NoDriverFound
+}
+
+enum OrderStatus {
+  Requested
+  NotFound
+  NoCloseFound
+  Found
+  DriverAccepted
+  Arrived
+  WaitingForPrePay
+  DriverCanceled
+  RiderCanceled
+  Started
+  WaitingForDriverFee
+  WaitingForPostPay
+  WaitingForReview
+  Finished
+  Booked
+  Expired
+}
+
+type CallMaskingConfig {
+  enabled: Boolean!
+  maskingNumber: String!
+}
+
+type InitiateCallResult {
+  success: Boolean!
+  maskingNumber: String
+  error: String
+}
+
+type LostPropertyEligibility {
+  canCall: Boolean!
+  finishedAt: DateTime
+}
+
+type AuthMethodDTO {
+  id: ID!
+  type: AuthMethodType!
+  identifier: String!
+  isVerified: Boolean!
+  isPrimary: Boolean!
+  verifiedAt: DateTime
+  lastUsedAt: DateTime
+}
+
+"""The type of authentication method"""
+enum AuthMethodType {
+  PHONE
+  EMAIL
+  GOOGLE
+  APPLE
+  PASSKEY
+}
+
+type BeginPasskeyRegistrationDTO {
+  challenge: String!
+  rpId: String!
+  rpName: String!
+  userId: String!
+  userName: String!
+  userDisplayName: String!
+  excludeCredentials: [String!]!
+  timeout: Float!
+}
+
+type BeginPasskeyAuthenticationDTO {
+  """Session ID to identify this authentication attempt"""
+  sessionId: String!
+
+  """The challenge to be signed by the authenticator"""
+  challenge: String!
+
+  """The relying party ID (domain)"""
+  rpId: String!
+
+  """Timeout in milliseconds for the authentication ceremony"""
+  timeout: Int!
+
+  """User verification requirement"""
+  userVerification: String!
+}
+
+type Announcement {
+  id: ID!
+  startAt: DateTime
+  expireAt: DateTime
+  title: String!
+  description: String!
+  url: String
+}
+
+type RiderStatistics {
+  totalRides: Int!
+  completedRides: Int!
+  canceledRides: Int!
+  favoriteDriversCount: Int!
+
+  """Total distance traveled by the rider in meters"""
+  distanceTraveled: Int!
+}
+
+type Rider {
+  id: ID!
+  countryIso: String
+  mobileNumber: String!
+  firstName: String
+  lastName: String
+  email: String
+  emailVerified: Boolean
+  gender: Gender
+  profileImageUrl: String
+  walletCredit: Float!
+  currency: String!
+}
+
+enum Gender {
+  Male
+  Female
+  Other
+  Unknown
+}
+
+type UpdateProfileResponseDTO {
+  rider: Rider!
+  requiresEmailVerification: Boolean!
+  emailVerificationHash: String
+}
+
+type Login {
+  accessToken: String!
+  refreshToken: String!
+}
+
+type VerifyNumberDto {
+  """
+  If an existing user then the hash will be null, so the user can be logged in using password instead of OTP.
+  """
+  isExistingUser: Boolean!
+
+  """
+  Hash that will need to be passed in subsequent verify code call in order for match and verifcation to happen.
+  """
+  hash: String
+}
+
+type VerifcationResult {
+  jwtToken: String!
+  user: Rider!
+  hasPassword: Boolean!
+  hasName: Boolean!
+}
+
+type SendEmailVerificationDto {
+  """
+  Hash that will need to be passed in subsequent verify code call in order for verification to happen.
+  """
+  hash: String
+
+  """Whether this email is already linked to an existing account."""
+  isExistingUser: Boolean!
+
+  """
+  Whether phone verification is required before email can be used for login.
+  """
+  requiresPhoneVerification: Boolean!
+}
+
+type VerifyEmailDto {
+  """
+  JWT token for authentication. Null if phone verification is required first.
+  """
+  jwtToken: String
+
+  """The user object. Null if phone verification is required first."""
+  user: Rider
+  hasPassword: Boolean!
+  hasName: Boolean!
+
+  """Whether this is a newly created account."""
+  isNewAccount: Boolean!
+
+  """Whether the email was linked to an existing account."""
+  isEmailLinked: Boolean!
+
+  """
+  If true, the user must complete phone verification before they can log in with email.
+  """
+  requiresPhoneVerification: Boolean!
+}
+
+type Media {
+  id: ID!
+  address: String!
+  base64: String
+}
+
+type ServiceOption {
+  id: ID!
+  name: String!
+  description: String
+  type: ServiceOptionType!
+  additionalFee: Float
+  icon: ServiceOptionIcon!
+}
+
+enum ServiceOptionType {
+  Free
+  Paid
+  TwoWay
+}
+
+type Service {
+  id: ID!
+  name: String!
+  description: String
+  personCapacity: Int
+  paymentMethod: ServicePaymentMethod!
+  cost: Float! @deprecated(reason: "Use costResult instead for range pricing support")
+  costResult: CostResult!
+  costAfterCoupon: Float
+  discountedCostResult: CostResult
+  cancellationTotalFee: Float!
+  prepayPercent: Int!
+  twoWayAvailable: Boolean!
+  media: Media!
+  options: [ServiceOption!]!
+  pricingMode: PricingMode!
+  rangePolicy: RangePolicy!
+}
+
+enum ServicePaymentMethod {
+  CashCredit
+  OnlyCredit
+  OnlyCash
+}
+
+union CostResult = FixedCost | RangeCost
+
+type FixedCost {
+  cost: Float!
+  mode: PricingMode!
+}
+
+type RangeCost {
+  cost: Float!
+  min: Float!
+  max: Float!
+  mode: PricingMode!
+  rangePolicy: RangePolicy!
+}
+
+type ServiceCategory {
+  id: ID!
+  name: String!
+  services: [Service!]!
+}
+
+type CalculateFareDTO {
+  currency: String!
+  distance: Float!
+  duration: Float!
+  directions: [Point!]!
+  services: [ServiceCategory!]!
+  error: CalculateFareError
+}
+
+enum CalculateFareError {
+  RegionUnsupported
+  NoServiceInRegion
+}
+
+type TopUpWalletResponse {
+  status: TopUpWalletStatus!
+  error: String
+  url: String
+}
+
+enum TopUpWalletStatus {
+  OK
+  Redirect
+  Failed
+}
+
+type ActiveOrder {
+  id: ID!
+  type: TaxiOrderType!
+  waitMinutes: Int
+  currency: String!
+  driver: ActiveOrderDriver
+  createdAt: DateTime!
+
+  """Estimated distance in meters"""
+  estimatedDistance: Int!
+
+  """Estimated duration in seconds"""
+  estimatedDuration: Int!
+  scheduledAt: DateTime
+  pickupEta: DateTime
+  dropoffEta: DateTime
+  status: OrderStatus!
+  serviceName: String!
+  serviceImageAddress: String!
+  chatMessages: [ChatMessage!]!
+  options: [RideOption!]!
+  waypoints: [WaypointBase!]!
+  totalCost: Float!
+  costResult: CostResult!
+  paymentMethod: PaymentMethodBase!
+  couponDiscount: Float
+  directions: [Point!]!
+  unreadMessagesCount: Int!
+  nextDestination: WaypointBase
+}
+
+type ApplyCouponResponse {
+  couponDiscount: Float!
+  totalCost: Float!
+}
+
+type UpdateOrderWaitTimeResponse {
+  waitTime: Int
+  totalCost: Float!
+}
+
+type PastOrderDriver {
+  id: ID!
+  fullName: String
+  profileImageUrl: ID
+
+  """Driver Rating. Between 0 to 100"""
+  rating: Int
+  mobileNumber: String
+  vehicleName: String
+  vehicleColor: String
+  vehiclePlate: String
+}
+
+type PastOrder {
+  id: ID!
+  type: TaxiOrderType!
+  waitMinutes: Int
+  currency: String!
+  driver: PastOrderDriver
+  createdAt: DateTime!
+
+  """Estimated distance in meters"""
+  estimatedDistance: Int!
+
+  """Estimated duration in seconds"""
+  estimatedDuration: Int!
+  scheduledAt: DateTime
+  pickupEta: DateTime
+  dropoffEta: DateTime
+  status: OrderStatus!
+  serviceName: String!
+  serviceImageAddress: String!
+  options: [RideOption!]!
+  waypoints: [WaypointBase!]!
+  totalCost: Float!
+  paymentMethod: PaymentMethodBase!
+  couponDiscount: Float
+  directions: [Point!]!
+}
+
+type OrderCancelReason {
+  id: ID!
+  title: String!
+}
+
+type Coupon {
+  id: ID!
+  code: String!
+  title: String!
+  description: String
+  expireAt: DateTime
+}
+
+type GiftCard {
+  id: ID!
+  amount: Float!
+  currency: String!
+}
+
+type SetupPaymentMethod {
+  url: String
+}
+
+type RiderWallet {
+  balance: Float!
+  currency: String!
+}
+
+type RiderTransacion {
+  id: ID!
+  createdAt: DateTime!
+  action: TransactionAction!
+  deductType: RiderDeductTransactionType
+  rechargeType: RiderRechargeTransactionType
+  amount: Float!
+  currency: String!
+  referenceNumber: String
+}
+
+enum TransactionAction {
+  Recharge
+  Deduct
+}
+
+enum RiderDeductTransactionType {
+  OrderFee
+  ParkingFee
+  CancellationFee
+  Withdraw
+  Correction
+}
+
+enum RiderRechargeTransactionType {
+  BankTransfer
+  Gift
+  Correction
+  InAppPayment
+}
+
+type Complaint {
+  id: ID!
+  subject: String!
+  content: String
+  status: ComplaintStatus!
+}
+
+enum ComplaintStatus {
+  Submitted
+  UnderInvestigation
+  Resolved
+}
+
+type SOS {
+  id: ID!
+}
+
+type EphemeralMessage {
+  messageId: ID!
+  type: EphemeralMessageType!
+  createdAt: DateTime!
+  expiresAt: DateTime!
+  orderId: ID!
+  driverFullName: String
+  driverProfileUrl: String
+  serviceName: String
+  serviceImageUrl: String
+  vehicleName: String
+}
+
+enum EphemeralMessageType {
+  RateDriver
+  RiderCanceled
+  DriverCanceled
+  RideExpired
+}
+
+type FeedbackParameter {
+  id: ID!
+  title: String!
+  isGood: Boolean!
+}
+
+type FavoriteLocation {
+  id: ID!
+  type: RiderAddressType!
+  title: String!
+  details: String!
+  location: Point!
+  phoneNumber: PhoneNumber
+}
+
+enum RiderAddressType {
+  Home
+  Work
+  Partner
+  Gym
+  Parent
+  Cafe
+  Park
+  Other
+}
+
+input PointInput {
+  lat: Float!
+  lng: Float!
+  heading: Int
+}
+
+input AppConfigInfoInput {
+  logo: String
+  name: String
+  color: AppColorScheme
+}
+
+input OpeningHoursInput {
+  open: String!
+  close: String!
+}
+
+input PhoneNumberInput {
+  countryCode: String!
+  number: String!
+}
+
+input DeliveryContactInput {
+  name: String!
+  phoneNumber: PhoneNumberInput!
+  email: String
+  addressLine1: String!
+  addressLine2: String
+  zone: String
+  buildingNumber: String
+  apartmentNumber: String
+  city: String
+  state: String
+  instructions: String
+  postalCode: String
+  companyName: String
+}
+
+type Query {
+  ephemeralMessages: [EphemeralMessage!]!
+  me: Rider!
+  myStatistics: RiderStatistics!
+  callMaskingConfig: CallMaskingConfig
+  lostPropertyEligibility(orderId: ID!): LostPropertyEligibility!
+  feedbackParameters: [FeedbackParameter!]!
+  activeOrders: [ActiveOrder!]!
+  getFares(input: CalculateFareInput!): CalculateFareDTO!
+  driversAround(center: PointInput): [Point!]!
+  getDriversLocation(center: PointInput): [Point!]! @deprecated(reason: "Use driversAround instead")
+  pastOrders: [PastOrder!]!
+  cancelReasons: [OrderCancelReason!]!
+  recentDestinations: [PlaceDTO!]!
+  favoriteDrivers: [PastOrderDriver!]!
+  favoriteLocations: [FavoriteLocation!]!
+  announcements: [Announcement!]!
+  announcement(id: ID!): Announcement
+  getPlaces(
+    keyword: String!
+    location: PointInput
+
+    """Search radius from location argument in meters"""
+    radius: Int
+    language: String
+    provider: GeoProvider
+    apiKey: String
+  ): [PlaceDTO!]!
+  reverseGeocode(location: PointInput!, language: String, provider: GeoProvider, apiKey: String): PlaceDTO!
+  getComplaints: [Complaint!]!
+  paymentMethods: [PaymentMethodBase!]!
+  riderWallets: [RiderWallet!]!
+  riderTransactions: [RiderTransacion!]!
+  couponInfo(code: String!): Coupon
+
+  """Get HMAC hash for Chatwoot identity verification"""
+  chatwootIdentifierHash: String
+  requireUpdate(versionCode: Int!): VersionStatus!
+
+  """Get all authentication methods linked to the current account."""
+  myAuthMethods: [AuthMethodDTO!]!
+}
+
+input CalculateFareInput {
+  points: [PointInput!]!
+  orderType: TaxiOrderType! = Ride
+  twoWay: Boolean
+  couponCode: String
+  selectedOptionIds: [String!]
+  waitTime: Int
+}
+
+enum GeoProvider {
+  GOOGLE
+  MAPBOX
+  NOMINATIM
+}
+
+enum VersionStatus {
+  Latest
+  MandatoryUpdate
+  OptionalUpdate
+}
+
+type Mutation {
+  markEphemeralMessagesAsRead(messageId: ID!): Boolean!
+  updateFcmToken(fcmToken: String!): Boolean!
+  updateProfile(input: UpdateRiderInput!): Rider!
+
+  """Update profile and trigger email verification if email is set/changed"""
+  updateProfileWithEmailVerification(input: UpdateRiderInput!): UpdateProfileResponseDTO!
+  initiateCallMasking(orderId: ID!): InitiateCallResult!
+  initiateLostPropertyCall(orderId: ID!): InitiateCallResult!
+  createOrder(input: CreateOrderInput!): [ActiveOrder!]!
+  cancelOrder(orderId: ID!, cancelReasonId: ID, cancelReasonNote: String): Boolean!
+  cancelBooking(id: ID!, cancelReasonId: ID, cancelReasonNote: String): Boolean!
+  submitReview(review: SubmitFeedbackInput!): Boolean!
+  skipReview: Boolean! @deprecated(reason: "Not used anymore. epheremal messages expire on their own.")
+  updateOrderWaitTime(
+    orderId: ID!
+
+    """New wait time in minutes"""
+    waitTime: Int!
+  ): UpdateOrderWaitTimeResponse!
+  applyCoupon(orderId: ID!, couponCode: String!): ApplyCouponResponse!
+  payForRide(orderId: ID!, paymentMethod: PaymentMethodInput!): TopUpWalletResponse!
+  deleteFavoriteDriver(driverId: ID!): Boolean!
+  createFavoriteLocation(input: CreateRiderAddressInput!): FavoriteLocation!
+  deleteFavoriteLocation(id: ID!): Boolean!
+  updateFavoriteLocation(id: ID!, input: CreateRiderAddressInput!): FavoriteLocation!
+  createComplaint(input: ComplaintInput!): Complaint!
+  sosSignal(orderId: ID!, location: PointInput): SOS!
+  topUpWallet(input: TopUpWalletInput!, shouldPreauth: Boolean): TopUpWalletResponse!
+  setupPaymentMethod(gatewayId: ID!): SetupPaymentMethod!
+  redeemGiftCard(code: String!): GiftCard!
+  markPaymentMethodAsDefault(id: ID!): [PaymentMethodBase!]!
+  deleteSavedPaymentMethod(id: ID!): Boolean!
+  sendChatMessage(orderId: ID!, message: String!): ChatMessage!
+  updateLastSeenMessagesAt(orderId: ID!): Boolean!
+  login(input: LoginInput!): Login!
+  deleteUser: Rider!
+
+  """
+  Returns a hash that will need to be passed in subsequent verify code call in order for match and verifcation to happen. Real sms is not sent in demo mode. It is 123456 by default.
+  """
+  verifyNumber(mobileNumber: String!, countryIso: String, forceSendOtp: Boolean): VerifyNumberDto!
+
+  """
+  Returns a JWT token if the code matches the hash. In demo mode the OTP is not sent. It is 123456 by default.
+  """
+  verifyOtp(hash: String!, code: String!): VerifcationResult!
+  verifyPassword(mobileNumber: String!, password: String!): VerifcationResult!
+  setPassword(password: String!): VerifcationResult!
+
+  """
+  Send a verification code to the provided email address. Returns a hash for subsequent verification.
+  """
+  sendEmailVerification(email: String!): SendEmailVerificationDto!
+
+  """
+  Verify the email code and potentially log in the user. In demo mode, use code 123456.
+  """
+  verifyEmailCode(hash: String!, code: String!): VerifyEmailDto!
+
+  """Login with email and password."""
+  loginWithEmail(email: String!, password: String!): VerifcationResult!
+
+  """Link an email address to the current account. Requires authentication."""
+  linkEmail(email: String!): AuthMethodDTO!
+
+  """Begin passkey registration. Returns options for the WebAuthn ceremony."""
+  beginPasskeyRegistration: BeginPasskeyRegistrationDTO!
+
+  """Complete passkey registration with attestation response."""
+  completePasskeyRegistration(input: CompletePasskeyRegistrationInput!): AuthMethodDTO!
+
+  """
+  Begin passkey authentication (login). Returns options for the WebAuthn ceremony.
+  """
+  beginPasskeyAuthentication: BeginPasskeyAuthenticationDTO!
+
+  """Complete passkey authentication and log in the user."""
+  completePasskeyAuthentication(input: CompletePasskeyAuthenticationInput!): VerifcationResult!
+}
+
+input UpdateRiderInput {
+  firstName: String
+  lastName: String
+  gender: Gender
+  email: String
+}
+
+input CreateOrderInput {
+  serviceId: Int!
+  orderType: TaxiOrderType! = Ride
+  waypoints: [WaypointInput!]!
+  intervalMinutes: Int
+  twoWay: Boolean
+  waitTime: Int
+  optionIds: [String!]
+  couponCode: String
+  paymentMode: PaymentMode
+  paymentMethodId: ID
+}
+
+input WaypointInput {
+  point: PointInput!
+  address: String!
+
+  """Contact information. Only applicable to Parcel Delivery Orders"""
+  deliveryContact: DeliveryContactInput
+}
+
+input SubmitFeedbackInput {
+  """Score, a value between 0 to 100"""
+  score: Int!
+  description: String
+  requestId: ID!
+  parameterIds: [ID!]! = []
+  addToFavorite: Boolean
+}
+
+input PaymentMethodInput {
+  mode: PaymentMode!
+  id: ID
+}
+
+input CreateRiderAddressInput {
+  title: String!
+  details: String!
+  location: PointInput!
+  type: RiderAddressType!
+  phoneNumber: PhoneNumberInput!
+}
+
+input ComplaintInput {
+  requestId: ID!
+  subject: String!
+  content: String
+  requestedByDriver: Boolean
+}
+
+input TopUpWalletInput {
+  gatewayId: ID!
+  amount: Float!
+  currency: String!
+  token: String
+  pin: Float
+  otp: Float
+  transactionId: ID
+  orderNumber: String
+  paymentMode: PaymentMode! = PaymentGateway
+}
+
+input LoginInput {
+  firebaseToken: String!
+}
+
+input CompletePasskeyRegistrationInput {
+  id: String!
+  rawId: String!
+  type: String!
+  clientDataJSON: String!
+  attestationObject: String!
+  transports: [String!]
+}
+
+input CompletePasskeyAuthenticationInput {
+  """Session ID from beginPasskeyAuthentication"""
+  sessionId: String!
+
+  """Credential ID (base64url encoded)"""
+  id: String!
+
+  """Raw credential ID (base64url encoded)"""
+  rawId: String!
+
+  """Credential type (usually "public-key")"""
+  type: String!
+
+  """Client data JSON (base64url encoded)"""
+  clientDataJSON: String!
+
+  """Authenticator data (base64url encoded)"""
+  authenticatorData: String!
+
+  """Signature (base64url encoded)"""
+  signature: String!
+
+  """User handle (base64url encoded, optional)"""
+  userHandle: String
+}
+
+type Subscription {
+  activeOrderUpdated: RiderActiveOrderUpdate!
+}

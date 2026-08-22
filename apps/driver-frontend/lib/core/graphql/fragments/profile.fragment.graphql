@@ -1,0 +1,18 @@
+fragment DriverPerformance on DriverPerformance {
+  totalRides
+  acceptanceRate
+  rating
+  distanceTraveled
+}
+
+fragment Profile on Driver {
+  id
+  firstName
+  lastName
+  status
+  mobileNumber
+  walletCredit
+  currency
+  searchDistance
+  profileImageUrl
+}

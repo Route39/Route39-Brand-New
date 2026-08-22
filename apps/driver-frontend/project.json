@@ -1,0 +1,33 @@
+{
+  "name": "driver-frontend",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/driver-frontend",
+  "tags": [],
+  "targets": {
+    "publish-android": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run publish-frontend -- --platform=android --services=driver-frontend --mode=beta -y"
+      }
+    },
+    "publish-ios": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run publish-frontend -- --platform=ios --services=driver-frontend --mode=beta -y"
+      }
+    },
+    "publish-web": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npm run publish-frontend -- --platform=web --services=driver-frontend --mode=beta -y"
+      }
+    },
+    "publish-all": {
+      "executor": "nx:run-commands",
+      "parallelism": true,
+      "options": {
+        "command": "npm run publish-frontend -- --platform=android,ios,web --services=driver-frontend --mode=beta -y"
+      }
+    }
+  }
+}

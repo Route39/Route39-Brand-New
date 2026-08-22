@@ -1,0 +1,30 @@
+fragment PaymentMethod on PaymentMethodBase {
+  __typename
+  nullableId: id
+  mode
+  ... on CashPaymentMethod {
+    mode
+  }
+  ... on WalletPaymentMethod {
+    mode
+  }
+  ... on SavedAccount {
+    ...SavedAccount
+  }
+  ... on OnlinePaymentMethod {
+    ...OnlinePaymentMethod
+  }
+}
+
+fragment SavedAccount on SavedAccount {
+  id
+  name
+  providerBrand
+}
+
+fragment OnlinePaymentMethod on OnlinePaymentMethod {
+  id
+  name
+  imageUrl
+  linkMethod
+}

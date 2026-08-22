@@ -1,0 +1,12 @@
+fragment Profile on Rider {
+  id
+  firstName
+  lastName
+  email
+  gender
+  mobileNumber
+  countryIso
+  profileImageUrl
+  walletCredit
+  currency
+}

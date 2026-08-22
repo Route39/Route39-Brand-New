@@ -1,0 +1,23 @@
+fragment ActiveOrderDriver on ActiveOrderDriver {
+  fullName
+  location {
+    ...Coordinate
+  }
+  profileImageUrl
+  rating
+  mobileNumber
+  vehicleName
+  vehicleColor
+  vehiclePlate
+  vehicleName
+}
+fragment PastOrderDriver on PastOrderDriver {
+  fullName
+  profileImageUrl
+  rating
+  mobileNumber
+  vehicleName
+  vehicleColor
+  vehiclePlate
+  vehicleName
+}

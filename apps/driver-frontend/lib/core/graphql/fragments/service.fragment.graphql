@@ -1,0 +1,5 @@
+fragment Service on Service {
+  id
+  name
+  imageUrl
+}

@@ -1,0 +1,7 @@
+fragment Announcement on Announcement {
+  title
+  description
+  startAt
+  expireAt
+  url
+}

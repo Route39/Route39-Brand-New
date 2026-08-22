@@ -1,0 +1,51 @@
+fragment UpdateStatus on UpdateStatus {
+  orderId
+  status
+  directions {
+    ...Coordinate
+  }
+  nextDestination {
+    ...Waypoint
+  }
+}
+
+fragment ActiveOrder on ActiveOrder {
+  id
+  serviceName
+  type
+  currency
+  serviceImageAddress
+  pickupEta
+  dropoffEta
+  waitMinutes
+  directions {
+    ...Coordinate
+  }
+  estimatedDistance
+  estimatedDuration
+  createdAt
+  scheduledAt
+  unreadMessagesCount
+  options {
+    icon
+    name
+  }
+  nextDestination {
+    ...Waypoint
+  }
+  rider {
+    ...customer
+  }
+  status
+  totalCost
+  couponDiscount
+  paymentMethod {
+    ...PaymentMethod
+  }
+  waypoints {
+    ...Waypoint
+  }
+  chatMessages {
+    ...ChatMessage
+  }
+}

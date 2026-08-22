@@ -1,0 +1,35 @@
+@if ((query | async)?.data?.feedbacks; as feedbacks) {
+  <nz-table #table nzShowSizeChanger [nzFrontPagination]="false"
+    [nzData]="feedbacks.nodes" (nzQueryParams)="tableService.onTableQueryParamsChange($event)" nzBordered>
+    <thead>
+      <tr>
+        <th nzShowSort nzColumnKey="reviewTimestamp">{{ 'profile.dateTime' | translate }}</th>
+        <th nzShowSort nzColumnKey="score">{{ 'profile.rating' | translate }}</th>
+        <th class="hidden md:table-cell">{{ 'profile.review' | translate }}</th>
+        <th class="hidden lg:table-cell">Parameters</th>
+        <th>{{ 'profile.actions' | translate }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (data of table.data; track data) {
+        <tr>
+          <td [nz-tooltip]="data.reviewTimestamp | date:'short'">{{ data.reviewTimestamp | timeago }}</td>
+          <td><nz-rate [ngModel]="data.score / 20" nzDisabled nzAllowHalf></nz-rate></td>
+          <td class="hidden md:table-cell">{{ data.description }}</td>
+          <td class="hidden lg:table-cell">
+            @for (parameter of data.parameters; track parameter) {
+              <nz-tag [nzBordered]="false"
+              [nzColor]="tagColor.boolean(parameter.isGood)">{{parameter.title}}</nz-tag>
+            }
+          </td>
+          <td>
+            @if (data.requestId !== null) {
+              <a [routerLink]="'/requests/view/' + data.requestId">{{ 'table.viewRequest' |
+              translate }}</a>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+}

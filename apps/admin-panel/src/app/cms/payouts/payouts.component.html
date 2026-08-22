@@ -1,0 +1,95 @@
+@if ((query | async)?.data; as data) {
+  <nz-page-header [nzGhost]="false" nzBackIcon nzTitle="Payouts"
+    nzSubtitle="Manage and track payouts for service providers">
+    <nz-page-header-extra>
+      <span class="header-trigger" style="margin-right: 15px;">
+        <button nz-button nz-dropdown [nzDropdownMenu]="menu" [nzPlacement]="'bottomRight'">Actions<span nz-icon
+        nzType="down"></span></button>
+        <nz-dropdown-menu #menu="nzDropdownMenu">
+          <ul nz-menu>
+            <li nz-menu-item routerLink="./new">New Payout Session</li>
+            <li nz-submenu nzTitle="Change currency">
+              <ul>
+                @for (currency of data.supportedCurrencies; track currency) {
+                  <li nz-menu-item
+                    (click)="changeCurrency(currency)">
+                    {{ currency }}
+                  </li>
+                }
+              </ul>
+            </li>
+          </ul>
+        </nz-dropdown-menu>
+      </span>
+    </nz-page-header-extra>
+    <nz-page-header-content>
+      <nz-row nzType="flex" class="mb-4">
+        <nz-statistic nzTitle="Pending"
+        [nzValue]="(data.taxiPayoutStatistics.pendingAmount | currency: data.taxiPayoutStatistics.currency) ?? 'N/A'"></nz-statistic>
+        <nz-statistic nzTitle="Last Payout"
+          [nzValue]="(data.taxiPayoutStatistics.lastPayoutAmount | currency: data.taxiPayoutStatistics.currency) ?? 'N/A'"
+        style="margin: 0 32px"></nz-statistic>
+        <nz-statistic nzTitle="Payout Methods" [nzValueTemplate]="payoutMethodTemplate"
+        style="margin: 0 32px"></nz-statistic>
+        <ng-template #payoutMethodTemplate>
+          <div nz-g2 [nzChartOptions]="{ height: 100, width: 500 }"
+            (nzChartInitialized)="onChartPayoutMethodsInit($event)">
+          </div>
+        </ng-template>
+      </nz-row>
+      @if (data.taxiPayoutSessions; as sessions) {
+        <nz-table #table nzShowSizeChanger [nzFrontPagination]="false"
+          [nzData]="sessions.nodes" [nzTotal]="sessions.totalCount"
+          (nzQueryParams)="tableService.onTableQueryParamsChange($event)" nzBordered>
+          <thead>
+            <tr>
+              <th>
+                {{ 'profile.createdAt' | translate }}
+              </th>
+              <th>
+                {{ 'profile.totalAmount' | translate }}
+              </th>
+              <th>
+                {{ 'profile.status' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (data of table.data; track data) {
+              <tr class="group cursor-pointer" [routerLink]="data.id + '/view'">
+                <td>
+                  {{ data.createdAt | timeago }}
+                </td>
+                <td>
+                  {{ data.totalAmount | currency: data.currency }}
+                </td>
+                <td>
+                  @if (data.status === sessionStatus.Pending) {
+                    <nz-tag [nzColor]="'blue'" [nzBordered]="false">{{
+                      data.status
+                    }}</nz-tag>
+                  }
+                  @if (data.status === sessionStatus.Paid) {
+                    <nz-tag [nzColor]="'green'" [nzBordered]="false">{{
+                      data.status
+                    }}</nz-tag>
+                  }
+                  @if (data.status === sessionStatus.Failed) {
+                    <nz-tag [nzColor]="'red'" [nzBordered]="false">{{
+                      data.status
+                    }}</nz-tag>
+                  }
+                  @if (data.status === sessionStatus.Cancelled) {
+                    <nz-tag [nzColor]="'default'"
+                      [nzBordered]="false">{{ data.status
+                    }}</nz-tag>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </nz-table>
+      }
+    </nz-page-header-content>
+  </nz-page-header>
+}

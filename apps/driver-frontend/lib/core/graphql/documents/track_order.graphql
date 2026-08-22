@@ -1,0 +1,9 @@
+mutation CancelOrder($orderId: ID!, $reasonId: ID!, $reasonNote: String) {
+  cancelRide(orderId: $orderId, reasonId: $reasonId, reasonNote: $reasonNote) {
+    ...UpdateStatus
+  }
+}
+
+mutation UpdateLastSeenMessagesAt($orderId: ID!) {
+  updateLastSeenMessagesAt(orderId: $orderId)
+}

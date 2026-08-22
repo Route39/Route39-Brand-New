@@ -1,0 +1,10 @@
+fragment EphemeralMessage on EphemeralMessage {
+  messageId
+  type
+  driverFullName
+  driverProfileUrl
+  orderId
+  vehicleName
+  serviceName
+  serviceImageUrl
+}

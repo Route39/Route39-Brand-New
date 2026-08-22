@@ -1,0 +1,40 @@
+fragment ActiveOrder on ActiveOrder {
+  id
+  serviceName
+  type
+  currency
+  serviceImageAddress
+  pickupEta
+  dropoffEta
+  waitMinutes
+  directions {
+    ...Coordinate
+  }
+  estimatedDistance
+  estimatedDuration
+  createdAt
+  scheduledAt
+  unreadMessagesCount
+  options {
+    icon
+    name
+  }
+  nextDestination {
+    ...Waypoint
+  }
+  driver {
+    ...ActiveOrderDriver
+  }
+  status
+  totalCost
+  couponDiscount
+  paymentMethod {
+    ...PaymentMethod
+  }
+  waypoints {
+    ...Waypoint
+  }
+  chatMessages {
+    ...ChatMessage
+  }
+}

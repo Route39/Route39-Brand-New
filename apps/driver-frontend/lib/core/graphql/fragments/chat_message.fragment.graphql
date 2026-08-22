@@ -1,0 +1,6 @@
+fragment ChatMessage on ChatMessage {
+  message
+  isFromMe
+  seenAt
+  createdAt
+}

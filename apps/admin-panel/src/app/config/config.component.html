@@ -1,0 +1,79 @@
+<div class="flex items-center justify-center min-h-screen bg-dark-blue">
+  <div class="bg-white dark:bg-gray-900 p-8 max-w-4xl w-full">
+    @if (!configed) {
+      <nz-steps [nzCurrent]="currentStep" class="m-8 w-auto">
+        <nz-step nzTitle="Purchase Code" nzDescription="License Verification"></nz-step>
+        <nz-step nzTitle="Maps API" nzDescription="Google Maps API Keys"></nz-step>
+        <nz-step nzTitle="Firebase Admin SDK" nzDescription="Notification & Auth"></nz-step>
+      </nz-steps>
+    }
+    @if (currentStep === 0) {
+      <div class="step-content">
+        <input nz-input placeholder="Purchase Code" [(ngModel)]="currentConfig.currentConfiguration.purchaseCode" />
+        <input nz-input placeholder="E-mail address" [(ngModel)]="email" />
+        <nz-alert nzType="info" class="m-4" nzShowIcon nzMessage="Important:"
+        nzDescription="The email address you have provided will be used exclusively for important updates regarding your license inquiries, such as abuse reports, disablement notices, and other critical notifications."></nz-alert>
+      </div>
+    }
+    @if (currentStep === 1) {
+      <div class="step-content">
+        <input nz-input placeholder="Backend Maps API key"
+          [(ngModel)]="currentConfig.currentConfiguration.backendMapsAPIKey" />
+        <input nz-input placeholder="Dashboard Maps API key"
+          [(ngModel)]="currentConfig.currentConfiguration.adminPanelAPIKey" />
+      </div>
+    }
+    @if (currentStep === 2 && !configed) {
+      <div class="step-content">
+        <nz-upload nzType="drag" [nzAction]="root + 'config/upload'" (nzChange)="handleChange($event)"
+          nzAccept=".json,application/json">
+          <p class="ant-upload-drag-icon">
+            <i nz-icon nzType="inbox"></i>
+          </p>
+          <p class="ant-upload-text">Firebase Project Private Key</p>
+          <p class="ant-upload-hint">
+            Upload private key json file received from firebase project under Service Account and by
+            clicking on the `Generate Private Key` button.
+          </p>
+        </nz-upload>
+      </div>
+    }
+    @if (!configed) {
+      <div class="steps-action">
+        @if (currentStep > 0) {
+          <button nz-button nzType="default" (click)="pre()">Previous</button>
+        }
+        @if (currentStep < 2) {
+          <button nz-button nzType="primary" (click)="next()">Next</button>
+        }
+        @if (currentStep === 2) {
+          <button nz-button nzType="primary" (click)="done()">Done</button>
+        }
+      </div>
+    }
+    @if (configed) {
+      <nz-result nzStatus="success" nzTitle="Configuration Done!"
+        nzSubTitle="Your configuration steps are done now! You will need to wait for around 30 seconds so system would set it up then you can go to login screen using button below.">
+        <div nz-result-extra>
+          <button nz-button nzType="primary" routerLink="../login">Go Login</button>
+        </div>
+      </nz-result>
+    }
+    <ng-template #tplContent>
+      <p>This purchase code seems to have been used by another server `in past`/`right now`. You can select to
+        disable the
+      previous server from below list and continue using on this server.</p>
+      <nz-select [(ngModel)]="selectedClient" nzAllowClear nzPlaceHolder="Choose" style="width: 100%;">
+        @for (client of clients; track client) {
+          <nz-option [nzValue]="client" [nzLabel]="client"></nz-option>
+        }
+      </nz-select>
+    </ng-template>
+    <ng-template #tplFooter>
+      <button nz-button nzType="primary" [nzLoading]="tplModalButtonLoading" [disabled]="selectedClient === null"
+        (click)="disableServer()">
+        Disable Selected Server
+      </button>
+    </ng-template>
+  </div>
+</div>

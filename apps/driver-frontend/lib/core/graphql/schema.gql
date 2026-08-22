@@ -1,0 +1,1266 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+interface WaypointBase {
+  location: Point!
+  address: String!
+  role: WaypointRole!
+  service: WaypointService!
+  deliveryContact: DeliveryContact
+  shopName: String
+  shopAddress: String
+  shopImageUrl: String
+}
+
+enum WaypointRole {
+  Pickup
+  Stop
+  Dropoff
+}
+
+enum WaypointService {
+  Ride
+  Delivery
+  Shop
+}
+
+interface PaymentMethodBase {
+  mode: PaymentMode!
+  id: ID
+}
+
+"""The means of payment for an order."""
+enum PaymentMode {
+  Cash
+  SavedPaymentMethod
+  PaymentGateway
+  Wallet
+}
+
+type Point {
+  lat: Float!
+  lng: Float!
+  heading: Int
+}
+
+type AppConfigInfo {
+  logo: String
+  name: String
+  color: AppColorScheme
+}
+
+enum AppColorScheme {
+  Cobalt
+  CoralRed
+  EarthyGreen
+  SunburstYellow
+  HyperPink
+  ElectricIndigo
+  AutumnOrange
+  Noir
+}
+
+type License {
+  buyerName: String!
+  licenseType: LicenseType!
+  supportExpireDate: DateTime
+  connectedApps: [AppType!]!
+  platformAddons: [PlatformAddOn!]!
+}
+
+enum LicenseType {
+  Regular
+  Extended
+  Bronze
+  Silver
+  Gold
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+enum AppType {
+  Taxi
+  Shop
+  Parking
+}
+
+enum PlatformAddOn {
+  FleetAddOn
+}
+
+type CurrentConfiguration {
+  purchaseCode: String
+  backendMapsAPIKey: String
+  adminPanelAPIKey: String
+  firebaseProjectPrivateKey: String
+  versionNumber: String
+  companyLogo: String
+  companyName: String
+  companyColor: AppColorScheme
+  taxi: AppConfigInfo
+  shop: AppConfigInfo
+  parking: AppConfigInfo
+  mysqlHost: String
+  mysqlPort: Int
+  mysqlUser: String
+  mysqlPassword: String
+  mysqlDatabase: String
+  redisHost: String
+  redisPort: Int
+  redisPassword: String
+  redisDb: Int
+}
+
+type AvaialbeUpgrade {
+  type: String!
+  price: Float!
+  benefits: [String!]!
+}
+
+type UpdatePurchaseCodeClient {
+  id: ID!
+  enabled: Boolean!
+  ip: String!
+  port: Float!
+  token: String!
+  purchaseId: ID!
+  firstVerifiedAt: DateTime!
+  lastVerifiedAt: DateTime!
+}
+
+type LicenseInformation {
+  license: License
+  benefits: [String!]
+  drawbacks: [String!]
+  availableUpgrades: [AvaialbeUpgrade!]
+}
+
+type TimeRange {
+  open: String!
+  close: String!
+}
+
+type RideOffer {
+  id: ID!
+  type: TaxiOrderType!
+  currency: String!
+  waypoints: [WaypointBase!]!
+
+  """The total distance in meters for the order."""
+  distance: Int!
+
+  """The total duration in seconds for the order."""
+  duration: Int!
+
+  """The directions for the order from driver to passenger."""
+  directions: [Point!]!
+  dispatchedToUserAt: DateTime
+  expiresAt: DateTime
+  fareEstimate: Float!
+  serviceName: String!
+  serviceImageAddress: String!
+  options: [RideOption!]!
+}
+
+"""
+Different types of taxi orders, including ride, rideshare, parcel delivery, food delivery, and shop delivery.
+"""
+enum TaxiOrderType {
+  Ride
+  Rideshare
+  ParcelDelivery
+  FoodDelivery
+  ShopDelivery
+}
+
+type RideOption {
+  name: String!
+  icon: ServiceOptionIcon!
+}
+
+enum ServiceOptionIcon {
+  Pet
+  TwoWay
+  Luggage
+  PackageDelivery
+  Shopping
+  Custom1
+  Custom2
+  Custom3
+  Custom4
+  Custom5
+}
+
+type ChatMessage {
+  message: String!
+  createdAt: DateTime!
+  isFromMe: Boolean!
+  seenAt: DateTime
+  senderFullName: String
+}
+
+type PhoneNumber {
+  countryCode: String!
+  number: String!
+}
+
+type DeliveryContact {
+  name: String!
+  phoneNumber: PhoneNumber!
+  email: String
+  addressLine1: String!
+  addressLine2: String
+  zone: String
+  buildingNumber: String
+  apartmentNumber: String
+  city: String
+  state: String
+  instructions: String
+  postalCode: String
+  companyName: String
+}
+
+type RideWaypoint implements WaypointBase {
+  location: Point!
+  address: String!
+  role: WaypointRole!
+  service: WaypointService!
+  deliveryContact: DeliveryContact
+  shopName: String
+  shopAddress: String
+  shopImageUrl: String
+}
+
+type DeliveryWaypoint implements WaypointBase {
+  location: Point!
+  address: String!
+  role: WaypointRole!
+  service: WaypointService!
+  deliveryContact: DeliveryContact
+  shopName: String
+  shopAddress: String
+  shopImageUrl: String
+}
+
+type ShopWaypoint implements WaypointBase {
+  location: Point!
+  address: String!
+  role: WaypointRole!
+  service: WaypointService!
+  deliveryContact: DeliveryContact
+  shopName: String!
+  shopAddress: String!
+  shopImageUrl: String!
+}
+
+type PlaceDTO {
+  point: Point!
+  title: String
+  address: String!
+}
+
+type CashPaymentMethod implements PaymentMethodBase {
+  mode: PaymentMode!
+  id: ID
+}
+
+type WalletPaymentMethod implements PaymentMethodBase {
+  mode: PaymentMode!
+  id: ID
+}
+
+type SavedAccount implements PaymentMethodBase {
+  mode: PaymentMode!
+  id: ID!
+  name: String!
+  providerBrand: ProviderBrand
+  isDefault: Boolean!
+}
+
+"""Brand of the provider wether bank name or card provider"""
+enum ProviderBrand {
+  Visa
+  Mastercard
+  Amex
+  Discover
+  Diners
+  EftPosAu
+  JCB
+  UnionPay
+  Unknown
+}
+
+type OnlinePaymentMethod implements PaymentMethodBase {
+  mode: PaymentMode!
+  id: ID!
+  name: String!
+  imageUrl: String
+  linkMethod: GatewayLinkMethod!
+}
+
+"""Method of connecting to a payout or saved payment method."""
+enum GatewayLinkMethod {
+  none
+  redirect
+  manual
+}
+
+type ActiveOrderDriver {
+  location: Point
+  fullName: String
+  profileImageUrl: ID
+
+  """Driver Rating. Between 0 to 100"""
+  rating: Int
+  mobileNumber: String
+  vehicleName: String
+  vehicleColor: String
+  vehiclePlate: String
+}
+
+type DriverEventPayload {
+  type: DriverEventType!
+  orderId: ID!
+  driverId: ID!
+  unreadMessagesCount: Int
+  message: ChatMessage
+  status: OrderStatus
+  waitTime: Int
+  totalCost: Float
+  rideOffer: RideOffer
+}
+
+"""Types of events that can be sent to the driver"""
+enum DriverEventType {
+  ActiveOrderUpdated
+  RideOfferReceived
+  RideOfferRevoked
+  MessageReceived
+  ActiveOrderCompleted
+  ActiveOrderAssigned
+}
+
+enum OrderStatus {
+  Requested
+  NotFound
+  NoCloseFound
+  Found
+  DriverAccepted
+  Arrived
+  WaitingForPrePay
+  DriverCanceled
+  RiderCanceled
+  Started
+  WaitingForPostPay
+  WaitingForReview
+  Finished
+  Booked
+  Expired
+}
+
+type Announcement {
+  id: ID!
+  title: String!
+  description: String!
+  startAt: DateTime!
+  expireAt: DateTime!
+  url: String
+  userType: [AnnouncementUserType!]!
+}
+
+enum AnnouncementUserType {
+  Driver
+  Rider
+  Operator
+}
+
+type Media {
+  id: ID!
+  address: String!
+  base64: String
+}
+
+type MediaEdge {
+  """The node containing the Media"""
+  node: Media!
+
+  """Cursor for this node."""
+  cursor: ConnectionCursor!
+}
+
+"""Cursor for paging through collections"""
+scalar ConnectionCursor
+
+type PageInfo {
+  """true if paging forward and there are more records."""
+  hasNextPage: Boolean
+
+  """true if paging backwards and there are more records."""
+  hasPreviousPage: Boolean
+
+  """The cursor of the first returned record."""
+  startCursor: ConnectionCursor
+
+  """The cursor of the last returned record."""
+  endCursor: ConnectionCursor
+}
+
+type DriverPerformance {
+  rating: Int
+
+  """A number between 0 and 100 representing the driver's acceptance rate."""
+  acceptanceRate: Int!
+  totalRides: Int!
+  distanceTraveled: Int!
+}
+
+type Driver {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  profileImageUrl: String!
+  mobileNumber: String!
+  status: DriverStatus!
+  walletCredit: Float
+  currency: String!
+  searchDistance: Int
+}
+
+enum DriverStatus {
+  Online
+  Offline
+  Blocked
+  InService
+  WaitingDocuments
+  PendingApproval
+  SoftReject
+  HardReject
+}
+
+type Service {
+  id: ID!
+  name: String!
+  imageUrl: String!
+}
+
+type UpdateStatus {
+  orderId: ID!
+  status: OrderStatus!
+  nextDestination: WaypointBase
+  directions: [Point!]
+  totalCost: Float
+}
+
+type ActiveOrderRider {
+  fullName: String
+  profileImageUrl: ID
+  mobileNumber: String
+}
+
+type ActiveOrder {
+  id: ID!
+  type: TaxiOrderType!
+  waitMinutes: Int
+  currency: String!
+  rider: ActiveOrderRider
+  createdAt: DateTime!
+
+  """Estimated distance in meters"""
+  estimatedDistance: Int!
+
+  """Estimated duration in seconds"""
+  estimatedDuration: Int!
+  scheduledAt: DateTime
+  pickupEta: DateTime
+  dropoffEta: DateTime
+  status: OrderStatus!
+  serviceName: String!
+  serviceImageAddress: String!
+  chatMessages: [ChatMessage!]!
+  options: [RideOption!]!
+  waypoints: [WaypointBase!]!
+  totalCost: Float!
+  paymentMethod: PaymentMethodBase!
+  couponDiscount: Float
+  directions: [Point!]!
+  unreadMessagesCount: Int!
+  nextDestination: WaypointBase
+}
+
+type PastOrderRider {
+  firstName: String
+  profileImageUrl: String
+}
+
+type PastOrder {
+  id: ID!
+  type: TaxiOrderType!
+  rider: PastOrderRider!
+  waitMinutes: Int
+  currency: String!
+  createdAt: DateTime!
+
+  """Estimated distance in meters"""
+  estimatedDistance: Int!
+
+  """Estimated duration in seconds"""
+  estimatedDuration: Int!
+  scheduledAt: DateTime
+  pickupEta: DateTime
+  dropoffEta: DateTime
+  status: OrderStatus!
+  serviceName: String!
+  serviceImageAddress: String!
+  options: [RideOption!]!
+  waypoints: [PlaceDTO!]!
+  totalCost: Float!
+  paymentMode: PaymentMode!
+  directions: [Point!]!
+}
+
+type OrderCancelReason {
+  id: ID!
+  title: String!
+}
+
+type Login {
+  jwtToken: String!
+}
+
+type VerifcationResult {
+  jwtToken: String!
+  user: Driver!
+  hasPassword: Boolean!
+  hasName: Boolean!
+}
+
+type VerifyNumberDto {
+  """
+  If an existing user then the hash will be null, so the user can be logged in using password instead of OTP.
+  """
+  isExistingUser: Boolean!
+
+  """
+  Hash that will need to be passed in subsequent verify code call in order for match and verifcation to happen.
+  """
+  hash: String
+}
+
+type DriverDocument {
+  id: ID!
+  title: String!
+  description: String
+  isEnabled: Boolean!
+  isRequired: Boolean!
+}
+
+type CarModel {
+  id: ID!
+  name: String!
+}
+
+type CarColor {
+  id: ID!
+  name: String!
+}
+
+type Complaint {
+  id: ID!
+  subject: String!
+  content: String
+  status: ComplaintStatus!
+}
+
+enum ComplaintStatus {
+  Submitted
+  UnderInvestigation
+  Resolved
+}
+
+type ComplaintEdge {
+  """The node containing the Complaint"""
+  node: Complaint!
+
+  """Cursor for this node."""
+  cursor: ConnectionCursor!
+}
+
+type Review {
+  serviceName: String!
+  rating: Float!
+  review: String!
+  goodPoints: [String!]!
+}
+
+type FeedbacksSummary {
+  averageRating: Float
+  goodPoints: [String!]!
+  badPoints: [String!]!
+  goodReviews: [Review!]!
+}
+
+type PaymentGateway {
+  id: ID!
+  enabled: Boolean!
+  title: String!
+  type: PaymentGatewayType!
+  publicKey: String
+  linkMethod: GatewayLinkMethod!
+}
+
+enum PaymentGatewayType {
+  Stripe
+  BrainTree
+  PayPal
+  BambooPay
+  Paytm
+  Razorpay
+  Paystack
+  PayU
+  Instamojo
+  Flutterwave
+  PayGate
+  MIPS
+  MercadoPago
+  AmazonPaymentServices
+  MyTMoney
+  WayForPay
+  MyFatoorah
+  SberBank
+  BinancePay
+  OpenPix
+  PayTR
+  CustomLink
+}
+
+type PayoutMethod {
+  id: ID!
+  enabled: Boolean!
+  name: String!
+  isInstantPayoutEnabled: Boolean!
+  type: PayoutMethodType!
+  linkMethod: GatewayLinkMethod!
+  media: Media
+}
+
+"""The type of payout method"""
+enum PayoutMethodType {
+  Stripe
+  BankTransfer
+}
+
+type DriverTransacion {
+  id: ID!
+  createdAt: DateTime!
+  action: TransactionAction!
+  deductType: DriverDeductTransactionType
+  rechargeType: DriverRechargeTransactionType
+  amount: Float!
+  currency: String!
+  refrenceNumber: String
+  driverId: ID!
+  payoutAccountId: ID
+}
+
+enum TransactionAction {
+  Recharge
+  Deduct
+}
+
+enum DriverDeductTransactionType {
+  Withdraw
+  Commission
+  Correction
+}
+
+enum DriverRechargeTransactionType {
+  OrderFee
+  BankTransfer
+  InAppPayment
+  Gift
+}
+
+type PayoutAccount {
+  id: ID!
+  name: String
+  accountNumber: String
+  routingNumber: String
+  bankName: String
+  accountHolderName: String
+  branchName: String
+  isDefault: Boolean!
+  accountHolderAddress: String
+  accountHolderCity: String
+  accountHolderState: String
+  accountHolderZip: String
+  accountHolderCountry: String
+  accountHolderPhone: String
+  accountHolderDateOfBirth: DateTime
+  driverId: ID!
+  linkType: GatewayLinkMethod
+
+  """Deprecated in favor of payout method relation"""
+  paymentGateway: PaymentGateway
+  payoutMethod: PayoutMethod!
+  driverTransactions(
+    """Limit or page results."""
+    paging: OffsetPaging! = {limit: 10}
+
+    """Specify to filter the records returned."""
+    filter: DriverTransacionFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [DriverTransacionSort!]! = []
+  ): PayoutAccountDriverTransactionsConnection!
+}
+
+input OffsetPaging {
+  """Limit the number of records returned"""
+  limit: Int
+
+  """Offset to start returning records from"""
+  offset: Int
+}
+
+input DriverTransacionFilter {
+  and: [DriverTransacionFilter!]
+  or: [DriverTransacionFilter!]
+  id: IDFilterComparison
+  driverId: IDFilterComparison
+  payoutAccountId: IDFilterComparison
+}
+
+input IDFilterComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: ID
+  neq: ID
+  gt: ID
+  gte: ID
+  lt: ID
+  lte: ID
+  like: ID
+  notLike: ID
+  iLike: ID
+  notILike: ID
+  in: [ID!]
+  notIn: [ID!]
+}
+
+input DriverTransacionSort {
+  field: DriverTransacionSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum DriverTransacionSortFields {
+  id
+  driverId
+  payoutAccountId
+}
+
+"""Sort Directions"""
+enum SortDirection {
+  ASC
+  DESC
+}
+
+"""Sort Nulls Options"""
+enum SortNulls {
+  NULLS_FIRST
+  NULLS_LAST
+}
+
+type TopUpWalletResponse {
+  status: TopUpWalletStatus!
+  url: String
+  error: String
+}
+
+enum TopUpWalletStatus {
+  OK
+  Redirect
+  Failed
+}
+
+type DriverWallet {
+  id: ID!
+  balance: Float!
+  currency: String!
+  driverId: ID!
+}
+
+type StatisticsResult {
+  currency: String!
+  dataset: [Datapoint!]!
+}
+
+type Datapoint {
+  name: String!
+  current: String!
+  earning: Float!
+  count: Float!
+  distance: Float!
+  time: Float!
+}
+
+type GiftCard {
+  id: ID!
+  amount: Float!
+  currency: String!
+}
+
+type SetupPaymentMethod {
+  url: String
+}
+
+type DriverTransacionEdge {
+  """The node containing the DriverTransacion"""
+  node: DriverTransacion!
+
+  """Cursor for this node."""
+  cursor: ConnectionCursor!
+}
+
+type DriverTransacionConnection {
+  """Paging information"""
+  pageInfo: PageInfo!
+
+  """Array of edges."""
+  edges: [DriverTransacionEdge!]!
+}
+
+type PayoutAccountDeleteResponse {
+  id: ID
+  name: String
+  accountNumber: String
+  routingNumber: String
+  bankName: String
+  accountHolderName: String
+  branchName: String
+  isDefault: Boolean
+  accountHolderAddress: String
+  accountHolderCity: String
+  accountHolderState: String
+  accountHolderZip: String
+  accountHolderCountry: String
+  accountHolderPhone: String
+  accountHolderDateOfBirth: DateTime
+  driverId: ID
+  linkType: GatewayLinkMethod
+}
+
+type OffsetPageInfo {
+  """true if paging forward and there are more records."""
+  hasNextPage: Boolean
+
+  """true if paging backwards and there are more records."""
+  hasPreviousPage: Boolean
+}
+
+type PayoutAccountDriverTransactionsConnection {
+  """Paging information"""
+  pageInfo: OffsetPageInfo!
+
+  """Array of nodes."""
+  nodes: [DriverTransacion!]!
+}
+
+type SOS {
+  id: ID!
+}
+
+type EphemeralMessage {
+  messageId: ID!
+  type: EphemeralMessageType!
+  createdAt: DateTime!
+  expiresAt: DateTime!
+  orderId: ID!
+  riderFullName: String
+  riderProfileUrl: String
+  serviceName: String
+  serviceImageUrl: String
+}
+
+enum EphemeralMessageType {
+  RateRider
+  RiderCanceled
+  AddPayoutMethod
+}
+
+input PointInput {
+  lat: Float!
+  lng: Float!
+  heading: Int
+}
+
+input AppConfigInfoInput {
+  logo: String
+  name: String
+  color: AppColorScheme
+}
+
+input OpeningHoursInput {
+  open: String!
+  close: String!
+}
+
+input PhoneNumberInput {
+  countryCode: String!
+  number: String!
+}
+
+input DeliveryContactInput {
+  name: String!
+  phoneNumber: PhoneNumberInput!
+  email: String
+  addressLine1: String!
+  addressLine2: String
+  zone: String
+  buildingNumber: String
+  apartmentNumber: String
+  city: String
+  state: String
+  instructions: String
+  postalCode: String
+  companyName: String
+}
+
+type Query {
+  ephemeralMessages: [EphemeralMessage!]!
+  feedbacksSummary: FeedbacksSummary!
+  getSupportedPayoutMethods: [PayoutMethod!]!
+  getPayoutLinkUrl(input: GetPayoutLinkUrlInput!): TopUpWalletResponse!
+  me: Driver!
+  driverPerformance: DriverPerformance!
+  activeServices: [Service!]!
+  activeOrders: [ActiveOrder!]!
+
+  """Get all ride offers for the driver"""
+  rideOffers: [RideOffer!]!
+  pastOrders(page: Int, limit: Int): [PastOrder!]!
+  cancelReasons: [OrderCancelReason!]!
+  getStats(timeframe: TimeQuery!): StatisticsResult!
+  getStatsNew(timeframe: TimeQuery!, startDate: DateTime!, endDate: DateTime!): StatisticsResult!
+  paymentMethods: [PaymentMethodBase!]!
+  announcements: [Announcement!]!
+  requireUpdate(versionCode: Int!): VersionStatus!
+  driverRequiredDocuments: [DriverDocument!]!
+  carModels: [CarModel!]!
+  carColors: [CarColor!]!
+  payoutAccounts(
+    """Specify to filter the records returned."""
+    filter: PayoutAccountFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [PayoutAccountSort!]! = []
+  ): [PayoutAccount!]!
+  payoutMethods(
+    """Specify to filter the records returned."""
+    filter: PayoutMethodFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [PayoutMethodSort!]! = []
+  ): [PayoutMethod!]!
+  driverTransacions(
+    """Limit or page results."""
+    paging: CursorPaging! = {first: 10}
+
+    """Specify to filter the records returned."""
+    filter: DriverTransacionFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [DriverTransacionSort!]! = []
+  ): DriverTransacionConnection!
+  driverWallets(
+    """Specify to filter the records returned."""
+    filter: DriverWalletFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [DriverWalletSort!]! = []
+  ): [DriverWallet!]!
+}
+
+input GetPayoutLinkUrlInput {
+  gatewayId: ID!
+}
+
+enum TimeQuery {
+  Daily
+  Weekly
+  Monthly
+}
+
+enum VersionStatus {
+  Latest
+  MandatoryUpdate
+  OptionalUpdate
+}
+
+input PayoutAccountFilter {
+  and: [PayoutAccountFilter!]
+  or: [PayoutAccountFilter!]
+  id: IDFilterComparison
+  driverId: IDFilterComparison
+}
+
+input PayoutAccountSort {
+  field: PayoutAccountSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum PayoutAccountSortFields {
+  id
+  driverId
+}
+
+input PayoutMethodFilter {
+  and: [PayoutMethodFilter!]
+  or: [PayoutMethodFilter!]
+  id: IDFilterComparison
+}
+
+input PayoutMethodSort {
+  field: PayoutMethodSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum PayoutMethodSortFields {
+  id
+}
+
+input CursorPaging {
+  """Paginate before opaque cursor"""
+  before: ConnectionCursor
+
+  """Paginate after opaque cursor"""
+  after: ConnectionCursor
+
+  """Paginate first"""
+  first: Int
+
+  """Paginate last"""
+  last: Int
+}
+
+input DriverWalletFilter {
+  and: [DriverWalletFilter!]
+  or: [DriverWalletFilter!]
+  id: IDFilterComparison
+  driverId: IDFilterComparison
+}
+
+input DriverWalletSort {
+  field: DriverWalletSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum DriverWalletSortFields {
+  id
+  driverId
+}
+
+type Mutation {
+  markEphemeralMessagesAsRead(messageId: ID!): Boolean!
+  markPayoutAccountAsDefault(payoutMethodId: ID!): PayoutAccount!
+  updatePayoutMethod(input: UpdatePayoutMethodInput!): PayoutAccount!
+  createPayoutAccount(input: PayoutAccountInput!): PayoutAccount!
+  sosSignal(orderId: ID!, location: PointInput): SOS!
+  goOnline(location: PointInput!): Boolean!
+  goOffline: Boolean!
+  updateDriverOfferFilter(input: UpdateDriverOfferFilterInput!): Driver!
+  updateDriverLocation(point: PointInput!): Boolean!
+  sendChatMessage(orderId: ID!, message: String!): ChatMessage!
+  updateLastSeenMessagesAt(orderId: ID!): Boolean!
+  acceptRideOffer(orderId: ID!): ActiveOrder!
+  rejectRideOffer(orderId: ID!): Boolean!
+  submitReview(input: RiderReviewInput!): Boolean!
+  arrivedToPickup(orderId: ID!): UpdateStatus!
+  arrivedToDestination(orderId: ID!): UpdateStatus!
+  initiateRide(orderId: ID!): UpdateStatus!
+  cancelRide(orderId: ID!, reasonId: ID!, reasonNote: String): UpdateStatus!
+  riderPaidInCash(orderId: ID!): UpdateStatus!
+  topUpWallet(input: TopUpWalletInput!): TopUpWalletResponse!
+  setupPaymentMethod(gatewayId: ID!): SetupPaymentMethod!
+  redeemGiftCard(code: String!): GiftCard!
+  markPaymentMethodAsDefault(id: ID!): [PaymentMethodBase!]!
+  deleteSavedPaymentMethod(id: ID!): Boolean!
+  updateFcmToken(fcmToken: String!): Boolean!
+  login(input: LoginInput!): Login!
+  deleteUser: Driver!
+
+  """
+  Returns a hash required for the subsequent code verification call to validate the OTP. In demo mode, SMS is not sent and the default OTP is 123456.
+  """
+  verifyNumber(mobileNumber: String!, countryIso: String, forceSendOtp: Boolean): VerifyNumberDto!
+
+  """
+  Returns a JWT token if the code matches the hash. In demo mode the OTP is not sent. It is 123456 by default.
+  """
+  verifyOtp(hash: String!, code: String!): VerifcationResult!
+  verifyPassword(mobileNumber: String!, password: String!): VerifcationResult!
+  setPassword(password: String!): VerifcationResult!
+  completeRegistration(input: CompleteRegistrationInput!): Driver!
+  createOnePayoutAccount(input: CreateOnePayoutAccountInput!): PayoutAccount!
+  updateOnePayoutAccount(input: UpdateOnePayoutAccountInput!): PayoutAccount!
+  deleteOnePayoutAccount(input: DeleteOnePayoutAccountInput!): PayoutAccountDeleteResponse!
+  createOneComplaint(input: CreateOneComplaintInput!): Complaint!
+}
+
+input UpdatePayoutMethodInput {
+  id: ID!
+  isDefault: Boolean!
+}
+
+input PayoutAccountInput {
+  name: String!
+  payoutMethodId: ID!
+  accountNumber: String!
+  routingNumber: String
+  bankName: String!
+  accountHolderName: String
+  branchName: String
+  isDefault: Boolean!
+  accountHolderAddress: String
+  accountHolderCity: String
+  accountHolderState: String
+  accountHolderZip: String
+  accountHolderCountry: String
+  accountHolderPhone: String
+  accountHolderDateOfBirth: DateTime
+}
+
+input UpdateDriverOfferFilterInput {
+  serviceIds: [ID!]
+  searchDistance: Int
+}
+
+input RiderReviewInput {
+  """Score, a value between 0 to 100"""
+  score: Int!
+  description: String
+  orderId: ID!
+}
+
+input TopUpWalletInput {
+  gatewayId: ID!
+  amount: Float!
+  currency: String!
+  token: String
+  pin: Float
+  otp: Float
+  transactionId: ID
+  paymentMode: PaymentMode! = PaymentGateway
+}
+
+input LoginInput {
+  firebaseToken: String!
+}
+
+input CompleteRegistrationInput {
+  firstName: String!
+  lastName: String!
+  certificateNumber: String
+  email: String
+  carProductionYear: Int
+  carPlate: String
+  profilePictureId: ID!
+  gender: Gender!
+  address: String
+  carId: ID
+  carColorId: ID
+  documentPairs: [DocumentPairInput!]!
+  legacyDocumentIds: [ID!]
+}
+
+enum Gender {
+  Male
+  Female
+  Unknown
+}
+
+input DocumentPairInput {
+  documentId: ID!
+  mediaId: ID!
+}
+
+input CreateOnePayoutAccountInput {
+  """The record to create"""
+  payoutAccount: CreatePayoutAccount!
+}
+
+input CreatePayoutAccount {
+  id: ID!
+  name: String
+  accountNumber: String
+  routingNumber: String
+  bankName: String
+  accountHolderName: String
+  branchName: String
+  isDefault: Boolean!
+  accountHolderAddress: String
+  accountHolderCity: String
+  accountHolderState: String
+  accountHolderZip: String
+  accountHolderCountry: String
+  accountHolderPhone: String
+  accountHolderDateOfBirth: DateTime
+  driverId: ID!
+  linkType: GatewayLinkMethod
+}
+
+input UpdateOnePayoutAccountInput {
+  """The id of the record to update"""
+  id: ID!
+
+  """The update to apply."""
+  update: UpdatePayoutAccount!
+}
+
+input UpdatePayoutAccount {
+  id: ID
+  name: String
+  accountNumber: String
+  routingNumber: String
+  bankName: String
+  accountHolderName: String
+  branchName: String
+  isDefault: Boolean
+  accountHolderAddress: String
+  accountHolderCity: String
+  accountHolderState: String
+  accountHolderZip: String
+  accountHolderCountry: String
+  accountHolderPhone: String
+  accountHolderDateOfBirth: DateTime
+  driverId: ID
+  linkType: GatewayLinkMethod
+}
+
+input DeleteOnePayoutAccountInput {
+  """The id of the record to delete."""
+  id: ID!
+}
+
+input CreateOneComplaintInput {
+  """The record to create"""
+  complaint: ComplaintInput!
+}
+
+input ComplaintInput {
+  requestId: ID!
+  subject: String!
+  content: String
+  requestedByDriver: Boolean
+}
+
+type Subscription {
+  driverEvents: DriverEventPayload!
+}

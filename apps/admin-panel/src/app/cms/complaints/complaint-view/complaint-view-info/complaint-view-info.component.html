@@ -1,0 +1,68 @@
+@if ((query | async)?.data?.complaint; as complaint) {
+<div>
+  <nz-descriptions nzTitle="{{ 'profile.requestInfo' | translate }}" nzBordered class="mt-2">
+    <nz-descriptions-item nzTitle="{{ 'requests.expectedTime' | translate }}">{{
+      complaint.request.expectedTimestamp !== null
+      ? (complaint.request.expectedTimestamp | date: "short")
+      : "-"
+      }}</nz-descriptions-item>
+    <nz-descriptions-item nzTitle="{{ 'requests.startTime' | translate }}">{{
+      complaint.request.startTimestamp !== null ? (complaint.request.startTimestamp | date: "short") : "-"
+      }}</nz-descriptions-item>
+    <nz-descriptions-item nzTitle="{{ 'requests.finishTime' | translate }}">{{
+      complaint.request.finishTimestamp !== null ? (complaint.request.finishTimestamp | date: "short") : "-"
+      }}</nz-descriptions-item>
+    <nz-descriptions-item nzTitle="{{ 'requests.costAfterCoupon' | translate }}">{{
+      complaint.request.costAfterCoupon | currency:complaint.request.currency
+      }}</nz-descriptions-item>
+    <nz-descriptions-item nzTitle="{{ 'requests.estimatedCost' | translate }}">{{
+      complaint.request.costBest | currency:complaint.request.currency
+      }}</nz-descriptions-item>
+    <nz-descriptions-item nzTitle="{{ 'profile.status' | translate }}" [nzSpan]="2">
+      <nz-badge [nzStatus]="tagColor.orderStatus(complaint.request.status)"
+        [nzText]="'enum.request.' + complaint.request.status | translate"></nz-badge>
+    </nz-descriptions-item>
+    <nz-descriptions-item nzTitle="{{ 'profile.locations' | translate }}" [nzSpan]="3">
+      {{ complaint.request.addresses.join(" -> ") }}
+    </nz-descriptions-item>
+    <nz-descriptions-item nzTitle="{{ 'profile.view' | translate }}"><a
+        [routerLink]="'/../requests/view/' + complaint.request.id">{{ 'profile.view' | translate
+        }}</a></nz-descriptions-item>
+  </nz-descriptions>
+  @if (complaint.request.driver; as driver) {
+  <nz-descriptions nzTitle="{{ ('profile.driverInfo' | translate) + (complaint.requestedByDriver ? ' (Sender)' : '') }}"
+    nzBordered class="mt-2">
+    <nz-descriptions-item nzTitle="{{ 'profile.name' | translate }}">{{driver.firstName }}
+      {{driver.lastName}}</nz-descriptions-item>
+    <nz-descriptions-item nzTitle="{{ 'profile.mobileNumber' | translate }}">{{driver.mobileNumber.toString() | phone
+      }}</nz-descriptions-item>
+    <nz-descriptions-item nzTitle="{{ 'profile.registeredOn' | translate }}">{{ driver.registrationTimestamp | date:
+      "short" }}</nz-descriptions-item>
+    <nz-descriptions-item nzTitle="{{ 'profile.status' | translate }}" [nzSpan]="2">
+      <nz-badge [nzStatus]="tagColor.driver(driver.status)"
+        [nzText]="'enum.driver.status.' + camelCase(driver.status) | translate"></nz-badge>
+    </nz-descriptions-item>
+    <nz-descriptions-item nzTitle="{{ 'profile.view' | translate }}"><a
+        [routerLink]="'/../drivers/view/' + driver.id">View</a></nz-descriptions-item>
+  </nz-descriptions>
+  }
+  @if (complaint.request.rider; as rider) {
+  <nz-descriptions nzTitle="{{ ('profile.riderInfo' | translate) + (complaint.requestedByDriver ? '' : ' (Sender)') }}"
+    nzBordered class="mt-2">
+    <nz-descriptions-item nzTitle="{{ 'profile.name' | translate }}">{{rider.firstName }}
+      {{rider.lastName}}</nz-descriptions-item>
+    <nz-descriptions-item nzTitle="{{ 'profile.mobileNumber' | translate }}">{{rider.mobileNumber | phone
+      }}</nz-descriptions-item>
+    <nz-descriptions-item nzTitle="{{ 'profile.registeredOn' | translate }}">{{
+      rider.registrationTimestamp !== null ? (rider.registrationTimestamp | date: "short") : "-"
+      }}</nz-descriptions-item>
+    <nz-descriptions-item nzTitle="{{ 'profile.status' | translate }}" [nzSpan]="2">
+      <nz-badge [nzStatus]="tagColor.rider(rider.status)"
+        [nzText]="'enum.rider.status.' + rider.status.toLowerCase() | translate"></nz-badge>
+    </nz-descriptions-item>
+    <nz-descriptions-item nzTitle="{{ 'profile.view' | translate }}"><a [routerLink]="'/../riders/view/' + rider.id">{{
+        'profile.view' | translate }}</a></nz-descriptions-item>
+  </nz-descriptions>
+  }
+</div>
+}

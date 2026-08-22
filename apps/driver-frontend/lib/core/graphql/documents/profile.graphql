@@ -1,0 +1,55 @@
+query ProfileAggregations {
+  driverPerformance {
+    ...DriverPerformance
+  }
+}
+
+query Profile {
+  me {
+    ...Profile
+  }
+}
+
+query FeedbacksSummary {
+  feedbacksSummary {
+    averageRating
+    goodPoints
+    badPoints
+    goodReviews {
+      serviceName
+      rating
+      review
+      goodPoints
+    }
+  }
+}
+
+mutation UpdateFcmToken($token: String!) {
+  updateFcmToken(fcmToken: $token)
+}
+
+mutation DeleteAccount {
+  deleteUser {
+    id
+  }
+}
+
+mutation goOnline($location: PointInput!) {
+  goOnline(location: $location)
+}
+
+mutation goOffline {
+  goOffline
+}
+
+mutation UpdateDriverOfferFilter($input: UpdateDriverOfferFilterInput!) {
+  updateDriverOfferFilter(input: $input) {
+    ...Profile
+  }
+}
+
+query ActiveServices {
+  activeServices {
+    ...Service
+  }
+}

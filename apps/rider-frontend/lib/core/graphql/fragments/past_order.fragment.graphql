@@ -1,0 +1,34 @@
+fragment PastOrder on PastOrder {
+  id
+  serviceName
+  type
+  currency
+  serviceImageAddress
+  pickupEta
+  dropoffEta
+  waitMinutes
+
+  directions {
+    ...Coordinate
+  }
+  estimatedDistance
+  estimatedDuration
+  createdAt
+  scheduledAt
+  options {
+    icon
+    name
+  }
+  driver {
+    ...PastOrderDriver
+  }
+  status
+  totalCost
+  couponDiscount
+  paymentMethod {
+    ...PaymentMethod
+  }
+  waypoints {
+    ...Waypoint
+  }
+}

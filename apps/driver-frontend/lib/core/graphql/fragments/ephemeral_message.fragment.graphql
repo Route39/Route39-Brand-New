@@ -1,0 +1,11 @@
+fragment EphemeralMessage on EphemeralMessage {
+  messageId
+  type
+  createdAt
+  expiresAt
+  orderId
+  riderFullName
+  riderProfileUrl
+  serviceName
+  serviceImageUrl
+}

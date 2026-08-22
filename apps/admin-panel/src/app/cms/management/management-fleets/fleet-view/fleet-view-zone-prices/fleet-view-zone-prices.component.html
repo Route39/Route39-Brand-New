@@ -1,0 +1,24 @@
+<div fxLayout="row" fxLayoutGap="4px" class="dt-actionbar">
+  <!--<button nz-button nzType="primary"><i nz-icon nzType="plus"></i>Add</button>-->
+</div>
+@if ((query | async)?.data?.fleet?.zonePrices; as zonePrices) {
+  <nz-table #table nzShowSizeChanger [nzFrontPagination]="false"
+    [nzData]="zonePrices.nodes"
+    [nzTotal]="zonePrices.totalCount" (nzQueryParams)="tableService.onTableQueryParamsChange($event)" nzBordered>
+    <thead>
+      <tr>
+        <th>
+          {{ 'profile.name' | translate }}
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (data of table.data; track data) {
+        <tr [routerLink]="'/management/zone-prices/view/' + data.id"
+          class="group cursor-pointer">
+          <td>{{ data.name }}</td>
+        </tr>
+      }
+    </tbody>
+  </nz-table>
+}

@@ -1,0 +1,46 @@
+query Wallet {
+  riderTransactions {
+    ...RiderTransaction
+  }
+  riderWallets {
+    ...Wallet
+  }
+  paymentMethods {
+    ...PaymentMethod
+  }
+}
+query PaymentMethods {
+  paymentMethods {
+    ...PaymentMethod
+  }
+}
+
+mutation GetSetupPaymentMethodLink($gatewayId: ID!) {
+  setupPaymentMethod(gatewayId: $gatewayId) {
+    url
+  }
+}
+
+mutation RedeemGiftCard($code: String!) {
+  redeemGiftCard(code: $code) {
+    id
+    amount
+    currency
+  }
+}
+
+mutation MarkAsDefault($id: ID!) {
+  markPaymentMethodAsDefault(id: $id) {
+    ...PaymentMethod
+  }
+}
+
+mutation TopUpWallet($input: TopUpWalletInput!, $canPreauthorize: Boolean!) {
+  topUpWallet(input: $input, shouldPreauth: $canPreauthorize) {
+    ...IntentResult
+  }
+}
+
+mutation DeleteSavedPaymentMethod($id: ID!) {
+  deleteSavedPaymentMethod(id: $id)
+}

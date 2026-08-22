@@ -1,0 +1,51 @@
+{
+  "name": "admin-frontend-next",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/admin-frontend-next/src",
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vite --port 4202",
+        "cwd": "apps/admin-frontend-next"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc --noEmit && vite build",
+        "cwd": "apps/admin-frontend-next"
+      },
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "preview": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vite preview --port 4202",
+        "cwd": "apps/admin-frontend-next"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint .",
+        "cwd": "apps/admin-frontend-next"
+      }
+    },
+    "codegen": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "graphql-codegen --config codegen.ts",
+        "cwd": "apps/admin-frontend-next"
+      }
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash scripts/docker-backend-publish.sh --service admin-frontend-next --yes"
+      }
+    }
+  },
+  "tags": []
+}

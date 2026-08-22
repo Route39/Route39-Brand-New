@@ -1,0 +1,53 @@
+name: flutter_common
+description: A new Flutter package project.
+version: 0.0.1
+publish_to: "none"
+
+environment:
+  sdk: ">=3.9.0 <4.0.0"
+  flutter: "^3.35.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  intl: any
+  ionicons: 0.2.3
+  latlong2: any
+  generic_map: any
+  flutter_localizations:
+    sdk: flutter
+  cached_network_image: any
+  dotted_border: any
+  image_picker: any
+  collection: any
+  pinput: any
+  flutter_dotenv: any
+  auto_route: any
+  better_localization:
+    path: ../flutter_localizations
+  dlibphonenumber: any
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  build_runner: any
+  flutter_lints: any
+  flutter_gen_runner: any
+  flutter_gen: any
+
+flutter:
+  generate: true
+
+  assets:
+    - assets/avatars/
+    - assets/images/
+    - assets/map_previews/
+
+flutter_gen:
+  assets:
+    outputs:
+      package_parameter_enabled: true
+  integrations:
+    lottie: true

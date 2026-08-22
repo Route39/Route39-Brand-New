@@ -1,0 +1,69 @@
+const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
+const { join } = require('path');
+
+module.exports = {
+  output: {
+    path: join(__dirname, 'dist'),
+    clean: false,
+  },
+
+  resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.json'],
+    alias: {
+      '@ridy/database': join(
+        __dirname,
+        '../../libs/database/src/index.ts'
+      ),
+    },
+  },
+
+  externals: [
+    ({ request }, callback) => {
+      // Bundle workspace library
+      if (
+        request === '@ridy/database' ||
+        request?.startsWith('@ridy/database/')
+      ) {
+        return callback();
+      }
+
+      // Externalize all normal npm packages
+      if (
+        request &&
+        !request.startsWith('.') &&
+        !request.startsWith('/')
+      ) {
+        return callback(null, `commonjs ${request}`);
+      }
+
+      callback();
+    },
+  ],
+
+  plugins: [
+    new NxAppWebpackPlugin({
+      target: 'node',
+
+      // Important:
+      // Do NOT use externalDependencies: 'all'
+      // because @ridy/database must be bundled.
+      externalDependencies: 'none',
+
+      compiler: 'swc',
+
+      main: './src/main.ts',
+      tsConfig: './tsconfig.app.json',
+
+      assets: ['./src/assets'],
+
+      optimization: false,
+      skipTypeChecking: true,
+      outputHashing: 'none',
+
+      generatePackageJson: true,
+      sourceMap: true,
+
+      watch: true,
+    }),
+  ],
+};

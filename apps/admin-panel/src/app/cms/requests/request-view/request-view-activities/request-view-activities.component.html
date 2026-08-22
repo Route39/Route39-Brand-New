@@ -1,0 +1,15 @@
+
+@if ((query | async)?.data?.order; as order) {
+  <div class="p-8">
+    @if (order.activities.length === 0) {
+      <nz-empty class="empty-state"></nz-empty>
+    }
+    @if (order.activities.length !== 0) {
+      <nz-timeline nzMode="custom" [nzPending]="isPending(order.activities)">
+        @for (activity of order.activities; track activity) {
+          <nz-timeline-item [nzPosition]="getPosition(activity.type)" [nzColor]="getColor(activity.type)">{{translateType(activity.type) }} {{activity.createdAt | date:'short'}}</nz-timeline-item>
+        }
+      </nz-timeline>
+    }
+  </div>
+}

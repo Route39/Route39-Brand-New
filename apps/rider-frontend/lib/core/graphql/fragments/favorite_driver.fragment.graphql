@@ -1,0 +1,11 @@
+fragment FavoriteDriver on PastOrderDriver {
+  id
+  fullName
+  profileImageUrl
+  rating
+  mobileNumber
+  vehicleName
+  vehicleColor
+  vehiclePlate
+  vehicleName
+}

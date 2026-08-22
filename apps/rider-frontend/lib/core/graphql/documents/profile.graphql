@@ -1,0 +1,37 @@
+query Profile {
+  me {
+    ...Profile
+  }
+}
+
+query ProfileAggregations {
+  myStatistics {
+    totalRides
+    canceledRides
+    completedRides
+    favoriteDriversCount
+    distanceTraveled
+  }
+}
+
+query FavoriteDrivers {
+  favoriteDrivers {
+    ...FavoriteDriver
+  }
+}
+
+mutation UpdateProfile($input: UpdateRiderInput!) {
+  updateProfile(input: $input) {
+    ...Profile
+  }
+}
+
+mutation DeleteFavoriteDriver($driverId: ID!) {
+  deleteFavoriteDriver(driverId: $driverId)
+}
+
+mutation DeleteAccount {
+  deleteUser {
+    id
+  }
+}

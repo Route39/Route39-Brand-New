@@ -1,0 +1,171 @@
+name: ridy_driver
+description: Driver app for ride-sharing
+publish_to: "none"
+
+version: 4.0.0+312
+
+environment:
+  sdk: ">=3.9.0 <4.0.0"
+  flutter: ^3.35.0
+
+resolution: workspace
+
+dependencies:
+  sentry_flutter: any
+  flutter:
+    sdk: flutter
+
+  freezed_annotation: any
+
+  # Geo
+  latlong2: any
+  geolocator: any
+  permission_handler: any
+
+  # Localization
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+
+  # State management
+  flutter_bloc: any
+  hydrated_bloc: any
+
+  # Dependency injection
+  get_it: any
+  injectable: any
+
+  # Routing
+  auto_route: any
+
+  # Local storage
+  hive: any
+  hive_flutter: any
+  flutter_dotenv: any
+
+  # Helpers
+  dartz: any
+  rxdart: any
+  equatable: any
+  path_provider: any
+  json_annotation: any
+  url_launcher: any
+  connectivity_plus: any
+  flutter_ringtone_player: any
+
+  # Firebase
+  firebase_analytics: any
+  firebase_core: any
+  firebase_messaging: any
+
+  # UI
+  ionicons: 0.2.3
+  flutter_rating_bar: any
+  fl_chart: any
+  dotted_border: any
+  generic_map: any
+  flutter_common:
+    path: ../../libs/flutter_common
+  lottie: any
+  time: any
+
+  # Network
+  logger: any
+  graphql: any
+  cached_network_image: any
+  collection: any
+  dotted_line: any
+  gauge_indicator: ^0.4.0
+  map_launcher: ^2.5.0
+  share_plus: any
+  location: any
+  package_info_plus: any
+  maps_toolkit: any
+  wakelock_plus: any
+  api_response: any
+  better_localization:
+    path: ../../libs/flutter_localizations
+  image_faker: any
+  form_builder_validators: any
+
+dev_dependencies:
+  sentry_dart_plugin: any
+  auto_route_generator: any
+  build_runner: any
+  flutter_gen_runner: any
+  flutter_gen: any
+  flutter_lints: any
+  injectable_generator: any
+  build_verify: any
+  graphql_codegen: any
+  freezed: any
+  json_serializable: any
+  flutter_launcher_icons: any
+  flutter_native_splash: any
+
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - .env.dev
+    - .env.prod
+    - assets/images/
+    - assets/avatars/
+    - assets/lottie/
+    - assets/countries/
+    - assets/notification.mp3
+
+  fonts:
+    - family: GeneralSans
+      fonts:
+        - asset: assets/fonts/generalsansextralight.ttf
+          weight: 200
+        - asset: assets/fonts/generalsanslight.ttf
+          weight: 300
+        - asset: assets/fonts/generalsansregular.ttf
+          weight: 400
+        - asset: assets/fonts/generalsansmedium.ttf
+          weight: 500
+        - asset: assets/fonts/generalsanssemibold.ttf
+          weight: 600
+        - asset: assets/fonts/generalsansbold.ttf
+          weight: 700
+
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/interthin.ttf
+          weight: 100
+        - asset: assets/fonts/interextralight.ttf
+          weight: 200
+        - asset: assets/fonts/interlight.ttf
+          weight: 300
+        - asset: assets/fonts/interregular.ttf
+          weight: 400
+        - asset: assets/fonts/intermedium.ttf
+          weight: 500
+        - asset: assets/fonts/intersemibold.ttf
+          weight: 600
+        - asset: assets/fonts/interbold.ttf
+          weight: 700
+        - asset: assets/fonts/interextrabold.ttf
+          weight: 800
+        - asset: assets/fonts/interblack.ttf
+          weight: 900
+
+flutter_gen:
+  integrations:
+    lottie: true
+  assets:
+    exclude:
+      - .env.dev
+      - .env.prod
+
+sentry:
+  upload_debug_symbols: true
+  upload_source_maps: true
+  project: taxi-driver
+  org: lumeagency

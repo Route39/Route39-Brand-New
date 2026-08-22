@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "1058539772543",
+    "project_id": "ridy-taxi-9247c",
+    "storage_bucket": "ridy-taxi-9247c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1058539772543:android:169c9fab4dccd8b703fd4a",
+        "android_client_info": {
+          "package_name": "com.ridy.rider"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBP78zsF1LbtnZ8KX6IV0OxbIH4C8VHJs4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1058539772543:android:cce42b28e88839b403fd4a",
+        "android_client_info": {
+          "package_name": "com.route39.pilot"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBP78zsF1LbtnZ8KX6IV0OxbIH4C8VHJs4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1058539772543:android:946aa59aae5ff5d803fd4a",
+        "android_client_info": {
+          "package_name": "com.route39.rider"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBP78zsF1LbtnZ8KX6IV0OxbIH4C8VHJs4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

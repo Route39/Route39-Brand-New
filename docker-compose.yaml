@@ -1,0 +1,86 @@
+services:
+  mysql:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - mysqlvol:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=defaultpassword
+      - MYSQL_DATABASE=bettersuite
+    ports:
+      - "3306:3306"
+
+  redis:
+    image: redis
+    volumes:
+      - redisvol:/data
+    ports:
+      - "6380:6379"
+
+  taxi-rider-api:
+    build:
+      context: .
+      dockerfile: ./apps/rider-api/Dockerfile
+    restart: always
+    depends_on:
+      - "mysql"
+      - "redis"
+      - "taxi-admin-api"
+    volumes:
+      - ./config-new:/app/config
+    env_file:
+      - .env
+    ports:
+      - "4000:3000"
+
+  taxi-driver-api:
+    build:
+      context: .
+      dockerfile: ./apps/driver-api/Dockerfile
+    restart: always
+    depends_on:
+      - "mysql"
+      - "redis"
+      - "taxi-admin-api"
+    volumes:
+      - ./config-new:/app/config
+    env_file:
+      - .env
+    ports:
+      - "4002:3000"
+
+  taxi-admin-api:
+    build:
+      context: .
+      dockerfile: ./apps/admin-api/Dockerfile
+    restart: always
+    depends_on:
+      - "mysql"
+      - "redis"
+    volumes:
+      - ./config-new:/app/config
+    env_file:
+      - .env
+    ports:
+      - "4001:3000"
+
+  admin-panel:
+    build:
+      context: .
+      dockerfile: ./apps/admin-panel/Dockerfile
+    restart: always
+    ports:
+      - "4003:80"
+
+  admin-panel-next:
+    build:
+      context: .
+      dockerfile: ./apps/admin-frontend-next/Dockerfile
+    restart: always
+    ports:
+      - "4004:8080"
+
+volumes:
+  redisvol:
+  mysqlvol:
+  taxiassets:

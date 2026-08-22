@@ -1,0 +1,31 @@
+fragment PastOrder on PastOrder {
+  id
+  status
+  serviceName
+  serviceImageAddress
+  options {
+    ...RideOption
+  }
+  rider {
+    firstName
+    profileImageUrl
+  }
+
+  waypoints {
+    ...place
+  }
+  totalCost
+  paymentMode
+  directions {
+    ...Coordinate
+  }
+  type
+  waitMinutes
+  currency
+  createdAt
+  estimatedDistance
+  estimatedDuration
+  scheduledAt
+  pickupEta
+  dropoffEta
+}

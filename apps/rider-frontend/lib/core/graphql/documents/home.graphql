@@ -1,0 +1,72 @@
+query CurrentOrder {
+  activeOrders {
+    ...ActiveOrder
+  }
+}
+query EphemeralMessages {
+  ephemeralMessages {
+    ...EphemeralMessage
+  }
+}
+
+mutation MarkEphemeralMessageAsRead($messageId: ID!) {
+  markEphemeralMessagesAsRead(messageId: $messageId)
+}
+
+query DriversAround($center: PointInput!) {
+  driversAround(center: $center) {
+    ...Coordinate
+  }
+}
+
+query DestinationSuggesions {
+  favoriteLocations {
+    ...FavoriteLocation
+  }
+  recentDestinations {
+    ...Place
+  }
+}
+
+mutation UpdateFcmToken($token: String!) {
+  updateFcmToken(fcmToken: $token)
+}
+
+mutation SendMessage($message: String!, $orderId: ID!) {
+  sendChatMessage(orderId: $orderId, message: $message) {
+    ...ChatMessage
+  }
+}
+
+mutation SendSOS($orderId: ID!) {
+  sosSignal(orderId: $orderId) {
+    id
+  }
+}
+
+subscription OrderUpdateSubsctipion {
+  activeOrderUpdated {
+    type
+    orderId
+    message {
+      ...ChatMessage
+    }
+    status
+    unreadMessagesCount
+    directions {
+      ...Coordinate
+    }
+    driverLocation {
+      ...Coordinate
+    }
+    driver {
+      ...ActiveOrderDriver
+    }
+    nextDestination {
+      ...Waypoint
+    }
+    driverLocation {
+      ...Coordinate
+    }
+  }
+}

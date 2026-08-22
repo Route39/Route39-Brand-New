@@ -1,0 +1,47 @@
+mutation VerifyNumber($countryIso: String!, $number: String!) {
+  verifyNumber(countryIso: $countryIso, mobileNumber: $number) {
+    ...VerifyNumber
+  }
+}
+
+mutation VerifyOtp($hash: String!, $code: String!) {
+  verifyOtp(hash: $hash, code: $code) {
+    ...VerifyOtpOrPassword
+  }
+}
+
+mutation VerifyPassword($mobileNumber: String!, $password: String!) {
+  verifyPassword(mobileNumber: $mobileNumber, password: $password) {
+    ...VerifyOtpOrPassword
+  }
+}
+
+query RegistrationData {
+  me {
+    ...Profile
+  }
+  carModels {
+    ...VehicleModel
+  }
+  carColors {
+    ...VehicleColor
+  }
+}
+
+mutation UpdatePassword($password: String!) {
+  setPassword(password: $password) {
+    ...VerifyOtpOrPassword
+  }
+}
+
+mutation ResendOtp($mobileNumber: String!) {
+  verifyNumber(mobileNumber: $mobileNumber, forceSendOtp: true) {
+    ...VerifyNumber
+  }
+}
+
+mutation Register($updateDriverInput: CompleteRegistrationInput!) {
+  completeRegistration(input: $updateDriverInput) {
+    ...Profile
+  }
+}

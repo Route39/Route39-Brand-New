@@ -1,0 +1,4 @@
+fragment RideOption on RideOption {
+  name
+  icon
+}
