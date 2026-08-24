@@ -49093,15 +49093,15 @@ let ConfigurationService = class ConfigurationService {
         }
         return {
             license: {
-                buyerName: this.licenseVerifyService.licenseInformation?.data.buyerName ?? '-',
-                licenseType: this.licenseVerifyService.licenseInformation?.data.licenseType ?? _database.LicenseType.Regular,
-                supportExpireDate: this.licenseVerifyService.licenseInformation?.data.supportExpiry == null ? null : new Date(this.licenseVerifyService.licenseInformation?.data.supportExpiry),
-                connectedApps: this.licenseVerifyService.licenseInformation?.data.connectedApps ?? [],
-                platformAddons: this.licenseVerifyService.licenseInformation?.data.platformAddOns ?? []
+                buyerName: this.licenseVerifyService.licenseInformation?.data?.buyerName ?? '-',
+                licenseType: this.licenseVerifyService.licenseInformation?.data?.licenseType ?? _database.LicenseType.Regular,
+                supportExpireDate: this.licenseVerifyService.licenseInformation?.data?.supportExpiry == null ? null : new Date(this.licenseVerifyService.licenseInformation?.data?.supportExpiry),
+                connectedApps: this.licenseVerifyService.licenseInformation?.data?.connectedApps ?? [],
+                platformAddons: this.licenseVerifyService.licenseInformation?.data?.platformAddOns ?? []
             },
-            benefits: this.licenseVerifyService.licenseInformation?.data.benefits ?? [],
-            drawbacks: this.licenseVerifyService.licenseInformation?.data.drawbacks ?? [],
-            availableUpgrades: this.licenseVerifyService.licenseInformation?.data.availableUpgrades ?? []
+            benefits: this.licenseVerifyService.licenseInformation?.data?.benefits ?? [],
+            drawbacks: this.licenseVerifyService.licenseInformation?.data?.drawbacks ?? [],
+            availableUpgrades: this.licenseVerifyService.licenseInformation?.data?.availableUpgrades ?? []
         };
     }
     async getConfiguration() {

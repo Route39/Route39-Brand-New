@@ -93,6 +93,23 @@ class _HomeScreenState extends State<HomeScreen> {
         BlocProvider.value(value: locator<HomeBloc>()),
       ],
       child: DoubleTapToExit(
+        canExit: () {
+          final state = locator<HomeBloc>().state;
+          if (state.mode == HomeMode.rideInProgress) return false;
+          if (state.mode == HomeMode.ridePreview) return false;
+          if (state.mode == HomeMode.preSubmission && state.orderSubmissionPage == OrderSubmissionPage.confirmLocation) return false;
+          return true;
+        },
+        onBackPress: () {
+          final state = locator<HomeBloc>().state;
+          if (state.mode == HomeMode.ridePreview) {
+            locator<HomeBloc>().add(HomeEvent.initializeWelcome(pickupPoint: locator<LocationCubit>().state.place));
+          } else if (state.mode == HomeMode.preSubmission && state.orderSubmissionPage == OrderSubmissionPage.confirmLocation) {
+            locator<HomeBloc>().add(
+              HomeEvent.changeOrderSubmissionPage(orderSubmissionPage: OrderSubmissionPage.rideWaypointsInput),
+            );
+          }
+        },
         child: MultiBlocListener(
           listeners: [
             BlocListener<HomeBloc, HomeState>(

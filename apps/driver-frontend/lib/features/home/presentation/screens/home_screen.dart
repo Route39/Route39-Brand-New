@@ -62,6 +62,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final locationBloc = locator<LocationBloc>();
     final homeBloc = locator<HomeBloc>();
     return DoubleTapToExit(
+      canExit: () {
+        final status = locator<HomeBloc>().state.driverStatus;
+        return status != HomeStateDriverStatus.onTrip;
+      },
       child: Scaffold(
         body: MultiBlocProvider(
           providers: [

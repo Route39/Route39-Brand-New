@@ -34,30 +34,30 @@ export class ConfigurationService {
     return {
       license: {
         buyerName:
-          this.licenseVerifyService.licenseInformation?.data.buyerName ?? '-',
+          this.licenseVerifyService.licenseInformation?.data?.buyerName ?? '-',
         licenseType:
-          this.licenseVerifyService.licenseInformation?.data.licenseType ??
+          this.licenseVerifyService.licenseInformation?.data?.licenseType ??
           LicenseType.Regular,
         supportExpireDate:
-          this.licenseVerifyService.licenseInformation?.data.supportExpiry ==
+          this.licenseVerifyService.licenseInformation?.data?.supportExpiry ==
           null
             ? null
             : new Date(
-                this.licenseVerifyService.licenseInformation?.data.supportExpiry,
+                this.licenseVerifyService.licenseInformation?.data?.supportExpiry,
               ),
         connectedApps:
-          this.licenseVerifyService.licenseInformation?.data.connectedApps ??
+          this.licenseVerifyService.licenseInformation?.data?.connectedApps ??
           [],
         platformAddons:
-          this.licenseVerifyService.licenseInformation?.data.platformAddOns ??
+          this.licenseVerifyService.licenseInformation?.data?.platformAddOns ??
           [],
       },
       benefits:
-        this.licenseVerifyService.licenseInformation?.data.benefits ?? [],
+        this.licenseVerifyService.licenseInformation?.data?.benefits ?? [],
       drawbacks:
-        this.licenseVerifyService.licenseInformation?.data.drawbacks ?? [],
+        this.licenseVerifyService.licenseInformation?.data?.drawbacks ?? [],
       availableUpgrades:
-        this.licenseVerifyService.licenseInformation?.data.availableUpgrades ??
+        this.licenseVerifyService.licenseInformation?.data?.availableUpgrades ??
         [],
     };
   }

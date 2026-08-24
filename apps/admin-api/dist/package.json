@@ -10,9 +10,9 @@
         "options": {
           "parallel": false,
           "commands": [
-            "powershell -Command \"New-Item -ItemType Directory -Force -Path apps/admin-api/dist/migrations\"",
+            "mkdir -p apps/admin-api/dist/migrations",
             "node ./node_modules/@swc/cli/bin/swc.js libs/database/src/lib/migration/*.ts -d apps/admin-api/dist/migrations --config-file apps/admin-api/.swcrc",
-            "powershell -Command \"Get-ChildItem -Path apps/admin-api/dist/migrations -Recurse -Filter *.js | Move-Item -Force -Destination apps/admin-api/dist/migrations\""
+            "find apps/admin-api/dist/migrations -mindepth 2 -name '*.js' -exec mv {} apps/admin-api/dist/migrations/ \\;"
           ]
         }
       },
@@ -93,7 +93,7 @@
     "@ptc-org/nestjs-query-core": "9.1.0",
     "@ptc-org/nestjs-query-graphql": "9.4.0",
     "@ptc-org/nestjs-query-typeorm": "9.1.0",
-    "@redis/client": "5.10.0",
+    "@redis/client": "6.2.1",
     "@redis/search": "6.2.1",
     "@sentry/nestjs": "10.39.0",
     "@sentry/profiling-node": "10.0.0",
@@ -128,7 +128,6 @@
     "rxjs": "7.8.2",
     "sharp": "0.34.3",
     "stripe": "18.4.0",
-    "ts-morph": "25.0.1",
     "twilio": "5.7.2",
     "typeorm": "0.3.26",
     "webpack": "5.99.9"

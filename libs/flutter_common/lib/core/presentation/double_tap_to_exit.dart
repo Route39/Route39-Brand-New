@@ -4,8 +4,16 @@ import 'package:flutter_common/core/presentation/snackbar/snackbar.dart';
 class DoubleTapToExit extends StatefulWidget {
   final Widget child;
   final int exitDuration; // milliseconds
+  final bool Function()? canExit;
+  final VoidCallback? onBackPress;
 
-  const DoubleTapToExit({super.key, required this.child, this.exitDuration = 2000});
+  const DoubleTapToExit({
+    super.key,
+    required this.child,
+    this.exitDuration = 2000,
+    this.canExit,
+    this.onBackPress,
+  });
 
   @override
   State<DoubleTapToExit> createState() => _DoubleTapToExitState();
@@ -16,6 +24,13 @@ class _DoubleTapToExitState extends State<DoubleTapToExit> {
 
   void _handlePopInvoked<T>(bool didPop, T? result) {
     if (didPop) return; // Navigator already popped → nothing to do
+
+    if (widget.canExit != null && !widget.canExit!()) {
+      if (widget.onBackPress != null) {
+        widget.onBackPress!();
+      }
+      return;
+    }
 
     final now = DateTime.now();
     if (_lastBackPressed == null || now.difference(_lastBackPressed!) > Duration(milliseconds: widget.exitDuration)) {

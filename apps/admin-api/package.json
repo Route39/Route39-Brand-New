@@ -11,10 +11,10 @@
         "options": {
           "parallel": false,
           "commands": [
-      "powershell -Command \"New-Item -ItemType Directory -Force -Path apps/admin-api/dist/migrations\"",
-      "node ./node_modules/@swc/cli/bin/swc.js libs/database/src/lib/migration/*.ts -d apps/admin-api/dist/migrations --config-file apps/admin-api/.swcrc",
-      "powershell -Command \"Get-ChildItem -Path apps/admin-api/dist/migrations -Recurse -Filter *.js | Move-Item -Force -Destination apps/admin-api/dist/migrations\""
-    ]
+            "mkdir -p apps/admin-api/dist/migrations",
+            "node ./node_modules/@swc/cli/bin/swc.js libs/database/src/lib/migration/*.ts -d apps/admin-api/dist/migrations --config-file apps/admin-api/.swcrc",
+            "find apps/admin-api/dist/migrations -mindepth 2 -name '*.js' -exec mv {} apps/admin-api/dist/migrations/ \\;"
+          ]
         }
       },
       "build": {

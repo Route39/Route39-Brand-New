@@ -1,6 +1,6 @@
 part of 'location.bloc.dart';
 
-@Freezed(fromJson: true)
+@Freezed()
 sealed class LocationState with _$LocationState {
   const factory LocationState.loading() = LocationState$Loading;
 
@@ -13,7 +13,7 @@ sealed class LocationState with _$LocationState {
   }) = LocationState$Determined;
 
   factory LocationState.fromJson(Map<String, dynamic> json) =>
-      _$LocationStateFromJson(json);
+      const LocationState.loading();
 
   const LocationState._();
 

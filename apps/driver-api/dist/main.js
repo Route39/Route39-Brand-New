@@ -21548,11 +21548,12 @@ var DriverRedisService = /*#__PURE__*/ function() {
     };
     _proto.makeDriverOnline = function makeDriverOnline(input) {
         return driver_redis_service_async_to_generator(function() {
-            var _input_serviceIds, _input_location, _input_location1, _input_serviceIds_length, _input_heading, snapshot;
+            var _input_serviceIds, _input_location, _input_location1, _process_env_DRIVER_MINIMUM_ALLOWED_BALANCE, minimumBalance, _input_serviceIds_length, _input_heading, snapshot;
             return driver_redis_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
-                        if (input.walletCredit < Number(process.env.DRIVER_MINIMUM_ALLOWED_BALANCE)) {
+                        minimumBalance = Number((_process_env_DRIVER_MINIMUM_ALLOWED_BALANCE = process.env.DRIVER_MINIMUM_ALLOWED_BALANCE) != null ? _process_env_DRIVER_MINIMUM_ALLOWED_BALANCE : 0);
+                        if (minimumBalance > 0 && input.walletCredit < minimumBalance) {
                             throw new apollo_.ForbiddenError('Insufficient wallet balance. Please top up your wallet.');
                         }
                         if (((_input_serviceIds_length = (_input_serviceIds = input.serviceIds) == null ? void 0 : _input_serviceIds.length) != null ? _input_serviceIds_length : 0) < 1) {

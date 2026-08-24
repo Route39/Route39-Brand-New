@@ -179,10 +179,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           break;
 
         case HomeEvent$ShowConfirmWaypoint(:final selectedLocation):
+          final locations = [...state.waypoints];
+          locations[state.selectedWaypointIndex!] = selectedLocation;
           emit(
             state.copyWith(
+              waypoints: locations,
               selectedLocationResponse: ApiResponse.loaded(selectedLocation),
-              orderSubmissionPage: OrderSubmissionPage.confirmLocation,
+              orderSubmissionPage: state.orderType == Enum$TaxiOrderType.Ride
+                  ? OrderSubmissionPage.rideWaypointsInput
+                  : OrderSubmissionPage.deliveryContactInfoInput,
             ),
           );
           state.mapViewController?.moveCamera(selectedLocation.latLng, 16);

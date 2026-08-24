@@ -92,7 +92,7 @@ class _WaypointsInputSheetState extends State<WaypointsInputSheet> {
                               Expanded(
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
-                                  children: widget.waypoints
+                                  children: state.waypoints
                                       .mapIndexed(
                                         (index, waypoint) => Padding(
                                           padding: const EdgeInsets.only(bottom: 16),
@@ -101,7 +101,7 @@ class _WaypointsInputSheetState extends State<WaypointsInputSheet> {
                                             isFocused: state.selectedWaypointIndex == index,
                                             onRemoveStop: () => homeBloc.add(HomeEvent.onRemoveStop(index: index)),
                                             index: index,
-                                            totalCount: widget.waypoints.length,
+                                            totalCount: state.waypoints.length,
                                             initialValue: waypoint,
                                             onFocused: () {
                                               placeLookupBloc.onStarted();
@@ -123,7 +123,7 @@ class _WaypointsInputSheetState extends State<WaypointsInputSheet> {
                                             onMapPressed: (value) {
                                               locator<HomeBloc>().add(HomeEvent.focusOnWaypoint(index: index));
                                               showConfirmLocation(
-                                                widget.waypoints[index] ??
+                                                state.waypoints[index] ??
                                                     locator<LocationCubit>().state.place ??
                                                     Constants.defaultLocation,
                                               );
@@ -139,17 +139,17 @@ class _WaypointsInputSheetState extends State<WaypointsInputSheet> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   const SizedBox(height: 10),
-                                  ...widget.waypoints.mapIndexed((index, e) {
+                                  ...state.waypoints.mapIndexed((index, e) {
                                     return Column(
                                       children: [
                                         const SizedBox(height: 6),
                                         IconDestination(isPickupPoint: index == 0),
                                         const SizedBox(height: 6),
-                                        if (index != widget.waypoints.length - 1) const LineConnectDestinations(),
+                                        if (index != state.waypoints.length - 1) const LineConnectDestinations(),
                                       ],
                                     );
                                   }),
-                                  if (widget.waypoints.length < 3) ...[
+                                  if (state.waypoints.length < 3) ...[
                                     const DottedLine(
                                       direction: Axis.vertical,
                                       dashColor: ColorPalette.neutral90,

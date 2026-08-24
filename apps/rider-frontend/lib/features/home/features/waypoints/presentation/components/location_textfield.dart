@@ -57,6 +57,27 @@ class _LocationTextfieldState extends State<LocationTextfield> {
   }
 
   @override
+  void didUpdateWidget(covariant LocationTextfield oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialValue?.address != oldWidget.initialValue?.address) {
+      if (_controller.text != widget.initialValue?.address) {
+        _controller.text = widget.initialValue?.address ?? '';
+        value = widget.initialValue?.address;
+      }
+    }
+    if (widget.isFocused != oldWidget.isFocused) {
+      setState(() {
+        isFocused = widget.isFocused ?? false;
+      });
+      if (widget.isFocused == true) {
+        focusNode.requestFocus();
+      } else {
+        focusNode.unfocus();
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
