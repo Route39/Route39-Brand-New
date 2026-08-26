@@ -43,3 +43,4 @@ yarn-error.log*
 dist/
 
 .env*
+pm2_jlist.json
