@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Colors;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
@@ -25,7 +26,7 @@ class NoticeBar extends StatelessWidget {
                 children: [
                   const Icon(
                     Ionicons.time,
-                    color: ColorPalette.neutral70,
+                    color: Colors.white,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -76,7 +77,7 @@ class NoticeBar extends StatelessWidget {
                 children: [
                   const Icon(
                     Ionicons.time,
-                    color: ColorPalette.error60,
+                    color: Colors.white,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -96,7 +97,7 @@ class NoticeBar extends StatelessWidget {
                 children: [
                   const Icon(
                     Ionicons.time,
-                    color: ColorPalette.neutral70,
+                    color: Colors.white,
                   ),
                   const SizedBox(width: 8),
                   Expanded(

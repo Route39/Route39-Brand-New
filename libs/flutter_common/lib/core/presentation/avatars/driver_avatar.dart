@@ -28,6 +28,7 @@ class DriverAvatar extends StatelessWidget {
               child: CachedNetworkImage(
                 imageUrl: imageUrl!.toImageUrl,
                 placeholder: (context, url) => placeHolder,
+                errorWidget: (context, url, error) => placeHolder,
               ),
             ),
     );
@@ -37,7 +38,7 @@ class DriverAvatar extends StatelessWidget {
         padding: EdgeInsets.all(8),
         child: Icon(
           Ionicons.person,
-          color: ColorPalette.primary30,
+          color: ColorPalette.primary40,
           size: 32,
         ),
       );

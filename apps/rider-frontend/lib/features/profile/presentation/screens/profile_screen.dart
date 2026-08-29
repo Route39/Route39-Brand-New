@@ -10,6 +10,8 @@ import 'package:ridy/core/blocs/auth_bloc.dart';
 import 'package:ridy/core/extensions/extensions.dart';
 import 'package:flutter_common/core/presentation/app_menu_item.dart';
 import 'package:ridy/features/profile/presentation/components/profile_header.dart';
+import 'package:ridy/features/home/presentation/components/route39_nav_bar.dart';
+import 'package:ridy/features/home/features/order_preview/presentation/components/route39_header.dart';
 import 'package:ridy/gen/assets.gen.dart';
 
 import '../blocs/profile.bloc.dart';
@@ -33,100 +35,118 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: locator<ProfileBloc>(),
-      child: BlocBuilder<ProfileBloc, ProfileState>(
-        builder: (context, state) {
-          return Container(
-            color: context.theme.scaffoldBackgroundColor,
-            child: AnimatedSwitcher(
-              duration: AnimationDuration.pageStateTransitionMobile,
-              child: switch (state.profileAggregationsState) {
-                ApiResponseInitial() => const SizedBox(),
-                ApiResponseLoading() => Assets.lottie.loading.lottie(
-                    width: double.infinity,
-                    height: double.infinity,
-                  ),
-                ApiResponseLoaded(:final data) => Container(
-                    padding: context.responsive(
-                      null,
-                      xl: const EdgeInsets.only(
-                          top: 104, left: 24, right: 24, bottom: 24),
+      child: Scaffold(
+        backgroundColor: context.theme.scaffoldBackgroundColor,
+        bottomNavigationBar: const Route39NavBar(currentIndex: 4),
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Route39Header(
+                  onBackPressed: () {
+                    context.router.navigate(const HomeRoute());
+                  },
+                ),
+              ),
+              Expanded(
+                child: BlocBuilder<ProfileBloc, ProfileState>(
+            builder: (context, state) {
+              return AnimatedSwitcher(
+                duration: AnimationDuration.pageStateTransitionMobile,
+                child: switch (state.profileAggregationsState) {
+                  ApiResponseInitial() => const SizedBox(),
+                  ApiResponseLoading() => Assets.lottie.loading.lottie(
+                      width: double.infinity,
+                      height: double.infinity,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        context.responsive(
-                          const SizedBox(),
-                          xl: Padding(
-                            padding: const EdgeInsets.only(bottom: 24),
-                            child: Text(
-                              context.translate.profile,
-                              style: context.headlineSmall,
+                  ApiResponseLoaded(:final data) => Container(
+                      padding: context.responsive(
+                        null,
+                        xl: const EdgeInsets.only(
+                            top: 104, left: 24, right: 24, bottom: 24),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          context.responsive(
+                            const SizedBox(),
+                            xl: Padding(
+                              padding: const EdgeInsets.only(bottom: 24),
+                              child: Text(
+                                context.translate.profile,
+                                style: context.headlineSmall,
+                              ),
                             ),
                           ),
-                        ),
-                        BlocBuilder<AuthBloc, AuthState>(
-                            builder: (context, stateAuth) {
-                          return ProfileHeader(
-                            profile: switch (stateAuth) {
-                              AuthState$Authenticated(:final profile) =>
-                                profile,
-                              _ => throw Exception(),
-                            },
-                            aggregationsInfo: data,
-                          );
-                        }),
-                        const SizedBox(
-                          height: 24,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              AppMenuItem(
-                                icon: Ionicons.person,
-                                title: context.translate.profileInfo,
-                                onPressed: () {
-                                  context.router.push(const ProfileInfoRoute());
-                                },
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              AppMenuItem(
-                                icon: Ionicons.card,
-                                title: context.translate.paymentMethods,
-                                onPressed: () {
-                                  context.router.pushAll([
-                                    const WalletParentRoute(),
-                                    const PaymentMethodsRoute(),
-                                  ]);
-                                },
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              AppMenuItem(
-                                icon: Ionicons.settings,
-                                title: context.translate.appSettings,
-                                onPressed: () {
-                                  context.router
-                                      .navigate(const SettingsParentRoute());
-                                },
-                              ),
-                            ],
+                          BlocBuilder<AuthBloc, AuthState>(
+                              builder: (context, stateAuth) {
+                            return ProfileHeader(
+                              profile: switch (stateAuth) {
+                                AuthState$Authenticated(:final profile) =>
+                                  profile,
+                                _ => throw Exception(),
+                              },
+                              aggregationsInfo: data,
+                            );
+                          }),
+                          const SizedBox(
+                            height: 24,
                           ),
-                        )
-                      ],
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                AppMenuItem(
+                                  icon: Ionicons.person,
+                                  title: context.translate.profileInfo,
+                                  onPressed: () {
+                                    context.router.push(const ProfileInfoRoute());
+                                  },
+                                ),
+                                const SizedBox(
+                                  height: 16,
+                                ),
+                                AppMenuItem(
+                                  icon: Ionicons.card,
+                                  title: context.translate.paymentMethods,
+                                  onPressed: () {
+                                    context.router.pushAll([
+                                      const WalletParentRoute(),
+                                      const PaymentMethodsRoute(),
+                                    ]);
+                                  },
+                                ),
+                                const SizedBox(
+                                  height: 16,
+                                ),
+                                AppMenuItem(
+                                  icon: Ionicons.settings,
+                                  title: context.translate.appSettings,
+                                  onPressed: () {
+                                    context.router
+                                        .navigate(const SettingsParentRoute());
+                                  },
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
                     ),
-                  ),
-                ApiResponseError(:final message) => Center(
-                    child: Text(message),
-                  ),
-              },
+                  ApiResponseError(:final message) => Center(
+                      child: Text(message),
+                    ),
+                  },
+                  );
+                },
+              ),
             ),
-          );
-        },
+            ],
+          ),
+        ),
       ),
     );
   }

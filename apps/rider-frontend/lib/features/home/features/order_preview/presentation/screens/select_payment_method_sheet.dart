@@ -1,6 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
+import 'package:flutter_common/core/presentation/snackbar/snackbar.dart';
+import 'package:ionicons/ionicons.dart';
 import 'package:flutter_common/core/enums/payment_mode.dart';
 import 'package:flutter_common/core/presentation/responsive_dialog/app_responsive_dialog.dart';
 import 'package:ridy/config/locator/locator.dart';
@@ -214,6 +216,23 @@ class _SelectPaymentMethodSheetState extends State<SelectPaymentMethodSheet> {
                     onSelected: (paymentMethod) {
                       setState(() => this.paymentMethod = paymentMethod);
                     },
+                  ),
+                  const Divider(indent: 24),
+                  InkWell(
+                    onTap: () {
+                      context.showSnackBar(message: 'UPI payments coming soon');
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.qr_code, size: 24, color: ColorPalette.neutralVariant40),
+                          const SizedBox(width: 12),
+                          Expanded(child: Text('UPI', style: context.labelLarge)),
+                          Text('Coming soon', style: context.bodySmall?.copyWith(color: ColorPalette.neutralVariant50)),
+                        ],
+                      ),
+                    ),
                   ),
                   SafeArea(
                     top: false,

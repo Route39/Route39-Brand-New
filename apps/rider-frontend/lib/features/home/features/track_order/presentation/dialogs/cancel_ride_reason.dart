@@ -40,13 +40,13 @@ class _CancelRideReasonDialogState extends State<CancelRideReasonDialog> {
       child: AppResponsiveDialog(
         type: context.responsive(DialogType.bottomSheet, xl: DialogType.dialog),
         primaryButton: AppBorderedButton(
-          isDisabled: selectedReason == null,
+          isDisabled: false,
           onPressed: () {
             Navigator.of(context).pop(true);
 
             locator<HomeBloc>().cancelRide(
               orderId: widget.orderId,
-              cancelReasonId: selectedReason!.id,
+              cancelReasonId: selectedReason?.id,
               cancelReasonNote: null,
             );
           },
