@@ -85,6 +85,7 @@ class _EnterOtpFormState extends State<EnterOtpForm> {
                 const Spacer(),
                 AppPrimaryButton(
                   isDisabled: state.isLoading || code.length < 6,
+                  color: PrimaryButtonColor.error,
                   onPressed: () {
                     locator<LoginBloc>().onOtpVerificationRequested(code);
                   },

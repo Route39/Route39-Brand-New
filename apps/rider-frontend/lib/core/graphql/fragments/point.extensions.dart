@@ -9,6 +9,7 @@ import 'package:generic_map/interfaces/polyline_layer.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:ridy/core/graphql/fragments/point.fragment.graphql.dart';
 import 'package:ridy/core/graphql/schema.gql.dart';
+import 'package:ridy/gen/assets.gen.dart' as rider_assets;
 
 extension LatLngX on LatLng {
   Fragment$Coordinate get toCoordinate => Fragment$Coordinate(lat: latitude, lng: longitude);
@@ -46,9 +47,8 @@ extension DriverLocationX on Fragment$Coordinate {
   CustomMarker driverMarker(String driverId) => CustomMarker(
     id: driverId,
     position: LatLng(lat, lng),
-    widget: Assets.images.carTopView.image(),
-    fallbackAssetPath: Assets.images.carTopView.path,
-    fallbackAssetPackage: Assets.package,
+    widget: Image.asset('assets/images/ev_auto_icon.png'),
+    fallbackAssetPath: 'assets/images/ev_auto_icon.png',
     alignment: Alignment.center,
     rotation: heading ?? 0,
     width: 48,

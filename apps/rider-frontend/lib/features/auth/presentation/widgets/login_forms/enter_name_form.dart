@@ -121,6 +121,7 @@ class _EnterNameFormState extends State<EnterNameForm> {
                 ),
                 AppPrimaryButton(
                   isDisabled: state.isLoading,
+                  color: PrimaryButtonColor.error,
                   onPressed: () {
                     if (formKey.currentState?.validate() == false) return;
                     formKey.currentState?.save();

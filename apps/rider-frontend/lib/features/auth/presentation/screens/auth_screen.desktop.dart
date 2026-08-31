@@ -63,7 +63,7 @@ class AuthScreenDesktop extends StatelessWidget {
                                                 .read<OnboardingCubit>()
                                                 .previousPage();
                                           },
-                                    child: const Icon(Icons.arrow_back)),
+                                    child: const Icon(Icons.menu)),
                                 SizedBox(
                                   width: 92,
                                   child: AppStepSlider(

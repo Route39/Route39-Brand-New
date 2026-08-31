@@ -53,7 +53,7 @@ class OrderRepositoryMock implements OrderRepository {
 
   @override
   void refreshActiveOrders() {
-    bool hasOrders = false;
+    bool hasOrders = true;
     // ignore: dead_code
     if (hasOrders) {
       _activeOrdersStream.add(ApiResponse.loaded([mockActiveOrder1]));

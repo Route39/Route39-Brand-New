@@ -67,6 +67,7 @@ class _EnterNumberFormState extends State<EnterNumberForm> {
                 ),
                 AppPrimaryButton(
                   isDisabled: state.isLoading || phoneNumber.$2.length < 6,
+                  color: PrimaryButtonColor.error,
                   onPressed: () {
                     locator<LoginBloc>().onNumberVerificationRequested(
                       mobileNumber: phoneNumber.$2,

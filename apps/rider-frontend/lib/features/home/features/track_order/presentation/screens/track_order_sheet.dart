@@ -43,13 +43,17 @@ class _TrackOrderSheetState extends State<TrackOrderSheet> {
           return AnimatedSwitcher(
             duration: AnimationDuration.pageStateTransitionMobile,
             child: switch (state.activeOrder!.status.toEntity.viewMode) {
-              OrderStatusViewMode.looking => LookingForDriverSheet(),
+              OrderStatusViewMode.looking => SizedBox.expand(child: LookingForDriverSheet()),
               OrderStatusViewMode.inProgress => switch (state.page) {
                 TrackOrderPage.overview => OrderInProgressSheet(order: state.activeOrder!),
                 TrackOrderPage.chat => ChatSheet(),
                 TrackOrderPage.payment => PayForRideSheet(),
               },
-              OrderStatusViewMode.waitingForPayment => PayForRideSheet(),
+              OrderStatusViewMode.waitingForPayment => switch (state.page) {
+                  TrackOrderPage.overview => OrderInProgressSheet(order: state.activeOrder!),
+                  TrackOrderPage.chat => ChatSheet(),
+                  TrackOrderPage.payment => PayForRideSheet(),
+                },
               OrderStatusViewMode.finished => Text("Finished"),
             },
           );

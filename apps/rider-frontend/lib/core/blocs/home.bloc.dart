@@ -65,7 +65,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
                 geoDatasource.currentAddress,
                 onData: (data) {
                   if (state.waypoints.firstOrNull == null && data.data != null) {
-                    state.mapViewController?.moveCamera(data.data!.latLng, 14);
+                    try { state.mapViewController?.moveCamera(data.data!.latLng, 14); } catch (_) {}
                     return state.copyWith(
                       currentLocationResponse: data,
                       waypoints: state.waypoints
@@ -97,7 +97,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             ),
           );
           if (state.mapViewController != null && state.waypoints.firstOrNull != null) {
-            state.mapViewController!.moveCamera(state.waypoints.firstOrNull!.latLng, 16);
+            try { state.mapViewController!.moveCamera(state.waypoints.firstOrNull!.latLng, 16); } catch (_) {}
             await _showDriversAround(waypoints: [state.waypoints.firstOrNull!, null], emitter: emit);
           }
           break;
@@ -105,7 +105,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         case HomeEvent$ChangeOrderSubmissionPage(:final orderSubmissionPage):
           emit(state.copyWith(orderSubmissionPage: orderSubmissionPage));
           if (orderSubmissionPage == OrderSubmissionPage.welcome && state.waypoints.firstOrNull != null) {
-            state.mapViewController?.moveCamera(state.waypoints.firstOrNull!.latLng, 16);
+            try { state.mapViewController?.moveCamera(state.waypoints.firstOrNull!.latLng, 16); } catch (_) {}
             await _showDriversAround(waypoints: [state.waypoints.firstOrNull!, null], emitter: emit);
           }
           break;
@@ -179,18 +179,13 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           break;
 
         case HomeEvent$ShowConfirmWaypoint(:final selectedLocation):
-          final locations = [...state.waypoints];
-          locations[state.selectedWaypointIndex!] = selectedLocation;
           emit(
             state.copyWith(
-              waypoints: locations,
               selectedLocationResponse: ApiResponse.loaded(selectedLocation),
-              orderSubmissionPage: state.orderType == Enum$TaxiOrderType.Ride
-                  ? OrderSubmissionPage.rideWaypointsInput
-                  : OrderSubmissionPage.deliveryContactInfoInput,
+              orderSubmissionPage: OrderSubmissionPage.confirmLocation,
             ),
           );
-          state.mapViewController?.moveCamera(selectedLocation.latLng, 16);
+          try { state.mapViewController?.moveCamera(selectedLocation.latLng, 16); } catch (_) {}
           break;
 
         case HomeEvent$OnCouponCodeUpdated(:final couponCode):
@@ -231,7 +226,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
                 selectedDateTime: null,
               ),
             );
-            state.mapViewController?.fitBounds(state.waypoints.nonNulls.toList().latLngs);
+            try {
+              state.mapViewController?.fitBounds(state.waypoints.nonNulls.toList().latLngs);
+            } catch (_) {
+              // Map may already be disposed if full-screen booking summary is showing; ignore.
+            }
           }
           if (result.isError) {
             emit(
@@ -243,7 +242,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
               ),
             );
             if (state.waypoints.firstOrNull?.latLng != null) {
-              state.mapViewController?.moveCamera(state.waypoints.firstOrNull!.latLng, 16);
+              try { state.mapViewController?.moveCamera(state.waypoints.firstOrNull!.latLng, 16); } catch (_) {}
               await _showDriversAround(waypoints: [state.waypoints.firstOrNull!, null], emitter: emit);
             }
           }
@@ -326,7 +325,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             emit(state.copyWith(cancelOrderResponse: ApiResponse.initial()));
           }
           if (state.waypoints.firstOrNull?.latLng != null) {
-            state.mapViewController?.moveCamera(state.waypoints.firstOrNull!.latLng, 16);
+            try { state.mapViewController?.moveCamera(state.waypoints.firstOrNull!.latLng, 16); } catch (_) {}
             await _showDriversAround(waypoints: [state.waypoints.firstOrNull!, null], emitter: emit);
           }
           break;

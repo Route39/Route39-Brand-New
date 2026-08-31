@@ -36,11 +36,11 @@ class AppPrimaryButton extends StatelessWidget {
           if (states.contains(WidgetState.disabled)) {
             return context.theme.colorScheme.onSurface.withAlpha(26);
           } else if (states.contains(WidgetState.hovered)) {
-            return context.colorScheme.primary;
+            return ColorPalette.primary50;
           } else if (states.contains(WidgetState.pressed)) {
-            return ColorPalette.primary40;
+            return ColorPalette.primary30;
           } else {
-            return context.colorScheme.primary;
+            return ColorPalette.primary40;
           }
         },
       );
