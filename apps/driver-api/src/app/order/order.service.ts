@@ -210,10 +210,14 @@ export class OrderService {
         driverDirections: driverTravelMetrics.directions,
       });
 
+      // Generate 4-digit pickup OTP
+      const pickupOtp = Math.floor(1000 + Math.random() * 9000).toString();
+
       // CRITICAL FIX: Await the database update
       await this.orderRepository.update(input.orderId, {
         status: OrderStatus.DriverAccepted,
         driverId: input.driverId,
+        pickupOtp: pickupOtp,
       });
 
       // Notify all drivers that the offer is revoked
@@ -375,6 +379,47 @@ export class OrderService {
         this.createNextDestination(order.waypoints, order.currentLegIndex) ??
         undefined,
     };
+  }
+
+  // DEV ONLY - remove before production/git push
+  async devGetPickupOtp(orderId: number): Promise<string | null> {
+    const orderEntity = await this.orderRepository.findOne({
+      where: { id: orderId },
+    });
+    return orderEntity?.pickupOtp ?? null;
+  }
+
+  async verifyPickupOtp(input: {
+    orderId: number;
+    driverId: number;
+    otp: string;
+    waitSeconds?: number;
+  }): Promise<UpdateStatusDTO> {
+    const orderEntity = await this.orderRepository.findOne({
+      where: { id: input.orderId },
+    });
+
+    if (!orderEntity) {
+      throw new ForbiddenError('ORDER_NOT_FOUND');
+    }
+
+    if (orderEntity.driverId !== input.driverId) {
+      throw new ForbiddenError('ORDER_NOT_ASSIGNED_TO_DRIVER');
+    }
+
+    if (!orderEntity.pickupOtp || orderEntity.pickupOtp !== input.otp) {
+      throw new ForbiddenError('INVALID_OTP');
+    }
+
+    await this.orderRepository.update(input.orderId, {
+      pickupOtpVerifiedAt: new Date(),
+      waitSeconds: input.waitSeconds,
+    });
+
+    return this.initiateRide({
+      orderId: input.orderId,
+      driverId: input.driverId,
+    });
   }
 
   async arrivedToDestination(input: {

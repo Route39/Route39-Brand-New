@@ -17129,6 +17129,25 @@ taxi_order_entity_ts_decorate([
     taxi_order_entity_ts_metadata("design:type", Number)
 ], TaxiOrderEntity.prototype, "destinationArrivedTo", void 0);
 taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true,
+        length: 4
+    }),
+    taxi_order_entity_ts_metadata("design:type", String)
+], TaxiOrderEntity.prototype, "pickupOtp", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", typeof Date === "undefined" ? Object : Date)
+], TaxiOrderEntity.prototype, "pickupOtpVerifiedAt", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", Number)
+], TaxiOrderEntity.prototype, "waitSeconds", void 0);
+taxi_order_entity_ts_decorate([
     (0,external_typeorm_.ManyToOne)(function() {
         return RegionEntity;
     }, function(region) {
@@ -21153,6 +21172,9 @@ var DriverEphemeralMessageType = /*#__PURE__*/ function(DriverEphemeralMessageTy
     DriverEphemeralMessageType["RateRider"] = "RateRider";
     DriverEphemeralMessageType["RiderCanceled"] = "RiderCanceled";
     DriverEphemeralMessageType["AddPayoutMethod"] = "AddPayoutMethod";
+    DriverEphemeralMessageType["RideReceived"] = "RideReceived";
+    DriverEphemeralMessageType["RideCompleted"] = "RideCompleted";
+    DriverEphemeralMessageType["RideCancelled"] = "RideCancelled";
     return DriverEphemeralMessageType;
 }({});
 var DriverEphemeralMessageSnapshot = function DriverEphemeralMessageSnapshot() {

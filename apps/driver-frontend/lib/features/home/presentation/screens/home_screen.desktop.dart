@@ -12,6 +12,7 @@ import 'package:flutter_common/core/theme/animation_duration.dart';
 import '../blocs/home.bloc.dart';
 import '../components/driver_search_radius_button.dart';
 import '../components/top_nav_bar.dart';
+import '../components/today_earnings_bar.dart';
 import 'sheets/active_order_sheet.dart';
 import 'sheets/online_offline_sheet.dart';
 import 'sheets/order_summary.dart';
@@ -28,14 +29,29 @@ class HomeScreenDesktop extends StatelessWidget {
         children: [
           LayoutId(
             id: 'map',
-            child: const HomeMapView(),
+            child: BlocBuilder<HomeBloc, HomeState>(
+              buildWhen: (previous, current) =>
+                  previous.driverStatus != current.driverStatus,
+              builder: (context, state) {
+                if (state.driverStatus == HomeStateDriverStatus.offline) {
+                  return Container(color: Colors.white);
+                }
+                return const HomeMapView();
+              },
+            ),
           ),
           LayoutId(
             id: DesktopLayoutDelegate.navbarId,
-            child: const TopNavBar(
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(12),
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const TopNavBar(
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(12),
+                  ),
+                ),
+                const TodayEarningsBar(),
+              ],
             ),
           ),
           LayoutId(
@@ -43,33 +59,35 @@ class HomeScreenDesktop extends StatelessWidget {
             child: SafeArea(
               bottom: false,
               child: Container(
-                margin: const EdgeInsets.only(top: 138),
                 child: BlocBuilder<HomeBloc, HomeState>(
                   builder: (context, state) {
                     final order = state.currentOrder;
                     return AnimatedSwitcher(
-                        duration: AnimationDuration.pageStateTransitionMobile,
-                        child: switch (state.driverStatus) {
-                          HomeStateDriverStatus.accessDenied =>
-                            const Text('access denied'),
-                          HomeStateDriverStatus.initial => const SizedBox(),
-                          HomeStateDriverStatus.loading => const SizedBox(),
-                          HomeStateDriverStatus.online =>
-                            state.orderRequests.isEmpty
-                                ? const SizedBox()
-                                : OrderRequestsList(
-                                    requests: state.orderRequests),
-                          HomeStateDriverStatus.offline => const SizedBox(),
-                          HomeStateDriverStatus.onTrip => switch (
-                                order?.status) {
-                              Enum$OrderStatus.WaitingForPostPay =>
-                                OrderSummary(order: order!),
-                              _ => switch (state.page) {
-                                  OnTripPage.overview => ActiveOrderSheet(),
-                                  OnTripPage.chat => ChatSheet(),
-                                },
-                            },
-                        });
+                      duration: AnimationDuration.pageStateTransitionMobile,
+                      child: switch (state.driverStatus) {
+                        HomeStateDriverStatus.accessDenied => const Text(
+                          'access denied',
+                        ),
+                        HomeStateDriverStatus.initial => const SizedBox(),
+                        HomeStateDriverStatus.loading => const SizedBox(),
+                        HomeStateDriverStatus.online =>
+                          state.orderRequests.isEmpty
+                              ? const SizedBox()
+                              : OrderRequestsList(
+                                  requests: state.orderRequests,
+                                ),
+                        HomeStateDriverStatus.offline => const SizedBox(),
+                        HomeStateDriverStatus.onTrip => switch (order?.status) {
+                          Enum$OrderStatus.WaitingForPostPay => OrderSummary(
+                            order: order!,
+                          ),
+                          _ => switch (state.page) {
+                            OnTripPage.overview => ActiveOrderSheet(),
+                            OnTripPage.chat => ChatSheet(),
+                          },
+                        },
+                      },
+                    );
                   },
                 ),
               ),
@@ -80,20 +98,23 @@ class HomeScreenDesktop extends StatelessWidget {
             child: BlocBuilder<HomeBloc, HomeState>(
               builder: (context, state) {
                 return AnimatedSwitcher(
-                    duration: AnimationDuration.pageStateTransitionMobile,
-                    child: switch (state.driverStatus) {
-                      HomeStateDriverStatus.accessDenied =>
-                        const Text('access denied'),
-                      HomeStateDriverStatus.initial => const SizedBox(),
-                      HomeStateDriverStatus.loading => const SizedBox(),
-                      HomeStateDriverStatus.online =>
-                        state.orderRequests.isEmpty
-                            ? OnlineOfflineSheet(state: state)
-                            : const SizedBox(),
-                      HomeStateDriverStatus.offline =>
-                        OnlineOfflineSheet(state: state),
-                      HomeStateDriverStatus.onTrip => const SizedBox(),
-                    });
+                  duration: AnimationDuration.pageStateTransitionMobile,
+                  child: switch (state.driverStatus) {
+                    HomeStateDriverStatus.accessDenied => const Text(
+                      'access denied',
+                    ),
+                    HomeStateDriverStatus.initial => const SizedBox(),
+                    HomeStateDriverStatus.loading => const SizedBox(),
+                    HomeStateDriverStatus.online =>
+                      state.orderRequests.isEmpty
+                          ? OnlineOfflineSheet(state: state)
+                          : const SizedBox(),
+                    HomeStateDriverStatus.offline => OnlineOfflineSheet(
+                      state: state,
+                    ),
+                    HomeStateDriverStatus.onTrip => const SizedBox(),
+                  },
+                );
               },
             ),
           ),
@@ -104,7 +125,7 @@ class HomeScreenDesktop extends StatelessWidget {
           LayoutId(
             id: DesktopLayoutDelegate.myLocationButtonId,
             child: const HomeMyLocationButton(),
-          )
+          ),
         ],
       ),
     );

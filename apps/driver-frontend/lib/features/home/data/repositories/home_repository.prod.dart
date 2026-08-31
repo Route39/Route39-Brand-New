@@ -258,6 +258,17 @@ class HomeRepositoryImpl implements HomeRepository {
     return _updateOrderStatus(updateResponse.mapData((r) => r.initiateRide));
   }
 
+  @override
+  Future<ApiResponse<void>> verifyPickupOtp({required String orderId, required String otp}) async {
+    final updateResponse = await graphQLDatasource.mutate(
+      Options$Mutation$verifyPickupOtp(
+        fetchPolicy: FetchPolicy.noCache,
+        variables: Variables$Mutation$verifyPickupOtp(id: orderId, otp: otp),
+      ),
+    );
+    return _updateOrderStatus(updateResponse.mapData((r) => r.verifyPickupOtp));
+  }
+
   Future<ApiResponse<void>> _updateOrderStatus(ApiResponse<Fragment$UpdateStatus> response) async {
     final data = response.data;
     if (data == null) return response;

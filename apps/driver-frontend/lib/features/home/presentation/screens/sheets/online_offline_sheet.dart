@@ -10,7 +10,7 @@ import 'package:ionicons/ionicons.dart';
 
 import '../../components/notice_bar_content.dart';
 
-class OnlineOfflineSheet extends StatelessWidget {
+class OnlineOfflineSheet extends StatefulWidget {
   final HomeState state;
 
   const OnlineOfflineSheet({
@@ -19,10 +19,49 @@ class OnlineOfflineSheet extends StatelessWidget {
   });
 
   @override
+  State<OnlineOfflineSheet> createState() => _OnlineOfflineSheetState();
+}
+
+class _OnlineOfflineSheetState extends State<OnlineOfflineSheet> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<Offset> _slideAnimation;
+
+  static const Color liteRed = Color(0xFFE05C5C);
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+    _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.15),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  String _greeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: ColorPalette.primary20,
+        color: liteRed,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Column(
@@ -30,11 +69,8 @@ class OnlineOfflineSheet extends StatelessWidget {
         children: [
           AnimatedSwitcher(
             duration: AnimationDuration.pageStateTransitionMobile,
-            child: switch (state.driverStatus) {
-              HomeStateDriverStatus.online => NoticeBarContent(
-                  icon: Ionicons.search,
-                  text: context.translate.driverOnlineTitle,
-                ),
+            child: switch (widget.state.driverStatus) {
+              HomeStateDriverStatus.online => const SizedBox(),
               HomeStateDriverStatus.offline => NoticeBarContent(
                   icon: Ionicons.car,
                   text: context.translate.driverOfflineTitle,
@@ -51,37 +87,58 @@ class OnlineOfflineSheet extends StatelessWidget {
                 top: false,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: ColorPalette.neutral90),
-                          borderRadius: BorderRadius.circular(12),
+                      if (widget.state.driverStatus == HomeStateDriverStatus.offline)
+                        BlocBuilder<AuthBloc, AuthState>(
+                          builder: (context, authState) {
+                            return FadeTransition(
+                              opacity: _fadeAnimation,
+                              child: SlideTransition(
+                                position: _slideAnimation,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.all(10),
+                                            decoration: BoxDecoration(
+                                              color: liteRed.withValues(alpha: 0.12),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(
+                                              Ionicons.handLeft,
+                                              color: liteRed,
+                                              size: 22,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Hi ${authState.profile?.firstName ?? ''}',
+                                                style: context.titleLarge,
+                                              ),
+                                              Text(
+                                                _greeting(),
+                                                style: context.labelLarge,
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                        child: const Icon(
-                          Ionicons.wallet,
-                          color: ColorPalette.primary30,
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 12,
-                      ),
-                      Expanded(
-                        child: Text(
-                          context.translate.yourBalance,
-                          style: context.labelLarge,
-                        ),
-                      ),
-                      BlocBuilder<AuthBloc, AuthState>(
-                        builder: (context, state) {
-                          return Text(
-                            (state.profile?.walletCredit ?? 0)
-                                .formatCurrency(state.profile?.currency ?? Env.defaultCurrency),
-                            style: context.labelLarge,
-                          );
-                        },
-                      ),
                     ],
                   ),
                 ),

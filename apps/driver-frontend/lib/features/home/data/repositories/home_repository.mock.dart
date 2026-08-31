@@ -72,6 +72,11 @@ class HomeRepositoryMock implements HomeRepository {
   }
 
   @override
+  Future<ApiResponse<void>> verifyPickupOtp({required String orderId, required String otp}) async {
+    return const ApiResponse.loaded(null);
+  }
+
+  @override
   Future<ApiResponse<List<Fragment$CancelReason>>> getCancelReasons() async {
     await Future.delayed(const Duration(seconds: 1));
     return ApiResponse.loaded([]);

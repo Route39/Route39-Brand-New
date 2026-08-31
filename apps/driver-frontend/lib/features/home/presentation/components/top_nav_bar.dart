@@ -16,6 +16,7 @@ import 'package:ionicons/ionicons.dart';
 import '../blocs/home.bloc.dart';
 import '../dialogs/location_permission_denied_forever_dialog.dart';
 import '../dialogs/location_permission_request_dialog.dart';
+import '../dialogs/ride_safety_dialog.dart';
 
 class TopNavBar extends StatelessWidget {
   final Function()? onMenuButtonPressed;
@@ -65,133 +66,227 @@ class TopNavBar extends StatelessWidget {
                   ),
                 Positioned.fill(
                   child: Center(
-                    child: Builder(
-                      builder: (context) {
-                        switch (state.driverStatus) {
-                          case HomeStateDriverStatus.initial:
-                            return const SizedBox();
-                          case HomeStateDriverStatus.loading:
-                            return const CupertinoActivityIndicator();
-                          case HomeStateDriverStatus.online:
-                            return Text(
+                    child: switch (state.driverStatus) {
+                      HomeStateDriverStatus.initial => const SizedBox(),
+                      HomeStateDriverStatus.loading => const CupertinoActivityIndicator(),
+                      HomeStateDriverStatus.accessDenied => Text(
+                          context.translate.accessDenied,
+                          style: context.titleSmall,
+                          textAlign: TextAlign.center,
+                        ),
+                      HomeStateDriverStatus.onTrip => Text(
+                          context.translate.onTrip,
+                          style: context.titleSmall,
+                          textAlign: TextAlign.center,
+                        ),
+                      HomeStateDriverStatus.online => Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
                               context.translate.online,
                               style: context.titleSmall,
                               textAlign: TextAlign.center,
-                            );
-                          case HomeStateDriverStatus.offline:
-                            return Text(
+                            ),
+                            const SizedBox(width: 8),
+                            CupertinoSwitch(
+                              value: true,
+                              onChanged: (_) async {
+                                locator<HomeBloc>().onStatusChanged(
+                                  Enum$DriverStatus.Offline,
+                                );
+                              },
+                              activeTrackColor: ColorPalette.primary40,
+                            ),
+                          ],
+                        ),
+                      HomeStateDriverStatus.offline => Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
                               context.translate.offline,
                               style: context.titleSmall,
                               textAlign: TextAlign.center,
-                            );
-                          case HomeStateDriverStatus.onTrip:
-                            return Text(
-                              context.translate.onTrip,
-                              style: context.titleSmall,
-                              textAlign: TextAlign.center,
-                            );
-                          case HomeStateDriverStatus.accessDenied:
-                            return Text(
-                              context.translate.accessDenied,
-                              style: context.titleSmall,
-                              textAlign: TextAlign.center,
-                            );
-                        }
-                      },
-                    ),
+                            ),
+                            const SizedBox(width: 8),
+                            CupertinoSwitch(
+                              value: false,
+                              onChanged: (_) async {
+                                final homeBloc = locator<HomeBloc>();
+
+                                final locationDatasource = locator<LocationDatasource>();
+                                final locationPermissionGranted =
+                                    await locationDatasource.getLocationPermissionStatus();
+
+                                switch (locationPermissionGranted) {
+                                  case LocationPermission.denied:
+                                    final permissionResult = await showDialog<bool>(
+                                      context: context,
+                                      useSafeArea: false,
+                                      builder: (context) => const LocationPermissionRequestDialog(),
+                                    );
+                                    if (permissionResult == true) {
+                                      final permissionStatus =
+                                          await locationDatasource.requestLocationPermission();
+                                      if (permissionStatus == LocationPermission.deniedForever) {
+                                        return;
+                                      }
+                                    }
+                                    break;
+
+                                  case LocationPermission.deniedForever:
+                                    final permissionResult = await showDialog<bool>(
+                                      context: context,
+                                      useSafeArea: false,
+                                      builder: (context) => const LocationPermissionDeniedForeverDialog(),
+                                    );
+                                    if (permissionResult == true) {
+                                      final couldBeOpened =
+                                          await geolocator.Geolocator.openLocationSettings();
+                                      if (!couldBeOpened) {
+                                        context.showSnackBar(
+                                          message:
+                                              "Could not open location settings, please enable location permissions manually.",
+                                        );
+                                      }
+                                    }
+                                    return;
+
+                                  case LocationPermission.whileInUse:
+                                    context.showSnackBar(
+                                      message:
+                                          "Background location updates are not allowed, Please allow this permission in your phone settings for optimal experience.",
+                                    );
+                                    break;
+
+                                  case LocationPermission.always:
+                                    break;
+                                }
+
+                                final locationServiceEnabled =
+                                    await locationDatasource.isLocationServiceEnabled();
+                                if (!locationServiceEnabled) {
+                                  final serviceEnabled =
+                                      await locationDatasource.requestLocationService();
+                                  if (!serviceEnabled) {
+                                    return;
+                                  }
+                                }
+                                homeBloc.onStatusChanged(Enum$DriverStatus.Online);
+                              },
+                              activeTrackColor: ColorPalette.primary40,
+                            ),
+                          ],
+                        ),
+                    },
                   ),
                 ),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: switch (state.driverStatus) {
-                    HomeStateDriverStatus.initial => const SizedBox(),
-                    HomeStateDriverStatus.loading => const SizedBox(),
-                    HomeStateDriverStatus.accessDenied => const SizedBox(),
-                    HomeStateDriverStatus.onTrip => const SizedBox(),
-                    HomeStateDriverStatus.online => CupertinoSwitch(
-                        value: true,
-                        onChanged: (_) async {
-                          locator<HomeBloc>().onStatusChanged(
-                            Enum$DriverStatus.Offline,
-                          );
-                        },
-                        activeTrackColor: ColorPalette.semanticgreen60,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (state.currentOrder != null)
+                        CupertinoButton(
+                          minimumSize: Size(0, 0),
+                          padding: const EdgeInsets.all(8),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              useSafeArea: false,
+                              builder: (context) => RideSafetyDialog(
+                                order: state.currentOrder!,
+                              ),
+                            );
+                          },
+                          child: const Icon(
+                            Ionicons.shield,
+                            color: ColorPalette.neutral50,
+                          ),
+                        ),
+                      Badge(
+                        isLabelVisible: state.ephemeralMessages.isNotEmpty,
+                        label: Text("${state.ephemeralMessages.length}"),
+                        child: CupertinoButton(
+                          minimumSize: Size(0, 0),
+                          padding: const EdgeInsets.all(8),
+                          onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: Colors.white,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                          ),
+                          builder: (sheetContext) {
+                            return SafeArea(
+                              child: Container(
+                                constraints: const BoxConstraints(maxHeight: 480),
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Notifications',
+                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Flexible(
+                                      child: state.ephemeralMessages.isEmpty
+                                          ? const Padding(
+                                              padding: EdgeInsets.symmetric(vertical: 32),
+                                              child: Center(child: Text('No notifications yet')),
+                                            )
+                                          : ListView.separated(
+                                              shrinkWrap: true,
+                                              itemCount: state.ephemeralMessages.length,
+                                              separatorBuilder: (_, __) => const Divider(height: 16),
+                                              itemBuilder: (context, index) {
+                                                final msg = state.ephemeralMessages[index];
+                                                final title = switch (msg.type) {
+                                                  Enum$EphemeralMessageType.RiderCanceled => 'Ride cancelled',
+                                                  Enum$EphemeralMessageType.RateRider => 'Rate your rider',
+                                                  Enum$EphemeralMessageType.AddPayoutMethod => 'Add a payout method',
+                                                  _ => 'Notification',
+                                                };
+                                                final subtitle = msg.riderFullName != null
+                                                    ? 'With ${msg.riderFullName}'
+                                                    : (msg.serviceName ?? '');
+                                                return ListTile(
+                                                  contentPadding: EdgeInsets.zero,
+                                                  leading: CircleAvatar(
+                                                    backgroundColor: ColorPalette.primary95,
+                                                    backgroundImage: msg.riderProfileUrl != null
+                                                        ? NetworkImage(msg.riderProfileUrl!)
+                                                        : null,
+                                                    child: msg.riderProfileUrl == null
+                                                        ? const Icon(Ionicons.notifications, color: ColorPalette.primary40)
+                                                        : null,
+                                                  ),
+                                                  title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                                                  subtitle: subtitle.isNotEmpty ? Text(subtitle) : null,
+                                                  trailing: Text(
+                                                    '${msg.createdAt.hour.toString().padLeft(2, '0')}:${msg.createdAt.minute.toString().padLeft(2, '0')}',
+                                                    style: const TextStyle(fontSize: 12, color: ColorPalette.neutral60),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      child: const Icon(
+                        Ionicons.notifications,
+                        color: ColorPalette.neutral50,
                       ),
-                    HomeStateDriverStatus.offline => CupertinoSwitch(
-                        value: false,
-                        onChanged: (_) async {
-                          final homeBloc = locator<HomeBloc>();
-
-                          final locationDatasource =
-                              locator<LocationDatasource>();
-                          final locationPermissionGranted =
-                              await locationDatasource
-                                  .getLocationPermissionStatus();
-
-                          switch (locationPermissionGranted) {
-                            case LocationPermission.denied:
-                              final permissionResult = await showDialog<bool>(
-                                context: context,
-                                useSafeArea: false,
-                                builder: (context) =>
-                                    const LocationPermissionRequestDialog(),
-                              );
-                              if (permissionResult == true) {
-                                final permissionStatus =
-                                    await locationDatasource
-                                        .requestLocationPermission();
-                                if (permissionStatus ==
-                                    LocationPermission.deniedForever) {
-                                  return;
-                                }
-                              }
-                              break;
-
-                            case LocationPermission.deniedForever:
-                              final permissionResult = await showDialog<bool>(
-                                context: context,
-                                useSafeArea: false,
-                                builder: (context) =>
-                                    const LocationPermissionDeniedForeverDialog(),
-                              );
-                              if (permissionResult == true) {
-                                final couldBeOpened = await geolocator
-                                    .Geolocator.openLocationSettings();
-                                if (!couldBeOpened) {
-                                  context.showSnackBar(
-                                    message:
-                                        "Could not open location settings, please enable location permissions manually.",
-                                  );
-                                }
-                              }
-                              return;
-
-                            case LocationPermission.whileInUse:
-                              context.showSnackBar(
-                                message:
-                                    "Background location updates are not allowed, Please allow this permission in your phone settings for optimal experience.",
-                              );
-                              break;
-
-                            case LocationPermission.always:
-                              break;
-                          }
-
-                          final locationServiceEnabled =
-                              await locationDatasource
-                                  .isLocationServiceEnabled();
-                          if (!locationServiceEnabled) {
-                            final serviceEnabled = await locationDatasource
-                                .requestLocationService();
-                            if (!serviceEnabled) {
-                              return;
-                            }
-                          }
-                          homeBloc.onStatusChanged(Enum$DriverStatus.Online);
-                        },
-                        activeTrackColor: ColorPalette.semanticgreen60,
-                      ),
-                  },
+                    ),
+                  ),
+                    ],
+                  ),
                 ),
               ],
             );

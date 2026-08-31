@@ -943,6 +943,7 @@ type DriverWallet {
 type StatisticsResult {
   currency: String!
   sumOfCurrentPeriod: Float!
+  lastOrderEarnings: Float
   dataset: [Datapoint!]!
 }
 
@@ -1031,12 +1032,16 @@ type EphemeralMessage {
   riderProfileUrl: String
   serviceName: String
   serviceImageUrl: String
+  amount: Float
 }
 
 enum EphemeralMessageType {
   RateRider
   RiderCanceled
   AddPayoutMethod
+  RideReceived
+  RideCompleted
+  RideCancelled
 }
 
 input PointInput {
@@ -1087,6 +1092,9 @@ type Query {
   activeServices: [Service!]!
   callMaskingConfig: CallMaskingConfig
   lostPropertyEligibility(orderId: ID!): LostPropertyEligibility!
+
+  """DEV ONLY - fetch pickup OTP for testing. Remove before production."""
+  devGetPickupOtp(orderId: ID!): String
   activeOrders: [ActiveOrder!]!
 
   """Get all ride offers for the driver"""
@@ -1243,6 +1251,7 @@ type Mutation {
   arrivedToPickup(orderId: ID!): UpdateStatus!
   arrivedToDestination(orderId: ID!): UpdateStatus!
   initiateRide(orderId: ID!): UpdateStatus!
+  verifyPickupOtp(orderId: ID!, otp: String!, waitSeconds: Int): UpdateStatus!
   cancelRide(orderId: ID!, reasonId: ID!, reasonNote: String): UpdateStatus!
   riderPaidInCash(orderId: ID!): UpdateStatus!
   submitOrderFee(orderId: ID!, fee: Float!): UpdateStatus!

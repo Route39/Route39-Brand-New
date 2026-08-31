@@ -13,16 +13,12 @@ import 'package:flutter_common/core/presentation/buttons/app_bordered_button.dar
 import 'package:flutter_common/core/presentation/buttons/app_close_button.dart';
 import 'package:flutter_common/core/presentation/buttons/app_primary_button.dart';
 import 'package:flutter_common/core/presentation/invoice/invoice.dart';
-import 'package:ionicons/ionicons.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class OrderSummary extends StatelessWidget {
   final Fragment$ActiveOrder order;
 
-  const OrderSummary({
-    super.key,
-    required this.order,
-  });
+  const OrderSummary({super.key, required this.order});
 
   @override
   Widget build(BuildContext context) {
@@ -35,10 +31,15 @@ class OrderSummary extends StatelessWidget {
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             height: 150,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: Assets.images.drawerTopBackground.provider(),
-                fit: BoxFit.cover,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [
+                  Color(0xFFB30000),
+                  Color(0xFFE00000),
+                  Color(0xFFFF4B4B),
+                ],
               ),
             ),
             child: SafeArea(
@@ -88,7 +89,10 @@ class OrderSummary extends StatelessWidget {
                 currency: order.currency,
                 total: order.totalCost,
                 items: [
-                  ("Service fee", order.totalCost - (order.couponDiscount ?? 0)),
+                  (
+                    "Service fee",
+                    order.totalCost - (order.couponDiscount ?? 0),
+                  ),
                   ("Discount", -(order.couponDiscount ?? 0)),
                 ],
               ),
@@ -110,9 +114,7 @@ class OrderSummary extends StatelessWidget {
                   ),
                 );
               },
-              child: Text(
-                context.translate.cashPaymentReceived,
-              ),
+              child: Text(context.translate.cashPaymentReceived),
             ),
           ),
           SafeArea(

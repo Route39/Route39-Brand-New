@@ -206,6 +206,15 @@ export class TaxiOrderEntity {
   })
   destinationArrivedTo!: number;
 
+  @Column({ nullable: true, length: 4 })
+  pickupOtp?: string;
+
+  @Column({ nullable: true })
+  pickupOtpVerifiedAt?: Date;
+
+  @Column({ nullable: true })
+  waitSeconds?: number;
+
   @ManyToOne(() => RegionEntity, (region) => region.taxiOrders)
   region?: RegionEntity;
 

@@ -4,6 +4,9 @@ export enum DriverEphemeralMessageType {
   RateRider = 'RateRider',
   RiderCanceled = 'RiderCanceled',
   AddPayoutMethod = 'AddPayoutMethod',
+  RideReceived = 'RideReceived',
+  RideCompleted = 'RideCompleted',
+  RideCancelled = 'RideCancelled',
 }
 
 export class DriverEphemeralMessageSnapshot {
@@ -20,4 +23,5 @@ export class DriverEphemeralMessageSnapshot {
   riderProfileUrl!: string | null;
   serviceName!: string | null;
   serviceImageUrl!: string | null;
+  amount!: number | null;
 }

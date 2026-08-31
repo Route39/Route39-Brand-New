@@ -1,0 +1,246 @@
+import 'package:api_response/api_response.dart';
+import 'package:ridy_driver/config/locator/locator.dart';
+import 'package:ridy_driver/core/blocs/route.dart';
+import 'package:ridy_driver/core/extensions/extensions.dart';
+import 'package:ridy_driver/core/graphql/documents/earnings.graphql.dart';
+import 'package:ridy_driver/core/graphql/fragments/earningsDataset.extensions.dart';
+import 'package:ridy_driver/core/graphql/schema.gql.dart';
+import 'package:ridy_driver/core/router/nav_item.dart';
+import 'package:ridy_driver/features/earnings/domain/repositories/earnings_repository.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+class TodayEarningsBar extends StatefulWidget {
+  const TodayEarningsBar({super.key});
+
+  @override
+  State<TodayEarningsBar> createState() => _TodayEarningsBarState();
+}
+
+class _TodayEarningsBarState extends State<TodayEarningsBar> {
+  ApiResponse<Query$Earnings> _response = const ApiResponse.initial();
+  bool _expanded = false;
+
+  static const Color liteRed = Color(0xFFE05C5C);
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTodayEarnings();
+  }
+
+  Future<void> _fetchTodayEarnings() async {
+    if (mounted) {
+      setState(() {
+        _response = ApiResponse.loading();
+      });
+    }
+
+    // Route39 business day is IST (UTC+05:30).
+    // Fetch ONLY today's collection:
+    // 00:00:00 IST -> current time IST.
+    final nowUtc = DateTime.now().toUtc();
+    final nowIst = nowUtc.add(const Duration(hours: 5, minutes: 30));
+
+    final startOfTodayIst = DateTime(
+      nowIst.year,
+      nowIst.month,
+      nowIst.day,
+      0,
+      0,
+      0,
+    );
+
+    // Convert IST boundaries back to UTC before sending to GraphQL.
+    final startOfTodayUtc = startOfTodayIst.subtract(
+      const Duration(hours: 5, minutes: 30),
+    );
+
+    final response = await locator<EarningsRepository>().getEarningsDataset(
+      timeFrame: Enum$TimeQuery.Daily,
+      startDate: startOfTodayUtc,
+      endDate: nowUtc,
+    );
+
+    if (mounted) {
+      setState(() {
+        _response = response;
+      });
+    }
+  }
+
+  Widget _statCard({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: liteRed, size: 18),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(color: Colors.black54, fontSize: 11),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: const TextStyle(
+                color: Colors.black87,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Query$Earnings? loadedData;
+    if (_response case ApiResponseLoaded(:final data)) {
+      loadedData = data;
+    }
+
+    final currency = loadedData?.getStatsNew.currency ?? '';
+    final todayEarnings =
+        loadedData?.totalEarnings.formatCurrency(currency) ?? '₹0';
+    final lastOrderEarnings =
+        loadedData?.getStatsNew.lastOrderEarnings?.formatCurrency(currency) ??
+        '₹0';
+
+    return BlocListener<RouteCubit, NavItem>(
+      bloc: locator<RouteCubit>(),
+      listenWhen: (previous, current) =>
+          previous != NavItem.home && current == NavItem.home,
+      listener: (context, state) {
+        if (_expanded) {
+          setState(() => _expanded = false);
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(top: 8),
+        decoration: BoxDecoration(
+          color: liteRed,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () {
+                if (loadedData != null) {
+                  setState(() {
+                    _expanded = !_expanded;
+                  });
+                } else {
+                  _fetchTodayEarnings();
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.currency_rupee,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      "Today's Earnings",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const Spacer(),
+                    switch (_response) {
+                      ApiResponseLoaded() => Text(
+                        todayEarnings,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      ApiResponseLoading() => const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                      _ => const Text(
+                        "₹0",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    },
+                    const SizedBox(width: 4),
+                    Icon(
+                      _expanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (_expanded)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                child: Row(
+                  children: [
+                    _statCard(
+                      icon: Icons.account_balance_wallet_outlined,
+                      label: 'Wallet Balance',
+                      value: '₹0',
+                    ),
+                    _statCard(
+                      icon: Icons.currency_rupee,
+                      label: "Today's Earnings",
+                      value: todayEarnings,
+                    ),
+                    _statCard(
+                      icon: Icons.history,
+                      label: 'Last Order Earnings',
+                      value: lastOrderEarnings,
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}

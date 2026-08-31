@@ -7,7 +7,12 @@ import { ForbiddenError } from '@nestjs/apollo';
 export class GqlAuthGuard extends AuthGuard('jwt') {
   override getRequest(context: ExecutionContext) {
     const ctx = GqlExecutionContext.create(context).getContext();
-    //const { req, connection } = ctx.getContext();
+    const gqlCtx = GqlExecutionContext.create(context);
+    const info = gqlCtx.getInfo();
+    Logger.debug(
+      `[GqlAuthGuard DEBUG] operation=${info?.fieldName} type=${info?.operation?.operation} headers=${JSON.stringify(ctx.req?.headers?.authorization ?? ctx.req?.headers ?? 'NO_REQ')}`,
+      'GqlAuthGuard',
+    );
     return ctx.req ? ctx.req : { user: ctx };
   }
 

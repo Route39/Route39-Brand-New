@@ -157,6 +157,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
           break;
 
+        case HomeEvent$OnVerifyPickupOtp(:final orderId, :final otp):
+          final response = await _repository.verifyPickupOtp(orderId: orderId, otp: otp);
+          emit(state.copyWith(updateStatusResponse: response));
+
+          break;
+
         case HomeEvent$OnArrivedToDestination(:final order):
           await _repository.arrivedToDestination(order: order);
           break;

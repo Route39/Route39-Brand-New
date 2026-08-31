@@ -20,20 +20,19 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../../blocs/home.bloc.dart';
 import '../../components/notice_bar_content.dart';
 import '../../components/payment_method_select_field.dart';
-import '../../dialogs/ride_options_dialog.dart';
-import '../../dialogs/ride_safety_dialog.dart';
+import '../../components/waiting_time_button.dart';
+import '../../dialogs/cancel_ride_reason.dart';
+import '../../dialogs/pickup_otp_dialog.dart';
 
 class ActiveOrderSheet extends StatelessWidget {
-  const ActiveOrderSheet({
-    super.key,
-  });
+  const ActiveOrderSheet({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: context.responsive(
         BoxDecoration(
-          color: ColorPalette.primary20,
+          color: const Color(0xFF8F0000),
           borderRadius: BorderRadius.circular(30),
         ),
         xl: const BoxDecoration(),
@@ -50,24 +49,30 @@ class ActiveOrderSheet extends StatelessWidget {
               context.responsive(
                 AnimatedSwitcher(
                   duration: AnimationDuration.pageStateTransitionMobile,
-                  child: (order.status.toEntity == OrderStatus.driverAccepted && order.pickupEta != null)
+                  child:
+                      (order.status.toEntity == OrderStatus.driverAccepted &&
+                          order.pickupEta != null)
                       ? NoticeBarContent(
                           icon: Ionicons.time,
                           text: context.translate.noticePickingUpRiderIn,
-                          trailingText: order.pickupEta?.minutesFromNow(context),
+                          trailingText: order.pickupEta?.minutesFromNow(
+                            context,
+                          ),
                         )
                       : order.status.toEntity == OrderStatus.arrived
-                          ? NoticeBarContent(
-                              icon: Icons.info,
-                              text: context.translate.headingToDestination,
-                            )
-                          : order.status.toEntity == OrderStatus.started
-                              ? NoticeBarContent(
-                                  icon: Ionicons.time,
-                                  text: context.translate.headingToDestination,
-                                  trailingText: order.dropoffEta?.minutesFromNow(context),
-                                )
-                              : const SizedBox.shrink(),
+                      ? NoticeBarContent(
+                          icon: Icons.info,
+                          text: context.translate.headingToDestination,
+                        )
+                      : order.status.toEntity == OrderStatus.started
+                      ? NoticeBarContent(
+                          icon: Ionicons.time,
+                          text: context.translate.headingToDestination,
+                          trailingText: order.dropoffEta?.minutesFromNow(
+                            context,
+                          ),
+                        )
+                      : const SizedBox.shrink(),
                 ),
                 xl: const SizedBox(),
               ),
@@ -76,7 +81,7 @@ class ActiveOrderSheet extends StatelessWidget {
                   borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                   color: ColorPalette.neutralVariant99,
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                padding: const EdgeInsets.symmetric(vertical: 6),
                 child: SafeArea(
                   top: false,
                   child: Column(
@@ -91,17 +96,17 @@ class ActiveOrderSheet extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                border: Border.all(color: ColorPalette.neutral90),
+                                border: Border.all(
+                                  color: ColorPalette.neutral90,
+                                ),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Icon(
                                 Icons.account_circle,
-                                color: ColorPalette.primary30,
+                                color: Color(0xFFB30000),
                               ),
                             ),
-                            const SizedBox(
-                              width: 12,
-                            ),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,15 +124,15 @@ class ActiveOrderSheet extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            const SizedBox(
-                              width: 12,
-                            ),
+                            const SizedBox(width: 12),
                             Badge(
                               isLabelVisible: order.unreadMessagesCount > 0,
                               child: AppIconButton(
                                 icon: Ionicons.chatbubble,
                                 onPressed: () {
-                                  locator<HomeBloc>().add(const HomeEvent.onShowChat());
+                                  locator<HomeBloc>().add(
+                                    const HomeEvent.onShowChat(),
+                                  );
                                 },
                               ),
                             ),
@@ -135,36 +140,31 @@ class ActiveOrderSheet extends StatelessWidget {
                             AppIconButton(
                               icon: Ionicons.call,
                               onPressed: () {
-                                launchUrlString("tel://+${order.rider?.mobileNumber}");
+                                launchUrlString(
+                                  "tel://+${order.rider?.mobileNumber}",
+                                );
                               },
                             ),
                           ],
                         ),
                       ),
-                      const Divider(
-                        height: 16,
-                      ),
-                      Container(
+                      const Divider(height: 8),
+                      Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        height: 120,
-                        child: SingleChildScrollView(
-                          child: WayPointsView(
-                            waypoints: order.waypoints.toPlaces,
-                          ),
+                        child: WayPointsView(
+                          waypoints: order.waypoints.toPlaces,
                         ),
                       ),
-                      const SizedBox(
-                        height: 16,
-                      ),
+                      const SizedBox(height: 8),
                       Container(
-                        height: 16,
+                        height: 8,
                         decoration: BoxDecoration(
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.02),
                               blurRadius: 10,
                               offset: const Offset(0, -5),
-                            )
+                            ),
                           ],
                           color: ColorPalette.neutralVariant99,
                         ),
@@ -178,40 +178,24 @@ class ActiveOrderSheet extends StatelessWidget {
                               order: order,
                               onPressed: null,
                             ),
-                            const SizedBox(
-                              height: 9,
-                            ),
-                            const Divider(
-                              height: 16,
-                            ),
+                            const SizedBox(height: 4),
+                            const Divider(height: 8),
                             Row(
                               children: [
-                                AppTextButton(
-                                  iconData: Ionicons.cog,
-                                  isDense: true,
-                                  text: context.translate.rideOptions,
-                                  onPressed: () {
-                                    showDialog(
-                                      context: context,
-                                      useSafeArea: false,
-                                      builder: (context) => RideOptionsSheet(
-                                        orderId: order.id,
-                                      ),
-                                    );
-                                  },
-                                ),
+                                const WaitingTimeButton(),
                                 const Spacer(),
                                 AppTextButton(
-                                  iconData: Ionicons.shield,
+                                  iconData: Ionicons.closeCircle,
                                   isDense: true,
-                                  text: context.translate.rideSafety,
+                                  text: context.translate.cancelRide,
                                   onPressed: () {
                                     showDialog(
                                       context: context,
                                       useSafeArea: false,
-                                      builder: (context) => RideSafetyDialog(
-                                        order: order,
-                                      ),
+                                      builder: (context) =>
+                                          CancelRideReasonDialog(
+                                            orderId: order.id,
+                                          ),
                                     );
                                   },
                                 ),
@@ -223,8 +207,10 @@ class ActiveOrderSheet extends StatelessWidget {
                       AnimatedSwitcher(
                         duration: AnimationDuration.pageStateTransitionMobile,
                         child: Padding(
-                          padding: const EdgeInsets.all(16).copyWith(bottom: 8),
-                          child: order.status.toEntity == OrderStatus.driverAccepted
+                          padding: const EdgeInsets.all(10).copyWith(bottom: 6),
+                          child:
+                              order.status.toEntity ==
+                                  OrderStatus.driverAccepted
                               ? SliderButton(
                                   text: context.translate.slideToConfirmArrival,
                                   onSlided: () {
@@ -236,34 +222,35 @@ class ActiveOrderSheet extends StatelessWidget {
                                   },
                                 )
                               : order.status.toEntity == OrderStatus.arrived
-                                  ? SliderButton(
-                                      text: context.translate.slideToConfirmPickup,
-                                      onSlided: () {
-                                        locator<HomeBloc>().add(
-                                          HomeEvent.onStripStarted(
-                                            orderId: order.id,
-                                          ),
-                                        );
-                                      },
-                                    )
-                                  : order.status.toEntity == OrderStatus.started
-                                      ? SliderButton(
-                                          text: context.translate.slideToConfirmDropoff,
-                                          onSlided: () {
-                                            locator<HomeBloc>().add(
-                                              HomeEvent.onArrivedToDestination(
-                                                order: order,
-                                              ),
-                                            );
-                                          },
-                                        )
-                                      : const SizedBox.shrink(),
+                              ? SliderButton(
+                                  text: context.translate.slideToConfirmPickup,
+                                  onSlided: () {
+                                    showDialog(
+                                      context: context,
+                                      useSafeArea: false,
+                                      builder: (context) =>
+                                          PickupOtpDialog(orderId: order.id),
+                                    );
+                                  },
+                                )
+                              : order.status.toEntity == OrderStatus.started
+                              ? SliderButton(
+                                  text: context.translate.slideToConfirmDropoff,
+                                  onSlided: () {
+                                    locator<HomeBloc>().add(
+                                      HomeEvent.onArrivedToDestination(
+                                        order: order,
+                                      ),
+                                    );
+                                  },
+                                )
+                              : const SizedBox.shrink(),
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),
-              )
+              ),
             ],
           );
         },

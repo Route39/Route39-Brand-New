@@ -45,6 +45,8 @@ abstract class HomeRepository {
 
   Future<ApiResponse<void>> startTrip({required String orderId});
 
+  Future<ApiResponse<void>> verifyPickupOtp({required String orderId, required String otp});
+
   Future<ApiResponse<void>> submitReview({required String orderId, required int rating, required String? review});
 
   Future<ApiResponse<void>> paidInCash({required String orderId, required double amount});

@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   ActiveOrderCommonRedisService,
@@ -160,11 +160,17 @@ export class RiderOrderService {
             activeOrder.currency,
           );
         if (riderCredit < service!.cancelationTotalFee) {
-          await firstValueFrom(
-            this.httpService.get<{ status: 'OK' | 'FAILED' }>(
-              `${process.env.GATEWAY_SERVER_URL}/capture?id=${payments[0].transactionNumber}&amount=${service!.cancelationTotalFee}`,
-            ),
-          );
+          if (payments.length === 0 || !payments[0]?.transactionNumber) {
+            Logger.warn(
+              `No authorized payment found to capture cancellation fee for order ${activeOrder.id}, skipping fee capture.`,
+            );
+          } else {
+            await firstValueFrom(
+              this.httpService.get<{ status: 'OK' | 'FAILED' }>(
+                `${process.env.GATEWAY_SERVER_URL}/capture?id=${payments[0].transactionNumber}&amount=${service!.cancelationTotalFee}`,
+              ),
+            );
+          }
         }
         await Promise.all([
           this.customerWalletService.rechargeWallet({

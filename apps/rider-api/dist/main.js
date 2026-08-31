@@ -17024,6 +17024,25 @@ taxi_order_entity_ts_decorate([
     taxi_order_entity_ts_metadata("design:type", Number)
 ], TaxiOrderEntity.prototype, "destinationArrivedTo", void 0);
 taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true,
+        length: 4
+    }),
+    taxi_order_entity_ts_metadata("design:type", String)
+], TaxiOrderEntity.prototype, "pickupOtp", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", typeof Date === "undefined" ? Object : Date)
+], TaxiOrderEntity.prototype, "pickupOtpVerifiedAt", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", Number)
+], TaxiOrderEntity.prototype, "waitSeconds", void 0);
+taxi_order_entity_ts_decorate([
     (0,external_typeorm_.ManyToOne)(function() {
         return RegionEntity;
     }, function(region) {
@@ -21048,6 +21067,9 @@ var DriverEphemeralMessageType = /*#__PURE__*/ function(DriverEphemeralMessageTy
     DriverEphemeralMessageType["RateRider"] = "RateRider";
     DriverEphemeralMessageType["RiderCanceled"] = "RiderCanceled";
     DriverEphemeralMessageType["AddPayoutMethod"] = "AddPayoutMethod";
+    DriverEphemeralMessageType["RideReceived"] = "RideReceived";
+    DriverEphemeralMessageType["RideCompleted"] = "RideCompleted";
+    DriverEphemeralMessageType["RideCancelled"] = "RideCancelled";
     return DriverEphemeralMessageType;
 }({});
 var DriverEphemeralMessageSnapshot = function DriverEphemeralMessageSnapshot() {
@@ -47174,7 +47196,11 @@ let RiderOrderService = class RiderOrderService {
             if (service.cancelationTotalFee > 0) {
                 const riderCredit = await this.customerWalletService.getRiderCreditInCurrency(parseInt(activeOrder.riderId), activeOrder.currency);
                 if (riderCredit < service.cancelationTotalFee) {
-                    await (0, _rxjs.firstValueFrom)(this.httpService.get(`${process.env.GATEWAY_SERVER_URL}/capture?id=${payments[0].transactionNumber}&amount=${service.cancelationTotalFee}`));
+                    if (payments.length === 0 || !payments[0]?.transactionNumber) {
+                        _common.Logger.warn(`No authorized payment found to capture cancellation fee for order ${activeOrder.id}, skipping fee capture.`);
+                    } else {
+                        await (0, _rxjs.firstValueFrom)(this.httpService.get(`${process.env.GATEWAY_SERVER_URL}/capture?id=${payments[0].transactionNumber}&amount=${service.cancelationTotalFee}`));
+                    }
                 }
                 await Promise.all([
                     this.customerWalletService.rechargeWallet({
@@ -47973,6 +47999,20 @@ let DispatchPubSubService = class DispatchPubSubService {
         for (const driverId of availableDriverIds){
             const driver = await this.driverRedisService.getOnlineDriverMetaData(driverId.toString());
             this.driverNotificationService.requests(driver?.fcmTokens || []);
+            await this.driverRedisService.createEphemeralMessage(driverId.toString(), {
+                type: _database.DriverEphemeralMessageType.RideReceived,
+                orderId,
+                createdAt: new Date(),
+                expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                riderFullName: order.passenger ? [
+                    order.passenger.firstName,
+                    order.passenger.lastName
+                ].filter(Boolean).join(' ') || null : null,
+                riderProfileUrl: order.passenger?.profilePicture ?? null,
+                serviceName: order.serviceName ?? null,
+                serviceImageUrl: order.serviceImageAddress ?? null,
+                amount: order.fareEstimate ?? null
+            });
             this.pubsubService.publish('driver.event', {
                 driverId
             }, {

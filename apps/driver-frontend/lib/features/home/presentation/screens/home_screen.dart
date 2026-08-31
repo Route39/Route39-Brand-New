@@ -121,10 +121,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
               BlocListener<HomeBloc, HomeState>(
-                listenWhen: (previous, current) => previous.updateStatusResponse != current.updateStatusResponse,
+                listenWhen: (previous, current) =>
+                    previous.updateStatusResponse !=
+                    current.updateStatusResponse,
                 listener: (context, state) {
                   if (state.updateStatusResponse is ApiResponseError) {
-                    final errorResponse = state.updateStatusResponse as ApiResponseError;
+                    final errorResponse =
+                        state.updateStatusResponse as ApiResponseError;
                     context.showSnackBar(message: errorResponse.message);
                   }
                 },
@@ -136,7 +139,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     case HomeStateDriverStatus.online:
                       switch (previous.driverStatus) {
                         case HomeStateDriverStatus.online:
-                          return current.orderRequests.length > previous.orderRequests.length;
+                          return current.orderRequests.length >
+                              previous.orderRequests.length;
                         default:
                           return current.orderRequests.isNotEmpty;
                       }
@@ -155,7 +159,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               BlocListener<HomeBloc, HomeState>(
                 listenWhen: (previous, current) =>
-                    previous.ephemeralMessages.length < current.ephemeralMessages.length,
+                    previous.ephemeralMessages.length <
+                    current.ephemeralMessages.length,
                 listener: (context, state) async {
                   final homeBloc = locator<HomeBloc>();
                   for (var message in state.ephemeralMessages) {
@@ -180,7 +185,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                           },
                         );
-                        homeBloc.add(HomeEvent.markEphemeralMessageAsSeen(messageId: message.messageId));
+                        homeBloc.add(
+                          HomeEvent.markEphemeralMessageAsSeen(
+                            messageId: message.messageId,
+                          ),
+                        );
                         break;
                       case Enum$EphemeralMessageType.RiderCanceled:
                         await showDialog(
@@ -202,7 +211,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                           },
                         );
-                        homeBloc.add(HomeEvent.markEphemeralMessageAsSeen(messageId: message.messageId));
+                        homeBloc.add(
+                          HomeEvent.markEphemeralMessageAsSeen(
+                            messageId: message.messageId,
+                          ),
+                        );
                         break;
                       case Enum$EphemeralMessageType.AddPayoutMethod:
                         await showDialog(
@@ -224,7 +237,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                           },
                         );
-                        homeBloc.add(HomeEvent.markEphemeralMessageAsSeen(messageId: message.messageId));
+                        homeBloc.add(
+                          HomeEvent.markEphemeralMessageAsSeen(
+                            messageId: message.messageId,
+                          ),
+                        );
                         break;
                       case Enum$EphemeralMessageType.$unknown:
                         break;
@@ -233,7 +250,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ],
-            child: context.responsive(const HomeScreenMobile(), xl: const HomeScreenDesktop()),
+            child: context.responsive(
+              const HomeScreenMobile(),
+              xl: const HomeScreenDesktop(),
+            ),
           ),
         ),
       ),

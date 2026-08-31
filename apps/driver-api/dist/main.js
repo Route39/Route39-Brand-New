@@ -16997,6 +16997,25 @@ taxi_order_entity_ts_decorate([
     taxi_order_entity_ts_metadata("design:type", Number)
 ], TaxiOrderEntity.prototype, "destinationArrivedTo", void 0);
 taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true,
+        length: 4
+    }),
+    taxi_order_entity_ts_metadata("design:type", String)
+], TaxiOrderEntity.prototype, "pickupOtp", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", typeof Date === "undefined" ? Object : Date)
+], TaxiOrderEntity.prototype, "pickupOtpVerifiedAt", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", Number)
+], TaxiOrderEntity.prototype, "waitSeconds", void 0);
+taxi_order_entity_ts_decorate([
     (0,external_typeorm_.ManyToOne)(function() {
         return RegionEntity;
     }, function(region) {
@@ -21021,6 +21040,9 @@ var DriverEphemeralMessageType = /*#__PURE__*/ function(DriverEphemeralMessageTy
     DriverEphemeralMessageType["RateRider"] = "RateRider";
     DriverEphemeralMessageType["RiderCanceled"] = "RiderCanceled";
     DriverEphemeralMessageType["AddPayoutMethod"] = "AddPayoutMethod";
+    DriverEphemeralMessageType["RideReceived"] = "RideReceived";
+    DriverEphemeralMessageType["RideCompleted"] = "RideCompleted";
+    DriverEphemeralMessageType["RideCancelled"] = "RideCancelled";
     return DriverEphemeralMessageType;
 }({});
 var DriverEphemeralMessageSnapshot = function DriverEphemeralMessageSnapshot() {
@@ -45058,7 +45080,9 @@ const _apollo = __webpack_require__(17);
 let GqlAuthGuard = class GqlAuthGuard extends (0, _passport.AuthGuard)('jwt') {
     getRequest(context) {
         const ctx = _graphql.GqlExecutionContext.create(context).getContext();
-        //const { req, connection } = ctx.getContext();
+        const gqlCtx = _graphql.GqlExecutionContext.create(context);
+        const info = gqlCtx.getInfo();
+        _common.Logger.debug(`[GqlAuthGuard DEBUG] operation=${info?.fieldName} type=${info?.operation?.operation} headers=${JSON.stringify(ctx.req?.headers?.authorization ?? ctx.req?.headers ?? 'NO_REQ')}`, 'GqlAuthGuard');
         return ctx.req ? ctx.req : {
             user: ctx
         };
@@ -45481,6 +45505,9 @@ let OrderResolver = class OrderResolver {
         this.driverRedisService = driverRedisService;
         this.orderRedisService = orderRedisService;
     }
+    async devGetPickupOtp(orderId) {
+        return this.orderService.devGetPickupOtp(Number(orderId));
+    }
     async activeOrders() {
         const orders = await this.orderService.getActiveOrders(this.context.req.user.id);
         return orders;
@@ -45545,6 +45572,15 @@ let OrderResolver = class OrderResolver {
         });
         return result;
     }
+    async verifyPickupOtp(orderId, otp, waitSeconds) {
+        const result = await this.orderService.verifyPickupOtp({
+            orderId,
+            driverId: this.context.req.user.id,
+            otp,
+            waitSeconds: waitSeconds ?? undefined
+        });
+        return result;
+    }
     async cancelRide(orderId, reasonId, reasonNote) {
         const result = await this.orderService.cancelRide({
             orderId,
@@ -45577,6 +45613,20 @@ let OrderResolver = class OrderResolver {
         });
     }
 };
+_ts_decorate._([
+    (0, _graphql.Query)(()=>String, {
+        nullable: true,
+        description: 'DEV ONLY - fetch pickup OTP for testing. Remove before production.'
+    }),
+    _ts_param._(0, (0, _graphql.Args)('orderId', {
+        type: ()=>_graphql.ID
+    })),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        String
+    ]),
+    _ts_metadata._("design:returntype", Promise)
+], OrderResolver.prototype, "devGetPickupOtp", null);
 _ts_decorate._([
     (0, _graphql.Query)(()=>[
             _activeorderdto.ActiveOrderDTO
@@ -45661,6 +45711,26 @@ _ts_decorate._([
     ]),
     _ts_metadata._("design:returntype", Promise)
 ], OrderResolver.prototype, "initiateRide", null);
+_ts_decorate._([
+    (0, _graphql.Mutation)(()=>_updatestatusdto.UpdateStatusDTO),
+    _ts_param._(0, (0, _graphql.Args)('orderId', {
+        type: ()=>_graphql.ID
+    })),
+    _ts_param._(1, (0, _graphql.Args)('otp', {
+        type: ()=>String
+    })),
+    _ts_param._(2, (0, _graphql.Args)('waitSeconds', {
+        type: ()=>_graphql.Int,
+        nullable: true
+    })),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        Number,
+        String,
+        Object
+    ]),
+    _ts_metadata._("design:returntype", Promise)
+], OrderResolver.prototype, "verifyPickupOtp", null);
 _ts_decorate._([
     (0, _graphql.Mutation)(()=>_updatestatusdto.UpdateStatusDTO),
     _ts_param._(0, (0, _graphql.Args)('orderId', {
@@ -45889,10 +45959,13 @@ let OrderService = class OrderService {
                 dropoffEta,
                 driverDirections: driverTravelMetrics.directions
             });
+            // Generate 4-digit pickup OTP
+            const pickupOtp = Math.floor(1000 + Math.random() * 9000).toString();
             // CRITICAL FIX: Await the database update
             await this.orderRepository.update(input.orderId, {
                 status: _database.OrderStatus.DriverAccepted,
-                driverId: input.driverId
+                driverId: input.driverId,
+                pickupOtp: pickupOtp
             });
             // Notify all drivers that the offer is revoked
             for (const driverId of orderMetadata.offeredToDriverIds){
@@ -46009,6 +46082,39 @@ let OrderService = class OrderService {
             directions: order.tripDirections,
             nextDestination: this.createNextDestination(order.waypoints, order.currentLegIndex) ?? undefined
         };
+    }
+    // DEV ONLY - remove before production/git push
+    async devGetPickupOtp(orderId) {
+        const orderEntity = await this.orderRepository.findOne({
+            where: {
+                id: orderId
+            }
+        });
+        return orderEntity?.pickupOtp ?? null;
+    }
+    async verifyPickupOtp(input) {
+        const orderEntity = await this.orderRepository.findOne({
+            where: {
+                id: input.orderId
+            }
+        });
+        if (!orderEntity) {
+            throw new _apollo.ForbiddenError('ORDER_NOT_FOUND');
+        }
+        if (orderEntity.driverId !== input.driverId) {
+            throw new _apollo.ForbiddenError('ORDER_NOT_ASSIGNED_TO_DRIVER');
+        }
+        if (!orderEntity.pickupOtp || orderEntity.pickupOtp !== input.otp) {
+            throw new _apollo.ForbiddenError('INVALID_OTP');
+        }
+        await this.orderRepository.update(input.orderId, {
+            pickupOtpVerifiedAt: new Date(),
+            waitSeconds: input.waitSeconds
+        });
+        return this.initiateRide({
+            orderId: input.orderId,
+            driverId: input.driverId
+        });
     }
     async arrivedToDestination(input) {
         _common.Logger.debug(`Driver ${input.driverId} arrived to destination for order ${input.orderId}`, 'OrderService.arrivedToDestination');
@@ -50798,7 +50904,9 @@ let EarningsService = class EarningsService {
         }
         const mostUsedCurrency = q[0].currency;
         // Calculate sum of current period
-        const sumQuery = await this.requestRepository.query('SELECT SUM(costBest - providerShare) AS totalEarning FROM request WHERE DATE(requestTimestamp) >= DATE(?) AND DATE(requestTimestamp) <= DATE(?) AND driverId = ? AND currency = ?', [
+        // Convert requestTimestamp to IST (+5:30) before comparing dates, since dates from
+        // the client are in IST but requestTimestamp is stored in UTC.
+        const sumQuery = await this.requestRepository.query("SELECT SUM(costBest - providerShare) AS totalEarning FROM request WHERE DATE(CONVERT_TZ(requestTimestamp, '+00:00', '+05:30')) >= DATE(CONVERT_TZ(?, '+00:00', '+05:30')) AND DATE(CONVERT_TZ(requestTimestamp, '+00:00', '+05:30')) <= DATE(CONVERT_TZ(?, '+00:00', '+05:30')) AND driverId = ? AND currency = ?", [
             input.startDate,
             input.endDate,
             input.driverId,
@@ -50826,15 +50934,15 @@ let EarningsService = class EarningsService {
           ) AS time_slots
           LEFT JOIN request r ON (
             CASE 
-              WHEN HOUR(r.requestTimestamp) >= 6 AND HOUR(r.requestTimestamp) < 9 THEN '6 AM'
-              WHEN HOUR(r.requestTimestamp) >= 9 AND HOUR(r.requestTimestamp) < 12 THEN '9 AM'
-              WHEN HOUR(r.requestTimestamp) >= 12 AND HOUR(r.requestTimestamp) < 15 THEN '12 PM'
-              WHEN HOUR(r.requestTimestamp) >= 15 AND HOUR(r.requestTimestamp) < 18 THEN '3 PM'
-              WHEN HOUR(r.requestTimestamp) >= 18 AND HOUR(r.requestTimestamp) < 21 THEN '6 PM'
+              WHEN HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) >= 6 AND HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) < 9 THEN '6 AM'
+              WHEN HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) >= 9 AND HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) < 12 THEN '9 AM'
+              WHEN HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) >= 12 AND HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) < 15 THEN '12 PM'
+              WHEN HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) >= 15 AND HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) < 18 THEN '3 PM'
+              WHEN HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) >= 18 AND HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) < 21 THEN '6 PM'
               ELSE '9 PM'
             END = time_slots.name
-            AND DATE(r.requestTimestamp) >= DATE(?)
-            AND DATE(r.requestTimestamp) <= DATE(?)
+            AND DATE(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) >= DATE(CONVERT_TZ(?, '+00:00', '+05:30'))
+            AND DATE(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) <= DATE(CONVERT_TZ(?, '+00:00', '+05:30'))
             AND r.driverId = ?
             AND r.currency = ?
           )
@@ -50908,9 +51016,16 @@ let EarningsService = class EarningsService {
                 ]);
                 break;
         }
+        // Fetch the earnings from the driver's most recent completed order
+        const lastOrderQuery = await this.requestRepository.query('SELECT (costBest - providerShare) AS lastOrderEarning FROM request WHERE driverId = ? AND currency = ? ORDER BY requestTimestamp DESC LIMIT 1', [
+            input.driverId,
+            mostUsedCurrency
+        ]);
+        const lastOrderEarnings = lastOrderQuery[0]?.lastOrderEarning ?? null;
         return {
             currency: mostUsedCurrency,
             sumOfCurrentPeriod: sumOfCurrentPeriod,
+            lastOrderEarnings: lastOrderEarnings,
             dataset: dataset
         };
     }
@@ -50974,6 +51089,12 @@ _ts_decorate._([
     (0, _graphql.Field)(()=>_graphql.Float),
     _ts_metadata._("design:type", Number)
 ], StatisticsResult.prototype, "sumOfCurrentPeriod", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], StatisticsResult.prototype, "lastOrderEarnings", void 0);
 _ts_decorate._([
     (0, _graphql.Field)(()=>[
             Datapoint
@@ -51853,7 +51974,8 @@ let EphemeralMessagesService = class EphemeralMessagesService {
                 createdAt: message.createdAt,
                 expiresAt: message.expiresAt,
                 serviceName: message?.serviceName ?? null,
-                serviceImageUrl: message?.serviceImageUrl ?? null
+                serviceImageUrl: message?.serviceImageUrl ?? null,
+                amount: message?.amount ?? null
             };
             return result;
         }));
@@ -52004,6 +52126,12 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", Object)
 ], EphemeralMessageDTO.prototype, "serviceImageUrl", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>Number, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Object)
+], EphemeralMessageDTO.prototype, "amount", void 0);
 EphemeralMessageDTO = _ts_decorate._([
     (0, _graphql.ObjectType)('EphemeralMessage')
 ], EphemeralMessageDTO);

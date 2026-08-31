@@ -30,6 +30,16 @@ export class OrderResolver {
     private orderRedisService: RideOfferRedisService,
   ) {}
 
+  @Query(() => String, {
+    nullable: true,
+    description: 'DEV ONLY - fetch pickup OTP for testing. Remove before production.',
+  })
+  async devGetPickupOtp(
+    @Args('orderId', { type: () => ID }) orderId: string,
+  ): Promise<string | null> {
+    return this.orderService.devGetPickupOtp(Number(orderId));
+  }
+
   @Query(() => [ActiveOrderDTO])
   async activeOrders(): Promise<ActiveOrderDTO[]> {
     const orders = await this.orderService.getActiveOrders(
@@ -127,6 +137,22 @@ export class OrderResolver {
     const result = await this.orderService.initiateRide({
       orderId,
       driverId: this.context.req.user.id,
+    });
+    return result;
+  }
+
+  @Mutation(() => UpdateStatusDTO)
+  async verifyPickupOtp(
+    @Args('orderId', { type: () => ID }) orderId: number,
+    @Args('otp', { type: () => String }) otp: string,
+    @Args('waitSeconds', { type: () => Int, nullable: true })
+    waitSeconds: number | null,
+  ): Promise<UpdateStatusDTO> {
+    const result = await this.orderService.verifyPickupOtp({
+      orderId,
+      driverId: this.context.req.user.id,
+      otp,
+      waitSeconds: waitSeconds ?? undefined,
     });
     return result;
   }
