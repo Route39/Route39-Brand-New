@@ -23,7 +23,7 @@ class PayInCashDialog extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 14),
           ),
           onPressed: () {
-            Navigator.of(context).pop();
+            Navigator.of(context).pop(true);
           },
           child: Text(context.translate.confirm, style: const TextStyle(color: Colors.white)),
         ),

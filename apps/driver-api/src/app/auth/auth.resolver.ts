@@ -149,11 +149,16 @@ export class AuthResolver {
         isExistingUser: true,
       };
     }
-    const { hash } = await this.authService.sendVerificationCode({
+    const { hash, code } = await this.authService.sendVerificationCode({
       mobileNumber,
       countryIso,
     });
-    return { isExistingUser: false, hash };
+    const showDevOtp = process.env.SHOW_DEV_OTP?.toLowerCase() === 'true';
+    return {
+      isExistingUser: false,
+      hash,
+      devOtp: showDevOtp ? code : undefined,
+    };
   }
 
   @Mutation(() => VerificationDto, {

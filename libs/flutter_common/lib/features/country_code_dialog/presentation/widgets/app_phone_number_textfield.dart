@@ -13,6 +13,7 @@ class AppPhoneNumberTextField extends StatelessWidget {
   final (CountryCode, String?) initalValue;
   final String? Function((CountryCode, String?)?)? validator;
   final String? errorText;
+  final bool showCountryPicker;
 
   const AppPhoneNumberTextField({
     super.key,
@@ -21,6 +22,7 @@ class AppPhoneNumberTextField extends StatelessWidget {
     this.validator,
     this.errorText,
     this.onSaved,
+    this.showCountryPicker = true,
   });
 
   @override
@@ -60,26 +62,30 @@ class AppPhoneNumberTextField extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(state.value!.$1.e164CountryCode, style: context.bodyMedium),
-                          const SizedBox(width: 8),
-                          Icon(Icons.chevron_right, size: 16, color: context.colorScheme.onSurface),
-                        ],
+                          if (showCountryPicker) ...[
+                            const SizedBox(width: 8),
+                            Icon(Icons.chevron_right, size: 16, color: context.colorScheme.onSurface),
+                          ],                        ],
                       ),
                     ),
-                    onPressed: () async {
-                      final countryCodeDialogResult = await showDialog<CountryCode>(
-                        context: context,
-                        useSafeArea: false,
-                        builder: (context) {
-                          return const AppCountryCodeListDialog();
-                        },
-                      );
-                      // Guard against setState() after dispose when dialog
-                      // closes after the widget has already been unmounted.
-                      if (countryCodeDialogResult != null && state.mounted) {
-                        state.didChange((countryCodeDialogResult, state.value!.$2));
-                        onChanged?.call((countryCodeDialogResult, state.value!.$2));
-                      }
-                    }, minimumSize: Size(0, 0),
+                    onPressed: !showCountryPicker
+                        ? null
+                        : () async {
+                            final countryCodeDialogResult = await showDialog<CountryCode>(
+                              context: context,
+                              useSafeArea: false,
+                              builder: (context) {
+                                return const AppCountryCodeListDialog();
+                              },
+                            );
+                            // Guard against setState() after dispose when dialog
+                            // closes after the widget has already been unmounted.
+                            if (countryCodeDialogResult != null && state.mounted) {
+                              state.didChange((countryCodeDialogResult, state.value!.$2));
+                              onChanged?.call((countryCodeDialogResult, state.value!.$2));
+                            }
+                          },
+                    minimumSize: Size(0, 0),
                   ),
                   const SizedBox(width: 8),
                   Expanded(

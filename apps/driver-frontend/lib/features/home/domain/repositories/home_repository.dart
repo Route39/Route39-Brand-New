@@ -12,6 +12,10 @@ import 'package:ridy_driver/core/graphql/schema.gql.dart';
 abstract class HomeRepository {
   Stream<List<Fragment$RideOffer>> get orderRequests;
   Stream<List<Fragment$ActiveOrder>> get activeOrders;
+  // Synchronous snapshot of the current active orders, so callers that need
+  // the freshest value right after an await (e.g. right after accepting an
+  // order) don't have to race the async stream listener to see it.
+  List<Fragment$ActiveOrder> get activeOrdersValue;
   Stream<ApiResponse<Fragment$Profile>> get profile;
   Stream<List<Fragment$EphemeralMessage>> get ephemeralMessages;
 
@@ -29,7 +33,7 @@ abstract class HomeRepository {
 
   Future<ApiResponse<void>> updateStatus({required Enum$DriverStatus status, Input$PointInput? location});
 
-  Future<ApiResponse<void>> acceptOrderRequest({required String requestId});
+  Future<ApiResponse<Fragment$ActiveOrder>> acceptOrderRequest({required String requestId});
 
   void onLoggedIn({required Fragment$Profile profile});
 
@@ -39,19 +43,19 @@ abstract class HomeRepository {
 
   Future<ApiResponse<List<Fragment$CancelReason>>> getCancelReasons();
 
-  Future<ApiResponse<void>> cancelOrder({required String orderId, required String reasonId, String? reasonNote});
+  Future<ApiResponse<Fragment$ActiveOrder?>> cancelOrder({required String orderId, required String reasonId, String? reasonNote});
 
-  Future<ApiResponse<void>> arrivedToPickup({required String orderId});
+  Future<ApiResponse<Fragment$ActiveOrder?>> arrivedToPickup({required String orderId});
 
-  Future<ApiResponse<void>> startTrip({required String orderId});
+  Future<ApiResponse<Fragment$ActiveOrder?>> startTrip({required String orderId});
 
   Future<ApiResponse<void>> verifyPickupOtp({required String orderId, required String otp});
 
   Future<ApiResponse<void>> submitReview({required String orderId, required int rating, required String? review});
 
-  Future<ApiResponse<void>> paidInCash({required String orderId, required double amount});
+  Future<ApiResponse<Fragment$ActiveOrder?>> paidInCash({required String orderId, required double amount});
 
-  Future<ApiResponse<void>> arrivedToDestination({required Fragment$ActiveOrder order});
+  Future<ApiResponse<Fragment$ActiveOrder?>> arrivedToDestination({required Fragment$ActiveOrder order});
 
   Future<ApiResponse<Fragment$ChatMessage>> sendMessage({required String orderId, required String message});
 

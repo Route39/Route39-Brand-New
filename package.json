@@ -250,5 +250,25 @@
   },
   "publishConfig": {
     "access": "restricted"
+  },
+  "allowScripts": {
+    "cpu-features@0.0.10": true,
+    "core-js@3.43.0": true,
+    "lmdb@3.4.1": true,
+    "msgpackr-extract@3.0.3": true,
+    "nx@21.3.10": true,
+    "protobufjs@7.5.3": true,
+    "sharp@0.34.3": true,
+    "ssh2@1.16.0": true,
+    "unrs-resolver@1.11.1": true,
+    "@apollo/protobufjs@1.2.7": true,
+    "@firebase/util@1.12.1": true,
+    "@nestjs/core@11.1.5": true,
+    "@parcel/watcher@2.6.0": true,
+    "@sentry/cli@2.50.2": true,
+    "@sentry-internal/node-cpu-profiler@2.2.0": true,
+    "@swc/core@1.13.3": true,
+    "fsevents@2.3.3": true,
+    "esbuild@0.25.5": true
   }
 }

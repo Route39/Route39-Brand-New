@@ -6,6 +6,7 @@ sealed class LoginState with _$LoginState {
     @Default(LoginPage.enterNumber()) LoginPage loginPage,
     required (String, String?) mobileNumber,
     String? hash,
+    String? devOtp,
     String? jwtToken,
     Fragment$Profile? profile,
     DateTime? lastOtpSentAt,

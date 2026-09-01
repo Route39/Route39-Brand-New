@@ -35,5 +35,6 @@ export class EphemeralMessagesService {
       driverId.toString(),
       messageId,
     );
+    return true;
   }
 }

@@ -214,6 +214,7 @@ class OrderRepositoryImpl implements OrderRepository {
                         driver: order.driver?.copyWith(
                           location: event.activeOrderUpdated.driverLocation ?? order.driver!.location,
                         ),
+                        directions: event.activeOrderUpdated.directions ?? e.directions,
                       );
                     }
                     return e;

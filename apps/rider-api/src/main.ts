@@ -9,6 +9,10 @@ import { loadSecrets } from '@ridy/database';
 import './instrument';
 import { getConfig } from 'license-verify';
 
+process.on('unhandledRejection', (reason) => {
+  Logger.error('Unhandled promise rejection (process kept alive)', reason as any, 'Rider API');
+});
+
 async function bootstrap() {
   await loadSecrets();
   const app = await NestFactory.create(RiderAPIModule.register());

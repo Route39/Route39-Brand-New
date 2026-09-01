@@ -63,6 +63,14 @@ export class SharedDriverService {
     return this.driverRepo.update(driverId, { status, softRejectionNote });
   }
 
+  async getWalletBalance(driverId: number, currency: string): Promise<number> {
+    const wallet = await this.driverWalletRepo.findOneBy({
+      driverId,
+      currency,
+    });
+    return wallet?.balance ?? 0;
+  }
+
   /**
    * @deprecated Use Redis-based driver service lookup instead for better performance
    */

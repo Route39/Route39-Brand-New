@@ -46,7 +46,8 @@ class EnterNumberForm extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           AppPhoneNumberTextField(
-                            initalValue: (state.countryCode ?? Constants.defaultCountry, state.mobileNumber),
+                            initalValue: (CountryCode.parseByIso('IN')!, state.mobileNumber),
+                            showCountryPicker: false,
                             validator: (value) => value?.$2 != null ? null : context.translate.fieldIsRequired,
                             onSaved: (value) {
                               if (value != null && value.$2 != null) {

@@ -9,6 +9,8 @@ import 'package:flutter_common/core/presentation/responsive_dialog/app_responsiv
 import 'package:flutter_common/core/presentation/snackbar/snackbar.dart';
 import 'package:ridy_driver/core/router/app_router.dart';
 import 'package:ridy_driver/features/home/presentation/blocs/home.bloc.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ridy_driver/config/locator/locator.dart';
@@ -28,6 +30,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late final AppLifecycleListener _listener;
+  final AudioPlayer _rideRequestPlayer = AudioPlayer()..setReleaseMode(ReleaseMode.loop);
+  bool _isRideAlertPlaying = false;
 
   @override
   void initState() {
@@ -40,6 +44,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _listener.dispose();
+    _rideRequestPlayer.dispose();
+
     super.dispose();
   }
 
@@ -149,12 +155,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
                 },
                 listener: (context, state) {
-                  FlutterRingtonePlayer().play(
-                    fromAsset: "assets/notification.mp3",
-                    looping: false,
-                    volume: 1.0,
-                    asAlarm: true,
-                  );
+                  if (_isRideAlertPlaying) return;
+                  _isRideAlertPlaying = true;
+                  _rideRequestPlayer.play(AssetSource('notification.mp3'));
+                },
+              ),
+              // stop the sound once all ride requests are gone (accept screen closes)
+              BlocListener<HomeBloc, HomeState>(
+                listenWhen: (previous, current) =>
+                    previous.orderRequests.isNotEmpty && current.orderRequests.isEmpty,
+                listener: (context, state) {
+                  _isRideAlertPlaying = false;
+                  _rideRequestPlayer.stop();
                 },
               ),
               BlocListener<HomeBloc, HomeState>(

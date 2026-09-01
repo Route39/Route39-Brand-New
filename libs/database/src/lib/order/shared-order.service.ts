@@ -893,22 +893,16 @@ export class SharedOrderService {
         driverWallet.balance,
       );
 
-      // Check if driver's balance fell below minimum allowed balance
-      const minimumAllowedBalance = Number(
-        process.env.DRIVER_MINIMUM_ALLOWED_BALANCE ?? 0,
-      );
-      if (driverWallet.balance < minimumAllowedBalance) {
-        Logger.warn(
-          `Driver ${order.driverId} balance (${driverWallet.balance}) is below minimum allowed (${minimumAllowedBalance}). Taking driver offline.`,
-          'SharedOrderService.finish.balanceCheck',
-        );
-        // Expire the driver (take them offline)
-        await this.driverRedisService.expire([parseInt(order.driverId!)]);
-        await this.driverService.updateDriverStatus(
-          parseInt(order.driverId!),
-          DriverStatus.Offline,
-        );
-      }
+      // NOTE: We intentionally do NOT force the driver offline / expire their
+      // Redis presence here. This branch runs the FIRST time finish() is
+      // called for a trip — e.g. the instant the driver slides to confirm
+      // drop-off on a cash ride — which is before the rider's cash has been
+      // collected and before the order has moved to WaitingForPostPay.
+      // Expiring the driver here deletes their `driver:{id}` Redis record
+      // (including activeOrderIds), which orphans the still-open order: the
+      // driver app can no longer find it on reload, "cash payment received"
+      // never reappears, and the rider is left waiting forever. The
+      // low-balance check now runs after the order actually closes, below.
 
       // Split commission with fleet/provider
       let fleetShare = 0;
@@ -1273,6 +1267,24 @@ export class SharedOrderService {
       requestId: parseInt(order.id),
       type: RequestActivityType.Paid,
     });
+
+    // Drivers must stay online after completing a ride, regardless of
+    // wallet balance, until they manually toggle offline or log out.
+    // We still log a low-balance warning here for ops visibility, but no
+    // longer force the driver offline or wipe their Redis presence.
+    const minimumAllowedBalance = Number(
+      process.env.DRIVER_MINIMUM_ALLOWED_BALANCE ?? 0,
+    );
+    const closingBalance = await this.driverService.getWalletBalance(
+      parseInt(order.driverId!),
+      order.currency,
+    );
+    if (closingBalance < minimumAllowedBalance) {
+      Logger.warn(
+        `Driver ${order.driverId} balance (${closingBalance}) is below minimum allowed (${minimumAllowedBalance}) after completing order ${order.id}.`,
+        'SharedOrderService.finish.balanceCheck',
+      );
+    }
 
     return null;
   }

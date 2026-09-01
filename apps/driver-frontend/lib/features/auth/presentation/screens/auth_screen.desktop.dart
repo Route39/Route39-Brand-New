@@ -92,7 +92,10 @@ class AuthScreenDesktop extends StatelessWidget {
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
                   child: BlocBuilder<LoginBloc, LoginState>(
-                    buildWhen: (currentState, nextState) => currentState.loginPage != nextState.loginPage,
+                    buildWhen: (currentState, nextState) =>
+                        currentState.loginPage != nextState.loginPage ||
+                        currentState.otp != nextState.otp ||
+                        currentState.enterOtpResponse != nextState.enterOtpResponse,
                     builder: (context, state) => Padding(
                       padding: const EdgeInsets.all(64),
                       child: Column(

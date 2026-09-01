@@ -1,6 +1,7 @@
 fragment VerifyNumber on VerifyNumberDto {
   hash
   isExistingUser
+  devOtp
 }
 
 fragment VerifyOtpOrPassword on VerifcationResult {
