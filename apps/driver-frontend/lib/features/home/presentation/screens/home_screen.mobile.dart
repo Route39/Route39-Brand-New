@@ -157,9 +157,16 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
   Widget _buildHomeContent() {
     return BlocBuilder<HomeBloc, HomeState>(
       buildWhen: (previous, current) {
-        return current.orderRequests.isEmpty != previous.orderRequests.isEmpty;
-      },
-      builder: (context, state) {
+        final result = current.orderRequests.isEmpty != previous.orderRequests.isEmpty ||
+              current.driverStatus != previous.driverStatus ||
+              current.currentOrder?.status != previous.currentOrder?.status ||
+              current.currentOrder?.id != previous.currentOrder?.id ||
+              current.page != previous.page;
+          debugPrint('[ACCEPT-DEBUG] OUTER buildWhen at ${DateTime.now()}: prev.driverStatus=${previous.driverStatus} cur.driverStatus=${current.driverStatus} prev.orderRequests.isEmpty=${previous.orderRequests.isEmpty} cur.orderRequests.isEmpty=${current.orderRequests.isEmpty} => rebuild=$result');
+          return result;
+        },
+        builder: (context, state) {
+          debugPrint('[ACCEPT-DEBUG] OUTER builder RAN at ${DateTime.now()}, driverStatus=${state.driverStatus}');
         return CustomMultiChildLayout(
           delegate: MobileLayoutDelegate(
             isMapFull: state.orderRequests.isNotEmpty,
@@ -187,8 +194,8 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
               child: BlocBuilder<HomeBloc, HomeState>(
                 builder: (context, state) {
                   final order = state.currentOrder;
-                  return AnimatedSwitcher(
-                    duration: AnimationDuration.pageStateTransitionMobile,
+                  debugPrint('[ACCEPT-DEBUG] INNER builder RAN at ${DateTime.now()}, driverStatus=${state.driverStatus}, order?.status=${order?.status}, page=${state.page}');
+                    return AnimatedSwitcher(                      duration: AnimationDuration.pageStateTransitionMobile,
                     child: switch (state.driverStatus) {
                       HomeStateDriverStatus.accessDenied => const Text(
                         'access denied',
