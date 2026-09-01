@@ -13,4 +13,10 @@ export class VerifyNumberDto {
       'Hash that will need to be passed in subsequent verify code call in order for match and verifcation to happen.',
   })
   hash?: string;
+  @Field({
+    nullable: true,
+    description:
+      'Only populated when SHOW_DEV_OTP=true on the server, for local testing without a real SMS provider. Never populated in production.',
+  })
+  devOtp?: string;
 }

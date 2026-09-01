@@ -518,6 +518,11 @@ type VerifyNumberDto {
   Hash that will need to be passed in subsequent verify code call in order for match and verifcation to happen.
   """
   hash: String
+
+  """
+  Only populated when SHOW_DEV_OTP=true on the server, for local testing without a real SMS provider. Never populated in production.
+  """
+  devOtp: String
 }
 
 type VerifcationResult {
@@ -1004,7 +1009,7 @@ type Mutation {
   """
   Returns a hash that will need to be passed in subsequent verify code call in order for match and verifcation to happen. Real sms is not sent in demo mode. It is 123456 by default.
   """
-  verifyNumber(mobileNumber: String!, countryIso: String, forceSendOtp: Boolean): VerifyNumberDto!
+  verifyNumber(mobileNumber: String!, countryIso: String = "IN", forceSendOtp: Boolean): VerifyNumberDto!
 
   """
   Returns a JWT token if the code matches the hash. In demo mode the OTP is not sent. It is 123456 by default.

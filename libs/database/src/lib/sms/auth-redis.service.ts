@@ -31,7 +31,7 @@ export class AuthRedisService {
     )) as any;
     Logger.log(verifyHash, 'verifyHash');
     if (!verifyHash) throw new ForbiddenError('EXPIRED');
-    if (process.env.DEMO_MODE != null || verifyHash.code == code) {
+    if (verifyHash.code == code) {
       return verifyHash;
     } else {
       throw new ForbiddenError('INVALID');

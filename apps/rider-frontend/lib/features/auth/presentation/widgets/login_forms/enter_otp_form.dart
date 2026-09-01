@@ -7,6 +7,8 @@ import 'package:flutter_common/core/presentation/buttons/app_primary_button.dart
 import 'package:flutter_common/core/presentation/buttons/app_text_button.dart';
 import 'package:flutter_common/core/presentation/otp_textfield.dart';
 import 'package:ridy/features/auth/presentation/blocs/login.bloc.dart';
+import 'package:flutter_common/core/presentation/snackbar/snackbar.dart';
+
 
 class EnterOtpForm extends StatefulWidget {
   const EnterOtpForm({super.key});
@@ -20,8 +22,18 @@ class _EnterOtpFormState extends State<EnterOtpForm> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LoginBloc, LoginState>(
-      builder: (context, loginstate) {
+    return BlocConsumer<LoginBloc, LoginState>(
+      listener: (context, loginstate) {
+        switch (loginstate.loginPage) {
+          case LoginPage$EnterOtp(:final state):
+            switch (state) {
+              case PageState$Error():
+                context.showSnackBar(message: "Wrong OTP");
+              case _:
+            }
+          case _:
+        }
+      },      builder: (context, loginstate) {
         switch (loginstate.loginPage) {
           case LoginPage$EnterOtp(:final state):
             return Column(
@@ -51,10 +63,10 @@ class _EnterOtpFormState extends State<EnterOtpForm> {
                     },
                   ),
                 ),
-                if (Env.isDemoMode) ...[
+                if (loginstate.devOtp != null) ...[
                   const SizedBox(height: 16),
                   Text(
-                    "In demo mode, use 123456 as OTP",
+                    "DevOTP: ${loginstate.devOtp}",
                     style: context.bodyMedium?.copyWith(
                       color: context.theme.colorScheme.onSurfaceVariant,
                     ),

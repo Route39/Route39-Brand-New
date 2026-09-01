@@ -3,6 +3,7 @@ import {
   ActiveOrderCommonRedisService,
   DriverEntity,
   DriverRedisSnapshot,
+  GoogleServicesService,
   OrderStatus,
   Point,
   PubSubService,
@@ -36,6 +37,7 @@ export class DriverService {
     private timesheetService: TimesheetService,
     private readonly pubsub: PubSubService,
     private readonly rideOfferRedisService: RideOfferRedisService,
+    private readonly googleServices: GoogleServicesService,
   ) {}
 
   async findWithDeleted(
@@ -90,11 +92,25 @@ export class DriverService {
     if (driverIds.length < 1) {
       return;
     }
+    const idsToExpire: number[] = [];
     for (const driverId of driverIds) {
       const onlineDriver =
         await this.driverRedisService.getOnlineDriverMetaData(
           driverId.toString(),
         );
+
+      // Never expire a driver who currently has an active order (e.g. mid-trip
+      // or waiting on the rider's cash payment). Their location feed can go
+      // stale simply because the app was minimized/backgrounded — expiring
+      // them here would wipe their Redis record (including activeOrderIds)
+      // and strand the order, since the driver app relies on that record to
+      // know an order is still in progress.
+      if ((onlineDriver?.activeOrderIds?.length ?? 0) > 0) {
+        Logger.log(
+          `Driver ${driverId} has an active order, skipping location expiry`,
+        );
+        continue;
+      }
 
       // Clean up pending ride offers before expiring driver
       // This removes the driver from each offer's offeredToDriverIds array
@@ -120,8 +136,9 @@ export class DriverService {
         rejectedOrdersCount: onlineDriver?.rejectedOrdersCount ?? 0,
       });
       await this.timesheetService.goOffline(driverId);
+      idsToExpire.push(driverId);
     }
-    await this.driverRedisService.expire(driverIds);
+    await this.driverRedisService.expire(idsToExpire);
   }
 
   restore(id: number) {
@@ -366,6 +383,34 @@ export class DriverService {
       onlineDriver.activeOrderIds,
     );
     for (const order of activeOrders) {
+      // Driver is still en route to the pickup point: recompute the
+      // pickup polyline from the driver's new location so it stays
+      // in sync with the live marker instead of staying frozen at
+      // whatever it was when the driver accepted the ride.
+      let updatedDirections: Point[] | undefined;
+      if (
+        [OrderStatus.DriverAccepted, OrderStatus.Arrived].includes(
+          order.status,
+        ) &&
+        order.waypoints?.length
+      ) {
+        try {
+          const pickupPoint = order.waypoints[0].location;
+          const driverTravel = await this.googleServices.getSumDistanceAndDuration([
+            point,
+            pickupPoint,
+          ]);
+          updatedDirections = driverTravel.directions;
+          await this.activeOrderRedisService.updateOrderStatus(order.id, {
+            driverDirections: updatedDirections,
+          });
+        } catch (err) {
+          Logger.warn(
+            `Failed to recompute driver directions for order ${order.id}: ${err}`,
+          );
+        }
+      }
+
       this.pubsub.publish(
         'rider.order.updated',
         {
@@ -376,6 +421,7 @@ export class DriverService {
           driverLocation: point,
           orderId: parseInt(order.id),
           riderId: parseInt(order.riderId),
+          ...(updatedDirections ? { directions: updatedDirections } : {}),
         },
       );
 

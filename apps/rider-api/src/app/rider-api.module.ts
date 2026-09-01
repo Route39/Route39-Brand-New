@@ -17,6 +17,7 @@ import {
   PubSubModule,
   StorageModule,
   getRedisConnectionConfig,
+  RedisSearchMigrationService,
 } from '@ridy/database';
 import { join } from 'path';
 import { AnnouncementModule } from './announcement/announcement.module';
@@ -152,6 +153,7 @@ export class RiderAPIModule implements OnModuleInit {
             provide: APP_FILTER,
             useClass: SentryGlobalFilter,
           },
+          RedisSearchMigrationService,
         ],
         controllers: [RiderAPIController],
       };

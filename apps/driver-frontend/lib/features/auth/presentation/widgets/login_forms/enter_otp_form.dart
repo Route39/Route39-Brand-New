@@ -1,10 +1,13 @@
-import 'package:ridy_driver/config/env.dart';
-import 'package:ridy_driver/config/locator/locator.dart';
+import 'dart:math';
+
+import 'package:ridy_driver/config/env.dart';import 'package:ridy_driver/config/locator/locator.dart';
 import 'package:ridy_driver/core/extensions/extensions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_common/core/presentation/buttons/app_primary_button.dart';
 import 'package:flutter_common/core/presentation/buttons/app_text_button.dart';
 import 'package:flutter_common/core/presentation/otp_textfield.dart';
+import 'package:flutter_common/core/presentation/snackbar/snackbar.dart';
 
 import '../../blocs/login.bloc.dart';
 
@@ -15,8 +18,16 @@ class EnterOtpForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //debugPrint('[OTP-DEBUG] Env.isDemoMode = ${Env.isDemoMode}');
     final loginBloc = locator<LoginBloc>();
-    return Column(
+    return BlocListener<LoginBloc, LoginState>(
+      listenWhen: (previous, current) =>
+          previous.enterOtpResponse.errorMessage != current.enterOtpResponse.errorMessage &&
+          current.enterOtpResponse.errorMessage != null,
+      listener: (context, state) {
+        context.showSnackBar(message: "Wrong OTP");
+      },
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Expanded(
@@ -66,6 +77,7 @@ class EnterOtpForm extends StatelessWidget {
           child: Text(context.translate.confirm),
         ),
       ],
+      ),
     );
   }
 }

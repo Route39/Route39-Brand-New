@@ -45,19 +45,28 @@ export class AuthService {
   async sendVerificationCode(input: {
     phoneNumber: string;
     countryIso?: string;
-  }): Promise<{ hash: string }> {
+  }): Promise<{ hash: string; code: string }> {
     const code =
       input.phoneNumber === '447700900000'
         ? '839274'
         : process.env.DEMO_MODE?.toLowerCase() === 'true'
-          ? '123456'
+          ? Math.floor(100000 + Math.random() * 900000).toString()
           : await this.smsService.sendVerificationCodeSms(input.phoneNumber);
-    const hash = await this.authRedisService.createVerificationCode({
-      mobileNumber: input.phoneNumber,
-      countryIso: input.countryIso,
-      code,
-    });
-    return hash;
+          if (process.env.DEMO_MODE?.toLowerCase() === 'true') {
+      this.logger.log(
+        `[DEMO_MODE] Verification code for ${input.phoneNumber}: ${code}`,
+      );
+    }
+    const { hash } = await this.authRedisService.createVerificationCode({
+  mobileNumber: input.phoneNumber,
+  countryIso: input.countryIso,
+  code,
+});
+
+return {
+  hash,
+  code,
+};
   }
 
   async verifyCode(hash: string, code: string): Promise<VerifyHash | null> {

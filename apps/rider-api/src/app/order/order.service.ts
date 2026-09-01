@@ -181,7 +181,7 @@ export class RiderOrderService {
             riderId: parseInt(activeOrder.riderId),
             status: TransactionStatus.Done,
           }),
-          this.driverService.rechargeWallet({
+          await this.driverService.rechargeWallet({
             action: TransactionAction.Deduct,
             deductType: DriverDeductTransactionType.Commission,
             amount: service!.cancelationFeeDriverShare,
@@ -744,7 +744,7 @@ export class RiderOrderService {
           deductType: RiderDeductTransactionType.OrderFee,
           status: TransactionStatus.Done,
         });
-        this.driverService.rechargeWallet({
+        await this.driverService.rechargeWallet({
           action: TransactionAction.Recharge,
           rechargeType: DriverRechargeTransactionType.OrderFee,
           amount: activeOrder.costEstimateForDriver,

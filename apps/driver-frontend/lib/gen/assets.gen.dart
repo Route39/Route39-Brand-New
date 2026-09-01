@@ -2041,10 +2041,6 @@ class $AssetsImagesGen {
   AssetGenImage get announcementEmpty =>
       const AssetGenImage('assets/images/announcement-empty.png');
 
-  /// File path: assets/images/auto_top_view.png
-  AssetGenImage get autoTopView =>
-      const AssetGenImage('assets/images/auto_top_view.png');
-
   /// File path: assets/images/background-announcements.png
   AssetGenImage get backgroundAnnouncements =>
       const AssetGenImage('assets/images/background-announcements.png');
@@ -2192,7 +2188,6 @@ class $AssetsImagesGen {
   /// List of all assets
   List<AssetGenImage> get values => [
     announcementEmpty,
-    autoTopView,
     backgroundAnnouncements,
     backgroundDotted,
     blueArrow,
