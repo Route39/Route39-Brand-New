@@ -8,6 +8,7 @@ import 'package:ridy_driver/core/extensions/extensions.dart';
 import 'package:flutter_common/core/presentation/buttons/app_back_button.dart';
 import 'package:ridy_driver/features/wallet/presentation/blocs/wallet.bloc.dart';
 import 'package:ridy_driver/gen/assets.gen.dart';
+import 'package:ridy_driver/features/home/presentation/screens/home_screen.mobile.dart';
 
 import 'action_buttons.dart';
 
@@ -41,7 +42,13 @@ class WalletHeader extends StatelessWidget {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: AppBackButton(
-                      onPressed: () => context.router.maybePop(),
+                      onPressed: () {
+                        if (context.router.canPop()) {
+                          context.router.maybePop();
+                        } else {
+                          SelectedTabNotifier.instance.goToHome();
+                        }
+                      },
                     ),
                   ),
                   xl: const SizedBox(

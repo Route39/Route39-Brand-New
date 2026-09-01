@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, MoreThan, Not } from 'typeorm';
-import { FeedbackEntity } from '@ridy/database';
-import { Repository } from 'typeorm';
-import { FeedbacksSummaryDTO } from './dto/feedbacks-summary.dto';
-import { DriverEntity } from '@ridy/database';
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { IsNull, Not } from "typeorm";
+import { FeedbackEntity } from "@ridy/database";
+import { Repository } from "typeorm";
+import { FeedbacksSummaryDTO } from "./dto/feedbacks-summary.dto";
+import { DriverEntity } from "@ridy/database";
 
 @Injectable()
 export class FeedbacksService {
@@ -21,13 +21,15 @@ export class FeedbacksService {
     const driver = await this.driverRepository.findOneOrFail({
       where: { id: input.driverId },
     });
-    const goodFeedbacks = await this.feedbackRepository.find({
+    const feedbacks = await this.feedbackRepository.find({
       where: {
         driverId: driver.id,
-        score: MoreThan(90),
         description: Not(IsNull()),
       },
-      relations: ['request.service', 'parameters'],
+      relations: ["request.service", "parameters"],
+      order: {
+        id: "DESC",
+      },
     });
     const points = await this.driverRepository.query(
       `
@@ -50,10 +52,10 @@ export class FeedbacksService {
     const badPoints = points.filter((p) => !p.isGood).map((p) => p.title);
     return {
       averageRating: driver.rating,
-      goodReviews: goodFeedbacks.map((feedback) => ({
-        serviceName: feedback.request!.service?.name ?? 'Deleted Service',
+      goodReviews: feedbacks.map((feedback) => ({
+        serviceName: feedback.request!.service?.name ?? "Deleted Service",
         rating: feedback.score,
-        review: feedback.description || '',
+        review: feedback.description || "",
         goodPoints: feedback.parameters
           .filter((p) => p.isGood)
           .map((p) => p.title),

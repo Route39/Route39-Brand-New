@@ -221,7 +221,7 @@ export class DriverService {
       },
     );
     return {
-      rating: driver.rating,
+      rating: driver.rating != null ? Math.round(driver.rating / 20) : null,
       acceptanceRate:
         (driver.acceptedOrdersCount /
           (driver.acceptedOrdersCount + driver.rejectedOrdersCount) || 0) * 100,

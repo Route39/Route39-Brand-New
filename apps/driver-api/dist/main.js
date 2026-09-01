@@ -44470,7 +44470,7 @@ let DriverService = class DriverService {
             status: _database.OrderStatus.Finished
         });
         return {
-            rating: driver.rating,
+            rating: driver.rating != null ? Math.round(driver.rating / 20) : null,
             acceptanceRate: (driver.acceptedOrdersCount / (driver.acceptedOrdersCount + driver.rejectedOrdersCount) || 0) * 100,
             totalRides: driverOrders,
             distanceTraveled: distanceTraveled || 0
@@ -49375,16 +49375,18 @@ let FeedbacksService = class FeedbacksService {
                 id: input.driverId
             }
         });
-        const goodFeedbacks = await this.feedbackRepository.find({
+        const feedbacks = await this.feedbackRepository.find({
             where: {
                 driverId: driver.id,
-                score: (0, _typeorm1.MoreThan)(90),
                 description: (0, _typeorm1.Not)((0, _typeorm1.IsNull)())
             },
             relations: [
-                'request.service',
-                'parameters'
-            ]
+                "request.service",
+                "parameters"
+            ],
+            order: {
+                id: "DESC"
+            }
         });
         const points = await this.driverRepository.query(`
           SELECT 
@@ -49406,10 +49408,10 @@ let FeedbacksService = class FeedbacksService {
         const badPoints = points.filter((p)=>!p.isGood).map((p)=>p.title);
         return {
             averageRating: driver.rating,
-            goodReviews: goodFeedbacks.map((feedback)=>({
-                    serviceName: feedback.request.service?.name ?? 'Deleted Service',
+            goodReviews: feedbacks.map((feedback)=>({
+                    serviceName: feedback.request.service?.name ?? "Deleted Service",
                     rating: feedback.score,
-                    review: feedback.description || '',
+                    review: feedback.description || "",
                     goodPoints: feedback.parameters.filter((p)=>p.isGood).map((p)=>p.title)
                 })),
             goodPoints,

@@ -71,11 +71,7 @@ class HomeScreenDesktop extends StatelessWidget {
                         HomeStateDriverStatus.initial => const SizedBox(),
                         HomeStateDriverStatus.loading => const SizedBox(),
                         HomeStateDriverStatus.online =>
-                          state.orderRequests.isEmpty
-                              ? const SizedBox()
-                              : OrderRequestsList(
-                                  requests: state.orderRequests,
-                                ),
+                          const SizedBox(),
                         HomeStateDriverStatus.offline => const SizedBox(),
                         HomeStateDriverStatus.onTrip => switch (order?.status) {
                           Enum$OrderStatus.WaitingForPostPay => OrderSummary(

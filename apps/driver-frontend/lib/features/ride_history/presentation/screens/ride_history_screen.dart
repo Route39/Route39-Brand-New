@@ -12,6 +12,7 @@ import 'package:ridy_driver/gen/assets.gen.dart';
 
 import '../blocs/ride_history.bloc.dart';
 import '../components/ride_history_item.dart';
+import 'package:ridy_driver/features/home/presentation/screens/home_screen.mobile.dart';
 
 @RoutePage()
 class RideHistoryScreen extends StatefulWidget {
@@ -42,7 +43,7 @@ class _RideHistoryScreenState extends State<RideHistoryScreen> {
               context.responsive(
                 AppBackButton(
                   onPressed: () {
-                    context.router.replaceAll([const HomeRoute()]);
+                    SelectedTabNotifier.instance.goToHome();
                   },
                 ),
                 xl: const SizedBox.shrink(),

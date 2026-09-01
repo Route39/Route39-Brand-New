@@ -8,6 +8,7 @@ import 'package:ridy_driver/gen/assets.gen.dart';
 
 import 'action_buttons.dart';
 import 'filters_box.dart';
+import 'package:ridy_driver/features/home/presentation/screens/home_screen.mobile.dart';
 
 class EarningsHeader extends StatelessWidget {
   final Query$Earnings? dataset;
@@ -41,7 +42,9 @@ class EarningsHeader extends StatelessWidget {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: AppBackButton(
-                      onPressed: () => context.router.maybePop(),
+                      onPressed: () {
+                        SelectedTabNotifier.instance.goToHome();
+                      },
                     ),
                   ),
                   xl: const SizedBox(

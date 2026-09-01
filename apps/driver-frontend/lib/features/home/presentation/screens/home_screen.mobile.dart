@@ -19,9 +19,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_common/core/theme/animation_duration.dart';
 import 'package:generic_map/generic_map.dart';
 
+import 'package:ridy_driver/features/earnings/presentation/screens/earnings_screen.dart';
+import 'package:ridy_driver/features/profile/presentation/screens/profile_screen.dart';
 import 'package:ridy_driver/features/ride_history/presentation/screens/ride_history_screen.dart';
 
 import 'sheets/order_requests_pageview.dart';
+import 'package:ridy_driver/features/wallet/presentation/screens/wallet_screen.dart';
+
+class SelectedTabNotifier extends ValueNotifier<int> {
+  static final SelectedTabNotifier instance = SelectedTabNotifier._();
+  SelectedTabNotifier._() : super(0);
+
+  void goToHome() => value = 0;
+}
 
 class HomeScreenMobile extends StatefulWidget {
   const HomeScreenMobile({super.key});
@@ -33,7 +43,24 @@ class HomeScreenMobile extends StatefulWidget {
 class _HomeScreenMobileState extends State<HomeScreenMobile> {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   MapViewController? controller;
-  int _selectedTab = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    SelectedTabNotifier.instance.addListener(_onTabChanged);
+  }
+
+  @override
+  void dispose() {
+    SelectedTabNotifier.instance.removeListener(_onTabChanged);
+    super.dispose();
+  }
+
+  void _onTabChanged() {
+    if (mounted) setState(() {});
+  }
+
+  int get _selectedTab => SelectedTabNotifier.instance.value;
 
   @override
   Widget build(BuildContext context) {
@@ -57,59 +84,35 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              InkWell(
-                onTap: () {
-                  setState(() {
-                    _selectedTab = 0;
-                  });
-                },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.home,
-                      color: _selectedTab == 0
-                          ? ColorPalette.primary40
-                          : Colors.grey,
-                    ),
-                    Text(
-                      'Home',
-                      style: TextStyle(
-                        color: _selectedTab == 0
-                            ? ColorPalette.primary40
-                            : Colors.grey,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
+              _navBarItem(
+                icon: Icons.home,
+                label: 'Home',
+                isSelected: _selectedTab == 0,
+                onTap: () => SelectedTabNotifier.instance.value = 0,
               ),
-              InkWell(
-                onTap: () {
-                  setState(() {
-                    _selectedTab = 1;
-                  });
-                },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.receipt_long,
-                      color: _selectedTab == 1
-                          ? ColorPalette.primary40
-                          : Colors.grey,
-                    ),
-                    Text(
-                      'Orders',
-                      style: TextStyle(
-                        color: _selectedTab == 1
-                            ? ColorPalette.primary40
-                            : Colors.grey,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
+              _navBarItem(
+                icon: Icons.bar_chart,
+                label: 'Earnings',
+                isSelected: _selectedTab == 1,
+                onTap: () => SelectedTabNotifier.instance.value = 1,
+              ),
+              _navBarItem(
+                icon: Icons.receipt_long,
+                label: 'Orders',
+                isSelected: _selectedTab == 2,
+                onTap: () => SelectedTabNotifier.instance.value = 2,
+              ),
+              _navBarItem(
+                icon: Icons.account_balance_wallet,
+                label: 'Wallet',
+                isSelected: _selectedTab == 3,
+                onTap: () => SelectedTabNotifier.instance.value = 3,
+              ),
+              _navBarItem(
+                icon: Icons.person,
+                label: 'Profile',
+                isSelected: _selectedTab == 4,
+                onTap: () => SelectedTabNotifier.instance.value = 4,
               ),
             ],
           ),
@@ -120,10 +123,7 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TopNavBar(
-                onMenuButtonPressed: () =>
-                    scaffoldKey.currentState?.openDrawer(),
-              ),
+              const TopNavBar(),
               BlocBuilder<HomeBloc, HomeState>(
                 buildWhen: (previous, current) =>
                     previous.driverStatus != current.driverStatus,
@@ -140,7 +140,13 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
           Expanded(
             child: IndexedStack(
               index: _selectedTab,
-              children: [_buildHomeContent(), const RideHistoryScreen()],
+              children: [
+                _buildHomeContent(),
+                const EarningsScreen(),
+                const RideHistoryScreen(),
+                const WalletScreen(),
+                const ProfileScreen(),
+              ],
             ),
           ),
         ],
@@ -190,11 +196,7 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
                       HomeStateDriverStatus.initial => const SizedBox(),
                       HomeStateDriverStatus.loading => const SizedBox(),
                       HomeStateDriverStatus.online =>
-                        state.orderRequests.isEmpty
-                            ? OnlineOfflineSheet(state: state)
-                            : OrderRequestsPageView(
-                                requests: state.orderRequests,
-                              ),
+                        OnlineOfflineSheet(state: state),
                       HomeStateDriverStatus.offline => OnlineOfflineSheet(
                         state: state,
                       ),
@@ -227,6 +229,33 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
           ],
         );
       },
+    );
+  }
+
+  Widget _navBarItem({
+    required IconData icon,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            color: isSelected ? ColorPalette.primary40 : Colors.grey,
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? ColorPalette.primary40 : Colors.grey,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
