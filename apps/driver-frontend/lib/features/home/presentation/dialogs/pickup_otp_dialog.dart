@@ -67,6 +67,9 @@ class _PickupOtpDialogState extends State<PickupOtpDialog> {
             _service.freeze();
             Navigator.of(context).pop();
           } else if (state.updateStatusResponse is ApiResponseError) {
+            final err = state.updateStatusResponse as ApiResponseError;
+            // ignore: avoid_print
+            print('[OTP-DEBUG] Real error: ${err.error}');
             setState(() {
               _errorMessage = 'Incorrect OTP, please try again';
             });

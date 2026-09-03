@@ -361,6 +361,7 @@ type RiderActiveOrderUpdate {
   directions: [Point!]
   driver: ActiveOrderDriver
   nextDestination: WaypointBase
+  pickupOtp: String
 }
 
 """Types of updates for taxi orders"""

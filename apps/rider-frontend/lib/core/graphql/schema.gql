@@ -1,3 +1,7 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
 interface WaypointBase {
   location: Point!
   address: String!
@@ -357,6 +361,7 @@ type RiderActiveOrderUpdate {
   directions: [Point!]
   driver: ActiveOrderDriver
   nextDestination: WaypointBase
+  pickupOtp: String
 }
 
 """Types of updates for taxi orders"""

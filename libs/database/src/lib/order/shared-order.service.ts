@@ -1420,6 +1420,7 @@ export class SharedOrderService {
         status: OrderStatus.DriverAccepted,
         pickupEta: etaPickup,
         riderId: parseInt(rider.id),
+        pickupOtp: rideOffer?.pickupOtp ?? activeOrder?.pickupOtp,
       },
     );
 

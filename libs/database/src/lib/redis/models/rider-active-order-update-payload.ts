@@ -61,6 +61,8 @@ export class RiderActiveOrderUpdateDTO {
   driver?: ActiveOrderDriverDTO;
   @Field(() => WaypointBase, { nullable: true })
   nextDestination?: WaypointBase;
+  @Field(() => String, { nullable: true })
+  pickupOtp?: string;
 }
 
 export enum RiderOrderUpdateType {

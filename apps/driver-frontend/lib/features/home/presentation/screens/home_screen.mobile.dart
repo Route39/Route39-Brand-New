@@ -203,7 +203,9 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
                       HomeStateDriverStatus.initial => const SizedBox(),
                       HomeStateDriverStatus.loading => const SizedBox(),
                       HomeStateDriverStatus.online =>
-                        OnlineOfflineSheet(state: state),
+                        state.orderRequests.isEmpty
+                            ? OnlineOfflineSheet(state: state)
+                            : OrderRequestsPageView(requests: state.orderRequests),
                       HomeStateDriverStatus.offline => OnlineOfflineSheet(
                         state: state,
                       ),

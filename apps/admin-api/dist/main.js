@@ -17232,8 +17232,6 @@ taxi_order_entity_ts_decorate([
         return DriverEntity;
     }, function(driver) {
         return driver.orders;
-    }, {
-        eager: true
     }),
     taxi_order_entity_ts_metadata("design:type", typeof DriverEntity === "undefined" ? Object : DriverEntity)
 ], TaxiOrderEntity.prototype, "driver", void 0);
@@ -19881,6 +19879,7 @@ function common_coupon_service_ts_param(paramIndex, decorator) {
 
 
 
+
 var CommonCouponService = /*#__PURE__*/ function() {
     "use strict";
     function CommonCouponService(couponRepo, campaignCodeRepo, requestRepo) {
@@ -19985,7 +19984,7 @@ var CommonCouponService = /*#__PURE__*/ function() {
     };
     _proto.checkCoupon = function checkCoupon(code, riderId) {
         return common_coupon_service_async_to_generator(function() {
-            var coupon, requestsWithCoupon, timesCouponUsed;
+            var coupon, requestsWithCoupon, completedRidesCount, timesCouponUsed;
             return common_coupon_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -20008,7 +20007,7 @@ var CommonCouponService = /*#__PURE__*/ function() {
                         }
                         if (!(riderId != null)) return [
                             3,
-                            3
+                            4
                         ];
                         return [
                             4,
@@ -20024,8 +20023,26 @@ var CommonCouponService = /*#__PURE__*/ function() {
                         if (requestsWithCoupon >= coupon.manyTimesUserCanUse) {
                             throw new apollo_.ForbiddenError('Coupon already used.');
                         }
-                        _state.label = 3;
+                        if (!coupon.isFirstTravelOnly) return [
+                            3,
+                            4
+                        ];
+                        return [
+                            4,
+                            this.requestRepo.count({
+                                where: {
+                                    riderId: riderId,
+                                    status: OrderStatus.Finished
+                                }
+                            })
+                        ];
                     case 3:
+                        completedRidesCount = _state.sent();
+                        if (completedRidesCount > 0) {
+                            throw new apollo_.ForbiddenError('Coupon only valid for first ride.');
+                        }
+                        _state.label = 4;
+                    case 4:
                         if (!coupon.isEnabled) {
                             throw new apollo_.ForbiddenError('Coupon is disabled.');
                         }
@@ -20037,7 +20054,7 @@ var CommonCouponService = /*#__PURE__*/ function() {
                                 }
                             })
                         ];
-                    case 4:
+                    case 5:
                         timesCouponUsed = _state.sent();
                         if (timesCouponUsed >= coupon.manyUsersCanUse) {
                             throw new apollo_.ForbiddenError('Coupon usage limit exceeded.');
@@ -24587,7 +24604,8 @@ var RideOfferRedisService = /*#__PURE__*/ function() {
                                 driverAvatarUrl: (_input_driverAvatarUrl = input.driverAvatarUrl) != null ? _input_driverAvatarUrl : null,
                                 riderFirstName: (_input_riderFirstName = input.riderFirstName) != null ? _input_riderFirstName : null,
                                 riderAvatarUrl: (_input_riderAvatarUrl = input.riderAvatarUrl) != null ? _input_riderAvatarUrl : null,
-                                driverDirections: input.driverDirections
+                                driverDirections: input.driverDirections,
+                                pickupOtp: input.pickupOtp
                             }))
                         ];
                     case 4:
@@ -25919,6 +25937,14 @@ rider_active_order_update_payload_ts_decorate([
     }),
     rider_active_order_update_payload_ts_metadata("design:type", typeof WaypointBase === "undefined" ? Object : WaypointBase)
 ], RiderActiveOrderUpdateDTO.prototype, "nextDestination", void 0);
+rider_active_order_update_payload_ts_decorate([
+    (0,graphql_.Field)(function() {
+        return String;
+    }, {
+        nullable: true
+    }),
+    rider_active_order_update_payload_ts_metadata("design:type", String)
+], RiderActiveOrderUpdateDTO.prototype, "pickupOtp", void 0);
 RiderActiveOrderUpdateDTO = rider_active_order_update_payload_ts_decorate([
     (0,graphql_.ObjectType)('RiderActiveOrderUpdate')
 ], RiderActiveOrderUpdateDTO);
@@ -32075,9 +32101,6 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         if (totalDistance > 1000000) {
                             throw new apollo_.ForbiddenError('Total distance exceeds 1000 km. Please reduce the distance or split the trip.');
                         }
-                        if (totalDistance < 100) {
-                            throw new apollo_.ForbiddenError('Total distance is less than 100 m. Try a longer trip.');
-                        }
                         zonePricings = [];
                         if (!(input.points.length == 2)) return [
                             3,
@@ -33376,7 +33399,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.assignOrderToDriver = function assignOrderToDriver(orderId, driverId) {
         return shared_order_service_async_to_generator(function() {
-            var _driver_fcmTokens, _rider_fcmTokens, _ref, rideOffer, activeOrder, driver, riderId, waypoints, rider, pickupPoint, _ref1, driverTravel, tripTravel, now, etaPickup, etaDropoff, _prevDriver_fcmTokens, prevDriver, prevToken, driverToken, riderToken;
+            var _driver_fcmTokens, _rider_fcmTokens, _ref, rideOffer, activeOrder, driver, riderId, waypoints, rider, pickupPoint, _ref1, driverTravel, tripTravel, now, etaPickup, etaDropoff, _prevDriver_fcmTokens, prevDriver, prevToken, driverToken, riderToken, _rideOffer_pickupOtp;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -33518,7 +33541,8 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             orderId: orderId,
                             status: OrderStatus.DriverAccepted,
                             pickupEta: etaPickup,
-                            riderId: parseInt(rider.id)
+                            riderId: parseInt(rider.id),
+                            pickupOtp: (_rideOffer_pickupOtp = rideOffer == null ? void 0 : rideOffer.pickupOtp) != null ? _rideOffer_pickupOtp : activeOrder == null ? void 0 : activeOrder.pickupOtp
                         });
                         // 5) Persist order record
                         return [

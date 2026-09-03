@@ -16,6 +16,7 @@ import '../components/today_earnings_bar.dart';
 import 'sheets/active_order_sheet.dart';
 import 'sheets/online_offline_sheet.dart';
 import 'sheets/order_summary.dart';
+import 'sheets/order_reqeusts_list.dart';
 
 class HomeScreenDesktop extends StatelessWidget {
   const HomeScreenDesktop({super.key});
@@ -104,7 +105,7 @@ class HomeScreenDesktop extends StatelessWidget {
                     HomeStateDriverStatus.online =>
                       state.orderRequests.isEmpty
                           ? OnlineOfflineSheet(state: state)
-                          : const SizedBox(),
+                          : OrderRequestsList(requests: state.orderRequests),
                     HomeStateDriverStatus.offline => OnlineOfflineSheet(
                       state: state,
                     ),
