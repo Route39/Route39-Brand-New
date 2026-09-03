@@ -52,13 +52,12 @@ class AppStepSlider extends StatelessWidget {
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 3),
-              child: Transform.rotate(
-                angle: 1.5708,
-                child: Assets.images.carTopView.image(
-                  width: 40,
-                  height: 40,
-                  fit: BoxFit.contain,
-                ),
+              child: Image.asset(
+                'assets/images/ev_auto_icon.png',
+                
+                width: 40,
+                height: 40,
+                fit: BoxFit.contain,
               ),
             ),
           )
