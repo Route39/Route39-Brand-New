@@ -123,11 +123,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   height: 16,
                                 ),
                                 AppMenuItem(
-                                  icon: Ionicons.settings,
-                                  title: context.translate.appSettings,
+                                  icon: Icons.logout,
+                                  title: context.translate.logout,
                                   onPressed: () {
-                                    context.router
-                                        .navigate(const SettingsParentRoute());
+                                    locator<AuthBloc>().onLoggedOut();
+                                    context.router.replaceAll([const AuthRoute()]);
                                   },
                                 ),
                               ],

@@ -49,39 +49,48 @@ class _LookingForDriverSheetState extends State<LookingForDriverSheet> with Tick
       width: double.infinity,
       color: Colors.white,
       child: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
             children: [
-              AspectRatio(
-                aspectRatio: 1376 / 768,
-                child: Stack(
-                  fit: StackFit.expand,
-                  alignment: Alignment.bottomCenter,
-                  children: [
-                    Image.asset(
-                      'assets/images/city_bg.png',
-                      fit: BoxFit.contain,
-                    ),
-                    AnimatedBuilder(
-                      animation: _controller,
-                      builder: (context, child) {
-                        return Align(
-                          alignment: _position.value,
-                          child: child,
-                        );
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 40),
-                        child: Image.asset(
-                          'assets/images/ev_auto_icon.png',
-                          width: (MediaQuery.of(context).size.width * 0.12).clamp(90.0, 220.0),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final panelWidth = constraints.maxWidth;
+                  return ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 200),
+                    child: AspectRatio(
+                    aspectRatio: 1376 / 768,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      alignment: Alignment.bottomCenter,
+                      children: [
+                        Image.asset(
+                          'assets/images/city_bg.png',
                           fit: BoxFit.contain,
                         ),
-                      ),
+                        AnimatedBuilder(
+                          animation: _controller,
+                          builder: (context, child) {
+                            return Align(
+                              alignment: _position.value,
+                              child: child,
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 20),
+                            child: Image.asset(
+                              'assets/images/ev_auto_icon.png',
+                              width: (panelWidth * 0.12).clamp(90.0, 220.0),
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                    ),
+                  );
+                },
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
@@ -214,6 +223,7 @@ class _LookingForDriverSheetState extends State<LookingForDriverSheet> with Tick
           ),
         ),
       ),
+    ),
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:ridy/config/locator/locator.dart';
+import 'package:ridy/core/blocs/home.bloc.dart';
 import 'package:ridy/core/extensions/extensions.dart';
 import 'package:flutter_common/core/presentation/buttons/app_primary_button.dart';
 import 'package:flutter_common/core/presentation/responsive_dialog/app_responsive_dialog.dart';
@@ -53,7 +54,23 @@ class _EnterCouponDialogState extends State<EnterCouponDialog> {
           );
 
           switch (calculateFareResponse) {
-            case ApiResponseLoaded<Query$CalculateFare>():
+            case ApiResponseLoaded<Query$CalculateFare>(:final data):
+              final homeBloc = locator<HomeBloc>();
+              final currentSelectedService = homeBloc.state.selectedService;
+              if (currentSelectedService != null) {
+                for (final category in data.getFares.services) {
+                  for (final service in category.services) {
+                    if (service.id == currentSelectedService.id) {
+                      homeBloc.add(
+                        HomeEvent.onServiceSelected(service: service, value: true),
+                      );
+                    }
+                  }
+                }
+              }
+              homeBloc.add(
+                HomeEvent.onCouponCodeChanged(couponCode: couponCode!),
+              );
               Navigator.of(context).pop(couponCode);
               showDialog(
                 context: context,

@@ -27,7 +27,15 @@ class Route39Header extends StatelessWidget {
               if (trailingAction != null) trailingAction!,
               IconButton(
                 icon: const Icon(Icons.notifications_none, color: Colors.black),
-                onPressed: () {},
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('No new notifications'),
+                      behavior: SnackBarBehavior.floating,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
               ),
             ],
           ),

@@ -237,7 +237,16 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
           ],
-          child: context.responsive(const HomeScreenMobile(), xl: const HomeScreenDesktop()),
+          child: context.responsive(
+            const HomeScreenMobile(),
+            sm: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: const HomeScreenMobile(),
+              ),
+            ),
+            xl: const HomeScreenDesktop(),
+          ),
         ),
       ),
     );

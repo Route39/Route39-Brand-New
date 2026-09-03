@@ -19751,6 +19751,7 @@ function common_coupon_service_ts_param(paramIndex, decorator) {
 
 
 
+
 var CommonCouponService = /*#__PURE__*/ function() {
     "use strict";
     function CommonCouponService(couponRepo, campaignCodeRepo, requestRepo) {
@@ -19817,7 +19818,7 @@ var CommonCouponService = /*#__PURE__*/ function() {
                                 }
                             })
                         ];
-                    case 4:
+                    case 5:
                         timesCouponUsed = _state.sent();
                         if (timesCouponUsed >= coupon.manyUsersCanUse) {
                             throw new apollo_.ForbiddenError('Coupon usage limit exceeded.');
@@ -19855,7 +19856,7 @@ var CommonCouponService = /*#__PURE__*/ function() {
     };
     _proto.checkCoupon = function checkCoupon(code, riderId) {
         return common_coupon_service_async_to_generator(function() {
-            var coupon, requestsWithCoupon, timesCouponUsed;
+            var coupon, requestsWithCoupon, completedRidesCount, timesCouponUsed;
             return common_coupon_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -19878,7 +19879,7 @@ var CommonCouponService = /*#__PURE__*/ function() {
                         }
                         if (!(riderId != null)) return [
                             3,
-                            3
+                            4
                         ];
                         return [
                             4,
@@ -19894,8 +19895,26 @@ var CommonCouponService = /*#__PURE__*/ function() {
                         if (requestsWithCoupon >= coupon.manyTimesUserCanUse) {
                             throw new apollo_.ForbiddenError('Coupon already used.');
                         }
-                        _state.label = 3;
+                        if (!coupon.isFirstTravelOnly) return [
+                            3,
+                            4
+                        ];
+                        return [
+                            4,
+                            this.requestRepo.count({
+                                where: {
+                                    riderId: riderId,
+                                    status: OrderStatus.Finished
+                                }
+                            })
+                        ];
                     case 3:
+                        completedRidesCount = _state.sent();
+                        if (completedRidesCount > 0) {
+                            throw new apollo_.ForbiddenError('Coupon only valid for first ride.');
+                        }
+                        _state.label = 4;
+                    case 4:
                         if (!coupon.isEnabled) {
                             throw new apollo_.ForbiddenError('Coupon is disabled.');
                         }
@@ -19907,7 +19926,7 @@ var CommonCouponService = /*#__PURE__*/ function() {
                                 }
                             })
                         ];
-                    case 4:
+                    case 5:
                         timesCouponUsed = _state.sent();
                         if (timesCouponUsed >= coupon.manyUsersCanUse) {
                             throw new apollo_.ForbiddenError('Coupon usage limit exceeded.');
@@ -24457,7 +24476,8 @@ var RideOfferRedisService = /*#__PURE__*/ function() {
                                 driverAvatarUrl: (_input_driverAvatarUrl = input.driverAvatarUrl) != null ? _input_driverAvatarUrl : null,
                                 riderFirstName: (_input_riderFirstName = input.riderFirstName) != null ? _input_riderFirstName : null,
                                 riderAvatarUrl: (_input_riderAvatarUrl = input.riderAvatarUrl) != null ? _input_riderAvatarUrl : null,
-                                driverDirections: input.driverDirections
+                                driverDirections: input.driverDirections,
+                                pickupOtp: input.pickupOtp
                             }))
                         ];
                     case 4:
@@ -31942,12 +31962,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         totalDistance = distances.reduce(function(a, b) {
                             return a + b;
                         }, 0);
-                        if (totalDistance > 1000000) {
-                            throw new apollo_.ForbiddenError('Total distance exceeds 1000 km. Please reduce the distance or split the trip.');
-                        }
-                        if (totalDistance < 100) {
-                            throw new apollo_.ForbiddenError('Total distance is less than 100 m. Try a longer trip.');
-                        }
+                        
                         zonePricings = [];
                         if (!(input.points.length == 2)) return [
                             3,
@@ -46013,6 +46028,13 @@ let OrderService = class OrderService {
             const tripTravelMetrics = await this.googleServices.getSumDistanceAndDuration(orderMetadata.waypoints.map((w)=>w.location));
             const pickupEta = new Date(new Date().getTime() + driverTravelMetrics.duration * 1000);
             const dropoffEta = new Date(pickupEta.getTime() + tripTravelMetrics.duration * 1000);
+            // Generate 4-digit pickup OTP
+            const existingOrderForOtp = await this.orderRepository.findOne({
+                where: {
+                    id: input.orderId
+                }
+            });
+            const pickupOtp = existingOrderForOtp?.pickupOtp ?? Math.floor(1000 + Math.random() * 9000).toString();
             // Accept offer in Redis
             await this.rideOfferRedisService.acceptOfferByDriver({
                 orderId: input.orderId.toString(),
@@ -46023,10 +46045,9 @@ let OrderService = class OrderService {
                 riderAvatarUrl: rider?.profileImageUrl ?? null,
                 pickupEta,
                 dropoffEta,
-                driverDirections: driverTravelMetrics.directions
+                driverDirections: driverTravelMetrics.directions,
+                pickupOtp
             });
-            // Generate 4-digit pickup OTP
-            const pickupOtp = Math.floor(1000 + Math.random() * 9000).toString();
             // CRITICAL FIX: Await the database update
             await this.orderRepository.update(input.orderId, {
                 status: _database.OrderStatus.DriverAccepted,

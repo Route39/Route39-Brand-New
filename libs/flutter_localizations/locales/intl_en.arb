@@ -6,7 +6,7 @@
       "company": {}
     }
   },
-  "welcomeTitle": "Welcome to the app",
+  "welcomeTitle": "Welcome to Route39",
   "today": "Today",
   "yesterday": "Yesterday",
   "settings": "Settings",
@@ -97,7 +97,7 @@
       }
     }
   },
-  "welcomeSubtitle": "Taxi service designed for your comfort. Enjoy trips with your favorite drivers and select your ride preferences",
+  "welcomeSubtitle": "Auto service designed for your comfort. Enjoy eco-friendly trips with verified drivers and seamless bookings.",
   "driverWelcomeSubtitle": "You are moments away from registering as a driver on {appName}",
   "@driverWelcomeSubtitle": {
     "placeholders": {

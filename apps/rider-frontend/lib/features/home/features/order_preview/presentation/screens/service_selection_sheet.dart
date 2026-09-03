@@ -7,6 +7,10 @@ import 'package:flutter_common/core/color_palette/color_palette.dart';
 import 'package:flutter_common/core/extensions/extensions.dart' as fc_ext;
 import 'package:ridy/config/locator/locator.dart';
 import 'package:flutter_common/core/entities/payment_method_union.dart';
+import 'package:ridy/core/entities/place.prod.dart';
+import 'package:ridy/features/profile/presentation/blocs/profile.bloc.dart';
+import 'package:api_response/api_response.dart';
+import 'package:generic_map/generic_map.dart';
 import 'package:ridy/core/blocs/home.bloc.dart';
 import 'package:ridy/core/blocs/location.bloc.dart';
 import 'package:ridy/core/extensions/extensions.dart';
@@ -51,6 +55,7 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
   @override
   void initState() {
     super.initState();
+    locator<ProfileBloc>().fetchProfileAggregationsInfo();
     final now = DateTime.now();
     _weekStart = now.subtract(Duration(days: now.weekday - 1));
     if (homeBloc.state.selectedPaymentMethod == null) {
@@ -74,7 +79,8 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
               widget.serviceCategories.firstOrNull?.services.firstOrNull;
           final pickup = state.waypoints.firstOrNull ?? locator<LocationCubit>().state.place;
           final dropoff = state.waypoints.length > 1 ? state.waypoints.last : null;
-          return SafeArea(
+          return SizedBox.expand(
+            child: SafeArea(
             top: false,
             child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -98,7 +104,19 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
                           const SizedBox(height: 16),
                           _buildRidePreferencesRow(context, selectedService),
                           const SizedBox(height: 16),
-                          _buildCouponBox(context),
+                          BlocBuilder<ProfileBloc, ProfileState>(
+                            bloc: locator<ProfileBloc>(),
+                            builder: (context, profileState) {
+                              final completedRides = switch (profileState.profileAggregationsState) {
+                                ApiResponseLoaded(:final data) => data.myStatistics.completedRides,
+                                _ => null,
+                              };
+                              if (completedRides != null && completedRides > 0) {
+                                return const SizedBox();
+                              }
+                              return _buildCouponBox(context, state.waypoints);
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -151,7 +169,7 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
                             const SizedBox(width: 16),
                             Expanded(
                               child: AppPrimaryButton(
-                                isDisabled: !state.canSubmitOrder,
+                                isDisabled: false,
                                 color: PrimaryButtonColor.error,
                                 onPressed: () {
                                   homeBloc.add(
@@ -177,6 +195,7 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
                   )
                 ],
               ),
+            ),
           );
         },
       ),
@@ -432,7 +451,7 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
     );
   }
 
-  Widget _buildCouponBox(BuildContext context) {
+  Widget _buildCouponBox(BuildContext context, List<Place?> waypoints) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(color: ColorPalette.neutralVariant99, borderRadius: BorderRadius.circular(12)),
@@ -456,7 +475,7 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
                   await showDialog<String>(
                     context: context,
                     useSafeArea: false,
-                    builder: (context) => EnterCouponDialog(calculateFareArgs: Input$CalculateFareInput(points: [])),
+                    builder: (context) => EnterCouponDialog(calculateFareArgs: Input$CalculateFareInput(points: waypoints.whereType<Place>().map((p) => p.toGql).toList())),
                   );
                 },
                 child: const Text('Apply', style: TextStyle(color: Colors.white)),

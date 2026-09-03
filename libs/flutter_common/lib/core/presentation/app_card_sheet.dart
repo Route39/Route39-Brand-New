@@ -33,7 +33,7 @@ class AppCardSheet extends StatelessWidget {
                   )
                 ],
         ),
-        xl: const BoxDecoration(),
+        xl: const BoxDecoration(color: ColorPalette.neutralVariant99),
       ),
       child: child,
     );

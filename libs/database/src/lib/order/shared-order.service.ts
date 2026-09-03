@@ -166,11 +166,7 @@ export class SharedOrderService {
         'Total distance exceeds 1000 km. Please reduce the distance or split the trip.',
       );
     }
-    if (totalDistance < 100) {
-      throw new ForbiddenError(
-        'Total distance is less than 100 m. Try a longer trip.',
-      );
-    }
+
     let zonePricings: ZonePriceEntity[] = [];
     if (input.points.length == 2) {
       zonePricings = await this.getZonePricingsForPoints(

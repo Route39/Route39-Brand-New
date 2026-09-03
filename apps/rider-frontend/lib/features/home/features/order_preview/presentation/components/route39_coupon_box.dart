@@ -27,17 +27,17 @@ class _Route39CouponBoxState extends State<Route39CouponBox> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('HAVE A COUPON CODE?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+          const Text('HAVE A COUPON CODE?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10)),
           const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
                 child: TextField(
                   controller: couponController,
-                  style: const TextStyle(fontSize: 13),
+                  style: const TextStyle(fontSize: 11),
                   decoration: const InputDecoration(
                     hintText: 'ENTER COUPON CODE',
-                    hintStyle: TextStyle(fontSize: 12),
+                    hintStyle: TextStyle(fontSize: 10),
                     isDense: true,
                     border: OutlineInputBorder(),
                   ),
@@ -53,7 +53,7 @@ class _Route39CouponBoxState extends State<Route39CouponBox> {
                     builder: (context) => EnterCouponDialog(calculateFareArgs: Input$CalculateFareInput(points: [])),
                   );
                 },
-                child: const Text('Apply', style: TextStyle(fontSize: 13)),
+                child: const Text('Apply', style: TextStyle(fontSize: 11)),
               ),
             ],
           ),

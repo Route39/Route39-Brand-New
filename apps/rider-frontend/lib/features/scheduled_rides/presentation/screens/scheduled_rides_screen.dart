@@ -50,7 +50,7 @@ class _ScheduledRidesScreenState extends State<ScheduledRidesScreen> {
                   ),
                   xl: const SizedBox.shrink(),
                 ),
-                SizedBox(height: context.responsive(16, xl: 84)),
+                SizedBox(height: context.responsive(16, xl: 116)),
                 Text(
                   context.translate.scheduledRides,
                   style: context.headlineSmall,

@@ -11,7 +11,7 @@ class OnboardingCubit extends HydratedCubit<int> {
 
   void reset() => emit(0);
 
-  void skip() => emit(3);
+  void skip() => emit(1);
 
   @override
   int? fromJson(Map<String, dynamic> json) {
@@ -25,5 +25,5 @@ class OnboardingCubit extends HydratedCubit<int> {
 }
 
 extension OnboardingCubitX on OnboardingCubit {
-  bool get isDone => state == 3;
+  bool get isDone => state == 1;
 }

@@ -70,4 +70,6 @@ export class ActiveOrderDTO {
   unreadMessagesCount!: number;
   @Field(() => WaypointBase, { nullable: true })
   nextDestination?: WaypointBase;
+  @Field(() => String, { nullable: true })
+  pickupOtp?: string;
 }

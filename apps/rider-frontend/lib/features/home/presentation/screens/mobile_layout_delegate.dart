@@ -17,7 +17,7 @@ class MobileLayoutDelegate extends MultiChildLayoutDelegate {
         maxHeight: size.height,
       ),
     );
-    if (cardSize.height < size.height) {
+    if (cardSize.height < size.height - 20) {
       positionChild(
         cardLayoutId,
         Offset(0, size.height - cardSize.height),

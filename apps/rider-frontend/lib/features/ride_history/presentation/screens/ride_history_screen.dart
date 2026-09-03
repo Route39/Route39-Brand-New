@@ -49,7 +49,7 @@ class _RideHistoryScreenState extends State<RideHistoryScreen> {
                   }),
                   xl: const SizedBox.shrink(),
                 ),
-                SizedBox(height: context.responsive(16, xl: 84)),
+                SizedBox(height: context.responsive(16, xl: 116)),
                 Text(
                   context.translate.rideHistory,
                   style: context.headlineSmall,

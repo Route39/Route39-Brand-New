@@ -24,18 +24,4 @@ List<OnBoardingItem> onboardingItems(BuildContext context) => [
         description: dotenv.maybeGet('ONBOARDING_DESCRIPTION_1') ??
             context.translate.welcomeSubtitle,
       ),
-      OnBoardingItem(
-        imagePath: dotenv.maybeGet('ONBOARDING_IMAGE_2') ??
-            rider_assets.Assets.images.onboarding2.path,
-        title: dotenv.maybeGet('ONBOARDING_TITLE_2') ??
-            context.translate.onboardingRewardTitle,
-        description: dotenv.maybeGet('ONBOARDING_DESCRIPTION_2') ??
-            context.translate.onboardingRewardSubtitle,
-      ),
-      OnBoardingItem(
-        imagePath: dotenv.maybeGet('ONBOARDING_IMAGE_3') ??
-            rider_assets.Assets.images.language.path,
-        title: context.translate.selectLanguage,
-        description: '',
-      ),
     ];

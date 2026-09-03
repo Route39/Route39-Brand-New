@@ -197,6 +197,14 @@ export class OrderService {
         pickupEta.getTime() + tripTravelMetrics.duration * 1000,
       );
 
+      // Generate 4-digit pickup OTP
+      const existingOrderForOtp = await this.orderRepository.findOne({
+        where: { id: input.orderId },
+      });
+      const pickupOtp =
+        existingOrderForOtp?.pickupOtp ??
+        Math.floor(1000 + Math.random() * 9000).toString();
+
       // Accept offer in Redis
       await this.rideOfferRedisService.acceptOfferByDriver({
         orderId: input.orderId.toString(),
@@ -208,10 +216,8 @@ export class OrderService {
         pickupEta,
         dropoffEta,
         driverDirections: driverTravelMetrics.directions,
+        pickupOtp,
       });
-
-      // Generate 4-digit pickup OTP
-      const pickupOtp = Math.floor(1000 + Math.random() * 9000).toString();
 
       // CRITICAL FIX: Await the database update
       await this.orderRepository.update(input.orderId, {

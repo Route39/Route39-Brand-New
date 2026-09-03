@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:api_response/api_response.dart';
 import 'package:ridy_driver/config/locator/locator.dart';
-import 'package:ridy_driver/core/datasources/graphql_datasource.dart';
 import 'package:ridy_driver/core/extensions/extensions.dart';
-import 'package:ridy_driver/core/graphql/documents/home.graphql.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_common/core/presentation/buttons/app_bordered_button.dart';
 
@@ -25,7 +23,6 @@ class _PickupOtpDialogState extends State<PickupOtpDialog> {
   final List<TextEditingController> _controllers = List.generate(4, (_) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
   String? _errorMessage;
-  String? _devOtp;
   final _service = WaitingTimeService();
 
   @override
@@ -34,23 +31,8 @@ class _PickupOtpDialogState extends State<PickupOtpDialog> {
     if (!_service.isWaiting) {
       _service.toggle();
     }
-    _fetchDevOtp();
   }
 
-  Future<void> _fetchDevOtp() async {
-    try {
-      final response = await locator<GraphqlDatasource>().query(
-        Options$Query$DevGetPickupOtp(
-          variables: Variables$Query$DevGetPickupOtp(orderId: widget.orderId),
-        ),
-      );
-      if (mounted && response.data != null) {
-        setState(() {
-          _devOtp = response.data!.devGetPickupOtp;
-        });
-      }
-    } catch (_) {}
-  }
 
   @override
   void dispose() {
@@ -118,25 +100,6 @@ class _PickupOtpDialogState extends State<PickupOtpDialog> {
                       style: TextStyle(fontSize: 13, color: Colors.grey),
                       textAlign: TextAlign.center,
                     ),
-                    if (_devOtp != null) ...[
-                      const SizedBox(height: 10),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFDECEA),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: const Color(0xFFB71C1C)),
-                        ),
-                        child: Text(
-                          'DEV OTP: ' + (_devOtp ?? ''),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFFB71C1C),
-                          ),
-                        ),
-                      ),
-                    ],
                     const SizedBox(height: 20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,

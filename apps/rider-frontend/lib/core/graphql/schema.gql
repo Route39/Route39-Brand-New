@@ -1,7 +1,3 @@
-# ------------------------------------------------------
-# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
-# ------------------------------------------------------
-
 interface WaypointBase {
   location: Point!
   address: String!
@@ -692,6 +688,7 @@ type ActiveOrder {
   directions: [Point!]!
   unreadMessagesCount: Int!
   nextDestination: WaypointBase
+  pickupOtp: String
 }
 
 type ApplyCouponResponse {
@@ -978,6 +975,7 @@ type Mutation {
   initiateCallMasking(orderId: ID!): InitiateCallResult!
   initiateLostPropertyCall(orderId: ID!): InitiateCallResult!
   createOrder(input: CreateOrderInput!): [ActiveOrder!]!
+  initiateCall(orderId: ID!): Boolean!
   cancelOrder(orderId: ID!, cancelReasonId: ID, cancelReasonNote: String): Boolean!
   cancelBooking(id: ID!, cancelReasonId: ID, cancelReasonNote: String): Boolean!
   submitReview(review: SubmitFeedbackInput!): Boolean!
@@ -1009,7 +1007,7 @@ type Mutation {
   """
   Returns a hash that will need to be passed in subsequent verify code call in order for match and verifcation to happen. Real sms is not sent in demo mode. It is 123456 by default.
   """
-  verifyNumber(mobileNumber: String!, countryIso: String, forceSendOtp: Boolean): VerifyNumberDto!
+  verifyNumber(mobileNumber: String!, countryIso: String = "IN", forceSendOtp: Boolean): VerifyNumberDto!
 
   """
   Returns a JWT token if the code matches the hash. In demo mode the OTP is not sent. It is 123456 by default.

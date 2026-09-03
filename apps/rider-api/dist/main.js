@@ -17128,8 +17128,6 @@ taxi_order_entity_ts_decorate([
         return DriverEntity;
     }, function(driver) {
         return driver.orders;
-    }, {
-        eager: true
     }),
     taxi_order_entity_ts_metadata("design:type", typeof DriverEntity === "undefined" ? Object : DriverEntity)
 ], TaxiOrderEntity.prototype, "driver", void 0);
@@ -19777,6 +19775,7 @@ function common_coupon_service_ts_param(paramIndex, decorator) {
 
 
 
+
 var CommonCouponService = /*#__PURE__*/ function() {
     "use strict";
     function CommonCouponService(couponRepo, campaignCodeRepo, requestRepo) {
@@ -19881,7 +19880,7 @@ var CommonCouponService = /*#__PURE__*/ function() {
     };
     _proto.checkCoupon = function checkCoupon(code, riderId) {
         return common_coupon_service_async_to_generator(function() {
-            var coupon, requestsWithCoupon, timesCouponUsed;
+            var coupon, requestsWithCoupon, completedRidesCount, timesCouponUsed;
             return common_coupon_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -19904,7 +19903,7 @@ var CommonCouponService = /*#__PURE__*/ function() {
                         }
                         if (!(riderId != null)) return [
                             3,
-                            3
+                            4
                         ];
                         return [
                             4,
@@ -19920,8 +19919,26 @@ var CommonCouponService = /*#__PURE__*/ function() {
                         if (requestsWithCoupon >= coupon.manyTimesUserCanUse) {
                             throw new apollo_.ForbiddenError('Coupon already used.');
                         }
-                        _state.label = 3;
+                        if (!coupon.isFirstTravelOnly) return [
+                            3,
+                            4
+                        ];
+                        return [
+                            4,
+                            this.requestRepo.count({
+                                where: {
+                                    riderId: riderId,
+                                    status: OrderStatus.Finished
+                                }
+                            })
+                        ];
                     case 3:
+                        completedRidesCount = _state.sent();
+                        if (completedRidesCount > 0) {
+                            throw new apollo_.ForbiddenError('Coupon only valid for first ride.');
+                        }
+                        _state.label = 4;
+                    case 4:
                         if (!coupon.isEnabled) {
                             throw new apollo_.ForbiddenError('Coupon is disabled.');
                         }
@@ -19933,7 +19950,7 @@ var CommonCouponService = /*#__PURE__*/ function() {
                                 }
                             })
                         ];
-                    case 4:
+                    case 5:
                         timesCouponUsed = _state.sent();
                         if (timesCouponUsed >= coupon.manyUsersCanUse) {
                             throw new apollo_.ForbiddenError('Coupon usage limit exceeded.');
@@ -24483,7 +24500,8 @@ var RideOfferRedisService = /*#__PURE__*/ function() {
                                 driverAvatarUrl: (_input_driverAvatarUrl = input.driverAvatarUrl) != null ? _input_driverAvatarUrl : null,
                                 riderFirstName: (_input_riderFirstName = input.riderFirstName) != null ? _input_riderFirstName : null,
                                 riderAvatarUrl: (_input_riderAvatarUrl = input.riderAvatarUrl) != null ? _input_riderAvatarUrl : null,
-                                driverDirections: input.driverDirections
+                                driverDirections: input.driverDirections,
+                                pickupOtp: input.pickupOtp
                             }))
                         ];
                     case 4:
@@ -31970,9 +31988,6 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         }, 0);
                         if (totalDistance > 1000000) {
                             throw new apollo_.ForbiddenError('Total distance exceeds 1000 km. Please reduce the distance or split the trip.');
-                        }
-                        if (totalDistance < 100) {
-                            throw new apollo_.ForbiddenError('Total distance is less than 100 m. Try a longer trip.');
                         }
                         zonePricings = [];
                         if (!(input.points.length == 2)) return [
@@ -46262,6 +46277,12 @@ let OrderResolver = class OrderResolver {
         const activeOrders = await this.riderOrderService.getActiveOrders(this.context.req.user.id);
         return activeOrders;
     }
+    async initiateCall(orderId) {
+        return this.riderOrderService.initiateCall({
+            orderId: orderId,
+            riderId: this.context.req.user.id
+        });
+    }
     async cancelOrder(orderId, cancelReasonId, cancelReasonNote) {
         await this.riderOrderService.cancelOrder({
             orderId: orderId,
@@ -46367,6 +46388,19 @@ _ts_decorate._([
     ]),
     _ts_metadata._("design:returntype", Promise)
 ], OrderResolver.prototype, "createOrder", null);
+_ts_decorate._([
+    (0, _graphql.Mutation)(()=>Boolean),
+    (0, _common.UseGuards)(_accesstokenguard.GqlAuthGuard),
+    _ts_param._(0, (0, _graphql.Args)('orderId', {
+        type: ()=>_graphql.ID,
+        nullable: false
+    })),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        Number
+    ]),
+    _ts_metadata._("design:returntype", Promise)
+], OrderResolver.prototype, "initiateCall", null);
 _ts_decorate._([
     (0, _graphql.Mutation)(()=>Boolean),
     (0, _common.UseGuards)(_accesstokenguard.GqlAuthGuard),
@@ -47187,6 +47221,56 @@ let RiderOrderService = class RiderOrderService {
         this.httpService = httpService;
         this.customerWalletService = customerWalletService;
         this.walletService = walletService;
+        this.logger = new _common.Logger(RiderOrderService.name);
+    }
+    async initiateCall(input) {
+        const orderEntity = await this.orderRepository.findOne({
+            where: {
+                id: input.orderId,
+                riderId: input.riderId
+            },
+            relations: {
+                driver: true
+            }
+        });
+        if (!orderEntity || !orderEntity.driver) {
+            throw new _apollo.ForbiddenError('ORDER_OR_DRIVER_NOT_FOUND');
+        }
+        const rider = await this.riderService.repo.findOne({
+            where: {
+                id: input.riderId
+            }
+        });
+        if (!rider) {
+            throw new _apollo.ForbiddenError('RIDER_NOT_FOUND');
+        }
+        const exotelSid = process.env.EXOTEL_SID;
+        const exotelApiKey = process.env.EXOTEL_API_KEY;
+        const exotelApiToken = process.env.EXOTEL_API_TOKEN;
+        const exotelSubdomain = process.env.EXOTEL_SUBDOMAIN;
+        const exoPhone = process.env.EXOTEL_EXOPHONE;
+        if (!exotelSid || !exotelApiKey || !exotelApiToken || !exotelSubdomain) {
+            throw new _apollo.ForbiddenError('EXOTEL_NOT_CONFIGURED');
+        }
+        const url = `https://${exotelApiKey}:${exotelApiToken}@${exotelSubdomain}/v1/Accounts/${exotelSid}/Calls/connect.json`;
+        const params = new URLSearchParams();
+        params.append('From', rider.mobileNumber);
+        params.append('To', orderEntity.driver.mobileNumber);
+        if (exoPhone) {
+            params.append('CallerId', exoPhone);
+        }
+        try {
+            const exotelResponse = await (0, _rxjs.firstValueFrom)(this.httpService.post(url, params.toString(), {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            }));
+            this.logger.log(`Exotel call response: ${JSON.stringify(exotelResponse.data)}`);
+        } catch (error) {
+            this.logger.error(`Exotel call failed: ${error?.response?.data ? JSON.stringify(error.response.data) : error.message}`);
+            throw error;
+        }
+        return true;
     }
     async cancelOrder(input) {
         const rideOffer = await this.rideOfferRedisService.getRideOfferMetadata(input.orderId.toString());
@@ -47477,7 +47561,8 @@ let RiderOrderService = class RiderOrderService {
             currency: order?.currency ?? '',
             directions,
             nextDestination: nextPlace,
-            unreadMessagesCount
+            unreadMessagesCount,
+            pickupOtp: order?.pickupOtp
         };
         return dto;
     }
@@ -47546,8 +47631,28 @@ let RiderOrderService = class RiderOrderService {
     }
     async applyCoupon(orderId, couponCode) {
         const orderMetadata = await this.activeOrderRedisService.getActiveOrder(orderId.toString());
-        // TODO: Complete the coupon application logic
-        return orderMetadata;
+        if (couponCode.trim().toUpperCase() !== 'FIRSTRIDE') {
+            throw new _apollo.ForbiddenError('INVALID_COUPON_CODE');
+        }
+        const orderEntity = await this.orderRepository.findOneByOrFail({
+            id: orderId
+        });
+        const previousRideCount = await this.orderRepository.count({
+            where: {
+                riderId: orderEntity.riderId,
+                status: _database.OrderStatus.Finished
+            }
+        });
+        if (previousRideCount > 0) {
+            throw new _apollo.ForbiddenError('COUPON_ONLY_VALID_FOR_FIRST_RIDE');
+        }
+        const discountAmount = 100;
+        const newCost = Math.max(0, orderEntity.costBest - discountAmount);
+        await this.orderRepository.update(orderId, {
+            costAfterCoupon: newCost
+        });
+        const updatedMetadata = await this.activeOrderRedisService.getActiveOrder(orderId.toString());
+        return updatedMetadata ?? orderMetadata;
     }
     async getPastOrders(riderId) {
         const orders = await this.orderRepository.find({
@@ -49173,6 +49278,12 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", typeof _database.WaypointBase === "undefined" ? Object : _database.WaypointBase)
 ], ActiveOrderDTO.prototype, "nextDestination", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], ActiveOrderDTO.prototype, "pickupOtp", void 0);
 ActiveOrderDTO = _ts_decorate._([
     (0, _graphql.ObjectType)('ActiveOrder')
 ], ActiveOrderDTO);

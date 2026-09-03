@@ -32,7 +32,7 @@ class Route39NavBar extends StatelessWidget {
                 label: 'HOME',
                 isActive: currentIndex == 0,
                 onTap: () {
-                  if (currentIndex != 0) context.router.popUntilRoot();
+                  if (currentIndex != 0) context.router.navigate(const HomeRoute());
                 },
               ),
               _NavBarItem(
@@ -49,14 +49,6 @@ class Route39NavBar extends StatelessWidget {
                 isActive: currentIndex == 2,
                 onTap: () {
                   if (currentIndex != 2) context.router.push(const ScheduledRidesRoute());
-                },
-              ),
-              _NavBarItem(
-                icon: Icons.account_balance_wallet_outlined,
-                label: 'WALLET',
-                isActive: currentIndex == 3,
-                onTap: () {
-                  if (currentIndex != 3) context.router.push(const WalletParentRoute());
                 },
               ),
               _NavBarItem(

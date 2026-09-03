@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ionicons/ionicons.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
 import 'package:ridy/config/env.dart';
 import 'package:ridy/config/locator/locator.dart';
@@ -12,7 +11,6 @@ import 'package:ridy/core/presentation/review_parameter_widget.dart';
 import 'package:flutter_common/gen/assets.gen.dart';
 import 'package:ridy/gen/assets.gen.dart' as rider_assets;
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-
 import '../blocs/rate_order.bloc.dart';
 
 class RateYourRideSheet extends StatefulWidget {
@@ -21,7 +19,6 @@ class RateYourRideSheet extends StatefulWidget {
   final String orderId;
   final String vehicleName;
   final String serviceName;
-
   const RateYourRideSheet({
     super.key,
     required this.driverFullName,
@@ -51,237 +48,141 @@ class _RateYourRideSheetState extends State<RateYourRideSheet> {
     final bloc = locator<RateOrderBloc>();
     return BlocProvider.value(
       value: locator<RateOrderBloc>(),
-      child: Material(
-        child: Container(
-          color: context.colorScheme.surface,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                height: rating == null ? 300 : 100,
-                decoration: BoxDecoration(
-                  image: DecorationImage(image: Assets.images.drawerTopBackground.provider(), fit: BoxFit.cover),
-                ),
-                child: SafeArea(
-                  child: Align(
-                    alignment: Alignment.topLeft,
+      child: Center(
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            width: 340,
+            constraints: const BoxConstraints(maxHeight: 560),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Align(
+                    alignment: Alignment.topRight,
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: AppCloseButton(onPressed: () => Navigator.of(context).pop()),
                     ),
                   ),
-                ),
-              ),
-              Transform.translate(
-                offset: const Offset(0, -33),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    AppAvatar(url: widget.driverAvatarUrl, defaultAvatarPath: Env.defaultAvatar),
-                    if (rating == null) ...[
-                      const SizedBox(height: 8),
-                      Text(widget.driverFullName, style: context.titleMedium),
-                      const SizedBox(height: 4),
-                      Text(
-                        widget.vehicleName,
-                        style: context.bodyMedium?.copyWith(color: ColorPalette.neutralVariant50),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              if (rating == null) const Spacer(),
-              Text(ratingTitle(context, rating), textAlign: TextAlign.center, style: context.titleLarge),
-              SizedBox(height: rating == null ? 16 : 8),
-              Center(
-                child: RatingBar.builder(
-                  itemSize: rating == null ? 46 : 32,
-                  unratedColor: ColorPalette.neutral90,
-                  glow: false,
-                  allowHalfRating: true,
-                  itemBuilder: (context, index) {
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      width: rating == null ? 46 : 32,
-                      height: rating == null ? 46 : 32,
-                      decoration: const ShapeDecoration(
-                        shape: StarBorder(innerRadiusRatio: 0.45, pointRounding: 0.2),
-                        color: ColorPalette.secondary70,
-                      ),
-                    );
-                  },
-                  itemCount: 5,
-                  initialRating: rating?.toDouble() ?? 0,
-                  onRatingUpdate: (value) => setState(() => rating = value.toInt()),
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: BlocConsumer<RateOrderBloc, RateOrderState>(
-                    listener: (context, state) {
-                      switch (state) {
-                        case RateOrderState$ReviewSubmitted():
-                          Navigator.of(context).pop();
-                          break;
-                        default:
-                          // do nothing
-                          break;
-                      }
-                    },
-                    builder: (context, state) {
-                      return switch (state) {
-                        RateOrderState$Loading() => rider_assets.Assets.lottie.loading.lottie(width: 100, height: 300),
-                        RateOrderState$ReviewSubmitted() => rider_assets.Assets.lottie.loading.lottie(
-                          width: 100,
-                          height: 300,
-                        ),
-                        RateOrderState$ParametersLoaded(:final strengthParameters, :final weaknessParameters) =>
-                          rating != null
-                              ? Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    DefaultTabController(
-                                      length: 2,
-                                      child: Column(
-                                        children: [
-                                          TabBar(
-                                            indicatorColor: ColorPalette.primary40,
-                                            labelColor: ColorPalette.primary50,
-                                            unselectedLabelColor: context.theme.colorScheme.onSurfaceVariant,
-                                            tabs: [
-                                              Tab(
-                                                height: 50,
-                                                child: Column(
-                                                  children: [
-                                                    const Icon(
-                                                      Icons.favorite,
-                                                      color: ColorPalette.semanticgreen70,
-                                                    ),
-                                                    Text(context.translate.nicePoints),
-                                                  ],
-                                                ),
-                                              ),
-                                              Tab(
-                                                height: 50,
-                                                child: Column(
-                                                  children: [
-                                                    const Icon(
-                                                      Icons.heart_broken,
-                                                      color: ColorPalette.error50,
-                                                    ),
-                                                    Text(context.translate.negativePoints),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 16),
-                                          Container(
-                                            constraints: const BoxConstraints(maxHeight: 100),
-                                            child: TabBarView(
-                                              children: [
-                                                Wrap(
-                                                  alignment: WrapAlignment.center,
-                                                  spacing: 8,
-                                                  runSpacing: 8,
-                                                  children: strengthParameters.map((e) {
-                                                    final isSelected = state.parameterSelected(e);
-                                                    return Padding(
-                                                      padding: const EdgeInsets.only(bottom: 8),
-                                                      child: ReviewParameterWidget(
-                                                        onPressed: () => bloc.onParameterTapped(e),
-                                                        title: e.title,
-                                                        isGood: e.isGood,
-                                                        isSelected: isSelected,
-                                                      ),
-                                                    );
-                                                  }).toList(),
-                                                ),
-                                                Wrap(
-                                                  alignment: WrapAlignment.center,
-                                                  spacing: 8,
-                                                  runSpacing: 8,
-                                                  children: weaknessParameters.map((e) {
-                                                    final isSelected = state.parameterSelected(e);
-                                                    return Padding(
-                                                      padding: const EdgeInsets.only(bottom: 8),
-                                                      child: ReviewParameterWidget(
-                                                        title: e.title,
-                                                        onPressed: () => bloc.onParameterTapped(e),
-                                                        isGood: e.isGood,
-                                                        isSelected: isSelected,
-                                                      ),
-                                                    );
-                                                  }).toList(),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          TextField(
-                                            decoration: InputDecoration(
-                                              hintText: context.translate.reviewCommentBoxHint,
-                                            ),
-                                            minLines: 2,
-                                            maxLines: 4,
-                                            onChanged: (value) => comment = value,
-                                          ),
-                                          if (rating?.toDouble() == 5) ...[
-                                            const SizedBox(height: 16),
-                                            Row(
-                                              children: [
-                                                Checkbox(
-                                                  value: isFavorite,
-                                                  onChanged: (value) => setState(() => isFavorite = value!),
-                                                ),
-                                                const SizedBox(width: 4),
-                                                Text(context.translate.addToFavoriteDrivers),
-                                              ],
-                                            ),
-                                          ],
-                                        ],
+                  Transform.translate(
+                    offset: const Offset(0, -33),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AppAvatar(url: widget.driverAvatarUrl, defaultAvatarPath: Env.defaultAvatar),
+                        if (rating == null) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            widget.driverFullName,
+                            style: context.titleMedium?.copyWith(color: Colors.black),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            widget.vehicleName,
+                            style: context.bodyMedium?.copyWith(color: Colors.grey),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  if (rating == null) const SizedBox(height: 16),
+                  Text(
+                    ratingTitle(context, rating),
+                    textAlign: TextAlign.center,
+                    style: context.titleLarge?.copyWith(color: Colors.black),
+                  ),
+                  SizedBox(height: rating == null ? 16 : 8),
+                  Center(
+                    child: RatingBar.builder(
+                      itemSize: rating == null ? 46 : 32,
+                      unratedColor: ColorPalette.neutral90,
+                      glow: false,
+                      allowHalfRating: true,
+                      itemBuilder: (context, index) {
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          width: rating == null ? 46 : 32,
+                          height: rating == null ? 46 : 32,
+                          decoration: const ShapeDecoration(
+                            shape: StarBorder(innerRadiusRatio: 0.45, pointRounding: 0.2),
+                            color: ColorPalette.primary50,
+                          ),
+                        );
+                      },
+                      onRatingUpdate: (value) {
+                        setState(() {
+                          rating = value.round();
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (rating != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: BlocBuilder<RateOrderBloc, RateOrderState>(
+                        builder: (context, state) {
+                          return switch (state) {
+                            RateOrderState$ParametersLoaded() => Column(
+                                children: [
+                                  TextField(
+                                    maxLines: 4,
+                                    style: const TextStyle(color: Colors.black87),
+                                    decoration: InputDecoration(
+                                      hintText: context.translate.reviewCommentBoxHint,
+                                      hintStyle: const TextStyle(color: Colors.grey),
+                                      filled: true,
+                                      fillColor: const Color(0xFFF2F2F2),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide.none,
                                       ),
                                     ),
-                                  ],
-                                )
-                              : const SizedBox(),
-                        _ => const SizedBox(),
-                      };
-                    },
-                  ),
-                ),
+                                    onChanged: (value) {
+                                      comment = value;
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+                                  AppPrimaryButton(
+                                    onPressed: () {
+                                      if (rating != null) {
+                                        bloc.onReviewSubmitted(
+                                          rating: rating!,
+                                          comment: comment,
+                                          orderId: widget.orderId,
+                                          parameters: const [],
+                                          isFavorite: false,
+                                        );
+                                      }
+                                    },
+                                    child: Text(context.translate.submitFeedback),
+                                  ),
+                                ],
+                              ),
+                            _ => const SizedBox(),
+                          };
+                        },
+                      ),
+                    ),
+                  const SizedBox(height: 16),
+                ],
               ),
-              SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: BlocBuilder<RateOrderBloc, RateOrderState>(
-                    builder: (context, state) {
-                      return switch (state) {
-                        RateOrderState$ParametersLoaded(:final selectedParameters) => AppPrimaryButton(
-                          isDisabled: rating == null,
-                          onPressed: () {
-                            if (rating != null) {
-                              bloc.onReviewSubmitted(
-                                rating: rating!,
-                                comment: comment,
-                                orderId: widget.orderId,
-                                parameters: selectedParameters,
-                                isFavorite: false,
-                              );
-                            }
-                          },
-                          child: Text(context.translate.submitFeedback),
-                        ),
-                        _ => const SizedBox(),
-                      };
-                    },
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

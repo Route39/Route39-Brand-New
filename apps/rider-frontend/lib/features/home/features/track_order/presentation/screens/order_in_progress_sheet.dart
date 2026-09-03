@@ -10,9 +10,10 @@ import 'package:ridy/core/extensions/extensions.dart';
 import 'package:flutter_common/core/presentation/app_card_sheet.dart';
 import 'package:flutter_common/core/presentation/buttons/app_primary_button.dart';
 import 'package:flutter_common/core/presentation/card_handle.dart';
-import 'package:ridy/core/graphql/fragments/active_order.extensions.dart';
 import 'package:ridy/core/graphql/fragments/active_order.fragment.graphql.dart';
 import 'package:ridy/core/graphql/fragments/point.extensions.dart';
+import 'package:ridy/core/graphql/documents/track_order.graphql.dart';
+import 'package:ridy/core/datasources/graphql_datasource.dart';
 import 'package:flutter_common/core/presentation/waypoints_view/waypoints_view.dart';
 import 'package:ridy/features/home/features/track_order/presentation/components/notice_bar.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -131,8 +132,12 @@ class OrderInProgressSheet extends StatelessWidget {
                           _CircleIconButton(
                             icon: Ionicons.call,
                             backgroundColor: Colors.green,
-                            onPressed: () {
-                              launchUrlString("tel://+${order.driver?.mobileNumber}");
+                            onPressed: () async {
+                              await locator<GraphqlDatasource>().mutate(
+                                Options$Mutation$initiateCall(
+                                  variables: Variables$Mutation$initiateCall(orderId: order.id),
+                                ),
+                              );
                             },
                           ),
                         ],
@@ -161,7 +166,7 @@ class OrderInProgressSheet extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    _tripStartCode(order.id),
+                                    order.pickupOtp ?? '----',
                                     style: context.headlineSmall?.copyWith(
                                       fontWeight: FontWeight.bold,
                                       letterSpacing: 4,
@@ -404,12 +409,6 @@ class OrderInProgressSheet extends StatelessWidget {
     );
   }
 
-}
-
-String _tripStartCode(String orderId) {
-  final hash = orderId.hashCode.abs();
-  final code = 1000 + (hash % 9000);
-  return code.toString();
 }
 
 class _CircleIconButton extends StatelessWidget {

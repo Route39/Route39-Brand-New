@@ -268,7 +268,7 @@ export class TaxiOrderEntity {
   @Column({ type: 'json', nullable: true })
   contacts?: DeliveryContact[];
 
-  @ManyToOne(() => DriverEntity, (driver) => driver.orders, { eager: true })
+  @ManyToOne(() => DriverEntity, (driver) => driver.orders)
   driver?: DriverEntity;
 
   @Column({ nullable: true })

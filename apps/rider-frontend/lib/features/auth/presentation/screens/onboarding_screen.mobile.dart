@@ -66,17 +66,6 @@ class OnboardingScreen extends StatelessWidget {
                   ),
                   Row(
                     children: [
-                      SizedBox(
-                        width: 185,
-                        child: BlocBuilder<OnboardingCubit, int>(
-                          builder: (context, state) {
-                            return AppStepSlider(
-                              count: 4,
-                              currentStep: state,
-                            );
-                          },
-                        ),
-                      ),
                       const Spacer(),
                       AppPrimaryButton(
                           onPressed: () {

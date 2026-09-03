@@ -104,6 +104,7 @@ export class ActiveOrderCommonRedisService {
     totalPaid: number;
     waypoints: WaypointBase[];
     options: RideOptionDTO[];
+    pickupOtp?: string;
   }): Promise<void> {
     const activeOrder: ActiveOrderRedisSnapshot = {
       ...input,
