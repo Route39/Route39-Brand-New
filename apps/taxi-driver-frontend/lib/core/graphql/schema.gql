@@ -1252,6 +1252,7 @@ type Mutation {
   updateLastSeenMessagesAt(orderId: ID!): Boolean!
   acceptRideOffer(orderId: ID!): ActiveOrder!
   rejectRideOffer(orderId: ID!): Boolean!
+  initiateCall(orderId: ID!): Boolean!
   submitReview(input: RiderReviewInput!): Boolean!
   arrivedToPickup(orderId: ID!): UpdateStatus!
   arrivedToDestination(orderId: ID!): UpdateStatus!

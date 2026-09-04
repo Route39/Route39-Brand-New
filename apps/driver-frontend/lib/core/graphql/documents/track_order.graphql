@@ -7,3 +7,7 @@ mutation CancelOrder($orderId: ID!, $reasonId: ID!, $reasonNote: String) {
 mutation UpdateLastSeenMessagesAt($orderId: ID!) {
   updateLastSeenMessagesAt(orderId: $orderId)
 }
+
+mutation initiateCall($orderId: ID!) {
+  initiateCall(orderId: $orderId)
+}

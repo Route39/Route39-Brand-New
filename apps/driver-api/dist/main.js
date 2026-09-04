@@ -45634,6 +45634,12 @@ let OrderResolver = class OrderResolver {
             driverId
         });
     }
+    async initiateCall(orderId) {
+        return this.orderService.initiateCall({
+            orderId: orderId,
+            driverId: this.context.req.user.id
+        });
+    }
     async submitReview(input) {
         await this.orderService.submitReview({
             ...input,
@@ -45757,6 +45763,18 @@ _ts_decorate._([
     ]),
     _ts_metadata._("design:returntype", Promise)
 ], OrderResolver.prototype, "rejectRideOffer", null);
+_ts_decorate._([
+    (0, _graphql.Mutation)(()=>Boolean),
+    _ts_param._(0, (0, _graphql.Args)('orderId', {
+        type: ()=>_graphql.ID,
+        nullable: false
+    })),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        Number
+    ]),
+    _ts_metadata._("design:returntype", Promise)
+], OrderResolver.prototype, "initiateCall", null);
 _ts_decorate._([
     (0, _graphql.Mutation)(()=>Boolean),
     _ts_param._(0, (0, _graphql.Args)('input', {
@@ -46736,6 +46754,55 @@ let OrderService = class OrderService {
             orderId: input.orderId,
             totalCost: input.fee
         };
+    }
+    async initiateCall(input) {
+        const orderEntity = await this.orderRepository.findOne({
+            where: {
+                id: input.orderId,
+                driverId: input.driverId
+            },
+            relations: {
+                rider: true
+            }
+        });
+        if (!orderEntity || !orderEntity.rider) {
+            throw new _apollo.ForbiddenError('ORDER_OR_RIDER_NOT_FOUND');
+        }
+        const driver = await this.driverRepository.findOne({
+            where: {
+                id: input.driverId
+            }
+        });
+        if (!driver) {
+            throw new _apollo.ForbiddenError('DRIVER_NOT_FOUND');
+        }
+        const exotelSid = process.env.EXOTEL_SID;
+        const exotelApiKey = process.env.EXOTEL_API_KEY;
+        const exotelApiToken = process.env.EXOTEL_API_TOKEN;
+        const exotelSubdomain = process.env.EXOTEL_SUBDOMAIN;
+        const exoPhone = process.env.EXOTEL_EXOPHONE;
+        if (!exotelSid || !exotelApiKey || !exotelApiToken || !exotelSubdomain) {
+            throw new _apollo.ForbiddenError('EXOTEL_NOT_CONFIGURED');
+        }
+        const url = `https://${exotelApiKey}:${exotelApiToken}@${exotelSubdomain}/v1/Accounts/${exotelSid}/Calls/connect.json`;
+        const params = new URLSearchParams();
+        params.append('From', driver.mobileNumber);
+        params.append('To', orderEntity.rider.mobileNumber);
+        if (exoPhone) {
+            params.append('CallerId', exoPhone);
+        }
+        try {
+            const exotelResponse = await (0, _rxjs.firstValueFrom)(this.httpService.post(url, params.toString(), {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            }));
+            _common.Logger.log(`Exotel call response: ${JSON.stringify(exotelResponse.data)}`, 'OrderService.initiateCall');
+        } catch (error) {
+            _common.Logger.error(`Exotel call failed: ${error?.response?.data ? JSON.stringify(error.response.data) : error.message}`, 'OrderService.initiateCall');
+            throw error;
+        }
+        return true;
     }
 };
 OrderService = _ts_decorate._([

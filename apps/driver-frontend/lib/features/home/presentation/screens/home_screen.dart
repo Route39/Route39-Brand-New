@@ -257,6 +257,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         break;
                       case Enum$EphemeralMessageType.$unknown:
                         break;
+                      default:
+                        break;
                     }
                   }
                 },

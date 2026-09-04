@@ -1,553 +1,13 @@
-interface WaypointBase {
-  location: Point!
-  address: String!
-  role: WaypointRole!
-  service: WaypointService!
-  deliveryContact: DeliveryContact
-  shopName: String
-  shopAddress: String
-  shopImageUrl: String
-}
-
-enum WaypointRole {
-  Pickup
-  Stop
-  Dropoff
-}
-
-enum WaypointService {
-  Ride
-  Delivery
-  Shop
-}
-
-interface PaymentMethodBase {
-  mode: PaymentMode!
-  id: ID
-}
-
-"""The means of payment for an order."""
-enum PaymentMode {
-  Cash
-  SavedPaymentMethod
-  PaymentGateway
-  Wallet
-}
-
-type Point {
-  lat: Float!
-  lng: Float!
-  heading: Int
-}
-
-type AppConfigInfo {
-  logo: String
-  name: String
-  color: AppColorScheme
-}
-
-enum AppColorScheme {
-  Cobalt
-  CoralRed
-  EarthyGreen
-  SunburstYellow
-  HyperPink
-  ElectricIndigo
-  AutumnOrange
-  Noir
-}
-
-type License {
-  buyerName: String!
-  licenseType: LicenseType!
-  supportExpireDate: DateTime
-  connectedApps: [AppType!]!
-  platformAddons: [PlatformAddOn!]!
-}
-
-enum LicenseType {
-  Regular
-  Extended
-  Bronze
-  Silver
-  Gold
-}
+"""Exposes a URL that specifies the behavior of this scalar."""
+directive @specifiedBy(
+  """The URL that specifies the behavior of this scalar."""
+  url: String!
+) on SCALAR
 
 """
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+Indicates exactly one field must be supplied and this field must not be `null`.
 """
-scalar DateTime
-
-enum AppType {
-  Taxi
-  Shop
-  Parking
-}
-
-enum PlatformAddOn {
-  FleetAddOn
-}
-
-type CurrentConfiguration {
-  purchaseCode: String
-  backendMapsAPIKey: String
-  adminPanelAPIKey: String
-  firebaseProjectPrivateKey: String
-  versionNumber: String
-  companyLogo: String
-  companyName: String
-  companyColor: AppColorScheme
-  taxi: AppConfigInfo
-  shop: AppConfigInfo
-  parking: AppConfigInfo
-  mysqlHost: String
-  mysqlPort: Int
-  mysqlUser: String
-  mysqlPassword: String
-  mysqlDatabase: String
-  redisHost: String
-  redisPort: Int
-  redisPassword: String
-  redisDb: Int
-}
-
-type AvaialbeUpgrade {
-  type: String!
-  price: Float!
-  benefits: [String!]!
-}
-
-type UpdatePurchaseCodeClient {
-  id: ID!
-  enabled: Boolean!
-  ip: String!
-  port: Float!
-  token: String!
-  purchaseId: ID!
-  firstVerifiedAt: DateTime!
-  lastVerifiedAt: DateTime!
-}
-
-type LicenseInformation {
-  license: License
-  benefits: [String!]
-  drawbacks: [String!]
-  availableUpgrades: [AvaialbeUpgrade!]
-}
-
-type TimeRange {
-  open: String!
-  close: String!
-}
-
-type RideOffer {
-  id: ID!
-  type: TaxiOrderType!
-  currency: String!
-  waypoints: [WaypointBase!]!
-
-  """The total distance in meters for the order."""
-  distance: Int!
-
-  """The minimum cost estimate for the order."""
-  costMin: Float
-
-  """The maximum cost estimate for the order."""
-  costMax: Float
-  pricingMode: PricingMode!
-  rangePolicy: RangePolicy
-
-  """The total duration in seconds for the order"""
-  duration: Int!
-
-  """The directions for the order from driver to passenger."""
-  directions: [Point!]!
-  dispatchedToUserAt: DateTime
-  expiresAt: DateTime
-  fareEstimate: Float!
-  serviceName: String!
-  serviceImageAddress: String!
-  options: [RideOption!]!
-  passenger: PassengerInformation
-}
-
-"""
-Different types of taxi orders, including ride, rideshare, parcel delivery, food delivery, and shop delivery.
-"""
-enum TaxiOrderType {
-  Ride
-  Rideshare
-  ParcelDelivery
-  FoodDelivery
-  ShopDelivery
-}
-
-enum PricingMode {
-  FIXED
-  RANGE
-}
-
-enum RangePolicy {
-  ENFORCE
-  SOFT
-  OPEN
-}
-
-type RideOption {
-  name: String!
-  icon: ServiceOptionIcon!
-}
-
-enum ServiceOptionIcon {
-  Pet
-  TwoWay
-  Luggage
-  PackageDelivery
-  Shopping
-  Custom1
-  Custom2
-  Custom3
-  Custom4
-  Custom5
-}
-
-type PassengerInformation {
-  firstName: String
-  lastName: String
-  profilePicture: String
-}
-
-type ChatMessage {
-  message: String!
-  createdAt: DateTime!
-  isFromMe: Boolean!
-  seenAt: DateTime
-  senderFullName: String
-}
-
-type PhoneNumber {
-  countryCode: String!
-  number: String!
-}
-
-type DeliveryContact {
-  name: String!
-  phoneNumber: PhoneNumber!
-  email: String
-  addressLine1: String!
-  addressLine2: String
-  zone: String
-  buildingNumber: String
-  apartmentNumber: String
-  city: String
-  state: String
-  instructions: String
-  postalCode: String
-  companyName: String
-}
-
-type RideWaypoint implements WaypointBase {
-  location: Point!
-  address: String!
-  role: WaypointRole!
-  service: WaypointService!
-  deliveryContact: DeliveryContact
-  shopName: String
-  shopAddress: String
-  shopImageUrl: String
-}
-
-type DeliveryWaypoint implements WaypointBase {
-  location: Point!
-  address: String!
-  role: WaypointRole!
-  service: WaypointService!
-  deliveryContact: DeliveryContact
-  shopName: String
-  shopAddress: String
-  shopImageUrl: String
-}
-
-type ShopWaypoint implements WaypointBase {
-  location: Point!
-  address: String!
-  role: WaypointRole!
-  service: WaypointService!
-  deliveryContact: DeliveryContact
-  shopName: String!
-  shopAddress: String!
-  shopImageUrl: String!
-}
-
-type PlaceDTO {
-  point: Point!
-  title: String
-  address: String!
-}
-
-type CashPaymentMethod implements PaymentMethodBase {
-  mode: PaymentMode!
-  id: ID
-}
-
-type WalletPaymentMethod implements PaymentMethodBase {
-  mode: PaymentMode!
-  id: ID
-}
-
-type SavedAccount implements PaymentMethodBase {
-  mode: PaymentMode!
-  id: ID!
-  name: String!
-  providerBrand: ProviderBrand
-  isDefault: Boolean!
-}
-
-"""Brand of the provider wether bank name or card provider"""
-enum ProviderBrand {
-  Visa
-  Mastercard
-  Amex
-  Discover
-  Diners
-  EftPosAu
-  JCB
-  UnionPay
-  Unknown
-}
-
-type OnlinePaymentMethod implements PaymentMethodBase {
-  mode: PaymentMode!
-  id: ID!
-  name: String!
-  imageUrl: String
-  linkMethod: GatewayLinkMethod!
-}
-
-"""Method of connecting to a payout or saved payment method."""
-enum GatewayLinkMethod {
-  none
-  redirect
-  manual
-}
-
-type ActiveOrderDriver {
-  location: Point
-  fullName: String
-  profileImageUrl: ID
-
-  """Driver Rating. Between 0 to 100"""
-  rating: Int
-  mobileNumber: String
-  vehicleName: String
-  vehicleColor: String
-  vehiclePlate: String
-}
-
-type DriverEventPayload {
-  type: DriverEventType!
-  orderId: ID!
-  driverId: ID!
-  unreadMessagesCount: Int
-  message: ChatMessage
-  status: OrderStatus
-  waitTime: Int
-  totalCost: Float
-  rideOffer: RideOffer
-}
-
-"""Types of events that can be sent to the driver"""
-enum DriverEventType {
-  ActiveOrderUpdated
-  RideOfferReceived
-  RideOfferRevoked
-  MessageReceived
-  ActiveOrderCompleted
-  ActiveOrderAssigned
-}
-
-enum OrderStatus {
-  Requested
-  NotFound
-  NoCloseFound
-  Found
-  DriverAccepted
-  Arrived
-  WaitingForPrePay
-  DriverCanceled
-  RiderCanceled
-  Started
-  WaitingForDriverFee
-  WaitingForPostPay
-  WaitingForReview
-  Finished
-  Booked
-  Expired
-}
-
-type CallMaskingConfig {
-  enabled: Boolean!
-  maskingNumber: String!
-}
-
-type InitiateCallResult {
-  success: Boolean!
-  maskingNumber: String
-  error: String
-}
-
-type LostPropertyEligibility {
-  canCall: Boolean!
-  finishedAt: DateTime
-}
-
-type AuthMethodDTO {
-  id: ID!
-  type: AuthMethodType!
-  identifier: String!
-  isVerified: Boolean!
-  isPrimary: Boolean!
-  verifiedAt: DateTime
-  lastUsedAt: DateTime
-}
-
-"""The type of authentication method"""
-enum AuthMethodType {
-  PHONE
-  EMAIL
-  GOOGLE
-  APPLE
-  PASSKEY
-}
-
-type BeginPasskeyRegistrationDTO {
-  challenge: String!
-  rpId: String!
-  rpName: String!
-  userId: String!
-  userName: String!
-  userDisplayName: String!
-  excludeCredentials: [String!]!
-  timeout: Float!
-}
-
-type BeginPasskeyAuthenticationDTO {
-  """Session ID to identify this authentication attempt"""
-  sessionId: String!
-
-  """The challenge to be signed by the authenticator"""
-  challenge: String!
-
-  """The relying party ID (domain)"""
-  rpId: String!
-
-  """Timeout in milliseconds for the authentication ceremony"""
-  timeout: Int!
-
-  """User verification requirement"""
-  userVerification: String!
-}
-
-type Announcement {
-  id: ID!
-  title: String!
-  description: String!
-  startAt: DateTime!
-  expireAt: DateTime!
-  url: String
-  userType: [AnnouncementUserType!]!
-}
-
-enum AnnouncementUserType {
-  Driver
-  Rider
-  Operator
-}
-
-type Media {
-  id: ID!
-  address: String!
-  base64: String
-}
-
-type MediaEdge {
-  """The node containing the Media"""
-  node: Media!
-
-  """Cursor for this node."""
-  cursor: ConnectionCursor!
-}
-
-"""Cursor for paging through collections"""
-scalar ConnectionCursor
-
-type PageInfo {
-  """true if paging forward and there are more records."""
-  hasNextPage: Boolean
-
-  """true if paging backwards and there are more records."""
-  hasPreviousPage: Boolean
-
-  """The cursor of the first returned record."""
-  startCursor: ConnectionCursor
-
-  """The cursor of the last returned record."""
-  endCursor: ConnectionCursor
-}
-
-type DriverPerformance {
-  rating: Int
-
-  """A number between 0 and 100 representing the driver's acceptance rate."""
-  acceptanceRate: Int!
-  totalRides: Int!
-  distanceTraveled: Int!
-}
-
-type Driver {
-  id: ID!
-  firstName: String!
-  lastName: String!
-  profileImageUrl: String!
-  mobileNumber: String!
-  email: String
-  status: DriverStatus!
-  walletCredit: Float
-  currency: String!
-  searchDistance: Int
-  softRejectionNote: String
-}
-
-enum DriverStatus {
-  Online
-  Offline
-  Blocked
-  InService
-  WaitingDocuments
-  PendingApproval
-  SoftReject
-  HardReject
-}
-
-type Service {
-  id: ID!
-  name: String!
-  imageUrl: String!
-}
-
-type UpdateStatus {
-  orderId: ID!
-  status: OrderStatus!
-  nextDestination: WaypointBase
-  directions: [Point!]
-  totalCost: Float
-}
-
-type ActiveOrderRider {
-  fullName: String
-  profileImageUrl: ID
-  mobileNumber: String
-}
+directive @oneOf on INPUT_OBJECT
 
 type ActiveOrder {
   id: ID!
@@ -580,24 +40,805 @@ type ActiveOrder {
   nextDestination: WaypointBase
 }
 
+type ActiveOrderDriver {
+  location: Point
+  fullName: String
+  profileImageUrl: ID
+
+  """Driver Rating. Between 0 to 100"""
+  rating: Int
+  mobileNumber: String
+  vehicleName: String
+  vehicleColor: String
+  vehiclePlate: String
+}
+
+type ActiveOrderRider {
+  fullName: String
+  profileImageUrl: ID
+  mobileNumber: String
+}
+
+type Announcement {
+  id: ID!
+  title: String!
+  description: String!
+  startAt: DateTime!
+  expireAt: DateTime!
+  url: String
+  userType: [AnnouncementUserType!]!
+}
+
+enum AnnouncementUserType {
+  Driver
+  Rider
+  Operator
+}
+
+enum AppColorScheme {
+  Cobalt
+  CoralRed
+  EarthyGreen
+  SunburstYellow
+  HyperPink
+  ElectricIndigo
+  AutumnOrange
+  Noir
+}
+
+type AppConfigInfo {
+  logo: String
+  name: String
+  color: AppColorScheme
+}
+
+input AppConfigInfoInput {
+  logo: String
+  name: String
+  color: AppColorScheme
+}
+
+enum AppType {
+  Taxi
+  Shop
+  Parking
+}
+
+type AuthMethodDTO {
+  id: ID!
+  type: AuthMethodType!
+  identifier: String!
+  isVerified: Boolean!
+  isPrimary: Boolean!
+  verifiedAt: DateTime
+  lastUsedAt: DateTime
+}
+
+"""The type of authentication method"""
+enum AuthMethodType {
+  PHONE
+  EMAIL
+  GOOGLE
+  APPLE
+  PASSKEY
+}
+
+type AvaialbeUpgrade {
+  type: String!
+  price: Float!
+  benefits: [String!]!
+}
+
+type BeginPasskeyAuthenticationDTO {
+  """Session ID to identify this authentication attempt"""
+  sessionId: String!
+
+  """The challenge to be signed by the authenticator"""
+  challenge: String!
+
+  """The relying party ID (domain)"""
+  rpId: String!
+
+  """Timeout in milliseconds for the authentication ceremony"""
+  timeout: Int!
+
+  """User verification requirement"""
+  userVerification: String!
+}
+
+type BeginPasskeyRegistrationDTO {
+  challenge: String!
+  rpId: String!
+  rpName: String!
+  userId: String!
+  userName: String!
+  userDisplayName: String!
+  excludeCredentials: [String!]!
+  timeout: Float!
+}
+
+type CallMaskingConfig {
+  enabled: Boolean!
+  maskingNumber: String!
+}
+
+type CarColor {
+  id: ID!
+  name: String!
+}
+
+type CarModel {
+  id: ID!
+  name: String!
+}
+
+type CashPaymentMethod implements PaymentMethodBase {
+  mode: PaymentMode!
+  id: ID
+}
+
+type ChatMessage {
+  message: String!
+  createdAt: DateTime!
+  isFromMe: Boolean!
+  seenAt: DateTime
+  senderFullName: String
+}
+
+type Complaint {
+  id: ID!
+  subject: String!
+  content: String
+  status: ComplaintStatus!
+}
+
+type ComplaintEdge {
+  """The node containing the Complaint"""
+  node: Complaint!
+
+  """Cursor for this node."""
+  cursor: ConnectionCursor!
+}
+
+input ComplaintInput {
+  requestId: ID!
+  subject: String!
+  content: String
+  requestedByDriver: Boolean
+}
+
+enum ComplaintStatus {
+  Submitted
+  UnderInvestigation
+  Resolved
+}
+
+input CompletePasskeyAuthenticationInput {
+  """Session ID from beginPasskeyAuthentication"""
+  sessionId: String!
+
+  """Credential ID (base64url encoded)"""
+  id: String!
+
+  """Raw credential ID (base64url encoded)"""
+  rawId: String!
+
+  """Credential type (usually "public-key")"""
+  type: String!
+
+  """Client data JSON (base64url encoded)"""
+  clientDataJSON: String!
+
+  """Authenticator data (base64url encoded)"""
+  authenticatorData: String!
+
+  """Signature (base64url encoded)"""
+  signature: String!
+
+  """User handle (base64url encoded, optional)"""
+  userHandle: String
+}
+
+input CompletePasskeyRegistrationInput {
+  id: String!
+  rawId: String!
+  type: String!
+  clientDataJSON: String!
+  attestationObject: String!
+  transports: [String!]
+}
+
+input CompleteRegistrationInput {
+  firstName: String!
+  lastName: String!
+  certificateNumber: String
+  email: String
+  carProductionYear: Int
+  carPlate: String
+  profilePictureId: ID!
+  gender: Gender!
+  address: String
+  carId: ID
+  carColorId: ID
+  documentPairs: [DocumentPairInput!]!
+  legacyDocumentIds: [ID!]
+}
+
+"""Cursor for paging through collections"""
+scalar ConnectionCursor
+
 union CostResult = FixedCost | RangeCost
+
+input CreateOneComplaintInput {
+  """The record to create"""
+  complaint: ComplaintInput!
+}
+
+input CreateOnePayoutAccountInput {
+  """The record to create"""
+  payoutAccount: CreatePayoutAccount!
+}
+
+input CreatePayoutAccount {
+  id: ID!
+  name: String
+  accountNumber: String
+  routingNumber: String
+  bankName: String
+  accountHolderName: String
+  branchName: String
+  isDefault: Boolean!
+  accountHolderAddress: String
+  accountHolderCity: String
+  accountHolderState: String
+  accountHolderZip: String
+  accountHolderCountry: String
+  accountHolderPhone: String
+  accountHolderDateOfBirth: DateTime
+  driverId: ID!
+  linkType: GatewayLinkMethod
+}
+
+type CurrentConfiguration {
+  purchaseCode: String
+  backendMapsAPIKey: String
+  adminPanelAPIKey: String
+  firebaseProjectPrivateKey: String
+  versionNumber: String
+  companyLogo: String
+  companyName: String
+  companyColor: AppColorScheme
+  taxi: AppConfigInfo
+  shop: AppConfigInfo
+  parking: AppConfigInfo
+  mysqlHost: String
+  mysqlPort: Int
+  mysqlUser: String
+  mysqlPassword: String
+  mysqlDatabase: String
+  redisHost: String
+  redisPort: Int
+  redisPassword: String
+  redisDb: Int
+}
+
+input CursorPaging {
+  """Paginate before opaque cursor"""
+  before: ConnectionCursor
+
+  """Paginate after opaque cursor"""
+  after: ConnectionCursor
+
+  """Paginate first"""
+  first: Int
+
+  """Paginate last"""
+  last: Int
+}
+
+type Datapoint {
+  name: String!
+  current: String!
+  earning: Float!
+  count: Float!
+  distance: Float!
+  time: Float!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input DeleteOnePayoutAccountInput {
+  """The id of the record to delete."""
+  id: ID!
+}
+
+type DeliveryContact {
+  name: String!
+  phoneNumber: PhoneNumber!
+  email: String
+  addressLine1: String!
+  addressLine2: String
+  zone: String
+  buildingNumber: String
+  apartmentNumber: String
+  city: String
+  state: String
+  instructions: String
+  postalCode: String
+  companyName: String
+}
+
+input DeliveryContactInput {
+  name: String!
+  phoneNumber: PhoneNumberInput!
+  email: String
+  addressLine1: String!
+  addressLine2: String
+  zone: String
+  buildingNumber: String
+  apartmentNumber: String
+  city: String
+  state: String
+  instructions: String
+  postalCode: String
+  companyName: String
+}
+
+type DeliveryWaypoint implements WaypointBase {
+  location: Point!
+  address: String!
+  role: WaypointRole!
+  service: WaypointService!
+  deliveryContact: DeliveryContact
+  shopName: String
+  shopAddress: String
+  shopImageUrl: String
+}
+
+input DocumentPairInput {
+  documentId: ID!
+  mediaId: ID!
+}
+
+type Driver {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  profileImageUrl: String!
+  mobileNumber: String!
+  email: String
+  status: DriverStatus!
+  walletCredit: Float
+  currency: String!
+  searchDistance: Int
+  softRejectionNote: String
+}
+
+enum DriverDeductTransactionType {
+  Withdraw
+  Commission
+  Correction
+}
+
+type DriverDocument {
+  id: ID!
+  title: String!
+  description: String
+  isEnabled: Boolean!
+  isRequired: Boolean!
+}
+
+type DriverEventPayload {
+  type: DriverEventType!
+  orderId: ID!
+  driverId: ID!
+  unreadMessagesCount: Int
+  message: ChatMessage
+  status: OrderStatus
+  waitTime: Int
+  totalCost: Float
+  rideOffer: RideOffer
+}
+
+"""Types of events that can be sent to the driver"""
+enum DriverEventType {
+  ActiveOrderUpdated
+  RideOfferReceived
+  RideOfferRevoked
+  MessageReceived
+  ActiveOrderCompleted
+  ActiveOrderAssigned
+}
+
+type DriverPerformance {
+  rating: Int
+
+  """A number between 0 and 100 representing the driver's acceptance rate."""
+  acceptanceRate: Int!
+  totalRides: Int!
+  distanceTraveled: Int!
+}
+
+enum DriverRechargeTransactionType {
+  OrderFee
+  BankTransfer
+  InAppPayment
+  Gift
+}
+
+enum DriverStatus {
+  Online
+  Offline
+  Blocked
+  InService
+  WaitingDocuments
+  PendingApproval
+  SoftReject
+  HardReject
+}
+
+type DriverTransacion {
+  id: ID!
+  createdAt: DateTime!
+  action: TransactionAction!
+  deductType: DriverDeductTransactionType
+  rechargeType: DriverRechargeTransactionType
+  amount: Float!
+  currency: String!
+  refrenceNumber: String
+  driverId: ID!
+  payoutAccountId: ID
+}
+
+type DriverTransacionConnection {
+  """Paging information"""
+  pageInfo: PageInfo!
+
+  """Array of edges."""
+  edges: [DriverTransacionEdge!]!
+}
+
+type DriverTransacionEdge {
+  """The node containing the DriverTransacion"""
+  node: DriverTransacion!
+
+  """Cursor for this node."""
+  cursor: ConnectionCursor!
+}
+
+input DriverTransacionFilter {
+  and: [DriverTransacionFilter!]
+  or: [DriverTransacionFilter!]
+  id: IDFilterComparison
+  driverId: IDFilterComparison
+  payoutAccountId: IDFilterComparison
+}
+
+input DriverTransacionSort {
+  field: DriverTransacionSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum DriverTransacionSortFields {
+  id
+  driverId
+  payoutAccountId
+}
+
+type DriverWallet {
+  id: ID!
+  balance: Float!
+  currency: String!
+  driverId: ID!
+}
+
+input DriverWalletFilter {
+  and: [DriverWalletFilter!]
+  or: [DriverWalletFilter!]
+  id: IDFilterComparison
+  driverId: IDFilterComparison
+}
+
+input DriverWalletSort {
+  field: DriverWalletSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum DriverWalletSortFields {
+  id
+  driverId
+}
+
+type EphemeralMessage {
+  messageId: ID!
+  type: EphemeralMessageType!
+  createdAt: DateTime!
+  expiresAt: DateTime!
+  orderId: ID!
+  riderFullName: String
+  riderProfileUrl: String
+  serviceName: String
+  serviceImageUrl: String
+  amount: Float
+}
+
+enum EphemeralMessageType {
+  RateRider
+  RiderCanceled
+  AddPayoutMethod
+  RideReceived
+  RideCompleted
+  RideCancelled
+}
+
+type FeedbacksSummary {
+  averageRating: Float
+  goodPoints: [String!]!
+  badPoints: [String!]!
+  goodReviews: [Review!]!
+}
 
 type FixedCost {
   cost: Float!
   mode: PricingMode!
 }
 
-type RangeCost {
-  cost: Float!
-  min: Float!
-  max: Float!
-  mode: PricingMode!
-  rangePolicy: RangePolicy!
+"""Method of connecting to a payout or saved payment method."""
+enum GatewayLinkMethod {
+  none
+  redirect
+  manual
 }
 
-type PastOrderRider {
+enum Gender {
+  Male
+  Female
+  Other
+  Unknown
+}
+
+input GetPayoutLinkUrlInput {
+  gatewayId: ID!
+}
+
+type GiftCard {
+  id: ID!
+  amount: Float!
+  currency: String!
+}
+
+input IDFilterComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: ID
+  neq: ID
+  gt: ID
+  gte: ID
+  lt: ID
+  lte: ID
+  like: ID
+  notLike: ID
+  iLike: ID
+  notILike: ID
+  in: [ID!]
+  notIn: [ID!]
+}
+
+type InitiateCallResult {
+  success: Boolean!
+  maskingNumber: String
+  error: String
+}
+
+type License {
+  buyerName: String!
+  licenseType: LicenseType!
+  supportExpireDate: DateTime
+  connectedApps: [AppType!]!
+  platformAddons: [PlatformAddOn!]!
+}
+
+type LicenseInformation {
+  license: License
+  benefits: [String!]
+  drawbacks: [String!]
+  availableUpgrades: [AvaialbeUpgrade!]
+}
+
+enum LicenseType {
+  Regular
+  Extended
+  Bronze
+  Silver
+  Gold
+}
+
+type Login {
+  jwtToken: String!
+}
+
+input LoginInput {
+  firebaseToken: String!
+}
+
+type LostPropertyEligibility {
+  canCall: Boolean!
+  finishedAt: DateTime
+}
+
+type Media {
+  id: ID!
+  address: String!
+  base64: String
+}
+
+type MediaEdge {
+  """The node containing the Media"""
+  node: Media!
+
+  """Cursor for this node."""
+  cursor: ConnectionCursor!
+}
+
+type Mutation {
+  markEphemeralMessagesAsRead(messageId: ID!): Boolean!
+  markPayoutAccountAsDefault(payoutMethodId: ID!): PayoutAccount!
+  updatePayoutMethod(input: UpdatePayoutMethodInput!): PayoutAccount!
+  createPayoutAccount(input: PayoutAccountInput!): PayoutAccount!
+  sosSignal(orderId: ID!, location: PointInput): SOS!
+  goOnline(location: PointInput!): Boolean!
+  goOffline: Boolean!
+  updateDriverOfferFilter(input: UpdateDriverOfferFilterInput!): Driver!
+  updateDriverLocation(point: PointInput!): Boolean!
+  initiateCallMasking(orderId: ID!): InitiateCallResult!
+  initiateLostPropertyCall(orderId: ID!): InitiateCallResult!
+  sendChatMessage(orderId: ID!, message: String!): ChatMessage!
+  updateLastSeenMessagesAt(orderId: ID!): Boolean!
+  acceptRideOffer(orderId: ID!): ActiveOrder!
+  rejectRideOffer(orderId: ID!): Boolean!
+  initiateCall(orderId: ID!): Boolean!
+  submitReview(input: RiderReviewInput!): Boolean!
+  arrivedToPickup(orderId: ID!): UpdateStatus!
+  arrivedToDestination(orderId: ID!): UpdateStatus!
+  initiateRide(orderId: ID!): UpdateStatus!
+  verifyPickupOtp(orderId: ID!, otp: String!, waitSeconds: Int): UpdateStatus!
+  cancelRide(orderId: ID!, reasonId: ID!, reasonNote: String): UpdateStatus!
+  riderPaidInCash(orderId: ID!): UpdateStatus!
+  submitOrderFee(orderId: ID!, fee: Float!): UpdateStatus!
+  topUpWallet(input: TopUpWalletInput!): TopUpWalletResponse!
+  setupPaymentMethod(gatewayId: ID!): SetupPaymentMethod!
+  redeemGiftCard(code: String!): GiftCard!
+  markPaymentMethodAsDefault(id: ID!): [PaymentMethodBase!]!
+  deleteSavedPaymentMethod(id: ID!): Boolean!
+  updateFcmToken(fcmToken: String!): Boolean!
+  login(input: LoginInput!): Login!
+  deleteUser: Driver!
+
+  """
+  Returns a hash required for the subsequent code verification call to validate
+  the OTP. In demo mode, SMS is not sent and the default OTP is 123456.
+  """
+  verifyNumber(mobileNumber: String!, countryIso: String, forceSendOtp: Boolean): VerifyNumberDto!
+
+  """
+  Returns a JWT token if the code matches the hash. In demo mode the OTP is not sent. It is 123456 by default.
+  """
+  verifyOtp(hash: String!, code: String!): VerifcationResult!
+  verifyPassword(mobileNumber: String!, password: String!): VerifcationResult!
+  setPassword(password: String!): VerifcationResult!
+  completeRegistration(input: CompleteRegistrationInput!): Driver!
+
+  """
+  Send a verification code to the provided email address. Returns a hash for subsequent verification.
+  """
+  sendEmailVerification(email: String!): SendEmailVerificationDto!
+
+  """
+  Verify the email code and potentially log in the driver. In demo mode, use code 123456.
+  """
+  verifyEmailCode(hash: String!, code: String!): VerifyEmailDto!
+
+  """Login with email and password."""
+  loginWithEmail(email: String!, password: String!): VerifcationResult!
+
+  """Link an email address to the current account. Requires authentication."""
+  linkEmail(email: String!): AuthMethodDTO!
+
+  """Begin passkey registration. Returns options for the WebAuthn ceremony."""
+  beginPasskeyRegistration: BeginPasskeyRegistrationDTO!
+
+  """Complete passkey registration with attestation response."""
+  completePasskeyRegistration(input: CompletePasskeyRegistrationInput!): AuthMethodDTO!
+
+  """
+  Begin passkey authentication (login). Returns options for the WebAuthn ceremony.
+  """
+  beginPasskeyAuthentication: BeginPasskeyAuthenticationDTO!
+
+  """Complete passkey authentication and log in the driver."""
+  completePasskeyAuthentication(input: CompletePasskeyAuthenticationInput!): VerifcationResult!
+  createOnePayoutAccount(input: CreateOnePayoutAccountInput!): PayoutAccount!
+  updateOnePayoutAccount(input: UpdateOnePayoutAccountInput!): PayoutAccount!
+  deleteOnePayoutAccount(input: DeleteOnePayoutAccountInput!): PayoutAccountDeleteResponse!
+  createOneComplaint(input: CreateOneComplaintInput!): Complaint!
+}
+
+type OffsetPageInfo {
+  """true if paging forward and there are more records."""
+  hasNextPage: Boolean
+
+  """true if paging backwards and there are more records."""
+  hasPreviousPage: Boolean
+}
+
+input OffsetPaging {
+  """Limit the number of records returned"""
+  limit: Int
+
+  """Offset to start returning records from"""
+  offset: Int
+}
+
+type OnlinePaymentMethod implements PaymentMethodBase {
+  mode: PaymentMode!
+  id: ID!
+  name: String!
+  imageUrl: String
+  linkMethod: GatewayLinkMethod!
+}
+
+input OpeningHoursInput {
+  open: String!
+  close: String!
+}
+
+type OrderCancelReason {
+  id: ID!
+  title: String!
+}
+
+enum OrderStatus {
+  Requested
+  NotFound
+  NoCloseFound
+  Found
+  DriverAccepted
+  Arrived
+  WaitingForPrePay
+  DriverCanceled
+  RiderCanceled
+  Started
+  WaitingForDriverFee
+  WaitingForPostPay
+  WaitingForReview
+  Finished
+  Booked
+  Expired
+}
+
+type PageInfo {
+  """true if paging forward and there are more records."""
+  hasNextPage: Boolean
+
+  """true if paging backwards and there are more records."""
+  hasPreviousPage: Boolean
+
+  """The cursor of the first returned record."""
+  startCursor: ConnectionCursor
+
+  """The cursor of the last returned record."""
+  endCursor: ConnectionCursor
+}
+
+type PassengerInformation {
   firstName: String
-  profileImageUrl: String
+  lastName: String
+  profilePicture: String
 }
 
 type PastOrder {
@@ -626,123 +867,9 @@ type PastOrder {
   directions: [Point!]!
 }
 
-type OrderCancelReason {
-  id: ID!
-  title: String!
-}
-
-type Login {
-  jwtToken: String!
-}
-
-type VerifcationResult {
-  jwtToken: String!
-  user: Driver!
-  hasPassword: Boolean!
-  hasName: Boolean!
-}
-
-type VerifyNumberDto {
-  """
-  If an existing user then the hash will be null, so the user can be logged in using password instead of OTP.
-  """
-  isExistingUser: Boolean!
-
-  """
-  Hash that will need to be passed in subsequent verify code call in order for match and verifcation to happen.
-  """
-  hash: String
-}
-
-type SendEmailVerificationDto {
-  """
-  Hash that will need to be passed in subsequent verify code call in order for verification to happen.
-  """
-  hash: String
-
-  """Whether this email is already linked to an existing account."""
-  isExistingUser: Boolean!
-
-  """
-  Whether phone verification is required before email can be used for login.
-  """
-  requiresPhoneVerification: Boolean!
-}
-
-type VerifyEmailDto {
-  """
-  JWT token for authentication. Null if phone verification is required first.
-  """
-  jwtToken: String
-
-  """The driver object. Null if phone verification is required first."""
-  user: Driver
-  hasPassword: Boolean!
-  hasName: Boolean!
-
-  """Whether this is a newly created account."""
-  isNewAccount: Boolean!
-
-  """Whether the email was linked to an existing account."""
-  isEmailLinked: Boolean!
-
-  """
-  If true, the driver must complete phone verification before they can log in with email.
-  """
-  requiresPhoneVerification: Boolean!
-}
-
-type DriverDocument {
-  id: ID!
-  title: String!
-  description: String
-  isEnabled: Boolean!
-  isRequired: Boolean!
-}
-
-type CarModel {
-  id: ID!
-  name: String!
-}
-
-type CarColor {
-  id: ID!
-  name: String!
-}
-
-type Complaint {
-  id: ID!
-  subject: String!
-  content: String
-  status: ComplaintStatus!
-}
-
-enum ComplaintStatus {
-  Submitted
-  UnderInvestigation
-  Resolved
-}
-
-type ComplaintEdge {
-  """The node containing the Complaint"""
-  node: Complaint!
-
-  """Cursor for this node."""
-  cursor: ConnectionCursor!
-}
-
-type Review {
-  serviceName: String!
-  rating: Float!
-  review: String!
-  goodPoints: [String!]!
-}
-
-type FeedbacksSummary {
-  averageRating: Float
-  goodPoints: [String!]!
-  badPoints: [String!]!
-  goodReviews: [Review!]!
+type PastOrderRider {
+  firstName: String
+  profileImageUrl: String
 }
 
 type PaymentGateway {
@@ -779,51 +906,17 @@ enum PaymentGatewayType {
   CustomLink
 }
 
-type PayoutMethod {
-  id: ID!
-  enabled: Boolean!
-  name: String!
-  isInstantPayoutEnabled: Boolean!
-  type: PayoutMethodType!
-  linkMethod: GatewayLinkMethod!
-  media: Media
+interface PaymentMethodBase {
+  mode: PaymentMode!
+  id: ID
 }
 
-"""The type of payout method"""
-enum PayoutMethodType {
-  Stripe
-  BankTransfer
-}
-
-type DriverTransacion {
-  id: ID!
-  createdAt: DateTime!
-  action: TransactionAction!
-  deductType: DriverDeductTransactionType
-  rechargeType: DriverRechargeTransactionType
-  amount: Float!
-  currency: String!
-  refrenceNumber: String
-  driverId: ID!
-  payoutAccountId: ID
-}
-
-enum TransactionAction {
-  Recharge
-  Deduct
-}
-
-enum DriverDeductTransactionType {
-  Withdraw
-  Commission
-  Correction
-}
-
-enum DriverRechargeTransactionType {
-  OrderFee
-  BankTransfer
-  InAppPayment
-  Gift
+"""The means of payment for an order."""
+enum PaymentMode {
+  Cash
+  SavedPaymentMethod
+  PaymentGateway
+  Wallet
 }
 
 type PayoutAccount {
@@ -860,124 +953,6 @@ type PayoutAccount {
   ): PayoutAccountDriverTransactionsConnection!
 }
 
-input OffsetPaging {
-  """Limit the number of records returned"""
-  limit: Int
-
-  """Offset to start returning records from"""
-  offset: Int
-}
-
-input DriverTransacionFilter {
-  and: [DriverTransacionFilter!]
-  or: [DriverTransacionFilter!]
-  id: IDFilterComparison
-  driverId: IDFilterComparison
-  payoutAccountId: IDFilterComparison
-}
-
-input IDFilterComparison {
-  is: Boolean
-  isNot: Boolean
-  eq: ID
-  neq: ID
-  gt: ID
-  gte: ID
-  lt: ID
-  lte: ID
-  like: ID
-  notLike: ID
-  iLike: ID
-  notILike: ID
-  in: [ID!]
-  notIn: [ID!]
-}
-
-input DriverTransacionSort {
-  field: DriverTransacionSortFields!
-  direction: SortDirection!
-  nulls: SortNulls
-}
-
-enum DriverTransacionSortFields {
-  id
-  driverId
-  payoutAccountId
-}
-
-"""Sort Directions"""
-enum SortDirection {
-  ASC
-  DESC
-}
-
-"""Sort Nulls Options"""
-enum SortNulls {
-  NULLS_FIRST
-  NULLS_LAST
-}
-
-type TopUpWalletResponse {
-  status: TopUpWalletStatus!
-  url: String
-  error: String
-}
-
-enum TopUpWalletStatus {
-  OK
-  Redirect
-  Failed
-}
-
-type DriverWallet {
-  id: ID!
-  balance: Float!
-  currency: String!
-  driverId: ID!
-}
-
-type StatisticsResult {
-  currency: String!
-  sumOfCurrentPeriod: Float!
-  lastOrderEarnings: Float
-  dataset: [Datapoint!]!
-}
-
-type Datapoint {
-  name: String!
-  current: String!
-  earning: Float!
-  count: Float!
-  distance: Float!
-  time: Float!
-}
-
-type GiftCard {
-  id: ID!
-  amount: Float!
-  currency: String!
-}
-
-type SetupPaymentMethod {
-  url: String
-}
-
-type DriverTransacionEdge {
-  """The node containing the DriverTransacion"""
-  node: DriverTransacion!
-
-  """Cursor for this node."""
-  cursor: ConnectionCursor!
-}
-
-type DriverTransacionConnection {
-  """Paging information"""
-  pageInfo: PageInfo!
-
-  """Array of edges."""
-  edges: [DriverTransacionEdge!]!
-}
-
 type PayoutAccountDeleteResponse {
   id: ID
   name: String
@@ -998,14 +973,6 @@ type PayoutAccountDeleteResponse {
   linkType: GatewayLinkMethod
 }
 
-type OffsetPageInfo {
-  """true if paging forward and there are more records."""
-  hasNextPage: Boolean
-
-  """true if paging backwards and there are more records."""
-  hasPreviousPage: Boolean
-}
-
 type PayoutAccountDriverTransactionsConnection {
   """Paging information"""
   pageInfo: OffsetPageInfo!
@@ -1014,26 +981,98 @@ type PayoutAccountDriverTransactionsConnection {
   nodes: [DriverTransacion!]!
 }
 
-type SOS {
+input PayoutAccountFilter {
+  and: [PayoutAccountFilter!]
+  or: [PayoutAccountFilter!]
+  id: IDFilterComparison
+  driverId: IDFilterComparison
+}
+
+input PayoutAccountInput {
+  name: String!
+  payoutMethodId: ID!
+  accountNumber: String!
+  routingNumber: String
+  bankName: String!
+  accountHolderName: String
+  branchName: String
+  isDefault: Boolean!
+  accountHolderAddress: String
+  accountHolderCity: String
+  accountHolderState: String
+  accountHolderZip: String
+  accountHolderCountry: String
+  accountHolderPhone: String
+  accountHolderDateOfBirth: DateTime
+}
+
+input PayoutAccountSort {
+  field: PayoutAccountSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum PayoutAccountSortFields {
+  id
+  driverId
+}
+
+type PayoutMethod {
   id: ID!
+  enabled: Boolean!
+  name: String!
+  isInstantPayoutEnabled: Boolean!
+  type: PayoutMethodType!
+  linkMethod: GatewayLinkMethod!
+  media: Media
 }
 
-type EphemeralMessage {
-  messageId: ID!
-  type: EphemeralMessageType!
-  createdAt: DateTime!
-  expiresAt: DateTime!
-  orderId: ID!
-  riderFullName: String
-  riderProfileUrl: String
-  serviceName: String
-  serviceImageUrl: String
+input PayoutMethodFilter {
+  and: [PayoutMethodFilter!]
+  or: [PayoutMethodFilter!]
+  id: IDFilterComparison
 }
 
-enum EphemeralMessageType {
-  RateRider
-  RiderCanceled
-  AddPayoutMethod
+input PayoutMethodSort {
+  field: PayoutMethodSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum PayoutMethodSortFields {
+  id
+}
+
+"""The type of payout method"""
+enum PayoutMethodType {
+  Stripe
+  BankTransfer
+}
+
+type PhoneNumber {
+  countryCode: String!
+  number: String!
+}
+
+input PhoneNumberInput {
+  countryCode: String!
+  number: String!
+}
+
+type PlaceDTO {
+  point: Point!
+  title: String
+  address: String!
+}
+
+enum PlatformAddOn {
+  FleetAddOn
+}
+
+type Point {
+  lat: Float!
+  lng: Float!
+  heading: Int
 }
 
 input PointInput {
@@ -1042,36 +1081,22 @@ input PointInput {
   heading: Int
 }
 
-input AppConfigInfoInput {
-  logo: String
-  name: String
-  color: AppColorScheme
+enum PricingMode {
+  FIXED
+  RANGE
 }
 
-input OpeningHoursInput {
-  open: String!
-  close: String!
-}
-
-input PhoneNumberInput {
-  countryCode: String!
-  number: String!
-}
-
-input DeliveryContactInput {
-  name: String!
-  phoneNumber: PhoneNumberInput!
-  email: String
-  addressLine1: String!
-  addressLine2: String
-  zone: String
-  buildingNumber: String
-  apartmentNumber: String
-  city: String
-  state: String
-  instructions: String
-  postalCode: String
-  companyName: String
+"""Brand of the provider wether bank name or card provider"""
+enum ProviderBrand {
+  Visa
+  Mastercard
+  Amex
+  Discover
+  Diners
+  EftPosAu
+  JCB
+  UnionPay
+  Unknown
 }
 
 type Query {
@@ -1141,8 +1166,174 @@ type Query {
   ): [DriverWallet!]!
 }
 
-input GetPayoutLinkUrlInput {
-  gatewayId: ID!
+type RangeCost {
+  cost: Float!
+  min: Float!
+  max: Float!
+  mode: PricingMode!
+  rangePolicy: RangePolicy!
+}
+
+enum RangePolicy {
+  ENFORCE
+  SOFT
+  OPEN
+}
+
+type Review {
+  serviceName: String!
+  rating: Float!
+  review: String!
+  goodPoints: [String!]!
+}
+
+type RideOffer {
+  id: ID!
+  type: TaxiOrderType!
+  currency: String!
+  waypoints: [WaypointBase!]!
+
+  """The total distance in meters for the order."""
+  distance: Int!
+
+  """The minimum cost estimate for the order."""
+  costMin: Float
+
+  """The maximum cost estimate for the order."""
+  costMax: Float
+  pricingMode: PricingMode!
+  rangePolicy: RangePolicy
+
+  """The total duration in seconds for the order"""
+  duration: Int!
+
+  """The directions for the order from driver to passenger."""
+  directions: [Point!]!
+  dispatchedToUserAt: DateTime
+  expiresAt: DateTime
+  fareEstimate: Float!
+  serviceName: String!
+  serviceImageAddress: String!
+  options: [RideOption!]!
+  passenger: PassengerInformation
+}
+
+type RideOption {
+  name: String!
+  icon: ServiceOptionIcon!
+}
+
+input RiderReviewInput {
+  """Score, a value between 0 to 100"""
+  score: Int!
+  description: String
+  orderId: ID!
+}
+
+type RideWaypoint implements WaypointBase {
+  location: Point!
+  address: String!
+  role: WaypointRole!
+  service: WaypointService!
+  deliveryContact: DeliveryContact
+  shopName: String
+  shopAddress: String
+  shopImageUrl: String
+}
+
+type SavedAccount implements PaymentMethodBase {
+  mode: PaymentMode!
+  id: ID!
+  name: String!
+  providerBrand: ProviderBrand
+  isDefault: Boolean!
+}
+
+type SendEmailVerificationDto {
+  """
+  Hash that will need to be passed in subsequent verify code call in order for verification to happen.
+  """
+  hash: String
+
+  """Whether this email is already linked to an existing account."""
+  isExistingUser: Boolean!
+
+  """
+  Whether phone verification is required before email can be used for login.
+  """
+  requiresPhoneVerification: Boolean!
+}
+
+type Service {
+  id: ID!
+  name: String!
+  imageUrl: String!
+}
+
+enum ServiceOptionIcon {
+  Pet
+  TwoWay
+  Luggage
+  PackageDelivery
+  Shopping
+  Custom1
+  Custom2
+  Custom3
+  Custom4
+  Custom5
+}
+
+type SetupPaymentMethod {
+  url: String
+}
+
+type ShopWaypoint implements WaypointBase {
+  location: Point!
+  address: String!
+  role: WaypointRole!
+  service: WaypointService!
+  deliveryContact: DeliveryContact
+  shopName: String!
+  shopAddress: String!
+  shopImageUrl: String!
+}
+
+"""Sort Directions"""
+enum SortDirection {
+  ASC
+  DESC
+}
+
+"""Sort Nulls Options"""
+enum SortNulls {
+  NULLS_FIRST
+  NULLS_LAST
+}
+
+type SOS {
+  id: ID!
+}
+
+type StatisticsResult {
+  currency: String!
+  sumOfCurrentPeriod: Float!
+  lastOrderEarnings: Float
+  dataset: [Datapoint!]!
+}
+
+type Subscription {
+  driverEvents: DriverEventPayload!
+}
+
+"""
+Different types of taxi orders, including ride, rideshare, parcel delivery, food delivery, and shop delivery.
+"""
+enum TaxiOrderType {
+  Ride
+  Rideshare
+  ParcelDelivery
+  FoodDelivery
+  ShopDelivery
 }
 
 enum TimeQuery {
@@ -1151,192 +1342,9 @@ enum TimeQuery {
   Monthly
 }
 
-enum VersionStatus {
-  Latest
-  MandatoryUpdate
-  OptionalUpdate
-}
-
-input PayoutAccountFilter {
-  and: [PayoutAccountFilter!]
-  or: [PayoutAccountFilter!]
-  id: IDFilterComparison
-  driverId: IDFilterComparison
-}
-
-input PayoutAccountSort {
-  field: PayoutAccountSortFields!
-  direction: SortDirection!
-  nulls: SortNulls
-}
-
-enum PayoutAccountSortFields {
-  id
-  driverId
-}
-
-input PayoutMethodFilter {
-  and: [PayoutMethodFilter!]
-  or: [PayoutMethodFilter!]
-  id: IDFilterComparison
-}
-
-input PayoutMethodSort {
-  field: PayoutMethodSortFields!
-  direction: SortDirection!
-  nulls: SortNulls
-}
-
-enum PayoutMethodSortFields {
-  id
-}
-
-input CursorPaging {
-  """Paginate before opaque cursor"""
-  before: ConnectionCursor
-
-  """Paginate after opaque cursor"""
-  after: ConnectionCursor
-
-  """Paginate first"""
-  first: Int
-
-  """Paginate last"""
-  last: Int
-}
-
-input DriverWalletFilter {
-  and: [DriverWalletFilter!]
-  or: [DriverWalletFilter!]
-  id: IDFilterComparison
-  driverId: IDFilterComparison
-}
-
-input DriverWalletSort {
-  field: DriverWalletSortFields!
-  direction: SortDirection!
-  nulls: SortNulls
-}
-
-enum DriverWalletSortFields {
-  id
-  driverId
-}
-
-type Mutation {
-  markEphemeralMessagesAsRead(messageId: ID!): Boolean!
-  markPayoutAccountAsDefault(payoutMethodId: ID!): PayoutAccount!
-  updatePayoutMethod(input: UpdatePayoutMethodInput!): PayoutAccount!
-  createPayoutAccount(input: PayoutAccountInput!): PayoutAccount!
-  sosSignal(orderId: ID!, location: PointInput): SOS!
-  goOnline(location: PointInput!): Boolean!
-  goOffline: Boolean!
-  updateDriverOfferFilter(input: UpdateDriverOfferFilterInput!): Driver!
-  updateDriverLocation(point: PointInput!): Boolean!
-  initiateCallMasking(orderId: ID!): InitiateCallResult!
-  initiateLostPropertyCall(orderId: ID!): InitiateCallResult!
-  sendChatMessage(orderId: ID!, message: String!): ChatMessage!
-  updateLastSeenMessagesAt(orderId: ID!): Boolean!
-  acceptRideOffer(orderId: ID!): ActiveOrder!
-  rejectRideOffer(orderId: ID!): Boolean!
-  submitReview(input: RiderReviewInput!): Boolean!
-  arrivedToPickup(orderId: ID!): UpdateStatus!
-  arrivedToDestination(orderId: ID!): UpdateStatus!
-  initiateRide(orderId: ID!): UpdateStatus!
-  verifyPickupOtp(orderId: ID!, otp: String!, waitSeconds: Int): UpdateStatus!
-  cancelRide(orderId: ID!, reasonId: ID!, reasonNote: String): UpdateStatus!
-  riderPaidInCash(orderId: ID!): UpdateStatus!
-  submitOrderFee(orderId: ID!, fee: Float!): UpdateStatus!
-  topUpWallet(input: TopUpWalletInput!): TopUpWalletResponse!
-  setupPaymentMethod(gatewayId: ID!): SetupPaymentMethod!
-  redeemGiftCard(code: String!): GiftCard!
-  markPaymentMethodAsDefault(id: ID!): [PaymentMethodBase!]!
-  deleteSavedPaymentMethod(id: ID!): Boolean!
-  updateFcmToken(fcmToken: String!): Boolean!
-  login(input: LoginInput!): Login!
-  deleteUser: Driver!
-
-  """
-  Returns a hash required for the subsequent code verification call to validate the OTP. In demo mode, SMS is not sent and the default OTP is 123456.
-  """
-  verifyNumber(mobileNumber: String!, countryIso: String, forceSendOtp: Boolean): VerifyNumberDto!
-
-  """
-  Returns a JWT token if the code matches the hash. In demo mode the OTP is not sent. It is 123456 by default.
-  """
-  verifyOtp(hash: String!, code: String!): VerifcationResult!
-  verifyPassword(mobileNumber: String!, password: String!): VerifcationResult!
-  setPassword(password: String!): VerifcationResult!
-  completeRegistration(input: CompleteRegistrationInput!): Driver!
-
-  """
-  Send a verification code to the provided email address. Returns a hash for subsequent verification.
-  """
-  sendEmailVerification(email: String!): SendEmailVerificationDto!
-
-  """
-  Verify the email code and potentially log in the driver. In demo mode, use code 123456.
-  """
-  verifyEmailCode(hash: String!, code: String!): VerifyEmailDto!
-
-  """Login with email and password."""
-  loginWithEmail(email: String!, password: String!): VerifcationResult!
-
-  """Link an email address to the current account. Requires authentication."""
-  linkEmail(email: String!): AuthMethodDTO!
-
-  """Begin passkey registration. Returns options for the WebAuthn ceremony."""
-  beginPasskeyRegistration: BeginPasskeyRegistrationDTO!
-
-  """Complete passkey registration with attestation response."""
-  completePasskeyRegistration(input: CompletePasskeyRegistrationInput!): AuthMethodDTO!
-
-  """
-  Begin passkey authentication (login). Returns options for the WebAuthn ceremony.
-  """
-  beginPasskeyAuthentication: BeginPasskeyAuthenticationDTO!
-
-  """Complete passkey authentication and log in the driver."""
-  completePasskeyAuthentication(input: CompletePasskeyAuthenticationInput!): VerifcationResult!
-  createOnePayoutAccount(input: CreateOnePayoutAccountInput!): PayoutAccount!
-  updateOnePayoutAccount(input: UpdateOnePayoutAccountInput!): PayoutAccount!
-  deleteOnePayoutAccount(input: DeleteOnePayoutAccountInput!): PayoutAccountDeleteResponse!
-  createOneComplaint(input: CreateOneComplaintInput!): Complaint!
-}
-
-input UpdatePayoutMethodInput {
-  id: ID!
-  isDefault: Boolean!
-}
-
-input PayoutAccountInput {
-  name: String!
-  payoutMethodId: ID!
-  accountNumber: String!
-  routingNumber: String
-  bankName: String!
-  accountHolderName: String
-  branchName: String
-  isDefault: Boolean!
-  accountHolderAddress: String
-  accountHolderCity: String
-  accountHolderState: String
-  accountHolderZip: String
-  accountHolderCountry: String
-  accountHolderPhone: String
-  accountHolderDateOfBirth: DateTime
-}
-
-input UpdateDriverOfferFilterInput {
-  serviceIds: [ID!]
-  searchDistance: Int
-}
-
-input RiderReviewInput {
-  """Score, a value between 0 to 100"""
-  score: Int!
-  description: String
-  orderId: ID!
+type TimeRange {
+  open: String!
+  close: String!
 }
 
 input TopUpWalletInput {
@@ -1350,96 +1358,26 @@ input TopUpWalletInput {
   paymentMode: PaymentMode! = PaymentGateway
 }
 
-input LoginInput {
-  firebaseToken: String!
+type TopUpWalletResponse {
+  status: TopUpWalletStatus!
+  url: String
+  error: String
 }
 
-input CompleteRegistrationInput {
-  firstName: String!
-  lastName: String!
-  certificateNumber: String
-  email: String
-  carProductionYear: Int
-  carPlate: String
-  profilePictureId: ID!
-  gender: Gender!
-  address: String
-  carId: ID
-  carColorId: ID
-  documentPairs: [DocumentPairInput!]!
-  legacyDocumentIds: [ID!]
+enum TopUpWalletStatus {
+  OK
+  Redirect
+  Failed
 }
 
-enum Gender {
-  Male
-  Female
-  Other
-  Unknown
+enum TransactionAction {
+  Recharge
+  Deduct
 }
 
-input DocumentPairInput {
-  documentId: ID!
-  mediaId: ID!
-}
-
-input CompletePasskeyRegistrationInput {
-  id: String!
-  rawId: String!
-  type: String!
-  clientDataJSON: String!
-  attestationObject: String!
-  transports: [String!]
-}
-
-input CompletePasskeyAuthenticationInput {
-  """Session ID from beginPasskeyAuthentication"""
-  sessionId: String!
-
-  """Credential ID (base64url encoded)"""
-  id: String!
-
-  """Raw credential ID (base64url encoded)"""
-  rawId: String!
-
-  """Credential type (usually "public-key")"""
-  type: String!
-
-  """Client data JSON (base64url encoded)"""
-  clientDataJSON: String!
-
-  """Authenticator data (base64url encoded)"""
-  authenticatorData: String!
-
-  """Signature (base64url encoded)"""
-  signature: String!
-
-  """User handle (base64url encoded, optional)"""
-  userHandle: String
-}
-
-input CreateOnePayoutAccountInput {
-  """The record to create"""
-  payoutAccount: CreatePayoutAccount!
-}
-
-input CreatePayoutAccount {
-  id: ID!
-  name: String
-  accountNumber: String
-  routingNumber: String
-  bankName: String
-  accountHolderName: String
-  branchName: String
-  isDefault: Boolean!
-  accountHolderAddress: String
-  accountHolderCity: String
-  accountHolderState: String
-  accountHolderZip: String
-  accountHolderCountry: String
-  accountHolderPhone: String
-  accountHolderDateOfBirth: DateTime
-  driverId: ID!
-  linkType: GatewayLinkMethod
+input UpdateDriverOfferFilterInput {
+  serviceIds: [ID!]
+  searchDistance: Int
 }
 
 input UpdateOnePayoutAccountInput {
@@ -1470,23 +1408,108 @@ input UpdatePayoutAccount {
   linkType: GatewayLinkMethod
 }
 
-input DeleteOnePayoutAccountInput {
-  """The id of the record to delete."""
+input UpdatePayoutMethodInput {
   id: ID!
+  isDefault: Boolean!
 }
 
-input CreateOneComplaintInput {
-  """The record to create"""
-  complaint: ComplaintInput!
+type UpdatePurchaseCodeClient {
+  id: ID!
+  enabled: Boolean!
+  ip: String!
+  port: Float!
+  token: String!
+  purchaseId: ID!
+  firstVerifiedAt: DateTime!
+  lastVerifiedAt: DateTime!
 }
 
-input ComplaintInput {
-  requestId: ID!
-  subject: String!
-  content: String
-  requestedByDriver: Boolean
+type UpdateStatus {
+  orderId: ID!
+  status: OrderStatus!
+  nextDestination: WaypointBase
+  directions: [Point!]
+  totalCost: Float
 }
 
-type Subscription {
-  driverEvents: DriverEventPayload!
+type VerifcationResult {
+  jwtToken: String!
+  user: Driver!
+  hasPassword: Boolean!
+  hasName: Boolean!
 }
+
+type VerifyEmailDto {
+  """
+  JWT token for authentication. Null if phone verification is required first.
+  """
+  jwtToken: String
+
+  """The driver object. Null if phone verification is required first."""
+  user: Driver
+  hasPassword: Boolean!
+  hasName: Boolean!
+
+  """Whether this is a newly created account."""
+  isNewAccount: Boolean!
+
+  """Whether the email was linked to an existing account."""
+  isEmailLinked: Boolean!
+
+  """
+  If true, the driver must complete phone verification before they can log in with email.
+  """
+  requiresPhoneVerification: Boolean!
+}
+
+type VerifyNumberDto {
+  """
+  If an existing user then the hash will be null, so the user can be logged in using password instead of OTP.
+  """
+  isExistingUser: Boolean!
+
+  """
+  Hash that will need to be passed in subsequent verify code call in order for match and verifcation to happen.
+  """
+  hash: String
+
+  """
+  The actual OTP code, only returned when SHOW_DEV_OTP=true on the server. Never populated in production.
+  """
+  devOtp: String
+}
+
+enum VersionStatus {
+  Latest
+  MandatoryUpdate
+  OptionalUpdate
+}
+
+type WalletPaymentMethod implements PaymentMethodBase {
+  mode: PaymentMode!
+  id: ID
+}
+
+interface WaypointBase {
+  location: Point!
+  address: String!
+  role: WaypointRole!
+  service: WaypointService!
+  deliveryContact: DeliveryContact
+  shopName: String
+  shopAddress: String
+  shopImageUrl: String
+}
+
+enum WaypointRole {
+  Pickup
+  Stop
+  Dropoff
+}
+
+enum WaypointService {
+  Ride
+  Delivery
+  Shop
+}
+

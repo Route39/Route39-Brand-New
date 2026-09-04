@@ -98,6 +98,16 @@ export class OrderResolver {
   }
 
   @Mutation(() => Boolean)
+  async initiateCall(
+    @Args('orderId', { type: () => ID, nullable: false }) orderId: number,
+  ): Promise<boolean> {
+    return this.orderService.initiateCall({
+      orderId: orderId,
+      driverId: this.context.req.user.id,
+    });
+  }
+
+  @Mutation(() => Boolean)
   async submitReview(
     @Args('input', { type: () => RiderReviewInput }) input: RiderReviewInput,
   ): Promise<boolean> {

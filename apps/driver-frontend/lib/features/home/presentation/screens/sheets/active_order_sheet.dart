@@ -1,4 +1,6 @@
 import 'package:ridy_driver/config/locator/locator.dart';
+import 'package:ridy_driver/core/datasources/graphql_datasource.dart';
+import 'package:ridy_driver/core/graphql/documents/track_order.graphql.dart';
 import 'package:ridy_driver/core/enums/order_status.prod.dart';
 import 'package:ridy_driver/core/extensions/extensions.dart';
 import 'package:ridy_driver/core/graphql/fragments/coordinate.extensions.dart';
@@ -139,9 +141,11 @@ class ActiveOrderSheet extends StatelessWidget {
                             const SizedBox(width: 8),
                             AppIconButton(
                               icon: Ionicons.call,
-                              onPressed: () {
-                                launchUrlString(
-                                  "tel://+${order.rider?.mobileNumber}",
+                              onPressed: () async {
+                                await locator<GraphqlDatasource>().mutate(
+                                  Options$Mutation$initiateCall(
+                                    variables: Variables$Mutation$initiateCall(orderId: order.id),
+                                  ),
                                 );
                               },
                             ),
