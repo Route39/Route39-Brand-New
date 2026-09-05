@@ -971,6 +971,13 @@ type SetupPaymentMethod {
   url: String
 }
 
+type RazorpayOrderDTO {
+  orderId: ID!
+  amount: Float!
+  currency: String!
+  keyId: String!
+}
+
 type DriverTransacionEdge {
   """The node containing the DriverTransacion"""
   node: DriverTransacion!
@@ -1262,6 +1269,8 @@ type Mutation {
   riderPaidInCash(orderId: ID!): UpdateStatus!
   submitOrderFee(orderId: ID!, fee: Float!): UpdateStatus!
   topUpWallet(input: TopUpWalletInput!): TopUpWalletResponse!
+  createRazorpayTopUpOrder(amount: Float!): RazorpayOrderDTO!
+  verifyRazorpayTopUp(razorpayOrderId: String!, razorpayPaymentId: String!, razorpaySignature: String!, amount: Float!): Boolean!
   setupPaymentMethod(gatewayId: ID!): SetupPaymentMethod!
   redeemGiftCard(code: String!): GiftCard!
   markPaymentMethodAsDefault(id: ID!): [PaymentMethodBase!]!

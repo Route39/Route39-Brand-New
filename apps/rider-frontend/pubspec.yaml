@@ -79,6 +79,7 @@ dependencies:
     path: ../../libs/flutter_localizations
   image_faker: any
   moment_dart: any
+  web: ^1.1.1
 
 dev_dependencies:
   sentry_dart_plugin: any

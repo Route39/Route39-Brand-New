@@ -52,30 +52,30 @@ const _announcementmodule = __webpack_require__(25);
 const _authmodule = __webpack_require__(30);
 const _jwtstrategy = __webpack_require__(51);
 const _chatmodule = __webpack_require__(54);
-const _complaintmodule = __webpack_require__(101);
-const _couponmodule = __webpack_require__(89);
-const _driver_tendencymodule = __webpack_require__(106);
+const _complaintmodule = __webpack_require__(103);
+const _couponmodule = __webpack_require__(90);
+const _driver_tendencymodule = __webpack_require__(108);
 const _ordermodule = __webpack_require__(55);
-const _riderapisetupnotfoundcontroller = __webpack_require__(109);
-const _riderapicontroller = __webpack_require__(110);
+const _riderapisetupnotfoundcontroller = __webpack_require__(111);
+const _riderapicontroller = __webpack_require__(112);
 const _ridermodule = __webpack_require__(33);
 const _servicemodule = __webpack_require__(56);
-const _sosmodule = __webpack_require__(114);
+const _sosmodule = __webpack_require__(116);
 const _uploadmodule = __webpack_require__(57);
-const _walletmodule = __webpack_require__(94);
-const _setup = __webpack_require__(118);
+const _walletmodule = __webpack_require__(95);
+const _setup = __webpack_require__(120);
 const _core = __webpack_require__(3);
-const _nestjsprometheus = __webpack_require__(119);
+const _nestjsprometheus = __webpack_require__(121);
 const _bullmq = __webpack_require__(20);
 const _licenseverify = __webpack_require__(15);
-const _express = __webpack_require__(120);
-const _nestjs = __webpack_require__(78);
-const _notificationmodule = __webpack_require__(121);
-const _dispatcher = __webpack_require__(68);
-const _ephemeralmessagesmodule = __webpack_require__(124);
-const _feedbackmodule = __webpack_require__(128);
-const _favoritelocationmodule = __webpack_require__(132);
-const _supportmodule = __webpack_require__(137);
+const _express = __webpack_require__(122);
+const _nestjs = __webpack_require__(79);
+const _notificationmodule = __webpack_require__(123);
+const _dispatcher = __webpack_require__(69);
+const _ephemeralmessagesmodule = __webpack_require__(126);
+const _feedbackmodule = __webpack_require__(130);
+const _favoritelocationmodule = __webpack_require__(134);
+const _supportmodule = __webpack_require__(139);
 let RiderAPIModule = class RiderAPIModule {
     constructor(licenseService){
         this.licenseService = licenseService;
@@ -110,7 +110,7 @@ let RiderAPIModule = class RiderAPIModule {
                     _graphql.GraphQLModule.forRoot({
                         driver: _apollo.ApolloDriver,
                         installSubscriptionHandlers: true,
-                        autoSchemaFile: (0, _path.join)(process.cwd(), 'apps/taxi-rider-frontend/lib/core/graphql/schema.gql'),
+                        autoSchemaFile: (0, _path.join)(process.cwd(), 'apps/rider-frontend/lib/core/graphql/schema.gql'),
                         subscriptions: {
                             'graphql-ws': {
                                 connectionInitWaitTimeout: 5000,
@@ -473,6 +473,7 @@ __webpack_require__.d(__webpack_exports__, {
   RangeCostDTO: () => (/* reexport */ RangeCostDTO),
   RangePolicy: () => (/* reexport */ RangePolicy),
   RatingAggregate: () => (/* reexport */ RatingAggregate),
+  RazorpayService: () => (/* reexport */ RazorpayService),
   RedisHelpersModule: () => (/* reexport */ RedisHelpersModule),
   RedisSearchMigrationService: () => (/* reexport */ RedisSearchMigrationService),
   RegionCategoryEntity: () => (/* reexport */ RegionCategoryEntity),
@@ -43854,7 +43855,180 @@ function loadSecrets() {
 ;// ../../libs/database/src/lib/secrets/index.ts
 
 
+;// external "razorpay"
+const external_razorpay_namespaceObject = require("razorpay");
+var external_razorpay_default = /*#__PURE__*/__webpack_require__.n(external_razorpay_namespaceObject);
+;// ../../libs/database/src/lib/payments/razorpay.service.ts
+function razorpay_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+    try {
+        var info = gen[key](arg);
+        var value = info.value;
+    } catch (error) {
+        reject(error);
+        return;
+    }
+    if (info.done) {
+        resolve(value);
+    } else {
+        Promise.resolve(value).then(_next, _throw);
+    }
+}
+function razorpay_service_async_to_generator(fn) {
+    return function() {
+        var self = this, args = arguments;
+        return new Promise(function(resolve, reject) {
+            var gen = fn.apply(self, args);
+            function _next(value) {
+                razorpay_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+            }
+            function _throw(err) {
+                razorpay_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+            }
+            _next(undefined);
+        });
+    };
+}
+function razorpay_service_ts_decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+function razorpay_service_ts_generator(thisArg, body) {
+    var f, y, t, _ = {
+        label: 0,
+        sent: function() {
+            if (t[0] & 1) throw t[1];
+            return t[1];
+        },
+        trys: [],
+        ops: []
+    }, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() {
+        return this;
+    }), g;
+    function verb(n) {
+        return function(v) {
+            return step([
+                n,
+                v
+            ]);
+        };
+    }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while(g && (g = 0, op[0] && (_ = 0)), _)try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [
+                op[0] & 2,
+                t.value
+            ];
+            switch(op[0]){
+                case 0:
+                case 1:
+                    t = op;
+                    break;
+                case 4:
+                    _.label++;
+                    return {
+                        value: op[1],
+                        done: false
+                    };
+                case 5:
+                    _.label++;
+                    y = op[1];
+                    op = [
+                        0
+                    ];
+                    continue;
+                case 7:
+                    op = _.ops.pop();
+                    _.trys.pop();
+                    continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+                        _ = 0;
+                        continue;
+                    }
+                    if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+                        _.label = op[1];
+                        break;
+                    }
+                    if (op[0] === 6 && _.label < t[1]) {
+                        _.label = t[1];
+                        t = op;
+                        break;
+                    }
+                    if (t && _.label < t[2]) {
+                        _.label = t[2];
+                        _.ops.push(op);
+                        break;
+                    }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop();
+                    continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) {
+            op = [
+                6,
+                e
+            ];
+            y = 0;
+        } finally{
+            f = t = 0;
+        }
+        if (op[0] & 5) throw op[1];
+        return {
+            value: op[0] ? op[1] : void 0,
+            done: true
+        };
+    }
+}
+function razorpay_service_ts_metadata(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+}
+
+
+
+var RazorpayService = /*#__PURE__*/ function() {
+    "use strict";
+    function RazorpayService() {
+        this.client = new (external_razorpay_default())({
+            key_id: process.env.RAZORPAY_KEY_ID,
+            key_secret: process.env.RAZORPAY_KEY_SECRET
+        });
+    }
+    var _proto = RazorpayService.prototype;
+    _proto.createOrder = function createOrder(amount, currency, receipt) {
+        return razorpay_service_async_to_generator(function() {
+            return razorpay_service_ts_generator(this, function(_state) {
+                // amount in paise (INR smallest unit) — multiply rupees by 100
+                return [
+                    2,
+                    this.client.orders.create({
+                        amount: Math.round(amount * 100),
+                        currency: currency,
+                        receipt: receipt
+                    })
+                ];
+            });
+        }).call(this);
+    };
+    _proto.verifySignature = function verifySignature(orderId, paymentId, signature) {
+        var generated = external_crypto_.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET).update(orderId + "|" + paymentId).digest('hex');
+        return generated === signature;
+    };
+    return RazorpayService;
+}();
+RazorpayService = razorpay_service_ts_decorate([
+    (0,common_.Injectable)(),
+    razorpay_service_ts_metadata("design:type", Function),
+    razorpay_service_ts_metadata("design:paramtypes", [])
+], RazorpayService);
+
 ;// ../../libs/database/src/index.ts
+
 
 
 
@@ -46053,8 +46227,8 @@ const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
 const _ordermodule = __webpack_require__(55);
-const _chatservice = __webpack_require__(99);
-const _chatresolver = __webpack_require__(100);
+const _chatservice = __webpack_require__(101);
+const _chatresolver = __webpack_require__(102);
 let ChatModule = class ChatModule {
 };
 ChatModule = _ts_decorate._([
@@ -46094,12 +46268,12 @@ const _database = __webpack_require__(12);
 const _ridermodule = __webpack_require__(33);
 const _servicemodule = __webpack_require__(56);
 const _orderresolver = __webpack_require__(58);
-const _orderservice = __webpack_require__(67);
-const _ordersubscriptionservice = __webpack_require__(88);
-const _couponmodule = __webpack_require__(89);
+const _orderservice = __webpack_require__(68);
+const _ordersubscriptionservice = __webpack_require__(89);
+const _couponmodule = __webpack_require__(90);
 const _axios = __webpack_require__(16);
-const _dispatcher = __webpack_require__(68);
-const _walletmodule = __webpack_require__(94);
+const _dispatcher = __webpack_require__(69);
+const _walletmodule = __webpack_require__(95);
 let OrderModule = class OrderModule {
 };
 OrderModule = _ts_decorate._([
@@ -46233,19 +46407,20 @@ const _ts_param = __webpack_require__(27);
 const _common = __webpack_require__(2);
 const _graphql = __webpack_require__(10);
 const _database = __webpack_require__(12);
+const _razorpayridedto = __webpack_require__(59);
 const _authenticateduser = __webpack_require__(37);
 const _accesstokenguard = __webpack_require__(41);
-const _calculatefaredto = __webpack_require__(59);
-const _calculatefareinput = __webpack_require__(64);
-const _createorderinput = __webpack_require__(65);
-const _submitfeedbackinput = __webpack_require__(66);
-const _orderservice = __webpack_require__(67);
-const _activeorderdto = __webpack_require__(82);
-const _applycoupondto = __webpack_require__(83);
-const _updateorderwaittimeresponsedto = __webpack_require__(84);
-const _pastorderdto = __webpack_require__(85);
-const _cancelreasondto = __webpack_require__(87);
-const _topupwalletinput = __webpack_require__(80);
+const _calculatefaredto = __webpack_require__(60);
+const _calculatefareinput = __webpack_require__(65);
+const _createorderinput = __webpack_require__(66);
+const _submitfeedbackinput = __webpack_require__(67);
+const _orderservice = __webpack_require__(68);
+const _activeorderdto = __webpack_require__(83);
+const _applycoupondto = __webpack_require__(84);
+const _updateorderwaittimeresponsedto = __webpack_require__(85);
+const _pastorderdto = __webpack_require__(86);
+const _cancelreasondto = __webpack_require__(88);
+const _topupwalletinput = __webpack_require__(81);
 let OrderResolver = class OrderResolver {
     constructor(context, orderService, riderOrderService, driverRedisService, commonCouponService){
         this.context = context;
@@ -46358,6 +46533,22 @@ let OrderResolver = class OrderResolver {
             orderId,
             paymentMethod
         });
+    }
+    async createRazorpayRideOrder(orderId) {
+        return this.riderOrderService.createRazorpayRideOrder({
+            orderId,
+            riderId: this.context.req.user.id
+        });
+    }
+    async verifyRazorpayRidePayment(orderId, razorpayOrderId, razorpayPaymentId, razorpaySignature) {
+        await this.riderOrderService.verifyRazorpayRidePayment({
+            orderId,
+            riderId: this.context.req.user.id,
+            razorpayOrderId,
+            razorpayPaymentId,
+            razorpaySignature
+        });
+        return true;
     }
     async recentDestinations() {
         return this.riderOrderService.getRecentPlaces(this.context.req.user.id);
@@ -46572,6 +46763,42 @@ _ts_decorate._([
     _ts_metadata._("design:returntype", Promise)
 ], OrderResolver.prototype, "payForRide", null);
 _ts_decorate._([
+    (0, _graphql.Mutation)(()=>_razorpayridedto.RazorpayRideOrderDTO),
+    (0, _common.UseGuards)(_accesstokenguard.GqlAuthGuard),
+    _ts_param._(0, (0, _graphql.Args)('orderId', {
+        type: ()=>_graphql.ID
+    })),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        Number
+    ]),
+    _ts_metadata._("design:returntype", Promise)
+], OrderResolver.prototype, "createRazorpayRideOrder", null);
+_ts_decorate._([
+    (0, _graphql.Mutation)(()=>Boolean),
+    (0, _common.UseGuards)(_accesstokenguard.GqlAuthGuard),
+    _ts_param._(0, (0, _graphql.Args)('orderId', {
+        type: ()=>_graphql.ID
+    })),
+    _ts_param._(1, (0, _graphql.Args)('razorpayOrderId', {
+        type: ()=>String
+    })),
+    _ts_param._(2, (0, _graphql.Args)('razorpayPaymentId', {
+        type: ()=>String
+    })),
+    _ts_param._(3, (0, _graphql.Args)('razorpaySignature', {
+        type: ()=>String
+    })),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        Number,
+        String,
+        String,
+        String
+    ]),
+    _ts_metadata._("design:returntype", Promise)
+], OrderResolver.prototype, "verifyRazorpayRidePayment", null);
+_ts_decorate._([
     (0, _graphql.Query)(()=>[
             _database.PlaceDTO
         ]),
@@ -46602,6 +46829,46 @@ OrderResolver = _ts_decorate._([
 Object.defineProperty(exports, "__esModule", ({
     value: true
 }));
+Object.defineProperty(exports, "RazorpayRideOrderDTO", ({
+    enumerable: true,
+    get: function() {
+        return RazorpayRideOrderDTO;
+    }
+}));
+const _ts_decorate = __webpack_require__(6);
+const _ts_metadata = __webpack_require__(7);
+const _graphql = __webpack_require__(10);
+let RazorpayRideOrderDTO = class RazorpayRideOrderDTO {
+};
+_ts_decorate._([
+    (0, _graphql.Field)(),
+    _ts_metadata._("design:type", String)
+], RazorpayRideOrderDTO.prototype, "orderId", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float),
+    _ts_metadata._("design:type", Number)
+], RazorpayRideOrderDTO.prototype, "amount", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(),
+    _ts_metadata._("design:type", String)
+], RazorpayRideOrderDTO.prototype, "currency", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(),
+    _ts_metadata._("design:type", String)
+], RazorpayRideOrderDTO.prototype, "keyId", void 0);
+RazorpayRideOrderDTO = _ts_decorate._([
+    (0, _graphql.ObjectType)()
+], RazorpayRideOrderDTO);
+
+
+/***/ }),
+/* 60 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({
+    value: true
+}));
 function _export(target, all) {
     for(var name in all)Object.defineProperty(target, name, {
         enumerable: true,
@@ -46620,7 +46887,7 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _graphql = __webpack_require__(10);
 const _database = __webpack_require__(12);
-const _servicecategorydto = __webpack_require__(60);
+const _servicecategorydto = __webpack_require__(61);
 var CalculateFareError = /*#__PURE__*/ function(CalculateFareError) {
     CalculateFareError["RegionUnsupported"] = "REGION_UNSUPPORTED";
     CalculateFareError["NoServiceInRegion"] = "NO_SERVICE_IN_REGION";
@@ -46677,7 +46944,7 @@ CalculateFareDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 60 */
+/* 61 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -46693,7 +46960,7 @@ Object.defineProperty(exports, "ServiceCategoryDTO", ({
 const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _graphql = __webpack_require__(10);
-const _servicedto = __webpack_require__(61);
+const _servicedto = __webpack_require__(62);
 let ServiceCategoryDTO = class ServiceCategoryDTO {
 };
 _ts_decorate._([
@@ -46720,7 +46987,7 @@ ServiceCategoryDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 61 */
+/* 62 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -46737,8 +47004,8 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _graphql = __webpack_require__(10);
 const _database = __webpack_require__(12);
-const _mediadto = __webpack_require__(62);
-const _serviceoptiondto = __webpack_require__(63);
+const _mediadto = __webpack_require__(63);
+const _serviceoptiondto = __webpack_require__(64);
 let ServiceDTO = class ServiceDTO {
 };
 _ts_decorate._([
@@ -46844,7 +47111,7 @@ ServiceDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 62 */
+/* 63 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -46882,7 +47149,7 @@ MediaDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 63 */
+/* 64 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -46941,7 +47208,7 @@ ServiceOptionDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 64 */
+/* 65 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -47006,7 +47273,7 @@ CalculateFareInput = _ts_decorate._([
 
 
 /***/ }),
-/* 65 */
+/* 66 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -47127,7 +47394,7 @@ CreateOrderInput = _ts_decorate._([
 
 
 /***/ }),
-/* 66 */
+/* 67 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -47181,7 +47448,7 @@ SubmitFeedbackInput = _ts_decorate._([
 
 
 /***/ }),
-/* 67 */
+/* 68 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -47204,11 +47471,11 @@ const _database = __webpack_require__(12);
 const _apollo = __webpack_require__(8);
 const _rxjs = __webpack_require__(18);
 const _typeorm1 = __webpack_require__(13);
-const _dispatcher = __webpack_require__(68);
-const _topupwalletinput = __webpack_require__(80);
-const _walletservice = __webpack_require__(81);
+const _dispatcher = __webpack_require__(69);
+const _topupwalletinput = __webpack_require__(81);
+const _walletservice = __webpack_require__(82);
 let RiderOrderService = class RiderOrderService {
-    constructor(orderRepository, activityRepository, feedbackRepository, cancelReasonRepository, paymentRepo, fleetRepo, riderService, driverService, rideOfferRedisService, activeOrderRedisService, driverRedisService, riderRedisService, providerService, sharedOrderService, serviceRedisService, driverNotificationService, pubsub, dispatchService, httpService, customerWalletService, walletService){
+    constructor(orderRepository, activityRepository, feedbackRepository, cancelReasonRepository, paymentRepo, fleetRepo, riderService, driverService, rideOfferRedisService, activeOrderRedisService, driverRedisService, riderRedisService, providerService, sharedOrderService, serviceRedisService, driverNotificationService, pubsub, dispatchService, httpService, customerWalletService, walletService, razorpayService){
         this.orderRepository = orderRepository;
         this.activityRepository = activityRepository;
         this.feedbackRepository = feedbackRepository;
@@ -47230,6 +47497,7 @@ let RiderOrderService = class RiderOrderService {
         this.httpService = httpService;
         this.customerWalletService = customerWalletService;
         this.walletService = walletService;
+        this.razorpayService = razorpayService;
         this.logger = new _common.Logger(RiderOrderService.name);
     }
     async initiateCall(input) {
@@ -47880,6 +48148,114 @@ let RiderOrderService = class RiderOrderService {
                 }
         }
     }
+    async createRazorpayRideOrder(input) {
+        const activeOrder = await this.activeOrderRedisService.getActiveOrder(input.orderId.toString());
+        if (activeOrder == null) {
+            throw new _apollo.ForbiddenError('ACTIVE_ORDER_NOT_FOUND');
+        }
+        if (parseInt(activeOrder.riderId) !== input.riderId) {
+            throw new _apollo.ForbiddenError('ORDER_NOT_BELONG_TO_RIDER');
+        }
+        const amount = activeOrder.costEstimateForRider - activeOrder.totalPaid;
+        if (amount <= 0) {
+            throw new _common.BadRequestException('NO_PAYMENT_REQUIRED');
+        }
+        const existingPayment = await this.paymentRepo.findOne({
+            where: {
+                userType: 'rider',
+                userId: input.riderId.toString(),
+                orderNumber: activeOrder.id.toString(),
+                status: _database.PaymentStatus.Processing
+            },
+            order: {
+                id: 'DESC'
+            }
+        });
+        if (existingPayment?.transactionNumber) {
+            return {
+                orderId: existingPayment.transactionNumber,
+                amount: existingPayment.amount,
+                currency: existingPayment.currency,
+                keyId: process.env.RAZORPAY_KEY_ID
+            };
+        }
+        const razorpayOrder = await this.razorpayService.createOrder(amount, activeOrder.currency, `ride_${activeOrder.id}`);
+        await this.paymentRepo.save({
+            status: _database.PaymentStatus.Processing,
+            amount,
+            currency: activeOrder.currency,
+            transactionNumber: razorpayOrder.id,
+            externalReferenceNumber: null,
+            orderNumber: activeOrder.id.toString(),
+            userType: 'rider',
+            userId: input.riderId.toString(),
+            gatewayId: null,
+            savedPaymentMethodId: null,
+            returnUrl: process.env.RIDER_SERVER_URL ? `${process.env.RIDER_SERVER_URL}/payment_result` : ''
+        });
+        return {
+            orderId: razorpayOrder.id,
+            amount,
+            currency: activeOrder.currency,
+            keyId: process.env.RAZORPAY_KEY_ID
+        };
+    }
+    async verifyRazorpayRidePayment(input) {
+        const activeOrder = await this.activeOrderRedisService.getActiveOrder(input.orderId.toString());
+        if (activeOrder == null) {
+            throw new _apollo.ForbiddenError('ACTIVE_ORDER_NOT_FOUND');
+        }
+        if (parseInt(activeOrder.riderId) !== input.riderId) {
+            throw new _apollo.ForbiddenError('ORDER_NOT_BELONG_TO_RIDER');
+        }
+        const payment = await this.paymentRepo.findOne({
+            where: {
+                userType: 'rider',
+                userId: input.riderId.toString(),
+                orderNumber: activeOrder.id.toString(),
+                transactionNumber: input.razorpayOrderId
+            }
+        });
+        if (!payment) {
+            throw new _apollo.ForbiddenError('RAZORPAY_ORDER_NOT_FOUND');
+        }
+        if (payment.status === _database.PaymentStatus.Success) {
+            return _topupwalletinput.TopUpWalletStatus.OK;
+        }
+        if (payment.status !== _database.PaymentStatus.Processing) {
+            throw new _apollo.ForbiddenError('PAYMENT_NOT_PROCESSING');
+        }
+        const valid = this.razorpayService.verifySignature(input.razorpayOrderId, input.razorpayPaymentId, input.razorpaySignature);
+        if (!valid) {
+            await this.paymentRepo.update(payment.id, {
+                status: _database.PaymentStatus.Failed
+            });
+            throw new _apollo.ForbiddenError('INVALID_RAZORPAY_SIGNATURE');
+        }
+        const expectedAmount = activeOrder.costEstimateForRider - activeOrder.totalPaid;
+        if (Math.abs(payment.amount - expectedAmount) > 0.01) {
+            await this.paymentRepo.update(payment.id, {
+                status: _database.PaymentStatus.Failed
+            });
+            throw new _apollo.ForbiddenError('PAYMENT_AMOUNT_MISMATCH');
+        }
+        await this.paymentRepo.update(payment.id, {
+            status: _database.PaymentStatus.Success,
+            transactionNumber: input.razorpayPaymentId,
+            externalReferenceNumber: input.razorpayOrderId
+        });
+        await this.driverService.rechargeWallet({
+            action: _database.TransactionAction.Recharge,
+            rechargeType: _database.DriverRechargeTransactionType.OrderFee,
+            amount: activeOrder.costEstimateForDriver,
+            requestId: parseInt(activeOrder.id),
+            status: _database.TransactionStatus.Done,
+            currency: activeOrder.currency,
+            driverId: parseInt(activeOrder.driverId)
+        });
+        await this.finishOrderWithReview(activeOrder);
+        return _topupwalletinput.TopUpWalletStatus.OK;
+    }
     async finishOrderWithReview(activeOrder) {
         const [driver, rider] = await Promise.all([
             this.driverRedisService.getOnlineDriverMetaData(activeOrder.driverId),
@@ -47980,32 +48356,33 @@ RiderOrderService = _ts_decorate._([
         typeof _dispatcher.DispatchService === "undefined" ? Object : _dispatcher.DispatchService,
         typeof _axios.HttpService === "undefined" ? Object : _axios.HttpService,
         typeof _database.SharedCustomerWalletService === "undefined" ? Object : _database.SharedCustomerWalletService,
-        typeof _walletservice.WalletService === "undefined" ? Object : _walletservice.WalletService
+        typeof _walletservice.WalletService === "undefined" ? Object : _walletservice.WalletService,
+        typeof _database.RazorpayService === "undefined" ? Object : _database.RazorpayService
     ])
 ], RiderOrderService);
 
 
 /***/ }),
-/* 68 */
+/* 69 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({
     value: true
 }));
-const _export_star = __webpack_require__(69);
-_export_star._(__webpack_require__(70), exports);
-_export_star._(__webpack_require__(72), exports);
+const _export_star = __webpack_require__(70);
+_export_star._(__webpack_require__(71), exports);
+_export_star._(__webpack_require__(73), exports);
 
 
 /***/ }),
-/* 69 */
+/* 70 */
 /***/ ((module) => {
 
 module.exports = require("@swc/helpers/_/_export_star");
 
 /***/ }),
-/* 70 */
+/* 71 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48020,17 +48397,17 @@ Object.defineProperty(exports, "DispatchModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _dispatchpubsubservice = __webpack_require__(71);
+const _dispatchpubsubservice = __webpack_require__(72);
 const _bullmq = __webpack_require__(20);
-const _dispatchservice = __webpack_require__(72);
-const _mainprocessor = __webpack_require__(73);
+const _dispatchservice = __webpack_require__(73);
+const _mainprocessor = __webpack_require__(74);
 const _database = __webpack_require__(12);
-const _sequentialprocessor = __webpack_require__(74);
-const _broadcastprocessor = __webpack_require__(77);
-const _driverselectionservice = __webpack_require__(75);
+const _sequentialprocessor = __webpack_require__(75);
+const _broadcastprocessor = __webpack_require__(78);
+const _driverselectionservice = __webpack_require__(76);
 const _typeorm = __webpack_require__(11);
-const _nestjs = __webpack_require__(78);
-const _bullMQAdapter = __webpack_require__(79);
+const _nestjs = __webpack_require__(79);
+const _bullMQAdapter = __webpack_require__(80);
 let DispatchModule = class DispatchModule {
 };
 DispatchModule = _ts_decorate._([
@@ -48101,7 +48478,7 @@ DispatchModule = _ts_decorate._([
 
 
 /***/ }),
-/* 71 */
+/* 72 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48247,7 +48624,7 @@ DispatchPubSubService = _ts_decorate._([
 
 
 /***/ }),
-/* 72 */
+/* 73 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48301,7 +48678,7 @@ DispatchService = _ts_decorate._([
 
 
 /***/ }),
-/* 73 */
+/* 74 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48462,7 +48839,7 @@ MainConsumer = _ts_decorate._([
 
 
 /***/ }),
-/* 74 */
+/* 75 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48481,8 +48858,8 @@ const _ts_param = __webpack_require__(27);
 const _bullmq = __webpack_require__(20);
 const _bullmq1 = __webpack_require__(21);
 const _database = __webpack_require__(12);
-const _dispatchpubsubservice = __webpack_require__(71);
-const _driverselectionservice = __webpack_require__(75);
+const _dispatchpubsubservice = __webpack_require__(72);
+const _driverselectionservice = __webpack_require__(76);
 const _common = __webpack_require__(2);
 let SequentialConsumer = class SequentialConsumer extends _bullmq.WorkerHost {
     constructor(pubsub, sequentialDispatchQueue, driverSelectionService, driverRedisService){
@@ -48541,7 +48918,7 @@ SequentialConsumer = _ts_decorate._([
 
 
 /***/ }),
-/* 75 */
+/* 76 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48558,7 +48935,7 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
-const _driverprofileservice = __webpack_require__(76);
+const _driverprofileservice = __webpack_require__(77);
 let DriverSelectionService = class DriverSelectionService {
     constructor(rideOfferRedisService, orderRedisService, driverRedisService){
         this.rideOfferRedisService = rideOfferRedisService;
@@ -48649,7 +49026,7 @@ DriverSelectionService = _ts_decorate._([
 
 
 /***/ }),
-/* 76 */
+/* 77 */
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -48676,7 +49053,7 @@ function calculateHaversineDistance(location, pickupLocation) {
 
 
 /***/ }),
-/* 77 */
+/* 78 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48702,8 +49079,8 @@ const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(27);
 const _bullmq = __webpack_require__(20);
 const _bullmq1 = __webpack_require__(21);
-const _dispatchpubsubservice = __webpack_require__(71);
-const _driverselectionservice = __webpack_require__(75);
+const _dispatchpubsubservice = __webpack_require__(72);
+const _driverselectionservice = __webpack_require__(76);
 const _common = __webpack_require__(2);
 let BroadcastConsumer = class BroadcastConsumer extends _bullmq.WorkerHost {
     constructor(pubsub, attemptQueue, driverSelectionService){
@@ -48772,19 +49149,19 @@ let BroadcastDispatchJobData = class BroadcastDispatchJobData {
 
 
 /***/ }),
-/* 78 */
+/* 79 */
 /***/ ((module) => {
 
 module.exports = require("@bull-board/nestjs");
 
 /***/ }),
-/* 79 */
+/* 80 */
 /***/ ((module) => {
 
 module.exports = require("@bull-board/api/bullMQAdapter");
 
 /***/ }),
-/* 80 */
+/* 81 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48948,7 +49325,7 @@ const IntentResultToTopUpWalletStatus = (status)=>{
 
 
 /***/ }),
-/* 81 */
+/* 82 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49130,7 +49507,7 @@ WalletService = _ts_decorate._([
 
 
 /***/ }),
-/* 82 */
+/* 83 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49299,7 +49676,7 @@ ActiveOrderDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 83 */
+/* 84 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49331,7 +49708,7 @@ ApplyCouponResponseDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 84 */
+/* 85 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49365,7 +49742,7 @@ UpdateOrderWaitTimeResponseDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 85 */
+/* 86 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49382,7 +49759,7 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _graphql = __webpack_require__(10);
 const _database = __webpack_require__(12);
-const _pastorderdriverdto = __webpack_require__(86);
+const _pastorderdriverdto = __webpack_require__(87);
 let PastOrderDTO = class PastOrderDTO {
 };
 _ts_decorate._([
@@ -49505,7 +49882,7 @@ PastOrderDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 86 */
+/* 87 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49576,7 +49953,7 @@ PastOrderDriverDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 87 */
+/* 88 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49608,7 +49985,7 @@ OrderCancelReasonDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 88 */
+/* 89 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49668,7 +50045,7 @@ OrderSubscriptionService = _ts_decorate._([
 
 
 /***/ }),
-/* 89 */
+/* 90 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49686,8 +50063,8 @@ const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 const _ordermodule = __webpack_require__(55);
-const _couponresolver = __webpack_require__(90);
-const _couponservice = __webpack_require__(93);
+const _couponresolver = __webpack_require__(91);
+const _couponservice = __webpack_require__(94);
 let CouponModule = class CouponModule {
 };
 CouponModule = _ts_decorate._([
@@ -49714,7 +50091,7 @@ CouponModule = _ts_decorate._([
 
 
 /***/ }),
-/* 90 */
+/* 91 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49735,8 +50112,8 @@ const _graphql = __webpack_require__(10);
 const _database = __webpack_require__(12);
 const _authenticateduser = __webpack_require__(37);
 const _accesstokenguard = __webpack_require__(41);
-const _coupondto = __webpack_require__(91);
-const _giftcarddto = __webpack_require__(92);
+const _coupondto = __webpack_require__(92);
+const _giftcarddto = __webpack_require__(93);
 let CouponResolver = class CouponResolver {
     constructor(commonCouponService, commonGiftCardService, context){
         this.commonCouponService = commonCouponService;
@@ -49796,7 +50173,7 @@ CouponResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 91 */
+/* 92 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49848,7 +50225,7 @@ CouponDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 92 */
+/* 93 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49888,7 +50265,7 @@ GiftCardDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 93 */
+/* 94 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49911,7 +50288,7 @@ CouponService = _ts_decorate._([
 
 
 /***/ }),
-/* 94 */
+/* 95 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49926,16 +50303,17 @@ Object.defineProperty(exports, "WalletModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _walletresolver = __webpack_require__(95);
+const _walletresolver = __webpack_require__(96);
 const _database = __webpack_require__(12);
 const _axios = __webpack_require__(16);
-const _walletservice = __webpack_require__(81);
+const _walletservice = __webpack_require__(82);
 const _typeorm = __webpack_require__(11);
 let WalletModule = class WalletModule {
 };
 WalletModule = _ts_decorate._([
     (0, _common.Module)({
         imports: [
+            _database.SharedOrderModule,
             _database.RedisHelpersModule,
             _typeorm.TypeOrmModule.forFeature([
                 _database.CustomerEntity,
@@ -49950,17 +50328,19 @@ WalletModule = _ts_decorate._([
         providers: [
             _walletresolver.WalletResolver,
             _walletservice.WalletService,
-            _database.CryptoService
+            _database.CryptoService,
+            _database.RazorpayService
         ],
         exports: [
-            _walletservice.WalletService
+            _walletservice.WalletService,
+            _database.RazorpayService
         ]
     })
 ], WalletModule);
 
 
 /***/ }),
-/* 95 */
+/* 96 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49982,17 +50362,18 @@ const _typeorm = __webpack_require__(11);
 const _typeorm1 = __webpack_require__(13);
 const _authenticateduser = __webpack_require__(37);
 const _accesstokenguard = __webpack_require__(41);
-const _topupwalletinput = __webpack_require__(80);
+const _topupwalletinput = __webpack_require__(81);
 const _database = __webpack_require__(12);
 const _axios = __webpack_require__(16);
 const _rxjs = __webpack_require__(18);
-const _walletservice = __webpack_require__(81);
-const _setup_payment_methoddto = __webpack_require__(96);
-const _giftcarddto = __webpack_require__(92);
-const _riderwalletdto = __webpack_require__(97);
-const _ridertransactiondto = __webpack_require__(98);
+const _walletservice = __webpack_require__(82);
+const _setup_payment_methoddto = __webpack_require__(97);
+const _giftcarddto = __webpack_require__(93);
+const _riderwalletdto = __webpack_require__(98);
+const _ridertransactiondto = __webpack_require__(99);
+const _razorpayorderdto = __webpack_require__(100);
 let WalletResolver = class WalletResolver {
-    constructor(customerRepo, orderRedisService, cryptoService, commongGiftCardService, context, httpService, walletService){
+    constructor(customerRepo, orderRedisService, cryptoService, commongGiftCardService, context, httpService, walletService, razorpayService, sharedOrderService){
         this.customerRepo = customerRepo;
         this.orderRedisService = orderRedisService;
         this.cryptoService = cryptoService;
@@ -50000,6 +50381,8 @@ let WalletResolver = class WalletResolver {
         this.context = context;
         this.httpService = httpService;
         this.walletService = walletService;
+        this.razorpayService = razorpayService;
+        this.sharedOrderService = sharedOrderService;
     }
     async topUpWallet(input, shouldPreauth) {
         let shouldPreauthValue = shouldPreauth ?? false;
@@ -50035,6 +50418,27 @@ let WalletResolver = class WalletResolver {
             status: (0, _topupwalletinput.IntentResultToTopUpWalletStatus)(paymentLink.status),
             url: paymentLink.url
         };
+    }
+    async createRazorpayRideOrder(orderId) {
+        const activeOrder = await this.orderRedisService.getActiveOrder(orderId.toString());
+        const amount = activeOrder?.costEstimateForRider ?? 0;
+        const order = await this.razorpayService.createOrder(amount, 'INR', `ride_${orderId}_${Date.now()}`);
+        return {
+            orderId: order.id,
+            amount: amount,
+            currency: 'INR',
+            keyId: process.env.RAZORPAY_KEY_ID
+        };
+    }
+    async verifyRazorpayRidePayment(orderId, razorpayOrderId, razorpayPaymentId, razorpaySignature) {
+        const isValid = this.razorpayService.verifySignature(razorpayOrderId, razorpayPaymentId, razorpaySignature);
+        if (!isValid) {
+            throw new Error('INVALID_PAYMENT_SIGNATURE');
+        }
+        const activeOrder = await this.orderRedisService.getActiveOrder(orderId.toString());
+        const amount = activeOrder?.costEstimateForRider ?? 0;
+        await this.sharedOrderService.finish(orderId, amount, false);
+        return true;
     }
     async paymentMethods() {
         const savedMethods = await this.walletService.getPaymentMethodsForClient({
@@ -50115,6 +50519,40 @@ _ts_decorate._([
     ]),
     _ts_metadata._("design:returntype", Promise)
 ], WalletResolver.prototype, "topUpWallet", null);
+_ts_decorate._([
+    (0, _graphql.Mutation)(()=>_razorpayorderdto.RazorpayOrderDTO),
+    _ts_param._(0, (0, _graphql.Args)('orderId', {
+        type: ()=>_graphql.ID
+    })),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        Number
+    ]),
+    _ts_metadata._("design:returntype", Promise)
+], WalletResolver.prototype, "createRazorpayRideOrder", null);
+_ts_decorate._([
+    (0, _graphql.Mutation)(()=>Boolean),
+    _ts_param._(0, (0, _graphql.Args)('orderId', {
+        type: ()=>_graphql.ID
+    })),
+    _ts_param._(1, (0, _graphql.Args)('razorpayOrderId', {
+        type: ()=>String
+    })),
+    _ts_param._(2, (0, _graphql.Args)('razorpayPaymentId', {
+        type: ()=>String
+    })),
+    _ts_param._(3, (0, _graphql.Args)('razorpaySignature', {
+        type: ()=>String
+    })),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        Number,
+        String,
+        String,
+        String
+    ]),
+    _ts_metadata._("design:returntype", Promise)
+], WalletResolver.prototype, "verifyRazorpayRidePayment", null);
 _ts_decorate._([
     (0, _graphql.Query)(()=>[
             _database.PaymentMethodBase
@@ -50198,13 +50636,15 @@ WalletResolver = _ts_decorate._([
         typeof _database.CommonGiftCardService === "undefined" ? Object : _database.CommonGiftCardService,
         typeof _authenticateduser.UserContext === "undefined" ? Object : _authenticateduser.UserContext,
         typeof _axios.HttpService === "undefined" ? Object : _axios.HttpService,
-        typeof _walletservice.WalletService === "undefined" ? Object : _walletservice.WalletService
+        typeof _walletservice.WalletService === "undefined" ? Object : _walletservice.WalletService,
+        typeof _database.RazorpayService === "undefined" ? Object : _database.RazorpayService,
+        typeof _database.SharedOrderService === "undefined" ? Object : _database.SharedOrderService
     ])
 ], WalletResolver);
 
 
 /***/ }),
-/* 96 */
+/* 97 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50234,7 +50674,7 @@ SetupPaymentMethodDto = _ts_decorate._([
 
 
 /***/ }),
-/* 97 */
+/* 98 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50270,7 +50710,7 @@ RiderWalletDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 98 */
+/* 99 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50339,7 +50779,47 @@ RiderTransactionDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 99 */
+/* 100 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({
+    value: true
+}));
+Object.defineProperty(exports, "RazorpayOrderDTO", ({
+    enumerable: true,
+    get: function() {
+        return RazorpayOrderDTO;
+    }
+}));
+const _ts_decorate = __webpack_require__(6);
+const _ts_metadata = __webpack_require__(7);
+const _graphql = __webpack_require__(10);
+let RazorpayOrderDTO = class RazorpayOrderDTO {
+};
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.ID),
+    _ts_metadata._("design:type", String)
+], RazorpayOrderDTO.prototype, "orderId", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float),
+    _ts_metadata._("design:type", Number)
+], RazorpayOrderDTO.prototype, "amount", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String),
+    _ts_metadata._("design:type", String)
+], RazorpayOrderDTO.prototype, "currency", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String),
+    _ts_metadata._("design:type", String)
+], RazorpayOrderDTO.prototype, "keyId", void 0);
+RazorpayOrderDTO = _ts_decorate._([
+    (0, _graphql.ObjectType)()
+], RazorpayOrderDTO);
+
+
+/***/ }),
+/* 101 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50414,7 +50894,7 @@ ChatService = _ts_decorate._([
 
 
 /***/ }),
-/* 100 */
+/* 102 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50431,7 +50911,7 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(27);
 const _graphql = __webpack_require__(10);
-const _chatservice = __webpack_require__(99);
+const _chatservice = __webpack_require__(101);
 const _database = __webpack_require__(12);
 let ChatResolver = class ChatResolver {
     constructor(chatService){
@@ -50481,7 +50961,7 @@ ChatResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 101 */
+/* 103 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50496,8 +50976,8 @@ Object.defineProperty(exports, "ComplaintModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _complaintresolver = __webpack_require__(102);
-const _complaintservice = __webpack_require__(103);
+const _complaintresolver = __webpack_require__(104);
+const _complaintservice = __webpack_require__(105);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 let ComplaintModule = class ComplaintModule {
@@ -50521,7 +51001,7 @@ ComplaintModule = _ts_decorate._([
 
 
 /***/ }),
-/* 102 */
+/* 104 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50538,9 +51018,9 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(27);
 const _graphql = __webpack_require__(10);
-const _complaintservice = __webpack_require__(103);
-const _complaintdto = __webpack_require__(104);
-const _complaintinput = __webpack_require__(105);
+const _complaintservice = __webpack_require__(105);
+const _complaintdto = __webpack_require__(106);
+const _complaintinput = __webpack_require__(107);
 const _authenticateduser = __webpack_require__(37);
 const _common = __webpack_require__(2);
 const _accesstokenguard = __webpack_require__(41);
@@ -50588,7 +51068,7 @@ ComplaintResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 103 */
+/* 105 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50690,7 +51170,7 @@ ComplaintService = _ts_decorate._([
 
 
 /***/ }),
-/* 104 */
+/* 106 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50737,7 +51217,7 @@ ComplaintDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 105 */
+/* 107 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50783,7 +51263,7 @@ ComplaintInput = _ts_decorate._([
 
 
 /***/ }),
-/* 106 */
+/* 108 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50800,8 +51280,8 @@ const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
-const _driver_tendenyservice = __webpack_require__(107);
-const _driver_tendencyresolver = __webpack_require__(108);
+const _driver_tendenyservice = __webpack_require__(109);
+const _driver_tendencyresolver = __webpack_require__(110);
 let DriverTendencyModule = class DriverTendencyModule {
 };
 DriverTendencyModule = _ts_decorate._([
@@ -50820,7 +51300,7 @@ DriverTendencyModule = _ts_decorate._([
 
 
 /***/ }),
-/* 107 */
+/* 109 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50888,7 +51368,7 @@ DriverTendencyService = _ts_decorate._([
 
 
 /***/ }),
-/* 108 */
+/* 110 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50905,11 +51385,11 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(27);
 const _graphql = __webpack_require__(10);
-const _driver_tendenyservice = __webpack_require__(107);
+const _driver_tendenyservice = __webpack_require__(109);
 const _common = __webpack_require__(2);
 const _authenticateduser = __webpack_require__(37);
 const _accesstokenguard = __webpack_require__(41);
-const _pastorderdriverdto = __webpack_require__(86);
+const _pastorderdriverdto = __webpack_require__(87);
 let DriverTendencyResolver = class DriverTendencyResolver {
     constructor(driverTendencyService, context){
         this.driverTendencyService = driverTendencyService;
@@ -50955,7 +51435,7 @@ DriverTendencyResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 109 */
+/* 111 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51006,7 +51486,7 @@ RiderApiSetupNotFoundController = _ts_decorate._([
 
 
 /***/ }),
-/* 110 */
+/* 112 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51019,18 +51499,18 @@ Object.defineProperty(exports, "RiderAPIController", ({
         return RiderAPIController;
     }
 }));
-const _interop_require_default = __webpack_require__(111);
+const _interop_require_default = __webpack_require__(113);
 const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(27);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
 const _express = __webpack_require__(4);
-const _restjwtauthguard = __webpack_require__(112);
+const _restjwtauthguard = __webpack_require__(114);
 const _typeorm = __webpack_require__(11);
 const _typeorm1 = __webpack_require__(13);
 const _properurljoin = /*#__PURE__*/ _interop_require_default._(__webpack_require__(14));
-const _packagejson = __webpack_require__(113);
+const _packagejson = __webpack_require__(115);
 let RiderAPIController = class RiderAPIController {
     constructor(sharedCustomerWalletService, sharedOrderService, activeOrderRedisService, cryptoService, pubsub, driverRedisService, riderRedisService, riderRepository, paymentRepository, mediaRepository){
         this.sharedCustomerWalletService = sharedCustomerWalletService;
@@ -51400,13 +51880,13 @@ RiderAPIController = _ts_decorate._([
 
 
 /***/ }),
-/* 111 */
+/* 113 */
 /***/ ((module) => {
 
 module.exports = require("@swc/helpers/_/_interop_require_default");
 
 /***/ }),
-/* 112 */
+/* 114 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51439,13 +51919,13 @@ RestJwtAuthGuard = _ts_decorate._([
 
 
 /***/ }),
-/* 113 */
+/* 115 */
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"bettersuite","version":"5.3.2","license":"MIT","scripts":{"ng":"nx","nx":"nx","start":"ts-node src/index.ts","build":"ng build","test":"ng test","lint":"nx workspace-lint && ng lint","e2e":"ng e2e","affected:apps":"nx affected:apps","affected:libs":"nx affected:libs","affected:build":"nx affected:build","affected:e2e":"nx affected:e2e","affected:test":"nx affected:test","affected:lint":"nx affected:lint","affected:dep-graph":"nx affected:dep-graph","affected":"nx affected","format":"nx format:write","format:write":"nx format:write","format:check":"nx format:check","update":"nx migrate latest","workspace-generator":"nx workspace-generator","dep-graph":"nx dep-graph","help":"nx help","lint:fix":"eslint \'./**/*.{ts,tsx}\' --fix","i18n:extract":"ngx-translate-extract --input ./apps/admin-panel/src --output ./apps/admin-panel/src/assets/i18n/{en,es,bn,de,hi,ko,id,ja,pt,ru,ur,zh,fr,ar,hy}.json --clean --format namespaced-json","typeorm":"node --require ts-node/register ./node_modules/typeorm/cli.js","semantic-release":"semantic-release","publish-frontend":"bash scripts/docker-frontend-publish.sh","publish-backend":"bash scripts/docker-backend-publish.sh","inject-google-maps-key":"bash scripts/inject-google-maps-key.sh","client-setup":"bash scripts/client_setup/client-setup.sh","build-apks":"bash scripts/build-apks.sh","smoke-test":"bash scripts/backend-smoke-test.sh","gql-stats":"bash scripts/gql-stats.sh","load-test:seed":"node tools/load-tests/scripts/seed-database.js","load-test:seed:clean":"node tools/load-tests/scripts/seed-database.js --clean","load-test":"bash tools/load-tests/scripts/run-load-test.sh","load-test:rider":"bash tools/load-tests/scripts/run-load-test.sh rider","load-test:driver":"bash tools/load-tests/scripts/run-load-test.sh driver"},"private":true,"dependencies":{"@angular/animations":"20.1.4","@angular/cdk":"20.1.4","@angular/common":"20.1.4","@angular/compiler":"20.1.4","@angular/core":"20.1.4","@angular/forms":"20.1.4","@angular/google-maps":"20.1.4","@angular/platform-browser":"20.1.4","@angular/platform-browser-dynamic":"20.1.4","@angular/router":"20.1.4","@angular/service-worker":"20.1.4","@ant-design/icons-angular":"^20.0.0","@antv/g2":"^4.2.10","@apollo/client":"^3.13.8","@apollo/server":"^4.12.2","@aws-sdk/client-s3":"^3.886.0","@aws-sdk/client-secrets-manager":"^3.974.0","@bull-board/api":"^6.12.0","@bull-board/express":"^6.12.0","@bull-board/nestjs":"^6.12.0","@ctrl/tinycolor":"^4.1.0","@googlemaps/google-maps-services-js":"^3.4.2","@googlemaps/places":"^2.0.1","@googlemaps/routing":"^2.0.1","@ingameltd/payu":"^1.0.5","@nestjs/apollo":"^13.1.0","@nestjs/axios":"^4.0.1","@nestjs/bullmq":"^11.0.3","@nestjs/common":"11.1.5","@nestjs/config":"^4.0.2","@nestjs/core":"11.1.5","@nestjs/graphql":"^13.1.0","@nestjs/jwt":"^11.0.0","@nestjs/passport":"^11.0.5","@nestjs/platform-express":"^11.1.5","@nestjs/schedule":"^6.0.0","@nestjs/serve-static":"^5.0.3","@nestjs/typeorm":"11.0.0","@nestjs/websockets":"^11.1.3","@nx/angular":"21.3.10","@nx/web":"21.3.10","@paypal/checkout-server-sdk":"^1.0.3","@ptc-org/nestjs-query-core":"^9.1.0","@ptc-org/nestjs-query-graphql":"^9.1.0","@ptc-org/nestjs-query-typeorm":"^9.1.0","@redis/client":"^6.2.1","@redis/json":"^6.2.1","@redis/search":"^6.2.1","@sentry/cli":"^2.50.2","@sentry/nestjs":"^10.0.0","@sentry/profiling-node":"10.0.0","@simplewebauthn/server":"^13.0.0","@simplewebauthn/types":"^12.0.0","@willsoto/nestjs-prometheus":"^6.0.2","apollo-angular":"^11.0.0","autoprefixer":"^10.4.21","bullmq":"^5.56.9","class-transformer":"0.5.1","class-validator":"0.14.2","core-js":"^3.42.0","dataloader":"^2.2.3","dotenv":"16.5.0","firebase-admin":"^13.4.0","google-libphonenumber":"^3.2.43","graphql":"^16.11.0","graphql-redis-subscriptions":"^2.7.0","graphql-relay":"^0.10.2","graphql-subscriptions":"^3.0.0","graphql-tools":"^9.0.20","graphql-ws":"^6.0.6","h3-js":"^4.2.1","instamojo-payment-nodejs":"^3.0.0","ioredis":"^5.7.0","json-2-csv":"^4.0.0","jwt-decode":"^4.0.0","license-verify":"0.1.5","mercadopago":"^1.5.17","multer":"^2.0.0","mysql2":"^3.14.3","ng-zorro-antd":"^20.1.0","ngx-timeago":"^3.0.0","node-rsa":"^1.1.1","overshom-wayforpay":"^1.1.0","passport":"^0.7.0","passport-jwt":"^4.0.1","passport-local":"^1.0.0","paystack-node":"^0.3.0","paytmchecksum":"^1.5.1","pdfkit":"^0.17.1","pdfkit-table":"^0.1.99","plivo":"^4.70.0","prom-client":"^15.1.3","proper-url-join":"^2.1.2","razorpay":"^2.9.1","redis":"^6.2.1","reflect-metadata":"^0.2.2","rxjs":"7.8.2","sberbank-acquiring":"^1.2.2","sharp":"^0.34.3","stripe":"^18.4.0","tslib":"^2.6.1","twilio":"^5.6.1","typeorm":"0.3.26","uuid":"^11.1.0","zone.js":"0.15.1"},"devDependencies":{"@angular-devkit/build-angular":"20.1.4","@angular-devkit/core":"20.1.4","@angular-devkit/schematics":"20.1.4","@angular-eslint/eslint-plugin":"20.1.0","@angular-eslint/eslint-plugin-template":"20.1.0","@angular-eslint/template-parser":"20.1.0","@angular/cli":"~20.1.0","@angular/compiler-cli":"20.1.4","@angular/language-service":"20.1.4","@bartholomej/ngx-translate-extract":"^8.0.2","@graphql-codegen/cli":"^5.0.7","@graphql-codegen/introspection":"^4.0.3","@graphql-codegen/typescript":"^4.1.6","@graphql-codegen/typescript-apollo-angular":"^4.0.1","@graphql-codegen/typescript-operations":"^4.6.1","@monodon/rust":"^2.3.0","@nestjs/cli":"^11.0.10","@nestjs/schematics":"11.0.5","@nestjs/testing":"11.1.3","@ngx-translate/core":"^17.0.0","@ngx-translate/http-loader":"^17.0.0","@nx/eslint":"21.3.10","@nx/eslint-plugin":"21.3.10","@nx/jest":"21.3.10","@nx/js":"21.3.10","@nx/node":"21.3.10","@nx/webpack":"21.3.10","@nxrocks/nx-flutter":"^10.0.1","@schematics/angular":"20.1.4","@semantic-release/changelog":"^6.0.3","@semantic-release/commit-analyzer":"^13.0.1","@semantic-release/git":"^10.0.1","@semantic-release/npm":"^12.0.1","@semantic-release/release-notes-generator":"^14.0.3","@swc-node/register":"1.10.10","@swc/cli":"^0.7.8","@swc/core":"1.13.3","@swc/helpers":"0.5.17","@swc/jest":"0.2.39","@tailwindcss/forms":"^0.5.4","@tailwindcss/typography":"^0.5.9","@testcontainers/mysql":"^11.5.1","@testcontainers/redis":"^11.5.1","@types/busboy":"^1.5.0","@types/cron":"^2.0.1","@types/estree":"1.0.1","@types/google-libphonenumber":"^7.4.30","@types/jest":"^29.5.0","@types/multer":"^1.4.12","@types/node":"^24.0.10","@types/passport-jwt":"^4.0.1","@types/paypal__checkout-server-sdk":"^1.0.5","@types/pdfkit":"^0.17.0","@types/proper-url-join":"^2.1.5","@types/supertest":"^6.0.3","conventional-changelog-conventionalcommits":"^9.0.0","eslint":"^9.28.0","eslint-config-prettier":"10.1.5","eslint-plugin-unused-imports":"^4.1.4","jest":"^29.7.0","jest-environment-jsdom":"^29.7.0","jest-util":"^29.7.0","jsonc-eslint-parser":"^2.1.0","ng-packagr":"20.1.0","nx":"21.3.10","postcss":"^8.4.27","postcss-import":"15.1.0","postcss-preset-env":"9.1.0","postcss-url":"10.1.3","prettier":"^3.5.3","supertest":"^7.1.4","swc-loader":"^0.2.6","tailwindcss":"^3.3.3","testcontainers":"^11.5.1","ts-jest":"29.4.0","ts-node":"10.9.2","tslib":"^2.3.0","typescript":"5.8.3","typescript-eslint":"^8.33.0","webpack-cli":"^5.1.4"},"workspaces":["libs/*","apps/*"],"overrides":{"typescript":"5.8.3","eslint":"^9.28.0","rxjs":"7.8.2","typeorm":{"redis":"^5.8.2"}},"repository":{"type":"git","url":"https://github.com/ridyio/ridy-monorepo.git"},"publishConfig":{"access":"restricted"},"allowScripts":{"cpu-features@0.0.10":true,"core-js@3.43.0":true,"lmdb@3.4.1":true,"msgpackr-extract@3.0.3":true,"nx@21.3.10":true,"protobufjs@7.5.3":true,"sharp@0.34.3":true,"ssh2@1.16.0":true,"unrs-resolver@1.11.1":true,"@apollo/protobufjs@1.2.7":true,"@firebase/util@1.12.1":true,"@nestjs/core@11.1.5":true,"@parcel/watcher@2.6.0":true,"@sentry/cli@2.50.2":true,"@sentry-internal/node-cpu-profiler@2.2.0":true,"@swc/core@1.13.3":true,"fsevents@2.3.3":true,"esbuild@0.25.5":true}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"bettersuite","version":"5.3.2","license":"MIT","scripts":{"ng":"nx","nx":"nx","start":"ts-node src/index.ts","build":"ng build","test":"ng test","lint":"nx workspace-lint && ng lint","e2e":"ng e2e","affected:apps":"nx affected:apps","affected:libs":"nx affected:libs","affected:build":"nx affected:build","affected:e2e":"nx affected:e2e","affected:test":"nx affected:test","affected:lint":"nx affected:lint","affected:dep-graph":"nx affected:dep-graph","affected":"nx affected","format":"nx format:write","format:write":"nx format:write","format:check":"nx format:check","update":"nx migrate latest","workspace-generator":"nx workspace-generator","dep-graph":"nx dep-graph","help":"nx help","lint:fix":"eslint \'./**/*.{ts,tsx}\' --fix","i18n:extract":"ngx-translate-extract --input ./apps/admin-panel/src --output ./apps/admin-panel/src/assets/i18n/{en,es,bn,de,hi,ko,id,ja,pt,ru,ur,zh,fr,ar,hy}.json --clean --format namespaced-json","typeorm":"node --require ts-node/register ./node_modules/typeorm/cli.js","semantic-release":"semantic-release","publish-frontend":"bash scripts/docker-frontend-publish.sh","publish-backend":"bash scripts/docker-backend-publish.sh","inject-google-maps-key":"bash scripts/inject-google-maps-key.sh","client-setup":"bash scripts/client_setup/client-setup.sh","build-apks":"bash scripts/build-apks.sh","smoke-test":"bash scripts/backend-smoke-test.sh","gql-stats":"bash scripts/gql-stats.sh","load-test:seed":"node tools/load-tests/scripts/seed-database.js","load-test:seed:clean":"node tools/load-tests/scripts/seed-database.js --clean","load-test":"bash tools/load-tests/scripts/run-load-test.sh","load-test:rider":"bash tools/load-tests/scripts/run-load-test.sh rider","load-test:driver":"bash tools/load-tests/scripts/run-load-test.sh driver"},"private":true,"dependencies":{"@angular/animations":"20.1.4","@angular/cdk":"20.1.4","@angular/common":"20.1.4","@angular/compiler":"20.1.4","@angular/core":"20.1.4","@angular/forms":"20.1.4","@angular/google-maps":"20.1.4","@angular/platform-browser":"20.1.4","@angular/platform-browser-dynamic":"20.1.4","@angular/router":"20.1.4","@angular/service-worker":"20.1.4","@ant-design/icons-angular":"^20.0.0","@antv/g2":"^4.2.10","@apollo/client":"^3.13.8","@apollo/server":"^4.12.2","@aws-sdk/client-s3":"^3.886.0","@aws-sdk/client-secrets-manager":"^3.974.0","@bull-board/api":"^6.12.0","@bull-board/express":"^6.12.0","@bull-board/nestjs":"^6.12.0","@ctrl/tinycolor":"^4.1.0","@googlemaps/google-maps-services-js":"^3.4.2","@googlemaps/places":"^2.0.1","@googlemaps/routing":"^2.0.1","@ingameltd/payu":"^1.0.5","@nestjs/apollo":"^13.1.0","@nestjs/axios":"^4.0.1","@nestjs/bullmq":"^11.0.3","@nestjs/common":"11.1.5","@nestjs/config":"^4.0.2","@nestjs/core":"11.1.5","@nestjs/graphql":"^13.1.0","@nestjs/jwt":"^11.0.0","@nestjs/passport":"^11.0.5","@nestjs/platform-express":"^11.1.5","@nestjs/schedule":"^6.0.0","@nestjs/serve-static":"^5.0.3","@nestjs/typeorm":"11.0.0","@nestjs/websockets":"^11.1.3","@nx/angular":"21.3.10","@nx/web":"21.3.10","@paypal/checkout-server-sdk":"^1.0.3","@ptc-org/nestjs-query-core":"^9.1.0","@ptc-org/nestjs-query-graphql":"^9.1.0","@ptc-org/nestjs-query-typeorm":"^9.1.0","@redis/client":"^6.2.1","@redis/json":"^6.2.1","@redis/search":"^6.2.1","@sentry/cli":"^2.50.2","@sentry/nestjs":"^10.0.0","@sentry/profiling-node":"10.0.0","@simplewebauthn/server":"^13.0.0","@simplewebauthn/types":"^12.0.0","@willsoto/nestjs-prometheus":"^6.0.2","apollo-angular":"^11.0.0","autoprefixer":"^10.4.21","bullmq":"^5.56.9","class-transformer":"0.5.1","class-validator":"0.14.2","core-js":"^3.42.0","dataloader":"^2.2.3","dotenv":"16.5.0","firebase-admin":"^13.4.0","google-libphonenumber":"^3.2.43","graphql":"^16.11.0","graphql-redis-subscriptions":"^2.7.0","graphql-relay":"^0.10.2","graphql-subscriptions":"^3.0.0","graphql-tools":"^9.0.20","graphql-ws":"^6.0.6","h3-js":"^4.2.1","instamojo-payment-nodejs":"^3.0.0","ioredis":"^5.7.0","json-2-csv":"^4.0.0","jwt-decode":"^4.0.0","license-verify":"0.1.5","mercadopago":"^1.5.17","multer":"^2.0.0","mysql2":"^3.14.3","ng-zorro-antd":"^20.1.0","ngx-timeago":"^3.0.0","node-rsa":"^1.1.1","overshom-wayforpay":"^1.1.0","passport":"^0.7.0","passport-jwt":"^4.0.1","passport-local":"^1.0.0","paystack-node":"^0.3.0","paytmchecksum":"^1.5.1","pdfkit":"^0.17.1","pdfkit-table":"^0.1.99","plivo":"^4.70.0","prom-client":"^15.1.3","proper-url-join":"^2.1.2","razorpay":"^2.9.8","redis":"^6.2.1","reflect-metadata":"^0.2.2","rxjs":"7.8.2","sberbank-acquiring":"^1.2.2","sharp":"^0.34.3","stripe":"^18.4.0","tslib":"^2.6.1","twilio":"^5.6.1","typeorm":"0.3.26","uuid":"^11.1.0","zone.js":"0.15.1"},"devDependencies":{"@angular-devkit/build-angular":"20.1.4","@angular-devkit/core":"20.1.4","@angular-devkit/schematics":"20.1.4","@angular-eslint/eslint-plugin":"20.1.0","@angular-eslint/eslint-plugin-template":"20.1.0","@angular-eslint/template-parser":"20.1.0","@angular/cli":"~20.1.0","@angular/compiler-cli":"20.1.4","@angular/language-service":"20.1.4","@bartholomej/ngx-translate-extract":"^8.0.2","@graphql-codegen/cli":"^5.0.7","@graphql-codegen/introspection":"^4.0.3","@graphql-codegen/typescript":"^4.1.6","@graphql-codegen/typescript-apollo-angular":"^4.0.1","@graphql-codegen/typescript-operations":"^4.6.1","@monodon/rust":"^2.3.0","@nestjs/cli":"^11.0.10","@nestjs/schematics":"11.0.5","@nestjs/testing":"11.1.3","@ngx-translate/core":"^17.0.0","@ngx-translate/http-loader":"^17.0.0","@nx/eslint":"21.3.10","@nx/eslint-plugin":"21.3.10","@nx/jest":"21.3.10","@nx/js":"21.3.10","@nx/node":"21.3.10","@nx/webpack":"21.3.10","@nxrocks/nx-flutter":"^10.0.1","@schematics/angular":"20.1.4","@semantic-release/changelog":"^6.0.3","@semantic-release/commit-analyzer":"^13.0.1","@semantic-release/git":"^10.0.1","@semantic-release/npm":"^12.0.1","@semantic-release/release-notes-generator":"^14.0.3","@swc-node/register":"1.10.10","@swc/cli":"^0.7.8","@swc/core":"1.13.3","@swc/helpers":"0.5.17","@swc/jest":"0.2.39","@tailwindcss/forms":"^0.5.4","@tailwindcss/typography":"^0.5.9","@testcontainers/mysql":"^11.5.1","@testcontainers/redis":"^11.5.1","@types/busboy":"^1.5.0","@types/cron":"^2.0.1","@types/estree":"1.0.1","@types/google-libphonenumber":"^7.4.30","@types/jest":"^29.5.0","@types/multer":"^1.4.12","@types/node":"^24.0.10","@types/passport-jwt":"^4.0.1","@types/paypal__checkout-server-sdk":"^1.0.5","@types/pdfkit":"^0.17.0","@types/proper-url-join":"^2.1.5","@types/supertest":"^6.0.3","conventional-changelog-conventionalcommits":"^9.0.0","eslint":"^9.28.0","eslint-config-prettier":"10.1.5","eslint-plugin-unused-imports":"^4.1.4","jest":"^29.7.0","jest-environment-jsdom":"^29.7.0","jest-util":"^29.7.0","jsonc-eslint-parser":"^2.1.0","ng-packagr":"20.1.0","nx":"21.3.10","postcss":"^8.4.27","postcss-import":"15.1.0","postcss-preset-env":"9.1.0","postcss-url":"10.1.3","prettier":"^3.5.3","supertest":"^7.1.4","swc-loader":"^0.2.6","tailwindcss":"^3.3.3","testcontainers":"^11.5.1","ts-jest":"29.4.0","ts-node":"10.9.2","tslib":"^2.3.0","typescript":"5.8.3","typescript-eslint":"^8.33.0","webpack-cli":"^5.1.4"},"workspaces":["libs/*","apps/*"],"overrides":{"typescript":"5.8.3","eslint":"^9.28.0","rxjs":"7.8.2","typeorm":{"redis":"^5.8.2"}},"repository":{"type":"git","url":"https://github.com/ridyio/ridy-monorepo.git"},"publishConfig":{"access":"restricted"},"allowScripts":{"cpu-features@0.0.10":true,"core-js@3.43.0":true,"lmdb@3.4.1":true,"msgpackr-extract@3.0.3":true,"nx@21.3.10":true,"protobufjs@7.5.3":true,"sharp@0.34.3":true,"ssh2@1.16.0":true,"unrs-resolver@1.11.1":true,"@apollo/protobufjs@1.2.7":true,"@firebase/util@1.12.1":true,"@nestjs/core@11.1.5":true,"@parcel/watcher@2.6.0":true,"@sentry/cli@2.50.2":true,"@sentry-internal/node-cpu-profiler@2.2.0":true,"@swc/core@1.13.3":true,"fsevents@2.3.3":true,"esbuild@0.25.5":true}}');
 
 /***/ }),
-/* 114 */
+/* 116 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51462,8 +51942,8 @@ const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
-const _sosresolver = __webpack_require__(115);
-const _sosservice = __webpack_require__(117);
+const _sosresolver = __webpack_require__(117);
+const _sosservice = __webpack_require__(119);
 let SOSModule = class SOSModule {
 };
 SOSModule = _ts_decorate._([
@@ -51484,7 +51964,7 @@ SOSModule = _ts_decorate._([
 
 
 /***/ }),
-/* 115 */
+/* 117 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51504,8 +51984,8 @@ const _common = __webpack_require__(2);
 const _graphql = __webpack_require__(10);
 const _database = __webpack_require__(12);
 const _accesstokenguard = __webpack_require__(41);
-const _sosdto = __webpack_require__(116);
-const _sosservice = __webpack_require__(117);
+const _sosdto = __webpack_require__(118);
+const _sosservice = __webpack_require__(119);
 let SOSResolver = class SOSResolver {
     constructor(sosService){
         this.sosService = sosService;
@@ -51544,7 +52024,7 @@ SOSResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 116 */
+/* 118 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51572,7 +52052,7 @@ SOSDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 117 */
+/* 119 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51641,25 +52121,25 @@ SOSService = _ts_decorate._([
 
 
 /***/ }),
-/* 118 */
+/* 120 */
 /***/ ((module) => {
 
 module.exports = require("@sentry/nestjs/setup");
 
 /***/ }),
-/* 119 */
+/* 121 */
 /***/ ((module) => {
 
 module.exports = require("@willsoto/nestjs-prometheus");
 
 /***/ }),
-/* 120 */
+/* 122 */
 /***/ ((module) => {
 
 module.exports = require("@bull-board/express");
 
 /***/ }),
-/* 121 */
+/* 123 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51674,8 +52154,8 @@ Object.defineProperty(exports, "NotificationModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _notificationservice = __webpack_require__(122);
-const _notificationresolver = __webpack_require__(123);
+const _notificationservice = __webpack_require__(124);
+const _notificationresolver = __webpack_require__(125);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 let NotificationModule = class NotificationModule {
@@ -51699,7 +52179,7 @@ NotificationModule = _ts_decorate._([
 
 
 /***/ }),
-/* 122 */
+/* 124 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51752,7 +52232,7 @@ NotificationService = _ts_decorate._([
 
 
 /***/ }),
-/* 123 */
+/* 125 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51771,7 +52251,7 @@ const _ts_param = __webpack_require__(27);
 const _common = __webpack_require__(2);
 const _graphql = __webpack_require__(10);
 const _accesstokenguard = __webpack_require__(41);
-const _notificationservice = __webpack_require__(122);
+const _notificationservice = __webpack_require__(124);
 const _authenticateduser = __webpack_require__(37);
 let NotificationResolver = class NotificationResolver {
     constructor(context, notificationService){
@@ -51808,7 +52288,7 @@ NotificationResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 124 */
+/* 126 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51824,8 +52304,8 @@ Object.defineProperty(exports, "EphemeralMessagesModule", ({
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
-const _ephemeralmessagesservice = __webpack_require__(125);
-const _ephemeralmessagesresolver = __webpack_require__(126);
+const _ephemeralmessagesservice = __webpack_require__(127);
+const _ephemeralmessagesresolver = __webpack_require__(128);
 const _ordermodule = __webpack_require__(55);
 let EphemeralMessagesModule = class EphemeralMessagesModule {
 };
@@ -51844,7 +52324,7 @@ EphemeralMessagesModule = _ts_decorate._([
 
 
 /***/ }),
-/* 125 */
+/* 127 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51897,7 +52377,7 @@ EphemeralMessagesService = _ts_decorate._([
 
 
 /***/ }),
-/* 126 */
+/* 128 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51914,8 +52394,8 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(27);
 const _graphql = __webpack_require__(10);
-const _ephemeralmessagesservice = __webpack_require__(125);
-const _ephemeralmessagedto = __webpack_require__(127);
+const _ephemeralmessagesservice = __webpack_require__(127);
+const _ephemeralmessagedto = __webpack_require__(129);
 const _common = __webpack_require__(2);
 const _accesstokenguard = __webpack_require__(41);
 const _authenticateduser = __webpack_require__(37);
@@ -51963,7 +52443,7 @@ EphemeralMessagesResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 127 */
+/* 129 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52041,7 +52521,7 @@ EphemeralMessageDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 128 */
+/* 130 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52058,8 +52538,8 @@ const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
-const _feedbackservice = __webpack_require__(129);
-const _feedbackresolver = __webpack_require__(130);
+const _feedbackservice = __webpack_require__(131);
+const _feedbackresolver = __webpack_require__(132);
 let FeedbackModule = class FeedbackModule {
 };
 FeedbackModule = _ts_decorate._([
@@ -52078,7 +52558,7 @@ FeedbackModule = _ts_decorate._([
 
 
 /***/ }),
-/* 129 */
+/* 131 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52118,7 +52598,7 @@ FeedbackService = _ts_decorate._([
 
 
 /***/ }),
-/* 130 */
+/* 132 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52134,8 +52614,8 @@ Object.defineProperty(exports, "FeedbackResolver", ({
 const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _graphql = __webpack_require__(10);
-const _feedbackparameterdto = __webpack_require__(131);
-const _feedbackservice = __webpack_require__(129);
+const _feedbackparameterdto = __webpack_require__(133);
+const _feedbackservice = __webpack_require__(131);
 let FeedbackResolver = class FeedbackResolver {
     constructor(feedbackService){
         this.feedbackService = feedbackService;
@@ -52162,7 +52642,7 @@ FeedbackResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 131 */
+/* 133 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52202,7 +52682,7 @@ FeedbackParameterDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 132 */
+/* 134 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52217,8 +52697,8 @@ Object.defineProperty(exports, "FavoriteLocationModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _favoritelocationresolver = __webpack_require__(133);
-const _favoritelocationservice = __webpack_require__(136);
+const _favoritelocationresolver = __webpack_require__(135);
+const _favoritelocationservice = __webpack_require__(138);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 let FavoriteLocationModule = class FavoriteLocationModule {
@@ -52239,7 +52719,7 @@ FavoriteLocationModule = _ts_decorate._([
 
 
 /***/ }),
-/* 133 */
+/* 135 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52258,9 +52738,9 @@ const _ts_param = __webpack_require__(27);
 const _common = __webpack_require__(2);
 const _graphql = __webpack_require__(10);
 const _authenticateduser = __webpack_require__(37);
-const _favoritelocationdto = __webpack_require__(134);
-const _createfavoritelocationinput = __webpack_require__(135);
-const _favoritelocationservice = __webpack_require__(136);
+const _favoritelocationdto = __webpack_require__(136);
+const _createfavoritelocationinput = __webpack_require__(137);
+const _favoritelocationservice = __webpack_require__(138);
 const _accesstokenguard = __webpack_require__(41);
 let FavoriteLocationResolver = class FavoriteLocationResolver {
     constructor(favoriteLocationService, context){
@@ -52337,7 +52817,7 @@ FavoriteLocationResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 134 */
+/* 136 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52396,7 +52876,7 @@ FavoriteLocationDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 135 */
+/* 137 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52451,7 +52931,7 @@ CreateRiderAddressInput = _ts_decorate._([
 
 
 /***/ }),
-/* 136 */
+/* 138 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52531,7 +53011,7 @@ FavoriteLocationService = _ts_decorate._([
 
 
 /***/ }),
-/* 137 */
+/* 139 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52546,8 +53026,8 @@ Object.defineProperty(exports, "SupportModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _supportservice = __webpack_require__(138);
-const _supportresolver = __webpack_require__(139);
+const _supportservice = __webpack_require__(140);
+const _supportresolver = __webpack_require__(141);
 let SupportModule = class SupportModule {
 };
 SupportModule = _ts_decorate._([
@@ -52564,7 +53044,7 @@ SupportModule = _ts_decorate._([
 
 
 /***/ }),
-/* 138 */
+/* 140 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52596,7 +53076,7 @@ SupportService = _ts_decorate._([
 
 
 /***/ }),
-/* 139 */
+/* 141 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52616,7 +53096,7 @@ const _graphql = __webpack_require__(10);
 const _common = __webpack_require__(2);
 const _accesstokenguard = __webpack_require__(41);
 const _authenticateduser = __webpack_require__(37);
-const _supportservice = __webpack_require__(138);
+const _supportservice = __webpack_require__(140);
 let SupportResolver = class SupportResolver {
     constructor(context, supportService){
         this.context = context;
@@ -52648,13 +53128,19 @@ SupportResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 140 */
+/* 142 */
 /***/ ((module) => {
 
 module.exports = require("firebase-admin/app");
 
 /***/ }),
-/* 141 */
+/* 143 */
+/***/ ((module) => {
+
+module.exports = require("dotenv");
+
+/***/ }),
+/* 144 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 // Import with `const Sentry = require("@sentry/nestjs");` if you are using CJS
@@ -52664,9 +53150,9 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 const _interop_require_wildcard = __webpack_require__(1);
 const _apollo = __webpack_require__(8);
-const _nestjs = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(142));
-const _profilingnode = __webpack_require__(143);
-const _dotenv = __webpack_require__(144);
+const _nestjs = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(145));
+const _profilingnode = __webpack_require__(146);
+const _dotenv = __webpack_require__(143);
 (0, _dotenv.config)({
     path: __dirname + '/.env'
 });
@@ -52689,22 +53175,16 @@ _nestjs.init({
 
 
 /***/ }),
-/* 142 */
+/* 145 */
 /***/ ((module) => {
 
 module.exports = require("@sentry/nestjs");
 
 /***/ }),
-/* 143 */
+/* 146 */
 /***/ ((module) => {
 
 module.exports = require("@sentry/profiling-node");
-
-/***/ }),
-/* 144 */
-/***/ ((module) => {
-
-module.exports = require("dotenv");
 
 /***/ })
 /******/ 	]);
@@ -52789,14 +53269,20 @@ const _core = __webpack_require__(3);
 const _express = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(4));
 const _riderapimodule = __webpack_require__(5);
 const _firebaseadmin = __webpack_require__(19);
-const _app = __webpack_require__(140);
+const _app = __webpack_require__(142);
 const _database = __webpack_require__(12);
-__webpack_require__(141);
+const _dotenv = __webpack_require__(143);
+__webpack_require__(144);
 const _licenseverify = __webpack_require__(15);
 process.on('unhandledRejection', (reason)=>{
     _common.Logger.error('Unhandled promise rejection (process kept alive)', reason, 'Rider API');
 });
 async function bootstrap() {
+    // Load the monorepo root .env for local development before initializing services.
+    (0, _dotenv.config)({
+        path: `${process.cwd()}/.env`
+    });
+    // Load external/AWS secrets if configured.
     await (0, _database.loadSecrets)();
     const app = await _core.NestFactory.create(_riderapimodule.RiderAPIModule.register());
     // Increase body size limit to 20MB

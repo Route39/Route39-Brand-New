@@ -88,6 +88,8 @@ dependencies:
     path: ../../libs/flutter_localizations
   image_faker: any
   form_builder_validators: any
+  razorpay_flutter: ^1.4.6
+  web: ^1.1.1
 
 dev_dependencies:
   sentry_dart_plugin: any

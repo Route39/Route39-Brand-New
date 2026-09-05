@@ -1,4 +1,4 @@
-import { Inject, UseGuards } from '@nestjs/common';
+import { Inject, UseGuards } from "@nestjs/common";
 import {
   Args,
   CONTEXT,
@@ -7,12 +7,13 @@ import {
   Mutation,
   Query,
   Resolver,
-} from '@nestjs/graphql';
+} from "@nestjs/graphql";
 import {
   CommonCouponService,
   PaymentMethodInput,
   PlaceDTO,
-} from '@ridy/database';
+} from "@ridy/database";
+import { RazorpayRideOrderDTO } from "./dto/razorpay-ride.dto";
 import { Point } from '@ridy/database';
 import { SharedOrderService } from '@ridy/database';
 import { DriverRedisService } from '@ridy/database';
@@ -240,6 +241,36 @@ export class OrderResolver {
       orderId,
       paymentMethod,
     });
+  }
+
+  @Mutation(() => RazorpayRideOrderDTO)
+  @UseGuards(GqlAuthGuard)
+  async createRazorpayRideOrder(
+    @Args('orderId', { type: () => ID }) orderId: number,
+  ): Promise<RazorpayRideOrderDTO> {
+    return this.riderOrderService.createRazorpayRideOrder({
+      orderId,
+      riderId: this.context.req.user!.id,
+    });
+  }
+
+  @Mutation(() => Boolean)
+  @UseGuards(GqlAuthGuard)
+  async verifyRazorpayRidePayment(
+    @Args('orderId', { type: () => ID }) orderId: number,
+    @Args('razorpayOrderId', { type: () => String }) razorpayOrderId: string,
+    @Args('razorpayPaymentId', { type: () => String }) razorpayPaymentId: string,
+    @Args('razorpaySignature', { type: () => String }) razorpaySignature: string,
+  ): Promise<boolean> {
+    await this.riderOrderService.verifyRazorpayRidePayment({
+      orderId,
+      riderId: this.context.req.user!.id,
+      razorpayOrderId,
+      razorpayPaymentId,
+      razorpaySignature,
+    });
+
+    return true;
   }
 
   @Query(() => [PlaceDTO])

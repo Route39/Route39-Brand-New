@@ -13,9 +13,13 @@ import { HttpModule } from '@nestjs/axios';
 import { WalletService } from './wallet.service';
 import { CommonCouponModule } from '@ridy/database';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { RazorpayService } from '@ridy/database';
+import { SharedOrderModule } from '@ridy/database';
+import { RazorpayService } from '@ridy/database';
 
 @Module({
   imports: [
+    SharedOrderModule,
     RedisHelpersModule,
     TypeOrmModule.forFeature([
       CustomerEntity,
@@ -27,7 +31,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     HttpModule,
     CommonCouponModule,
   ],
-  providers: [WalletResolver, WalletService, CryptoService],
-  exports: [WalletService],
+  providers: [WalletResolver, WalletService, CryptoService, RazorpayService],
+  exports: [WalletService, RazorpayService],
 })
 export class WalletModule {}

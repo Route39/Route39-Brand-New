@@ -60,7 +60,8 @@
         "sentry_flutter",
         "share_plus",
         "time",
-        "url_launcher"
+        "url_launcher",
+        "web"
       ],
       "devDependencies": [
         "auto_route_generator",
@@ -128,12 +129,14 @@
         "package_info_plus",
         "path_provider",
         "permission_handler",
+        "razorpay_flutter",
         "rxdart",
         "sentry_flutter",
         "share_plus",
         "time",
         "url_launcher",
-        "wakelock_plus"
+        "wakelock_plus",
+        "web"
       ],
       "devDependencies": [
         "auto_route_generator",
@@ -747,6 +750,14 @@
         "properties",
         "system_info2",
         "yaml"
+      ]
+    },
+    {
+      "name": "razorpay_flutter",
+      "version": "1.4.6",
+      "dependencies": [
+        "eventify",
+        "flutter"
       ]
     },
     {
@@ -1971,6 +1982,11 @@
     {
       "name": "injector",
       "version": "3.0.0",
+      "dependencies": []
+    },
+    {
+      "name": "eventify",
+      "version": "1.0.1",
       "dependencies": []
     },
     {

@@ -6,6 +6,8 @@ sealed class PayForRideState with _$PayForRideState {
     PaymentMethodUnion? selectedPaymentMethod,
     @Default(ApiResponse.initial()) ApiResponse<Fragment$IntentResult> paymentStatus,
     @Default(ApiResponseInitial()) ApiResponse<Query$PaymentMethods> savedPaymentMethodsState,
+    @Default(ApiResponse.initial())
+    ApiResponse<Mutation$CreateRazorpayRideOrder$createRazorpayRideOrder> razorpayOrderState,
   }) = _PayForRideState;
 
   const PayForRideState._();

@@ -20,3 +20,4 @@ export * from './lib/storage';
 export * from './lib/call-masking';
 export * from './lib/auth';
 export * from './lib/secrets';
+export * from './lib/payments/razorpay.service';

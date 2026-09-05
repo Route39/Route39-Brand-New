@@ -61,15 +61,15 @@ const _drivermodule = __webpack_require__(35);
 const _feedbacksmodule = __webpack_require__(86);
 const _ordermodule = __webpack_require__(50);
 const _payoutmodule = __webpack_require__(91);
-const _sosmodule = __webpack_require__(110);
+const _sosmodule = __webpack_require__(111);
 const _uploadmodule = __webpack_require__(38);
 const _walletmodule = __webpack_require__(102);
 const _core = __webpack_require__(3);
-const _nestjsprometheus = __webpack_require__(114);
+const _nestjsprometheus = __webpack_require__(115);
 const _licenseverify = __webpack_require__(15);
-const _notificationmodule = __webpack_require__(115);
-const _ephemeralmessagesmodule = __webpack_require__(118);
-const _supportmodule = __webpack_require__(122);
+const _notificationmodule = __webpack_require__(116);
+const _ephemeralmessagesmodule = __webpack_require__(119);
+const _supportmodule = __webpack_require__(123);
 let DriverAPIModule = class DriverAPIModule {
     constructor(licenseService){
         this.licenseService = licenseService;
@@ -447,6 +447,7 @@ __webpack_require__.d(__webpack_exports__, {
   RangeCostDTO: () => (/* reexport */ RangeCostDTO),
   RangePolicy: () => (/* reexport */ RangePolicy),
   RatingAggregate: () => (/* reexport */ RatingAggregate),
+  RazorpayService: () => (/* reexport */ RazorpayService),
   RedisHelpersModule: () => (/* reexport */ RedisHelpersModule),
   RedisSearchMigrationService: () => (/* reexport */ RedisSearchMigrationService),
   RegionCategoryEntity: () => (/* reexport */ RegionCategoryEntity),
@@ -43828,7 +43829,180 @@ function loadSecrets() {
 ;// ../../libs/database/src/lib/secrets/index.ts
 
 
+;// external "razorpay"
+const external_razorpay_namespaceObject = require("razorpay");
+var external_razorpay_default = /*#__PURE__*/__webpack_require__.n(external_razorpay_namespaceObject);
+;// ../../libs/database/src/lib/payments/razorpay.service.ts
+function razorpay_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+    try {
+        var info = gen[key](arg);
+        var value = info.value;
+    } catch (error) {
+        reject(error);
+        return;
+    }
+    if (info.done) {
+        resolve(value);
+    } else {
+        Promise.resolve(value).then(_next, _throw);
+    }
+}
+function razorpay_service_async_to_generator(fn) {
+    return function() {
+        var self = this, args = arguments;
+        return new Promise(function(resolve, reject) {
+            var gen = fn.apply(self, args);
+            function _next(value) {
+                razorpay_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+            }
+            function _throw(err) {
+                razorpay_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+            }
+            _next(undefined);
+        });
+    };
+}
+function razorpay_service_ts_decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+function razorpay_service_ts_generator(thisArg, body) {
+    var f, y, t, _ = {
+        label: 0,
+        sent: function() {
+            if (t[0] & 1) throw t[1];
+            return t[1];
+        },
+        trys: [],
+        ops: []
+    }, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() {
+        return this;
+    }), g;
+    function verb(n) {
+        return function(v) {
+            return step([
+                n,
+                v
+            ]);
+        };
+    }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while(g && (g = 0, op[0] && (_ = 0)), _)try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [
+                op[0] & 2,
+                t.value
+            ];
+            switch(op[0]){
+                case 0:
+                case 1:
+                    t = op;
+                    break;
+                case 4:
+                    _.label++;
+                    return {
+                        value: op[1],
+                        done: false
+                    };
+                case 5:
+                    _.label++;
+                    y = op[1];
+                    op = [
+                        0
+                    ];
+                    continue;
+                case 7:
+                    op = _.ops.pop();
+                    _.trys.pop();
+                    continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+                        _ = 0;
+                        continue;
+                    }
+                    if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+                        _.label = op[1];
+                        break;
+                    }
+                    if (op[0] === 6 && _.label < t[1]) {
+                        _.label = t[1];
+                        t = op;
+                        break;
+                    }
+                    if (t && _.label < t[2]) {
+                        _.label = t[2];
+                        _.ops.push(op);
+                        break;
+                    }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop();
+                    continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) {
+            op = [
+                6,
+                e
+            ];
+            y = 0;
+        } finally{
+            f = t = 0;
+        }
+        if (op[0] & 5) throw op[1];
+        return {
+            value: op[0] ? op[1] : void 0,
+            done: true
+        };
+    }
+}
+function razorpay_service_ts_metadata(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+}
+
+
+
+var RazorpayService = /*#__PURE__*/ function() {
+    "use strict";
+    function RazorpayService() {
+        this.client = new (external_razorpay_default())({
+            key_id: process.env.RAZORPAY_KEY_ID,
+            key_secret: process.env.RAZORPAY_KEY_SECRET
+        });
+    }
+    var _proto = RazorpayService.prototype;
+    _proto.createOrder = function createOrder(amount, currency, receipt) {
+        return razorpay_service_async_to_generator(function() {
+            return razorpay_service_ts_generator(this, function(_state) {
+                // amount in paise (INR smallest unit) — multiply rupees by 100
+                return [
+                    2,
+                    this.client.orders.create({
+                        amount: Math.round(amount * 100),
+                        currency: currency,
+                        receipt: receipt
+                    })
+                ];
+            });
+        }).call(this);
+    };
+    _proto.verifySignature = function verifySignature(orderId, paymentId, signature) {
+        var generated = external_crypto_.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET).update(orderId + "|" + paymentId).digest('hex');
+        return generated === signature;
+    };
+    return RazorpayService;
+}();
+RazorpayService = razorpay_service_ts_decorate([
+    (0,common_.Injectable)(),
+    razorpay_service_ts_metadata("design:type", Function),
+    razorpay_service_ts_metadata("design:paramtypes", [])
+], RazorpayService);
+
 ;// ../../libs/database/src/index.ts
+
 
 
 
@@ -49474,7 +49648,7 @@ RestJwtAuthGuard = _ts_decorate._([
 /* 85 */
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"bettersuite","version":"5.3.2","license":"MIT","scripts":{"ng":"nx","nx":"nx","start":"ts-node src/index.ts","build":"ng build","test":"ng test","lint":"nx workspace-lint && ng lint","e2e":"ng e2e","affected:apps":"nx affected:apps","affected:libs":"nx affected:libs","affected:build":"nx affected:build","affected:e2e":"nx affected:e2e","affected:test":"nx affected:test","affected:lint":"nx affected:lint","affected:dep-graph":"nx affected:dep-graph","affected":"nx affected","format":"nx format:write","format:write":"nx format:write","format:check":"nx format:check","update":"nx migrate latest","workspace-generator":"nx workspace-generator","dep-graph":"nx dep-graph","help":"nx help","lint:fix":"eslint \'./**/*.{ts,tsx}\' --fix","i18n:extract":"ngx-translate-extract --input ./apps/admin-panel/src --output ./apps/admin-panel/src/assets/i18n/{en,es,bn,de,hi,ko,id,ja,pt,ru,ur,zh,fr,ar,hy}.json --clean --format namespaced-json","typeorm":"node --require ts-node/register ./node_modules/typeorm/cli.js","semantic-release":"semantic-release","publish-frontend":"bash scripts/docker-frontend-publish.sh","publish-backend":"bash scripts/docker-backend-publish.sh","inject-google-maps-key":"bash scripts/inject-google-maps-key.sh","client-setup":"bash scripts/client_setup/client-setup.sh","build-apks":"bash scripts/build-apks.sh","smoke-test":"bash scripts/backend-smoke-test.sh","gql-stats":"bash scripts/gql-stats.sh","load-test:seed":"node tools/load-tests/scripts/seed-database.js","load-test:seed:clean":"node tools/load-tests/scripts/seed-database.js --clean","load-test":"bash tools/load-tests/scripts/run-load-test.sh","load-test:rider":"bash tools/load-tests/scripts/run-load-test.sh rider","load-test:driver":"bash tools/load-tests/scripts/run-load-test.sh driver"},"private":true,"dependencies":{"@angular/animations":"20.1.4","@angular/cdk":"20.1.4","@angular/common":"20.1.4","@angular/compiler":"20.1.4","@angular/core":"20.1.4","@angular/forms":"20.1.4","@angular/google-maps":"20.1.4","@angular/platform-browser":"20.1.4","@angular/platform-browser-dynamic":"20.1.4","@angular/router":"20.1.4","@angular/service-worker":"20.1.4","@ant-design/icons-angular":"^20.0.0","@antv/g2":"^4.2.10","@apollo/client":"^3.13.8","@apollo/server":"^4.12.2","@aws-sdk/client-s3":"^3.886.0","@aws-sdk/client-secrets-manager":"^3.974.0","@bull-board/api":"^6.12.0","@bull-board/express":"^6.12.0","@bull-board/nestjs":"^6.12.0","@ctrl/tinycolor":"^4.1.0","@googlemaps/google-maps-services-js":"^3.4.2","@googlemaps/places":"^2.0.1","@googlemaps/routing":"^2.0.1","@ingameltd/payu":"^1.0.5","@nestjs/apollo":"^13.1.0","@nestjs/axios":"^4.0.1","@nestjs/bullmq":"^11.0.3","@nestjs/common":"11.1.5","@nestjs/config":"^4.0.2","@nestjs/core":"11.1.5","@nestjs/graphql":"^13.1.0","@nestjs/jwt":"^11.0.0","@nestjs/passport":"^11.0.5","@nestjs/platform-express":"^11.1.5","@nestjs/schedule":"^6.0.0","@nestjs/serve-static":"^5.0.3","@nestjs/typeorm":"11.0.0","@nestjs/websockets":"^11.1.3","@nx/angular":"21.3.10","@nx/web":"21.3.10","@paypal/checkout-server-sdk":"^1.0.3","@ptc-org/nestjs-query-core":"^9.1.0","@ptc-org/nestjs-query-graphql":"^9.1.0","@ptc-org/nestjs-query-typeorm":"^9.1.0","@redis/client":"^6.2.1","@redis/json":"^6.2.1","@redis/search":"^6.2.1","@sentry/cli":"^2.50.2","@sentry/nestjs":"^10.0.0","@sentry/profiling-node":"10.0.0","@simplewebauthn/server":"^13.0.0","@simplewebauthn/types":"^12.0.0","@willsoto/nestjs-prometheus":"^6.0.2","apollo-angular":"^11.0.0","autoprefixer":"^10.4.21","bullmq":"^5.56.9","class-transformer":"0.5.1","class-validator":"0.14.2","core-js":"^3.42.0","dataloader":"^2.2.3","dotenv":"16.5.0","firebase-admin":"^13.4.0","google-libphonenumber":"^3.2.43","graphql":"^16.11.0","graphql-redis-subscriptions":"^2.7.0","graphql-relay":"^0.10.2","graphql-subscriptions":"^3.0.0","graphql-tools":"^9.0.20","graphql-ws":"^6.0.6","h3-js":"^4.2.1","instamojo-payment-nodejs":"^3.0.0","ioredis":"^5.7.0","json-2-csv":"^4.0.0","jwt-decode":"^4.0.0","license-verify":"0.1.5","mercadopago":"^1.5.17","multer":"^2.0.0","mysql2":"^3.14.3","ng-zorro-antd":"^20.1.0","ngx-timeago":"^3.0.0","node-rsa":"^1.1.1","overshom-wayforpay":"^1.1.0","passport":"^0.7.0","passport-jwt":"^4.0.1","passport-local":"^1.0.0","paystack-node":"^0.3.0","paytmchecksum":"^1.5.1","pdfkit":"^0.17.1","pdfkit-table":"^0.1.99","plivo":"^4.70.0","prom-client":"^15.1.3","proper-url-join":"^2.1.2","razorpay":"^2.9.1","redis":"^6.2.1","reflect-metadata":"^0.2.2","rxjs":"7.8.2","sberbank-acquiring":"^1.2.2","sharp":"^0.34.3","stripe":"^18.4.0","tslib":"^2.6.1","twilio":"^5.6.1","typeorm":"0.3.26","uuid":"^11.1.0","zone.js":"0.15.1"},"devDependencies":{"@angular-devkit/build-angular":"20.1.4","@angular-devkit/core":"20.1.4","@angular-devkit/schematics":"20.1.4","@angular-eslint/eslint-plugin":"20.1.0","@angular-eslint/eslint-plugin-template":"20.1.0","@angular-eslint/template-parser":"20.1.0","@angular/cli":"~20.1.0","@angular/compiler-cli":"20.1.4","@angular/language-service":"20.1.4","@bartholomej/ngx-translate-extract":"^8.0.2","@graphql-codegen/cli":"^5.0.7","@graphql-codegen/introspection":"^4.0.3","@graphql-codegen/typescript":"^4.1.6","@graphql-codegen/typescript-apollo-angular":"^4.0.1","@graphql-codegen/typescript-operations":"^4.6.1","@monodon/rust":"^2.3.0","@nestjs/cli":"^11.0.10","@nestjs/schematics":"11.0.5","@nestjs/testing":"11.1.3","@ngx-translate/core":"^17.0.0","@ngx-translate/http-loader":"^17.0.0","@nx/eslint":"21.3.10","@nx/eslint-plugin":"21.3.10","@nx/jest":"21.3.10","@nx/js":"21.3.10","@nx/node":"21.3.10","@nx/webpack":"21.3.10","@nxrocks/nx-flutter":"^10.0.1","@schematics/angular":"20.1.4","@semantic-release/changelog":"^6.0.3","@semantic-release/commit-analyzer":"^13.0.1","@semantic-release/git":"^10.0.1","@semantic-release/npm":"^12.0.1","@semantic-release/release-notes-generator":"^14.0.3","@swc-node/register":"1.10.10","@swc/cli":"^0.7.8","@swc/core":"1.13.3","@swc/helpers":"0.5.17","@swc/jest":"0.2.39","@tailwindcss/forms":"^0.5.4","@tailwindcss/typography":"^0.5.9","@testcontainers/mysql":"^11.5.1","@testcontainers/redis":"^11.5.1","@types/busboy":"^1.5.0","@types/cron":"^2.0.1","@types/estree":"1.0.1","@types/google-libphonenumber":"^7.4.30","@types/jest":"^29.5.0","@types/multer":"^1.4.12","@types/node":"^24.0.10","@types/passport-jwt":"^4.0.1","@types/paypal__checkout-server-sdk":"^1.0.5","@types/pdfkit":"^0.17.0","@types/proper-url-join":"^2.1.5","@types/supertest":"^6.0.3","conventional-changelog-conventionalcommits":"^9.0.0","eslint":"^9.28.0","eslint-config-prettier":"10.1.5","eslint-plugin-unused-imports":"^4.1.4","jest":"^29.7.0","jest-environment-jsdom":"^29.7.0","jest-util":"^29.7.0","jsonc-eslint-parser":"^2.1.0","ng-packagr":"20.1.0","nx":"21.3.10","postcss":"^8.4.27","postcss-import":"15.1.0","postcss-preset-env":"9.1.0","postcss-url":"10.1.3","prettier":"^3.5.3","supertest":"^7.1.4","swc-loader":"^0.2.6","tailwindcss":"^3.3.3","testcontainers":"^11.5.1","ts-jest":"29.4.0","ts-node":"10.9.2","tslib":"^2.3.0","typescript":"5.8.3","typescript-eslint":"^8.33.0","webpack-cli":"^5.1.4"},"workspaces":["libs/*","apps/*"],"overrides":{"typescript":"5.8.3","eslint":"^9.28.0","rxjs":"7.8.2","typeorm":{"redis":"^5.8.2"}},"repository":{"type":"git","url":"https://github.com/ridyio/ridy-monorepo.git"},"publishConfig":{"access":"restricted"},"allowScripts":{"cpu-features@0.0.10":true,"core-js@3.43.0":true,"lmdb@3.4.1":true,"msgpackr-extract@3.0.3":true,"nx@21.3.10":true,"protobufjs@7.5.3":true,"sharp@0.34.3":true,"ssh2@1.16.0":true,"unrs-resolver@1.11.1":true,"@apollo/protobufjs@1.2.7":true,"@firebase/util@1.12.1":true,"@nestjs/core@11.1.5":true,"@parcel/watcher@2.6.0":true,"@sentry/cli@2.50.2":true,"@sentry-internal/node-cpu-profiler@2.2.0":true,"@swc/core@1.13.3":true,"fsevents@2.3.3":true,"esbuild@0.25.5":true}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"bettersuite","version":"5.3.2","license":"MIT","scripts":{"ng":"nx","nx":"nx","start":"ts-node src/index.ts","build":"ng build","test":"ng test","lint":"nx workspace-lint && ng lint","e2e":"ng e2e","affected:apps":"nx affected:apps","affected:libs":"nx affected:libs","affected:build":"nx affected:build","affected:e2e":"nx affected:e2e","affected:test":"nx affected:test","affected:lint":"nx affected:lint","affected:dep-graph":"nx affected:dep-graph","affected":"nx affected","format":"nx format:write","format:write":"nx format:write","format:check":"nx format:check","update":"nx migrate latest","workspace-generator":"nx workspace-generator","dep-graph":"nx dep-graph","help":"nx help","lint:fix":"eslint \'./**/*.{ts,tsx}\' --fix","i18n:extract":"ngx-translate-extract --input ./apps/admin-panel/src --output ./apps/admin-panel/src/assets/i18n/{en,es,bn,de,hi,ko,id,ja,pt,ru,ur,zh,fr,ar,hy}.json --clean --format namespaced-json","typeorm":"node --require ts-node/register ./node_modules/typeorm/cli.js","semantic-release":"semantic-release","publish-frontend":"bash scripts/docker-frontend-publish.sh","publish-backend":"bash scripts/docker-backend-publish.sh","inject-google-maps-key":"bash scripts/inject-google-maps-key.sh","client-setup":"bash scripts/client_setup/client-setup.sh","build-apks":"bash scripts/build-apks.sh","smoke-test":"bash scripts/backend-smoke-test.sh","gql-stats":"bash scripts/gql-stats.sh","load-test:seed":"node tools/load-tests/scripts/seed-database.js","load-test:seed:clean":"node tools/load-tests/scripts/seed-database.js --clean","load-test":"bash tools/load-tests/scripts/run-load-test.sh","load-test:rider":"bash tools/load-tests/scripts/run-load-test.sh rider","load-test:driver":"bash tools/load-tests/scripts/run-load-test.sh driver"},"private":true,"dependencies":{"@angular/animations":"20.1.4","@angular/cdk":"20.1.4","@angular/common":"20.1.4","@angular/compiler":"20.1.4","@angular/core":"20.1.4","@angular/forms":"20.1.4","@angular/google-maps":"20.1.4","@angular/platform-browser":"20.1.4","@angular/platform-browser-dynamic":"20.1.4","@angular/router":"20.1.4","@angular/service-worker":"20.1.4","@ant-design/icons-angular":"^20.0.0","@antv/g2":"^4.2.10","@apollo/client":"^3.13.8","@apollo/server":"^4.12.2","@aws-sdk/client-s3":"^3.886.0","@aws-sdk/client-secrets-manager":"^3.974.0","@bull-board/api":"^6.12.0","@bull-board/express":"^6.12.0","@bull-board/nestjs":"^6.12.0","@ctrl/tinycolor":"^4.1.0","@googlemaps/google-maps-services-js":"^3.4.2","@googlemaps/places":"^2.0.1","@googlemaps/routing":"^2.0.1","@ingameltd/payu":"^1.0.5","@nestjs/apollo":"^13.1.0","@nestjs/axios":"^4.0.1","@nestjs/bullmq":"^11.0.3","@nestjs/common":"11.1.5","@nestjs/config":"^4.0.2","@nestjs/core":"11.1.5","@nestjs/graphql":"^13.1.0","@nestjs/jwt":"^11.0.0","@nestjs/passport":"^11.0.5","@nestjs/platform-express":"^11.1.5","@nestjs/schedule":"^6.0.0","@nestjs/serve-static":"^5.0.3","@nestjs/typeorm":"11.0.0","@nestjs/websockets":"^11.1.3","@nx/angular":"21.3.10","@nx/web":"21.3.10","@paypal/checkout-server-sdk":"^1.0.3","@ptc-org/nestjs-query-core":"^9.1.0","@ptc-org/nestjs-query-graphql":"^9.1.0","@ptc-org/nestjs-query-typeorm":"^9.1.0","@redis/client":"^6.2.1","@redis/json":"^6.2.1","@redis/search":"^6.2.1","@sentry/cli":"^2.50.2","@sentry/nestjs":"^10.0.0","@sentry/profiling-node":"10.0.0","@simplewebauthn/server":"^13.0.0","@simplewebauthn/types":"^12.0.0","@willsoto/nestjs-prometheus":"^6.0.2","apollo-angular":"^11.0.0","autoprefixer":"^10.4.21","bullmq":"^5.56.9","class-transformer":"0.5.1","class-validator":"0.14.2","core-js":"^3.42.0","dataloader":"^2.2.3","dotenv":"16.5.0","firebase-admin":"^13.4.0","google-libphonenumber":"^3.2.43","graphql":"^16.11.0","graphql-redis-subscriptions":"^2.7.0","graphql-relay":"^0.10.2","graphql-subscriptions":"^3.0.0","graphql-tools":"^9.0.20","graphql-ws":"^6.0.6","h3-js":"^4.2.1","instamojo-payment-nodejs":"^3.0.0","ioredis":"^5.7.0","json-2-csv":"^4.0.0","jwt-decode":"^4.0.0","license-verify":"0.1.5","mercadopago":"^1.5.17","multer":"^2.0.0","mysql2":"^3.14.3","ng-zorro-antd":"^20.1.0","ngx-timeago":"^3.0.0","node-rsa":"^1.1.1","overshom-wayforpay":"^1.1.0","passport":"^0.7.0","passport-jwt":"^4.0.1","passport-local":"^1.0.0","paystack-node":"^0.3.0","paytmchecksum":"^1.5.1","pdfkit":"^0.17.1","pdfkit-table":"^0.1.99","plivo":"^4.70.0","prom-client":"^15.1.3","proper-url-join":"^2.1.2","razorpay":"^2.9.8","redis":"^6.2.1","reflect-metadata":"^0.2.2","rxjs":"7.8.2","sberbank-acquiring":"^1.2.2","sharp":"^0.34.3","stripe":"^18.4.0","tslib":"^2.6.1","twilio":"^5.6.1","typeorm":"0.3.26","uuid":"^11.1.0","zone.js":"0.15.1"},"devDependencies":{"@angular-devkit/build-angular":"20.1.4","@angular-devkit/core":"20.1.4","@angular-devkit/schematics":"20.1.4","@angular-eslint/eslint-plugin":"20.1.0","@angular-eslint/eslint-plugin-template":"20.1.0","@angular-eslint/template-parser":"20.1.0","@angular/cli":"~20.1.0","@angular/compiler-cli":"20.1.4","@angular/language-service":"20.1.4","@bartholomej/ngx-translate-extract":"^8.0.2","@graphql-codegen/cli":"^5.0.7","@graphql-codegen/introspection":"^4.0.3","@graphql-codegen/typescript":"^4.1.6","@graphql-codegen/typescript-apollo-angular":"^4.0.1","@graphql-codegen/typescript-operations":"^4.6.1","@monodon/rust":"^2.3.0","@nestjs/cli":"^11.0.10","@nestjs/schematics":"11.0.5","@nestjs/testing":"11.1.3","@ngx-translate/core":"^17.0.0","@ngx-translate/http-loader":"^17.0.0","@nx/eslint":"21.3.10","@nx/eslint-plugin":"21.3.10","@nx/jest":"21.3.10","@nx/js":"21.3.10","@nx/node":"21.3.10","@nx/webpack":"21.3.10","@nxrocks/nx-flutter":"^10.0.1","@schematics/angular":"20.1.4","@semantic-release/changelog":"^6.0.3","@semantic-release/commit-analyzer":"^13.0.1","@semantic-release/git":"^10.0.1","@semantic-release/npm":"^12.0.1","@semantic-release/release-notes-generator":"^14.0.3","@swc-node/register":"1.10.10","@swc/cli":"^0.7.8","@swc/core":"1.13.3","@swc/helpers":"0.5.17","@swc/jest":"0.2.39","@tailwindcss/forms":"^0.5.4","@tailwindcss/typography":"^0.5.9","@testcontainers/mysql":"^11.5.1","@testcontainers/redis":"^11.5.1","@types/busboy":"^1.5.0","@types/cron":"^2.0.1","@types/estree":"1.0.1","@types/google-libphonenumber":"^7.4.30","@types/jest":"^29.5.0","@types/multer":"^1.4.12","@types/node":"^24.0.10","@types/passport-jwt":"^4.0.1","@types/paypal__checkout-server-sdk":"^1.0.5","@types/pdfkit":"^0.17.0","@types/proper-url-join":"^2.1.5","@types/supertest":"^6.0.3","conventional-changelog-conventionalcommits":"^9.0.0","eslint":"^9.28.0","eslint-config-prettier":"10.1.5","eslint-plugin-unused-imports":"^4.1.4","jest":"^29.7.0","jest-environment-jsdom":"^29.7.0","jest-util":"^29.7.0","jsonc-eslint-parser":"^2.1.0","ng-packagr":"20.1.0","nx":"21.3.10","postcss":"^8.4.27","postcss-import":"15.1.0","postcss-preset-env":"9.1.0","postcss-url":"10.1.3","prettier":"^3.5.3","supertest":"^7.1.4","swc-loader":"^0.2.6","tailwindcss":"^3.3.3","testcontainers":"^11.5.1","ts-jest":"29.4.0","ts-node":"10.9.2","tslib":"^2.3.0","typescript":"5.8.3","typescript-eslint":"^8.33.0","webpack-cli":"^5.1.4"},"workspaces":["libs/*","apps/*"],"overrides":{"typescript":"5.8.3","eslint":"^9.28.0","rxjs":"7.8.2","typeorm":{"redis":"^5.8.2"}},"repository":{"type":"git","url":"https://github.com/ridyio/ridy-monorepo.git"},"publishConfig":{"access":"restricted"},"allowScripts":{"cpu-features@0.0.10":true,"core-js@3.43.0":true,"lmdb@3.4.1":true,"msgpackr-extract@3.0.3":true,"nx@21.3.10":true,"protobufjs@7.5.3":true,"sharp@0.34.3":true,"ssh2@1.16.0":true,"unrs-resolver@1.11.1":true,"@apollo/protobufjs@1.2.7":true,"@firebase/util@1.12.1":true,"@nestjs/core@11.1.5":true,"@parcel/watcher@2.6.0":true,"@sentry/cli@2.50.2":true,"@sentry-internal/node-cpu-profiler@2.2.0":true,"@swc/core@1.13.3":true,"fsevents@2.3.3":true,"esbuild@0.25.5":true}}');
 
 /***/ }),
 /* 86 */
@@ -50870,7 +51044,10 @@ WalletModule = _ts_decorate._([
             _typeorm.TypeOrmModule.forFeature([
                 _database.TaxiOrderEntity,
                 _database.DriverEntity,
-                _database.SavedPaymentMethodEntity
+                _database.SavedPaymentMethodEntity,
+                _database.DriverWalletEntity,
+                _database.DriverTransactionEntity,
+                _database.PayoutAccountEntity
             ]),
             _database.CommonCouponModule,
             _axios.HttpModule,
@@ -50935,7 +51112,9 @@ WalletModule = _ts_decorate._([
             _walletresolver.WalletResolver,
             _earningsservice.EarningsService,
             _database.CryptoService,
-            _walletservice.WalletService
+            _walletservice.WalletService,
+            _database.RazorpayService,
+            _database.SharedDriverService
         ],
         exports: [
             _walletservice.WalletService
@@ -51355,8 +51534,9 @@ const _setup_payment_methoddto = __webpack_require__(108);
 const _rxjs = __webpack_require__(21);
 const _axios = __webpack_require__(18);
 const _walletservice = __webpack_require__(109);
+const _razorpayorderdto = __webpack_require__(110);
 let WalletResolver = class WalletResolver {
-    constructor(gatewayRepo, driverRepo, context, earningsService, commonGiftCardService, httpService, cryptoService, walletService){
+    constructor(gatewayRepo, driverRepo, context, earningsService, commonGiftCardService, httpService, cryptoService, walletService, razorpayService, sharedDriverService){
         this.gatewayRepo = gatewayRepo;
         this.driverRepo = driverRepo;
         this.context = context;
@@ -51365,6 +51545,8 @@ let WalletResolver = class WalletResolver {
         this.httpService = httpService;
         this.cryptoService = cryptoService;
         this.walletService = walletService;
+        this.razorpayService = razorpayService;
+        this.sharedDriverService = sharedDriverService;
     }
     async topUpWallet(input) {
         const gateway = await this.gatewayRepo.findOneByOrFail({
@@ -51375,6 +51557,36 @@ let WalletResolver = class WalletResolver {
             status: _topupwalletinput.TopUpWalletStatus.Redirect,
             url: `${process.env.GATEWAY_SERVER_URL}/pay?${params}`
         };
+    }
+    async createRazorpayTopUpOrder(amount) {
+        const order = await this.razorpayService.createOrder(amount, 'INR', `topup_${this.context.req.user.id}_${Date.now()}`);
+        return {
+            orderId: order.id,
+            amount: amount,
+            currency: 'INR',
+            keyId: process.env.RAZORPAY_KEY_ID
+        };
+    }
+    async verifyRazorpayTopUp(razorpayOrderId, razorpayPaymentId, razorpaySignature, amount) {
+        const isValid = this.razorpayService.verifySignature(razorpayOrderId, razorpayPaymentId, razorpaySignature);
+        if (!isValid) {
+            throw new Error('INVALID_PAYMENT_SIGNATURE');
+        }
+        await this.sharedDriverService.rechargeWallet({
+            status: _database.TransactionStatus.Done,
+            driverId: this.context.req.user.id,
+            currency: 'INR',
+            action: _database.TransactionAction.Recharge,
+            rechargeType: _database.DriverRechargeTransactionType.InAppPayment,
+            amount: amount,
+            requestId: null,
+            operatorId: null,
+            paymentGatewayId: null,
+            refrenceNumber: razorpayPaymentId,
+            description: 'Razorpay wallet top-up',
+            giftCardId: null
+        });
+        return true;
     }
     async getStats(timeFrame) {
         return this.earningsService.getStats(this.context.req.user.id, timeFrame);
@@ -51453,6 +51665,40 @@ _ts_decorate._([
     ]),
     _ts_metadata._("design:returntype", Promise)
 ], WalletResolver.prototype, "topUpWallet", null);
+_ts_decorate._([
+    (0, _graphql.Mutation)(()=>_razorpayorderdto.RazorpayOrderDTO),
+    _ts_param._(0, (0, _graphql.Args)('amount', {
+        type: ()=>Number
+    })),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        Number
+    ]),
+    _ts_metadata._("design:returntype", Promise)
+], WalletResolver.prototype, "createRazorpayTopUpOrder", null);
+_ts_decorate._([
+    (0, _graphql.Mutation)(()=>Boolean),
+    _ts_param._(0, (0, _graphql.Args)('razorpayOrderId', {
+        type: ()=>String
+    })),
+    _ts_param._(1, (0, _graphql.Args)('razorpayPaymentId', {
+        type: ()=>String
+    })),
+    _ts_param._(2, (0, _graphql.Args)('razorpaySignature', {
+        type: ()=>String
+    })),
+    _ts_param._(3, (0, _graphql.Args)('amount', {
+        type: ()=>Number
+    })),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        String,
+        String,
+        String,
+        Number
+    ]),
+    _ts_metadata._("design:returntype", Promise)
+], WalletResolver.prototype, "verifyRazorpayTopUp", null);
 _ts_decorate._([
     (0, _graphql.Query)(()=>_earningsdto.StatisticsResult),
     _ts_param._(0, (0, _graphql.Args)('timeframe', {
@@ -51552,7 +51798,9 @@ WalletResolver = _ts_decorate._([
         typeof _database.CommonGiftCardService === "undefined" ? Object : _database.CommonGiftCardService,
         typeof _axios.HttpService === "undefined" ? Object : _axios.HttpService,
         typeof _database.CryptoService === "undefined" ? Object : _database.CryptoService,
-        typeof _walletservice.WalletService === "undefined" ? Object : _walletservice.WalletService
+        typeof _walletservice.WalletService === "undefined" ? Object : _walletservice.WalletService,
+        typeof _database.RazorpayService === "undefined" ? Object : _database.RazorpayService,
+        typeof _database.SharedDriverService === "undefined" ? Object : _database.SharedDriverService
     ])
 ], WalletResolver);
 
@@ -51734,6 +51982,46 @@ WalletService = _ts_decorate._([
 Object.defineProperty(exports, "__esModule", ({
     value: true
 }));
+Object.defineProperty(exports, "RazorpayOrderDTO", ({
+    enumerable: true,
+    get: function() {
+        return RazorpayOrderDTO;
+    }
+}));
+const _ts_decorate = __webpack_require__(6);
+const _ts_metadata = __webpack_require__(7);
+const _graphql = __webpack_require__(9);
+let RazorpayOrderDTO = class RazorpayOrderDTO {
+};
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.ID),
+    _ts_metadata._("design:type", String)
+], RazorpayOrderDTO.prototype, "orderId", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float),
+    _ts_metadata._("design:type", Number)
+], RazorpayOrderDTO.prototype, "amount", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String),
+    _ts_metadata._("design:type", String)
+], RazorpayOrderDTO.prototype, "currency", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String),
+    _ts_metadata._("design:type", String)
+], RazorpayOrderDTO.prototype, "keyId", void 0);
+RazorpayOrderDTO = _ts_decorate._([
+    (0, _graphql.ObjectType)()
+], RazorpayOrderDTO);
+
+
+/***/ }),
+/* 111 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({
+    value: true
+}));
 Object.defineProperty(exports, "SOSModule", ({
     enumerable: true,
     get: function() {
@@ -51744,8 +52032,8 @@ const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
-const _sosresolver = __webpack_require__(111);
-const _sosservice = __webpack_require__(113);
+const _sosresolver = __webpack_require__(112);
+const _sosservice = __webpack_require__(114);
 let SOSModule = class SOSModule {
 };
 SOSModule = _ts_decorate._([
@@ -51765,7 +52053,7 @@ SOSModule = _ts_decorate._([
 
 
 /***/ }),
-/* 111 */
+/* 112 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51785,8 +52073,8 @@ const _common = __webpack_require__(2);
 const _graphql = __webpack_require__(9);
 const _database = __webpack_require__(12);
 const _jwtgqlauthguard = __webpack_require__(43);
-const _sosdto = __webpack_require__(112);
-const _sosservice = __webpack_require__(113);
+const _sosdto = __webpack_require__(113);
+const _sosservice = __webpack_require__(114);
 let SOSResolver = class SOSResolver {
     constructor(sosService){
         this.sosService = sosService;
@@ -51825,7 +52113,7 @@ SOSResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 112 */
+/* 113 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51854,7 +52142,7 @@ SOSDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 113 */
+/* 114 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51925,13 +52213,13 @@ SOSService = _ts_decorate._([
 
 
 /***/ }),
-/* 114 */
+/* 115 */
 /***/ ((module) => {
 
 module.exports = require("@willsoto/nestjs-prometheus");
 
 /***/ }),
-/* 115 */
+/* 116 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51946,8 +52234,8 @@ Object.defineProperty(exports, "NotificationModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _notificationservice = __webpack_require__(116);
-const _notificationresolver = __webpack_require__(117);
+const _notificationservice = __webpack_require__(117);
+const _notificationresolver = __webpack_require__(118);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 let NotificationModule = class NotificationModule {
@@ -51970,7 +52258,7 @@ NotificationModule = _ts_decorate._([
 
 
 /***/ }),
-/* 116 */
+/* 117 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52023,7 +52311,7 @@ NotificationService = _ts_decorate._([
 
 
 /***/ }),
-/* 117 */
+/* 118 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52041,7 +52329,7 @@ const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(29);
 const _common = __webpack_require__(2);
 const _graphql = __webpack_require__(9);
-const _notificationservice = __webpack_require__(116);
+const _notificationservice = __webpack_require__(117);
 const _authenticateduser = __webpack_require__(44);
 const _jwtgqlauthguard = __webpack_require__(43);
 let NotificationResolver = class NotificationResolver {
@@ -52079,7 +52367,7 @@ NotificationResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 118 */
+/* 119 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52095,8 +52383,8 @@ Object.defineProperty(exports, "EphemeralMessagesModule", ({
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
-const _ephemeralmessagesservice = __webpack_require__(119);
-const _ephemeralmessagesresolver = __webpack_require__(120);
+const _ephemeralmessagesservice = __webpack_require__(120);
+const _ephemeralmessagesresolver = __webpack_require__(121);
 const _ordermodule = __webpack_require__(50);
 let EphemeralMessagesModule = class EphemeralMessagesModule {
 };
@@ -52115,7 +52403,7 @@ EphemeralMessagesModule = _ts_decorate._([
 
 
 /***/ }),
-/* 119 */
+/* 120 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52169,7 +52457,7 @@ EphemeralMessagesService = _ts_decorate._([
 
 
 /***/ }),
-/* 120 */
+/* 121 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52186,8 +52474,8 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(29);
 const _graphql = __webpack_require__(9);
-const _ephemeralmessagesservice = __webpack_require__(119);
-const _ephemeralmessagedto = __webpack_require__(121);
+const _ephemeralmessagesservice = __webpack_require__(120);
+const _ephemeralmessagedto = __webpack_require__(122);
 const _common = __webpack_require__(2);
 const _authenticateduser = __webpack_require__(44);
 const _jwtgqlauthguard = __webpack_require__(43);
@@ -52235,7 +52523,7 @@ EphemeralMessagesResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 121 */
+/* 122 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52313,7 +52601,7 @@ EphemeralMessageDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 122 */
+/* 123 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52328,8 +52616,8 @@ Object.defineProperty(exports, "SupportModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _supportservice = __webpack_require__(123);
-const _supportresolver = __webpack_require__(124);
+const _supportservice = __webpack_require__(124);
+const _supportresolver = __webpack_require__(125);
 let SupportModule = class SupportModule {
 };
 SupportModule = _ts_decorate._([
@@ -52346,7 +52634,7 @@ SupportModule = _ts_decorate._([
 
 
 /***/ }),
-/* 123 */
+/* 124 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52378,7 +52666,7 @@ SupportService = _ts_decorate._([
 
 
 /***/ }),
-/* 124 */
+/* 125 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52398,7 +52686,7 @@ const _graphql = __webpack_require__(9);
 const _common = __webpack_require__(2);
 const _jwtgqlauthguard = __webpack_require__(43);
 const _authenticateduser = __webpack_require__(44);
-const _supportservice = __webpack_require__(123);
+const _supportservice = __webpack_require__(124);
 let SupportResolver = class SupportResolver {
     constructor(context, supportService){
         this.context = context;
@@ -52430,13 +52718,13 @@ SupportResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 125 */
+/* 126 */
 /***/ ((module) => {
 
 module.exports = require("firebase-admin/app");
 
 /***/ }),
-/* 126 */
+/* 127 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 // Import with `const Sentry = require("@sentry/nestjs");` if you are using CJS
@@ -52447,9 +52735,9 @@ Object.defineProperty(exports, "__esModule", ({
 const _interop_require_wildcard = __webpack_require__(1);
 const _apollo = __webpack_require__(17);
 const _common = __webpack_require__(2);
-const _nestjs = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(127));
-const _profilingnode = __webpack_require__(128);
-const _dotenv = __webpack_require__(129);
+const _nestjs = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(128));
+const _profilingnode = __webpack_require__(129);
+const _dotenv = __webpack_require__(130);
 (0, _dotenv.config)({
     path: __dirname + '/.env'
 });
@@ -52474,19 +52762,19 @@ _nestjs.init({
 
 
 /***/ }),
-/* 127 */
+/* 128 */
 /***/ ((module) => {
 
 module.exports = require("@sentry/nestjs");
 
 /***/ }),
-/* 128 */
+/* 129 */
 /***/ ((module) => {
 
 module.exports = require("@sentry/profiling-node");
 
 /***/ }),
-/* 129 */
+/* 130 */
 /***/ ((module) => {
 
 module.exports = require("dotenv");
@@ -52573,10 +52861,10 @@ const _common = __webpack_require__(2);
 const _core = __webpack_require__(3);
 const _express = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(4));
 const _driverapimodule = __webpack_require__(5);
-const _app = __webpack_require__(125);
+const _app = __webpack_require__(126);
 const _firebaseadmin = __webpack_require__(22);
 const _database = __webpack_require__(12);
-__webpack_require__(126);
+__webpack_require__(127);
 const _licenseverify = __webpack_require__(15);
 async function bootstrap() {
     await (0, _database.loadSecrets)();

@@ -32,6 +32,14 @@ import { CryptoService } from '@ridy/database';
 import { HttpService } from '@nestjs/axios';
 import { WalletService } from './wallet.service';
 import { DriverEntity } from '@ridy/database';
+import { RazorpayService } from '@ridy/database';
+import { SharedDriverService } from '@ridy/database';
+import { RazorpayOrderDTO } from './dto/razorpay-order.dto';
+import {
+  DriverRechargeTransactionType,
+  TransactionAction,
+  TransactionStatus,
+} from '@ridy/database';
 
 @UseGuards(GqlAuthGuard)
 @Resolver()
@@ -47,6 +55,8 @@ export class WalletResolver {
     private httpService: HttpService,
     private cryptoService: CryptoService,
     private walletService: WalletService,
+    private razorpayService: RazorpayService,
+    private sharedDriverService: SharedDriverService,
   ) {}
 
   @Mutation(() => TopUpWalletResponse)
@@ -61,6 +71,55 @@ export class WalletResolver {
       status: TopUpWalletStatus.Redirect,
       url: `${process.env.GATEWAY_SERVER_URL}/pay?${params}`,
     };
+  }
+
+  @Mutation(() => RazorpayOrderDTO)
+  async createRazorpayTopUpOrder(
+    @Args('amount', { type: () => Number }) amount: number,
+  ): Promise<RazorpayOrderDTO> {
+    const order = await this.razorpayService.createOrder(
+      amount,
+      'INR',
+      `topup_${this.context.req.user.id}_${Date.now()}`,
+    );
+    return {
+      orderId: order.id,
+      amount: amount,
+      currency: 'INR',
+      keyId: process.env.RAZORPAY_KEY_ID!,
+    };
+  }
+
+  @Mutation(() => Boolean)
+  async verifyRazorpayTopUp(
+    @Args('razorpayOrderId', { type: () => String }) razorpayOrderId: string,
+    @Args('razorpayPaymentId', { type: () => String }) razorpayPaymentId: string,
+    @Args('razorpaySignature', { type: () => String }) razorpaySignature: string,
+    @Args('amount', { type: () => Number }) amount: number,
+  ): Promise<boolean> {
+    const isValid = this.razorpayService.verifySignature(
+      razorpayOrderId,
+      razorpayPaymentId,
+      razorpaySignature,
+    );
+    if (!isValid) {
+      throw new Error('INVALID_PAYMENT_SIGNATURE');
+    }
+    await this.sharedDriverService.rechargeWallet({
+      status: TransactionStatus.Done,
+      driverId: this.context.req.user.id,
+      currency: 'INR',
+      action: TransactionAction.Recharge,
+      rechargeType: DriverRechargeTransactionType.InAppPayment,
+      amount: amount,
+      requestId: null,
+      operatorId: null,
+      paymentGatewayId: null,
+      refrenceNumber: razorpayPaymentId,
+      description: 'Razorpay wallet top-up',
+      giftCardId: null,
+    });
+    return true;
   }
 
   @Query(() => StatisticsResult)

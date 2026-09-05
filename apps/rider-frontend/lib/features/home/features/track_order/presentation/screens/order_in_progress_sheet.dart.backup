@@ -28,12 +28,8 @@ class OrderInProgressSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pickup = order.waypoints.toPlaces.firstOrNull;
-    final dropoff = order.waypoints.toPlaces.length > 1
-        ? order.waypoints.toPlaces.last
-        : null;
-    final driverName = (order.driver?.fullName?.isNotEmpty ?? false)
-        ? order.driver!.fullName!
-        : 'Driver';
+    final dropoff = order.waypoints.toPlaces.length > 1 ? order.waypoints.toPlaces.last : null;
+    final driverName = (order.driver?.fullName?.isNotEmpty ?? false) ? order.driver!.fullName! : 'Driver';
     final isArriving = order.status.toEntity == OrderStatus.arrived;
     final hasArrived = order.status.toEntity == OrderStatus.arrived;
     final isStarted = order.status.toEntity == OrderStatus.started;
@@ -51,8 +47,7 @@ class OrderInProgressSheet extends StatelessWidget {
         children: [
           context.responsive(const NoticeBar(), xl: const SizedBox()),
           AppCardSheet(
-            child: SingleChildScrollView(
-              child: Column(
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 const CardHandle(),
@@ -72,7 +67,7 @@ class OrderInProgressSheet extends StatelessWidget {
                 ),
 
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 2, 16, 6),
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,17 +83,11 @@ class OrderInProgressSheet extends StatelessWidget {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: Colors.white,
-                              border: Border.all(
-                                color: ColorPalette.primary40,
-                                width: 2,
-                              ),
+                              border: Border.all(color: ColorPalette.primary40, width: 2),
                             ),
                             child: Text(
                               driverName[0].toUpperCase(),
-                              style: context.titleMedium?.copyWith(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: context.titleMedium?.copyWith(color: Colors.black, fontWeight: FontWeight.bold),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -108,34 +97,21 @@ class OrderInProgressSheet extends StatelessWidget {
                               children: [
                                 Text(
                                   driverName,
-                                  style: context.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  style: context.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 3),
                                 Row(
                                   children: [
-                                    const Icon(
-                                      Icons.star,
-                                      color: Colors.amber,
-                                      size: 14,
-                                    ),
+                                    const Icon(Icons.star, color: Colors.amber, size: 14),
                                     const SizedBox(width: 3),
                                     Text(
-                                      order.driver?.rating?.toStringAsFixed(
-                                            1,
-                                          ) ??
-                                          '-',
-                                      style: context.bodySmall?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                      order.driver?.rating?.toStringAsFixed(1) ?? '-',
+                                      style: context.bodySmall?.copyWith(fontWeight: FontWeight.w600),
                                     ),
                                     Text(
                                       '  •  ${order.serviceName}',
-                                      style: context.bodySmall?.copyWith(
-                                        color: ColorPalette.neutralVariant50,
-                                      ),
+                                      style: context.bodySmall?.copyWith(color: ColorPalette.neutralVariant50),
                                     ),
                                   ],
                                 ),
@@ -148,11 +124,7 @@ class OrderInProgressSheet extends StatelessWidget {
                             child: _CircleIconButton(
                               icon: Ionicons.chatbubble,
                               onPressed: () {
-                                locator<HomeBloc>().add(
-                                  HomeEvent.changeTrackOrderPage(
-                                    page: TrackOrderPage.chat,
-                                  ),
-                                );
+                                locator<HomeBloc>().add(HomeEvent.changeTrackOrderPage(page: TrackOrderPage.chat));
                               },
                             ),
                           ),
@@ -163,9 +135,7 @@ class OrderInProgressSheet extends StatelessWidget {
                             onPressed: () async {
                               await locator<GraphqlDatasource>().mutate(
                                 Options$Mutation$initiateCall(
-                                  variables: Variables$Mutation$initiateCall(
-                                    orderId: order.id,
-                                  ),
+                                  variables: Variables$Mutation$initiateCall(orderId: order.id),
                                 ),
                               );
                             },
@@ -173,24 +143,16 @@ class OrderInProgressSheet extends StatelessWidget {
                         ],
                       ),
 
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 10),
 
                       if (hasArrived || isStarted) ...[
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                           decoration: BoxDecoration(
-                            color: ColorPalette.primary40.withValues(
-                              alpha: 0.08,
-                            ),
+                            color: ColorPalette.primary40.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: ColorPalette.primary40,
-                              width: 1,
-                            ),
+                            border: Border.all(color: ColorPalette.primary40, width: 1),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -200,9 +162,7 @@ class OrderInProgressSheet extends StatelessWidget {
                                 children: [
                                   Text(
                                     'Share this OTP with your driver',
-                                    style: context.bodySmall?.copyWith(
-                                      color: ColorPalette.neutralVariant50,
-                                    ),
+                                    style: context.bodySmall?.copyWith(color: ColorPalette.neutralVariant50),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
@@ -215,15 +175,11 @@ class OrderInProgressSheet extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                              Icon(
-                                Ionicons.keypad,
-                                color: ColorPalette.primary40,
-                                size: 28,
-                              ),
+                              Icon(Ionicons.keypad, color: ColorPalette.primary40, size: 28),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 10),
                       ],
 
                       // Vehicle card
@@ -231,137 +187,106 @@ class OrderInProgressSheet extends StatelessWidget {
                           (order.driver?.vehicleColor != null) ||
                           (order.driver?.vehiclePlate != null)) ...[
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: ColorPalette.neutralVariant99,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: ColorPalette.neutralVariant99,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                [order.driver?.vehicleName, order.driver?.vehicleColor].nonNulls.join(' - '),
+                                style: context.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (order.driver?.vehiclePlate != null)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.shade100,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
                                 child: Text(
-                                  [
-                                    order.driver?.vehicleName,
-                                    order.driver?.vehicleColor,
-                                  ].nonNulls.join(' - '),
-                                  style: context.bodySmall?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
+                                  order.driver!.vehiclePlate!,
+                                  style: TextStyle(fontSize: 11, color: Colors.green.shade800, fontWeight: FontWeight.bold),
                                 ),
                               ),
-                              if (order.driver?.vehiclePlate != null)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.green.shade100,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    order.driver!.vehiclePlate!,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.green.shade800,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
+                          ],
                         ),
-                        const SizedBox(height: 4),
+                      ),
+                        const SizedBox(height: 8),
                       ],
 
-                      if (order.status.toEntity !=
-                          OrderStatus.driverAccepted) ...[
-                        // Address card with connector
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: ColorPalette.neutralVariant99,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Column(
+                      if (order.status.toEntity != OrderStatus.driverAccepted) ...[
+                      // Address card with connector
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: ColorPalette.neutralVariant99,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.trip_origin, size: 14, color: ColorPalette.primary40),
+                                Container(
+                                  width: 1.5,
+                                  height: 16,
+                                  margin: const EdgeInsets.symmetric(vertical: 3),
+                                  color: ColorPalette.neutral90,
+                                ),
+                                Icon(Icons.place, size: 14, color: ColorPalette.neutralVariant50),
+                              ],
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
                                 mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(
-                                    Icons.trip_origin,
-                                    size: 14,
-                                    color: ColorPalette.primary40,
+                                  Text(
+                                    pickup?.address ?? '—',
+                                    style: context.bodySmall,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  Container(
-                                    width: 1.5,
-                                    height: 16,
-                                    margin: const EdgeInsets.symmetric(
-                                      vertical: 3,
-                                    ),
-                                    color: ColorPalette.neutral90,
-                                  ),
-                                  Icon(
-                                    Icons.place,
-                                    size: 14,
-                                    color: ColorPalette.neutralVariant50,
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    dropoff?.address ?? '—',
+                                    style: context.bodySmall,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
                               ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      pickup?.address ?? '—',
-                                      style: context.bodySmall,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      dropoff?.address ?? '—',
-                                      style: context.bodySmall,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
+                      ),
+
                       ],
-                      if (order.status.toEntity == OrderStatus.driverAccepted ||
-                          order.status.toEntity ==
-                              OrderStatus.waitingForPrePay) ...[
-                        const SizedBox(height: 4),
-                        WayPointsView(
-                          waypoints: order.waypoints.toPlaces,
+                      if (order.status.toEntity == OrderStatus.driverAccepted || order.status.toEntity == OrderStatus.waitingForPrePay) ...[
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          height: 100,
+                          child: SingleChildScrollView(
+                            child: WayPointsView(waypoints: order.waypoints.toPlaces),
+                          ),
                         ),
                       ],
                     ],
                   ),
                 ),
                 Container(
-                  height: 8,
+                  height: 16,
                   decoration: BoxDecoration(
                     boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.02),
-                        blurRadius: 10,
-                        offset: const Offset(0, -5),
-                      ),
+                      BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, -5)),
                     ],
                     color: ColorPalette.neutralVariant99,
                   ),
@@ -369,26 +294,19 @@ class OrderInProgressSheet extends StatelessWidget {
                 SafeArea(
                   top: false,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (order.status.toEntity !=
-                                OrderStatus.waitingForPrePay &&
-                            order.status.toEntity !=
-                                OrderStatus.waitingForPostPay) ...[
+                        if (order.status.toEntity != OrderStatus.waitingForPrePay && order.status.toEntity != OrderStatus.waitingForPostPay) ...[
                           SizedBox(
                             width: double.infinity,
                             child: OutlinedButton.icon(
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: Colors.green.shade700,
                                 side: BorderSide(color: Colors.green.shade400),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 10,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(28),
-                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
                               ),
                               onPressed: () {
                                 final message = Uri.encodeComponent(
@@ -397,42 +315,29 @@ class OrderInProgressSheet extends StatelessWidget {
                                 launchUrlString('https://wa.me/?text=$message');
                               },
                               icon: const Icon(Icons.ios_share, size: 16),
-                              label: const Text(
-                                'Share via WhatsApp',
-                                style: TextStyle(fontWeight: FontWeight.w600),
-                              ),
+                              label: const Text('Share via WhatsApp', style: TextStyle(fontWeight: FontWeight.w600)),
                             ),
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 10),
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: ColorPalette.error40,
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 10,
-                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
                                 elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(28),
-                                ),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
                               ),
                               onPressed: () {
                                 showDialog(
                                   context: context,
                                   useSafeArea: false,
-                                  builder: (context) =>
-                                      CancelRideReasonDialog(orderId: order.id),
+                                  builder: (context) => CancelRideReasonDialog(orderId: order.id),
                                 );
                               },
                               icon: const Icon(Icons.close, size: 16),
-                              label: Text(
-                                context.translate.cancelRide,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                              label: Text(context.translate.cancelRide, style: const TextStyle(fontWeight: FontWeight.w600)),
                             ),
                           ),
                         ] else ...[
@@ -441,10 +346,7 @@ class OrderInProgressSheet extends StatelessWidget {
                             children: [
                               Text(
                                 order.totalCost.formatCurrency(order.currency),
-                                style: context.titleLarge?.copyWith(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: context.titleLarge?.copyWith(color: Colors.black, fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(width: 16),
                               Expanded(
@@ -452,87 +354,45 @@ class OrderInProgressSheet extends StatelessWidget {
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: ColorPalette.primary40,
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 14,
-                                    ),
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
                                     elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(28),
-                                    ),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
                                   ),
                                   onPressed: () {
-                                    locator<HomeBloc>().add(
-                                      HomeEvent.changeTrackOrderPage(
-                                        page: TrackOrderPage.payment,
-                                      ),
-                                    );
+                                    locator<HomeBloc>().add(HomeEvent.changeTrackOrderPage(page: TrackOrderPage.payment));
                                   },
-                                  child: const Text(
-                                    'Proceed to Payment',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
+                                  child: const Text('Proceed to Payment', style: TextStyle(fontWeight: FontWeight.w600)),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 10),
                           Row(
                             children: [
                               TextButton.icon(
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.zero,
-                                  minimumSize: const Size(0, 0),
-                                ),
+                                style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(0, 0)),
                                 onPressed: () {
                                   showModalBottomSheet(
                                     context: context,
                                     useSafeArea: true,
-                                    builder: (context) => _WaitTimePicker(
-                                      currentWaitTime: order.waitMinutes ?? 0,
-                                    ),
+                                    builder: (context) => _WaitTimePicker(currentWaitTime: order.waitMinutes ?? 0),
                                   );
                                 },
-                                icon: Icon(
-                                  Ionicons.time,
-                                  size: 15,
-                                  color: ColorPalette.error40,
-                                ),
-                                label: Text(
-                                  'Wait time',
-                                  style: context.bodySmall?.copyWith(
-                                    color: ColorPalette.error40,
-                                  ),
-                                ),
+                                icon: Icon(Ionicons.time, size: 15, color: ColorPalette.error40),
+                                label: Text('Wait time', style: context.bodySmall?.copyWith(color: ColorPalette.error40)),
                               ),
                               const Spacer(),
                               TextButton.icon(
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.zero,
-                                  minimumSize: const Size(0, 0),
-                                ),
+                                style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(0, 0)),
                                 onPressed: () {
                                   showDialog(
                                     context: context,
                                     useSafeArea: false,
-                                    builder: (context) =>
-                                        CancelRideReasonDialog(
-                                          orderId: order.id,
-                                        ),
+                                    builder: (context) => CancelRideReasonDialog(orderId: order.id),
                                   );
                                 },
-                                icon: Icon(
-                                  Icons.cancel,
-                                  size: 15,
-                                  color: ColorPalette.error40,
-                                ),
-                                label: Text(
-                                  context.translate.cancelRide,
-                                  style: context.bodySmall?.copyWith(
-                                    color: ColorPalette.error40,
-                                  ),
-                                ),
+                                icon: Icon(Icons.cancel, size: 15, color: ColorPalette.error40),
+                                label: Text(context.translate.cancelRide, style: context.bodySmall?.copyWith(color: ColorPalette.error40)),
                               ),
                             ],
                           ),
@@ -543,12 +403,12 @@ class OrderInProgressSheet extends StatelessWidget {
                 ),
               ],
             ),
-            ),
           ),
         ],
       ),
     );
   }
+
 }
 
 class _CircleIconButton extends StatelessWidget {
@@ -556,11 +416,7 @@ class _CircleIconButton extends StatelessWidget {
   final VoidCallback onPressed;
   final Color? backgroundColor;
 
-  const _CircleIconButton({
-    required this.icon,
-    required this.onPressed,
-    this.backgroundColor,
-  });
+  const _CircleIconButton({required this.icon, required this.onPressed, this.backgroundColor});
 
   @override
   Widget build(BuildContext context) {
@@ -575,13 +431,7 @@ class _CircleIconButton extends StatelessWidget {
           shape: BoxShape.circle,
           color: backgroundColor ?? ColorPalette.neutralVariant95,
         ),
-        child: Icon(
-          icon,
-          size: 17,
-          color: backgroundColor != null
-              ? Colors.white
-              : ColorPalette.primary40,
-        ),
+        child: Icon(icon, size: 17, color: backgroundColor != null ? Colors.white : ColorPalette.primary40),
       ),
     );
   }
@@ -617,10 +467,7 @@ class _WaitTimePickerState extends State<_WaitTimePicker> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              context.translate.waitTime,
-              style: context.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
+            Text(context.translate.waitTime, style: context.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             ...options.entries.map(
               (e) => RadioListTile<int>(

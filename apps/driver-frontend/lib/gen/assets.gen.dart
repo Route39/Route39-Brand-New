@@ -2083,6 +2083,9 @@ class $AssetsImagesGen {
   /// File path: assets/images/drawer-top-background.png
   AssetGenImage get drawerTopBackground =>
       const AssetGenImage('assets/images/drawer-top-background.png');
+      /// File path: assets/images/ev_auto_icon.png
+  AssetGenImage get evAutoIcon =>
+      const AssetGenImage('assets/images/ev_auto_icon.png');
 
   /// File path: assets/images/ev_auto_icon.png
   AssetGenImage get evAutoIcon =>
@@ -2203,6 +2206,7 @@ class $AssetsImagesGen {
     cardBackground4,
     cardHexagon,
     drawerTopBackground,
+    evAutoIcon,
     evAutoIcon,
     googlemapPreview,
     gradientTotal,
