@@ -63,9 +63,9 @@ class _NavigationScreenDesktopState extends State<NavigationScreenDesktop> {
                       child: Row(
                         children: [
                           Image.asset(
-                            dotenv.maybeGet('HEADER_LOGO') ?? Assets.images.logoHeader.path,
+                            'assets/images/route39_logo.png',
                             filterQuality: FilterQuality.high,
-                            height: 40,
+                            height: 32,
                           ),
                           const Spacer(),
                           OverlayPortal(

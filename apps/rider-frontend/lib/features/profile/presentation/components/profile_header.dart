@@ -1,8 +1,6 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:better_localization/country_code/phone_number.extensions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:ridy/core/extensions/extensions.dart';
-import 'package:flutter_common/core/presentation/buttons/app_back_button.dart';
 import 'package:ridy/core/graphql/documents/profile.graphql.dart';
 import 'package:ridy/core/graphql/fragments/profile.extensions.dart';
 import 'package:ridy/core/graphql/fragments/profile.fragment.graphql.dart';
@@ -35,10 +33,7 @@ class ProfileHeader extends StatelessWidget {
             child: Column(
               children: [
                 context.responsive(
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: AppBackButton(onPressed: () => context.router.maybePop()),
-                  ),
+                  const SizedBox(height: 8),
                   xl: const SizedBox(height: 36),
                 ),
                 UserInfoHero(

@@ -39,4 +39,7 @@ export class EphemeralMessageDTO {
 
   @Field(() => String, { nullable: true })
   serviceImageUrl!: string | null;
+
+  @Field(() => Number, { nullable: true })
+  amount!: number | null;
 }

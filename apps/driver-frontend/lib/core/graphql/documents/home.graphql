@@ -27,6 +27,10 @@ query ActiveOrders {
   }
 }
 
+query DevGetPickupOtp($orderId: ID!) {
+  devGetPickupOtp(orderId: $orderId)
+}
+
 mutation UpdateDriverLocation($point: PointInput!) {
   updateDriverLocation(point: $point)
 }
@@ -43,6 +47,12 @@ mutation arrivedToPickup($id: ID!) {
 }
 mutation initiateRide($id: ID!) {
   initiateRide(orderId: $id) {
+    ...UpdateStatus
+  }
+}
+
+mutation verifyPickupOtp($id: ID!, $otp: String!) {
+  verifyPickupOtp(orderId: $id, otp: $otp) {
     ...UpdateStatus
   }
 }

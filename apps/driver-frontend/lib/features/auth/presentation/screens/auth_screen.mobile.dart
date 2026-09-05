@@ -53,7 +53,10 @@ class AuthScreenMobile extends StatelessWidget {
             ),
           ),
           BlocBuilder<LoginBloc, LoginState>(
-            buildWhen: (currentState, nextState) => currentState.loginPage != nextState.loginPage,
+            buildWhen: (currentState, nextState) =>
+                currentState.loginPage != nextState.loginPage ||
+                currentState.otp != nextState.otp ||
+                currentState.enterOtpResponse != nextState.enterOtpResponse,
             builder: (context, state) {
               return Column(
                 children: [

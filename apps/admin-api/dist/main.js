@@ -17129,6 +17129,25 @@ taxi_order_entity_ts_decorate([
     taxi_order_entity_ts_metadata("design:type", Number)
 ], TaxiOrderEntity.prototype, "destinationArrivedTo", void 0);
 taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true,
+        length: 4
+    }),
+    taxi_order_entity_ts_metadata("design:type", String)
+], TaxiOrderEntity.prototype, "pickupOtp", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", typeof Date === "undefined" ? Object : Date)
+], TaxiOrderEntity.prototype, "pickupOtpVerifiedAt", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", Number)
+], TaxiOrderEntity.prototype, "waitSeconds", void 0);
+taxi_order_entity_ts_decorate([
     (0,external_typeorm_.ManyToOne)(function() {
         return RegionEntity;
     }, function(region) {
@@ -17213,8 +17232,6 @@ taxi_order_entity_ts_decorate([
         return DriverEntity;
     }, function(driver) {
         return driver.orders;
-    }, {
-        eager: true
     }),
     taxi_order_entity_ts_metadata("design:type", typeof DriverEntity === "undefined" ? Object : DriverEntity)
 ], TaxiOrderEntity.prototype, "driver", void 0);
@@ -19862,6 +19879,7 @@ function common_coupon_service_ts_param(paramIndex, decorator) {
 
 
 
+
 var CommonCouponService = /*#__PURE__*/ function() {
     "use strict";
     function CommonCouponService(couponRepo, campaignCodeRepo, requestRepo) {
@@ -19966,7 +19984,7 @@ var CommonCouponService = /*#__PURE__*/ function() {
     };
     _proto.checkCoupon = function checkCoupon(code, riderId) {
         return common_coupon_service_async_to_generator(function() {
-            var coupon, requestsWithCoupon, timesCouponUsed;
+            var coupon, requestsWithCoupon, completedRidesCount, timesCouponUsed;
             return common_coupon_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -19989,7 +20007,7 @@ var CommonCouponService = /*#__PURE__*/ function() {
                         }
                         if (!(riderId != null)) return [
                             3,
-                            3
+                            4
                         ];
                         return [
                             4,
@@ -20005,8 +20023,26 @@ var CommonCouponService = /*#__PURE__*/ function() {
                         if (requestsWithCoupon >= coupon.manyTimesUserCanUse) {
                             throw new apollo_.ForbiddenError('Coupon already used.');
                         }
-                        _state.label = 3;
+                        if (!coupon.isFirstTravelOnly) return [
+                            3,
+                            4
+                        ];
+                        return [
+                            4,
+                            this.requestRepo.count({
+                                where: {
+                                    riderId: riderId,
+                                    status: OrderStatus.Finished
+                                }
+                            })
+                        ];
                     case 3:
+                        completedRidesCount = _state.sent();
+                        if (completedRidesCount > 0) {
+                            throw new apollo_.ForbiddenError('Coupon only valid for first ride.');
+                        }
+                        _state.label = 4;
+                    case 4:
                         if (!coupon.isEnabled) {
                             throw new apollo_.ForbiddenError('Coupon is disabled.');
                         }
@@ -20018,7 +20054,7 @@ var CommonCouponService = /*#__PURE__*/ function() {
                                 }
                             })
                         ];
-                    case 4:
+                    case 5:
                         timesCouponUsed = _state.sent();
                         if (timesCouponUsed >= coupon.manyUsersCanUse) {
                             throw new apollo_.ForbiddenError('Coupon usage limit exceeded.');
@@ -21153,6 +21189,9 @@ var DriverEphemeralMessageType = /*#__PURE__*/ function(DriverEphemeralMessageTy
     DriverEphemeralMessageType["RateRider"] = "RateRider";
     DriverEphemeralMessageType["RiderCanceled"] = "RiderCanceled";
     DriverEphemeralMessageType["AddPayoutMethod"] = "AddPayoutMethod";
+    DriverEphemeralMessageType["RideReceived"] = "RideReceived";
+    DriverEphemeralMessageType["RideCompleted"] = "RideCompleted";
+    DriverEphemeralMessageType["RideCancelled"] = "RideCancelled";
     return DriverEphemeralMessageType;
 }({});
 var DriverEphemeralMessageSnapshot = function DriverEphemeralMessageSnapshot() {
@@ -24565,7 +24604,8 @@ var RideOfferRedisService = /*#__PURE__*/ function() {
                                 driverAvatarUrl: (_input_driverAvatarUrl = input.driverAvatarUrl) != null ? _input_driverAvatarUrl : null,
                                 riderFirstName: (_input_riderFirstName = input.riderFirstName) != null ? _input_riderFirstName : null,
                                 riderAvatarUrl: (_input_riderAvatarUrl = input.riderAvatarUrl) != null ? _input_riderAvatarUrl : null,
-                                driverDirections: input.driverDirections
+                                driverDirections: input.driverDirections,
+                                pickupOtp: input.pickupOtp
                             }))
                         ];
                     case 4:
@@ -24887,7 +24927,7 @@ var AuthRedisService = /*#__PURE__*/ function() {
                         verifyHash = _state.sent();
                         common_.Logger.log(verifyHash, 'verifyHash');
                         if (!verifyHash) throw new apollo_.ForbiddenError('EXPIRED');
-                        if (process.env.DEMO_MODE != null || verifyHash.code == code) {
+                        if (verifyHash.code == code) {
                             return [
                                 2,
                                 verifyHash
@@ -25897,6 +25937,14 @@ rider_active_order_update_payload_ts_decorate([
     }),
     rider_active_order_update_payload_ts_metadata("design:type", typeof WaypointBase === "undefined" ? Object : WaypointBase)
 ], RiderActiveOrderUpdateDTO.prototype, "nextDestination", void 0);
+rider_active_order_update_payload_ts_decorate([
+    (0,graphql_.Field)(function() {
+        return String;
+    }, {
+        nullable: true
+    }),
+    rider_active_order_update_payload_ts_metadata("design:type", String)
+], RiderActiveOrderUpdateDTO.prototype, "pickupOtp", void 0);
 RiderActiveOrderUpdateDTO = rider_active_order_update_payload_ts_decorate([
     (0,graphql_.ObjectType)('RiderActiveOrderUpdate')
 ], RiderActiveOrderUpdateDTO);
@@ -30051,6 +30099,29 @@ var SharedDriverService = /*#__PURE__*/ function() {
             });
         }).call(this);
     };
+    _proto.getWalletBalance = function getWalletBalance(driverId, currency) {
+        return shared_driver_service_async_to_generator(function() {
+            var wallet, _wallet_balance;
+            return shared_driver_service_ts_generator(this, function(_state) {
+                switch(_state.label){
+                    case 0:
+                        return [
+                            4,
+                            this.driverWalletRepo.findOneBy({
+                                driverId: driverId,
+                                currency: currency
+                            })
+                        ];
+                    case 1:
+                        wallet = _state.sent();
+                        return [
+                            2,
+                            (_wallet_balance = wallet == null ? void 0 : wallet.balance) != null ? _wallet_balance : 0
+                        ];
+                }
+            });
+        }).call(this);
+    };
     /**
    * @deprecated Use Redis-based driver service lookup instead for better performance
    */ _proto.getOnlineDriversWithServiceId = function getOnlineDriversWithServiceId() {
@@ -31879,7 +31950,6 @@ function shared_order_service_ts_param(paramIndex, decorator) {
 
 
 
-
 var SharedOrderService = /*#__PURE__*/ function() {
     "use strict";
     function SharedOrderService(orderRepository, activityRepository, regionService, serviceCategoryRepository, serviceOptionRepository, zonePriceRepository, paymentRepository, messageRepository, googleServices, servicesService, riderService, sharedRiderWalletService, driverRedisService, riderRedisService, rideOfferRedisService, activeOrderRedisService, driverService, sharedProviderService, sharedFleetService, commonCouponService, driverNotificationService, riderNotificationService, httpService, dispatchMainQueue, pubsubService, configService) {
@@ -32030,9 +32100,6 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         }, 0);
                         if (totalDistance > 1000000) {
                             throw new apollo_.ForbiddenError('Total distance exceeds 1000 km. Please reduce the distance or split the trip.');
-                        }
-                        if (totalDistance < 100) {
-                            throw new apollo_.ForbiddenError('Total distance is less than 100 m. Try a longer trip.');
                         }
                         zonePricings = [];
                         if (!(input.points.length == 2)) return [
@@ -32772,7 +32839,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
         if (cashAmount === void 0) cashAmount = 0;
         if (deduceFromWallet === void 0) deduceFromWallet = true;
         return shared_order_service_async_to_generator(function() {
-            var _this, order, driver, providerShare, tip, _order_totalPaid, alreadyPaid, remainingDue, commissionAlreadyDeducted, driverWallet, _process_env_DRIVER_MINIMUM_ALLOWED_BALANCE, minimumAllowedBalance, fleetShare, fleet, providerCommission, ensurePostPay, _, credit, walletCredit, auth, capture, driverNonCash, _payoutAccount_payoutMethod, orderFeeWallet, payoutAccount, riderDeductAmount;
+            var _this, order, driver, providerShare, tip, _order_totalPaid, alreadyPaid, remainingDue, commissionAlreadyDeducted, driverWallet, fleetShare, fleet, providerCommission, ensurePostPay, _, credit, walletCredit, auth, capture, driverNonCash, _payoutAccount_payoutMethod, orderFeeWallet, payoutAccount, riderDeductAmount, _process_env_DRIVER_MINIMUM_ALLOWED_BALANCE, minimumAllowedBalance, closingBalance;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32815,7 +32882,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         commissionAlreadyDeducted = order.commissionDeducted === true;
                         if (!(!commissionAlreadyDeducted && providerShare > 0)) return [
                             3,
-                            13
+                            10
                         ];
                         common_.Logger.log({
                             providerShare: providerShare,
@@ -32853,42 +32920,28 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         ];
                     case 5:
                         _state.sent();
-                        // Check if driver's balance fell below minimum allowed balance
-                        minimumAllowedBalance = Number((_process_env_DRIVER_MINIMUM_ALLOWED_BALANCE = process.env.DRIVER_MINIMUM_ALLOWED_BALANCE) != null ? _process_env_DRIVER_MINIMUM_ALLOWED_BALANCE : 0);
-                        if (!(driverWallet.balance < minimumAllowedBalance)) return [
-                            3,
-                            8
-                        ];
-                        common_.Logger.warn("Driver " + order.driverId + " balance (" + driverWallet.balance + ") is below minimum allowed (" + minimumAllowedBalance + "). Taking driver offline.", 'SharedOrderService.finish.balanceCheck');
-                        // Expire the driver (take them offline)
-                        return [
-                            4,
-                            this.driverRedisService.expire([
-                                parseInt(order.driverId)
-                            ])
-                        ];
-                    case 6:
-                        _state.sent();
-                        return [
-                            4,
-                            this.driverService.updateDriverStatus(parseInt(order.driverId), DriverStatus.Offline)
-                        ];
-                    case 7:
-                        _state.sent();
-                        _state.label = 8;
-                    case 8:
+                        // NOTE: We intentionally do NOT force the driver offline / expire their
+                        // Redis presence here. This branch runs the FIRST time finish() is
+                        // called for a trip — e.g. the instant the driver slides to confirm
+                        // drop-off on a cash ride — which is before the rider's cash has been
+                        // collected and before the order has moved to WaitingForPostPay.
+                        // Expiring the driver here deletes their `driver:{id}` Redis record
+                        // (including activeOrderIds), which orphans the still-open order: the
+                        // driver app can no longer find it on reload, "cash payment received"
+                        // never reappears, and the rider is left waiting forever. The
+                        // low-balance check now runs after the order actually closes, below.
                         // Split commission with fleet/provider
                         fleetShare = 0;
                         if (!driver.fleetId) return [
                             3,
-                            11
+                            8
                         ];
                         common_.Logger.log("Processing fleet commission for fleet " + driver.fleetId, 'SharedOrderService.finish.fleetCommission');
                         return [
                             4,
                             this.sharedFleetService.getFleetById(parseInt(driver.fleetId))
                         ];
-                    case 9:
+                    case 6:
                         fleet = _state.sent();
                         fleetShare = providerShare * fleet.commissionSharePercent / 100 + fleet.commissionShareFlat;
                         common_.Logger.log({
@@ -32898,7 +32951,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         }, 'SharedOrderService.finish.fleetShare');
                         if (!(fleetShare > 0)) return [
                             3,
-                            11
+                            8
                         ];
                         return [
                             4,
@@ -32912,10 +32965,10 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 driverId: parseInt(order.driverId)
                             })
                         ];
-                    case 10:
+                    case 7:
                         _state.sent();
-                        _state.label = 11;
-                    case 11:
+                        _state.label = 8;
+                    case 8:
                         providerCommission = providerShare - fleetShare;
                         common_.Logger.log({
                             providerCommission: providerCommission,
@@ -32932,27 +32985,27 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 amount: providerCommission
                             })
                         ];
-                    case 12:
+                    case 9:
                         _state.sent();
                         return [
                             3,
-                            14
+                            11
                         ];
-                    case 13:
+                    case 10:
                         if (commissionAlreadyDeducted) {
                             common_.Logger.log('Commission already deducted, skipping', 'SharedOrderService.finish.commissionSkipped');
                         }
-                        _state.label = 14;
-                    case 14:
+                        _state.label = 11;
+                    case 11:
                         if (!(cashAmount > 0)) return [
                             3,
-                            16
+                            13
                         ];
                         common_.Logger.log("Applying cash amount: " + cashAmount, 'SharedOrderService.finish.applyCash');
                         remainingDue = Math.max(0, remainingDue - cashAmount);
                         if (!(order.paymentMethod.mode !== PaymentMode.Cash)) return [
                             3,
-                            16
+                            13
                         ];
                         common_.Logger.log("Switching payment mode to Cash from " + order.paymentMethod.mode, 'SharedOrderService.finish.switchToCash');
                         return [
@@ -32963,11 +33016,11 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 }
                             })
                         ];
-                    case 15:
+                    case 12:
                         _state.sent();
                         order.paymentMethod.mode = PaymentMode.Cash;
-                        _state.label = 16;
-                    case 16:
+                        _state.label = 13;
+                    case 13:
                         common_.Logger.log("Remaining due after cash: " + remainingDue, 'SharedOrderService.finish.remainingDueAfterCash');
                         // 3) Try to settle the remainder based on payment mode
                         ensurePostPay = function() {
@@ -32998,56 +33051,56 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             case PaymentMode.Cash:
                                 return [
                                     3,
-                                    17
+                                    14
                                 ];
                             case PaymentMode.Wallet:
                                 return [
                                     3,
-                                    20
+                                    17
                                 ];
                             case PaymentMode.SavedPaymentMethod:
                                 return [
                                     3,
-                                    24
+                                    21
                                 ];
                             case PaymentMode.PaymentGateway:
                                 return [
                                     3,
-                                    32
+                                    29
                                 ];
                         }
                         return [
                             3,
-                            34
+                            31
                         ];
-                    case 17:
+                    case 14:
                         common_.Logger.log('Payment mode: Cash', 'SharedOrderService.finish.cash');
                         if (!(remainingDue > 0)) return [
                             3,
-                            19
+                            16
                         ];
                         common_.Logger.log("Cash insufficient, remaining due: " + remainingDue, 'SharedOrderService.finish.cashInsufficient');
                         return [
                             4,
                             ensurePostPay()
                         ];
-                    case 18:
+                    case 15:
                         return [
                             2,
                             _state.sent()
                         ];
-                    case 19:
+                    case 16:
                         return [
                             3,
-                            34
+                            31
                         ];
-                    case 20:
+                    case 17:
                         common_.Logger.log('Payment mode: Wallet', 'SharedOrderService.finish.wallet');
                         return [
                             4,
                             this.sharedRiderWalletService.getRiderCreditInCurrency(parseInt(order.riderId), order.currency)
                         ];
-                    case 21:
+                    case 18:
                         credit = _state.sent();
                         common_.Logger.log({
                             credit: credit,
@@ -33055,25 +33108,25 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         }, 'SharedOrderService.finish.walletCredit');
                         if (!(credit < remainingDue)) return [
                             3,
-                            23
+                            20
                         ];
                         common_.Logger.log('Wallet credit insufficient', 'SharedOrderService.finish.walletInsufficient');
                         return [
                             4,
                             ensurePostPay()
                         ];
-                    case 22:
+                    case 19:
                         return [
                             2,
                             _state.sent()
                         ];
-                    case 23:
+                    case 20:
                         remainingDue = 0; // Wallet will cover the remainder; deduction happens in settlements below
                         return [
                             3,
-                            34
+                            31
                         ];
-                    case 24:
+                    case 21:
                         common_.Logger.log('Payment mode: SavedPaymentMethod', 'SharedOrderService.finish.savedPaymentMethod');
                         // ✅ FIX: If payment already handled externally, skip payment processing
                         if (!deduceFromWallet) {
@@ -33081,14 +33134,14 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             remainingDue = 0; // Mark as paid
                             return [
                                 3,
-                                34
+                                31
                             ]; // Skip to settlements
                         }
                         return [
                             4,
                             this.sharedRiderWalletService.getRiderCreditInCurrency(parseInt(order.riderId), order.currency)
                         ];
-                    case 25:
+                    case 22:
                         walletCredit = _state.sent();
                         common_.Logger.log({
                             walletCredit: walletCredit,
@@ -33099,7 +33152,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             common_.Logger.log('Wallet covers remaining due', 'SharedOrderService.finish.savedPaymentMethod.walletCovers');
                             return [
                                 3,
-                                34
+                                31
                             ]; // wallet can handle it; we'll deduct later
                         }
                         common_.Logger.log('Attempting to capture authorization', 'SharedOrderService.finish.savedPaymentMethod.captureAuth');
@@ -33118,14 +33171,36 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 take: 1
                             })
                         ];
-                    case 26:
+                    case 23:
                         auth = _state.sent();
                         common_.Logger.log(auth, 'SharedOrderService.finish.savedPaymentMethod.auth');
                         if (!(auth.length === 0)) return [
                             3,
-                            28
+                            25
                         ];
                         common_.Logger.log('No authorized payment found', 'SharedOrderService.finish.savedPaymentMethod.noAuth');
+                        return [
+                            4,
+                            ensurePostPay()
+                        ];
+                    case 24:
+                        return [
+                            2,
+                            _state.sent()
+                        ];
+                    case 25:
+                        return [
+                            4,
+                            (0,external_rxjs_.firstValueFrom)(this.httpService.get(process.env.GATEWAY_SERVER_URL + "/capture?id=" + auth[0].transactionNumber + "&amount=" + remainingDue))
+                        ];
+                    case 26:
+                        capture = _state.sent();
+                        common_.Logger.log(capture.data, 'SharedOrderService.finish.savedPaymentMethod.captureResult');
+                        if (!(capture.data.status !== 'OK')) return [
+                            3,
+                            28
+                        ];
+                        common_.Logger.log('Capture failed', 'SharedOrderService.finish.savedPaymentMethod.captureFailed');
                         return [
                             4,
                             ensurePostPay()
@@ -33136,36 +33211,14 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             _state.sent()
                         ];
                     case 28:
-                        return [
-                            4,
-                            (0,external_rxjs_.firstValueFrom)(this.httpService.get(process.env.GATEWAY_SERVER_URL + "/capture?id=" + auth[0].transactionNumber + "&amount=" + remainingDue))
-                        ];
-                    case 29:
-                        capture = _state.sent();
-                        common_.Logger.log(capture.data, 'SharedOrderService.finish.savedPaymentMethod.captureResult');
-                        if (!(capture.data.status !== 'OK')) return [
-                            3,
-                            31
-                        ];
-                        common_.Logger.log('Capture failed', 'SharedOrderService.finish.savedPaymentMethod.captureFailed');
-                        return [
-                            4,
-                            ensurePostPay()
-                        ];
-                    case 30:
-                        return [
-                            2,
-                            _state.sent()
-                        ];
-                    case 31:
                         // capture succeeded → remaining is now 0
                         common_.Logger.log('Capture succeeded', 'SharedOrderService.finish.savedPaymentMethod.captureSuccess');
                         remainingDue = 0;
                         return [
                             3,
-                            34
+                            31
                         ];
-                    case 32:
+                    case 29:
                         common_.Logger.log('Payment mode: PaymentGateway - requiring post-pay', 'SharedOrderService.finish.paymentGateway');
                         // ✅ FIX: payment already collected by gateway callback; skip post-pay
                         if (!deduceFromWallet) {
@@ -33173,35 +33226,35 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             remainingDue = 0;
                             return [
                                 3,
-                                34
+                                31
                             ];
                         }
                         return [
                             4,
                             ensurePostPay()
                         ];
-                    case 33:
+                    case 30:
                         // Async/off-platform flow; let post-pay handle it
                         return [
                             2,
                             _state.sent()
                         ];
-                    case 34:
+                    case 31:
                         if (!(remainingDue > 0)) return [
                             3,
-                            36
+                            33
                         ];
                         common_.Logger.log("Still unpaid amount: " + remainingDue, 'SharedOrderService.finish.stillUnpaid');
                         return [
                             4,
                             ensurePostPay()
                         ];
-                    case 35:
+                    case 32:
                         return [
                             2,
                             _state.sent()
                         ];
-                    case 36:
+                    case 33:
                         common_.Logger.log('All payments settled, proceeding with wallet settlements', 'SharedOrderService.finish.settleWallets');
                         // 4) Settle wallets & payouts
                         // Note: Commission (4a) and fleet/provider split (4b) already deducted earlier in the function
@@ -33216,7 +33269,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         }, 'SharedOrderService.finish.driverNonCash');
                         if (!(driverNonCash > 0)) return [
                             3,
-                            41
+                            38
                         ];
                         common_.Logger.log("Crediting driver wallet: " + driverNonCash, 'SharedOrderService.finish.creditDriver');
                         return [
@@ -33231,25 +33284,25 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 amount: driverNonCash
                             })
                         ];
-                    case 37:
+                    case 34:
                         orderFeeWallet = _state.sent();
                         // Sync updated balance to Redis so getProfile() returns fresh walletCredit
                         return [
                             4,
                             this.driverRedisService.updateWalletCredit(order.driverId, orderFeeWallet.balance)
                         ];
-                    case 38:
+                    case 35:
                         _state.sent();
                         return [
                             4,
                             this.driverService.getDriverDefaultPayoutAccount(parseInt(order.driverId))
                         ];
-                    case 39:
+                    case 36:
                         payoutAccount = _state.sent();
                         common_.Logger.log(payoutAccount, 'SharedOrderService.finish.payoutAccount');
                         if (!((payoutAccount == null ? void 0 : (_payoutAccount_payoutMethod = payoutAccount.payoutMethod) == null ? void 0 : _payoutAccount_payoutMethod.isInstantPayoutEnabled) && driverNonCash > 0)) return [
                             3,
-                            41
+                            38
                         ];
                         common_.Logger.log("Processing instant payout: " + driverNonCash, 'SharedOrderService.finish.instantPayout');
                         return [
@@ -33264,10 +33317,10 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 payoutAccountId: payoutAccount.id
                             })
                         ];
-                    case 40:
+                    case 37:
                         _state.sent();
-                        _state.label = 41;
-                    case 41:
+                        _state.label = 38;
+                    case 38:
                         // 4d) Deduct rider wallet (if any wallet-covered remainder)
                         // remainingDue was verified 0 above. Wallet deduction amount is the part of that 0 which wallet was supposed to cover:
                         // Compute from inputs to avoid confusion:
@@ -33277,7 +33330,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         riderDeductAmount = order.paymentMethod.mode === PaymentMode.Wallet || order.paymentMethod.mode === PaymentMode.SavedPaymentMethod && deduceFromWallet ? Math.max(0, order.costEstimateForRider + tip - alreadyPaid - cashAmount) : 0;
                         if (!(riderDeductAmount > 0)) return [
                             3,
-                            43
+                            40
                         ];
                         return [
                             4,
@@ -33291,10 +33344,10 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 riderId: parseInt(order.riderId)
                             })
                         ];
-                    case 42:
+                    case 39:
                         _state.sent();
-                        _state.label = 43;
-                    case 43:
+                        _state.label = 40;
+                    case 40:
                         // 5) Close order
                         return [
                             4,
@@ -33305,13 +33358,13 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 finishTimestamp: new Date()
                             })
                         ];
-                    case 44:
+                    case 41:
                         _state.sent();
                         return [
                             4,
                             this.activeOrderRedisService.deleteOrder(order.id)
                         ];
-                    case 45:
+                    case 42:
                         _state.sent();
                         return [
                             4,
@@ -33320,8 +33373,22 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 type: RequestActivityType.Paid
                             })
                         ];
-                    case 46:
+                    case 43:
                         _state.sent();
+                        // Drivers must stay online after completing a ride, regardless of
+                        // wallet balance, until they manually toggle offline or log out.
+                        // We still log a low-balance warning here for ops visibility, but no
+                        // longer force the driver offline or wipe their Redis presence.
+                        minimumAllowedBalance = Number((_process_env_DRIVER_MINIMUM_ALLOWED_BALANCE = process.env.DRIVER_MINIMUM_ALLOWED_BALANCE) != null ? _process_env_DRIVER_MINIMUM_ALLOWED_BALANCE : 0);
+                        return [
+                            4,
+                            this.driverService.getWalletBalance(parseInt(order.driverId), order.currency)
+                        ];
+                    case 44:
+                        closingBalance = _state.sent();
+                        if (closingBalance < minimumAllowedBalance) {
+                            common_.Logger.warn("Driver " + order.driverId + " balance (" + closingBalance + ") is below minimum allowed (" + minimumAllowedBalance + ") after completing order " + order.id + ".", 'SharedOrderService.finish.balanceCheck');
+                        }
                         return [
                             2,
                             null
@@ -33332,7 +33399,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.assignOrderToDriver = function assignOrderToDriver(orderId, driverId) {
         return shared_order_service_async_to_generator(function() {
-            var _driver_fcmTokens, _rider_fcmTokens, _ref, rideOffer, activeOrder, driver, riderId, waypoints, rider, pickupPoint, _ref1, driverTravel, tripTravel, now, etaPickup, etaDropoff, _prevDriver_fcmTokens, prevDriver, prevToken, driverToken, riderToken;
+            var _driver_fcmTokens, _rider_fcmTokens, _ref, rideOffer, activeOrder, driver, riderId, waypoints, rider, pickupPoint, _ref1, driverTravel, tripTravel, now, etaPickup, etaDropoff, _prevDriver_fcmTokens, prevDriver, prevToken, driverToken, riderToken, _rideOffer_pickupOtp;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -33474,7 +33541,8 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             orderId: orderId,
                             status: OrderStatus.DriverAccepted,
                             pickupEta: etaPickup,
-                            riderId: parseInt(rider.id)
+                            riderId: parseInt(rider.id),
+                            pickupOtp: (_rideOffer_pickupOtp = rideOffer == null ? void 0 : rideOffer.pickupOtp) != null ? _rideOffer_pickupOtp : activeOrder == null ? void 0 : activeOrder.pickupOtp
                         });
                         // 5) Persist order record
                         return [
@@ -46162,7 +46230,7 @@ Object.defineProperty(exports, "__esModule", ({
 /* 70 */
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"bettersuite","version":"5.3.2","license":"MIT","scripts":{"ng":"nx","nx":"nx","start":"ts-node src/index.ts","build":"ng build","test":"ng test","lint":"nx workspace-lint && ng lint","e2e":"ng e2e","affected:apps":"nx affected:apps","affected:libs":"nx affected:libs","affected:build":"nx affected:build","affected:e2e":"nx affected:e2e","affected:test":"nx affected:test","affected:lint":"nx affected:lint","affected:dep-graph":"nx affected:dep-graph","affected":"nx affected","format":"nx format:write","format:write":"nx format:write","format:check":"nx format:check","update":"nx migrate latest","workspace-generator":"nx workspace-generator","dep-graph":"nx dep-graph","help":"nx help","lint:fix":"eslint \'./**/*.{ts,tsx}\' --fix","i18n:extract":"ngx-translate-extract --input ./apps/admin-panel/src --output ./apps/admin-panel/src/assets/i18n/{en,es,bn,de,hi,ko,id,ja,pt,ru,ur,zh,fr,ar,hy}.json --clean --format namespaced-json","typeorm":"node --require ts-node/register ./node_modules/typeorm/cli.js","semantic-release":"semantic-release","publish-frontend":"bash scripts/docker-frontend-publish.sh","publish-backend":"bash scripts/docker-backend-publish.sh","inject-google-maps-key":"bash scripts/inject-google-maps-key.sh","client-setup":"bash scripts/client_setup/client-setup.sh","build-apks":"bash scripts/build-apks.sh","smoke-test":"bash scripts/backend-smoke-test.sh","gql-stats":"bash scripts/gql-stats.sh","load-test:seed":"node tools/load-tests/scripts/seed-database.js","load-test:seed:clean":"node tools/load-tests/scripts/seed-database.js --clean","load-test":"bash tools/load-tests/scripts/run-load-test.sh","load-test:rider":"bash tools/load-tests/scripts/run-load-test.sh rider","load-test:driver":"bash tools/load-tests/scripts/run-load-test.sh driver"},"private":true,"dependencies":{"@angular/animations":"20.1.4","@angular/cdk":"20.1.4","@angular/common":"20.1.4","@angular/compiler":"20.1.4","@angular/core":"20.1.4","@angular/forms":"20.1.4","@angular/google-maps":"20.1.4","@angular/platform-browser":"20.1.4","@angular/platform-browser-dynamic":"20.1.4","@angular/router":"20.1.4","@angular/service-worker":"20.1.4","@ant-design/icons-angular":"^20.0.0","@antv/g2":"^4.2.10","@apollo/client":"^3.13.8","@apollo/server":"^4.12.2","@aws-sdk/client-s3":"^3.886.0","@aws-sdk/client-secrets-manager":"^3.974.0","@bull-board/api":"^6.12.0","@bull-board/express":"^6.12.0","@bull-board/nestjs":"^6.12.0","@ctrl/tinycolor":"^4.1.0","@googlemaps/google-maps-services-js":"^3.4.2","@googlemaps/places":"^2.0.1","@googlemaps/routing":"^2.0.1","@ingameltd/payu":"^1.0.5","@nestjs/apollo":"^13.1.0","@nestjs/axios":"^4.0.1","@nestjs/bullmq":"^11.0.3","@nestjs/common":"11.1.5","@nestjs/config":"^4.0.2","@nestjs/core":"11.1.5","@nestjs/graphql":"^13.1.0","@nestjs/jwt":"^11.0.0","@nestjs/passport":"^11.0.5","@nestjs/platform-express":"^11.1.5","@nestjs/schedule":"^6.0.0","@nestjs/serve-static":"^5.0.3","@nestjs/typeorm":"11.0.0","@nestjs/websockets":"^11.1.3","@nx/angular":"21.3.10","@nx/web":"21.3.10","@paypal/checkout-server-sdk":"^1.0.3","@ptc-org/nestjs-query-core":"^9.1.0","@ptc-org/nestjs-query-graphql":"^9.1.0","@ptc-org/nestjs-query-typeorm":"^9.1.0","@redis/client":"^6.2.1","@redis/json":"^6.2.1","@redis/search":"^6.2.1","@sentry/cli":"^2.50.2","@sentry/nestjs":"^10.0.0","@sentry/profiling-node":"10.0.0","@simplewebauthn/server":"^13.0.0","@simplewebauthn/types":"^12.0.0","@willsoto/nestjs-prometheus":"^6.0.2","apollo-angular":"^11.0.0","autoprefixer":"^10.4.21","bullmq":"^5.56.9","class-transformer":"0.5.1","class-validator":"0.14.2","core-js":"^3.42.0","dataloader":"^2.2.3","dotenv":"16.5.0","firebase-admin":"^13.4.0","google-libphonenumber":"^3.2.43","graphql":"^16.11.0","graphql-redis-subscriptions":"^2.7.0","graphql-relay":"^0.10.2","graphql-subscriptions":"^3.0.0","graphql-tools":"^9.0.20","graphql-ws":"^6.0.6","h3-js":"^4.2.1","instamojo-payment-nodejs":"^3.0.0","ioredis":"^5.7.0","json-2-csv":"^4.0.0","jwt-decode":"^4.0.0","license-verify":"0.1.5","mercadopago":"^1.5.17","multer":"^2.0.0","mysql2":"^3.14.3","ng-zorro-antd":"^20.1.0","ngx-timeago":"^3.0.0","node-rsa":"^1.1.1","overshom-wayforpay":"^1.1.0","passport":"^0.7.0","passport-jwt":"^4.0.1","passport-local":"^1.0.0","paystack-node":"^0.3.0","paytmchecksum":"^1.5.1","pdfkit":"^0.17.1","pdfkit-table":"^0.1.99","plivo":"^4.70.0","prom-client":"^15.1.3","proper-url-join":"^2.1.2","razorpay":"^2.9.1","redis":"^6.2.1","reflect-metadata":"^0.2.2","rxjs":"7.8.2","sberbank-acquiring":"^1.2.2","sharp":"^0.34.3","stripe":"^18.4.0","tslib":"^2.6.1","twilio":"^5.6.1","typeorm":"0.3.26","uuid":"^11.1.0","zone.js":"0.15.1"},"devDependencies":{"@angular-devkit/build-angular":"20.1.4","@angular-devkit/core":"20.1.4","@angular-devkit/schematics":"20.1.4","@angular-eslint/eslint-plugin":"20.1.0","@angular-eslint/eslint-plugin-template":"20.1.0","@angular-eslint/template-parser":"20.1.0","@angular/cli":"~20.1.0","@angular/compiler-cli":"20.1.4","@angular/language-service":"20.1.4","@bartholomej/ngx-translate-extract":"^8.0.2","@graphql-codegen/cli":"^5.0.7","@graphql-codegen/introspection":"^4.0.3","@graphql-codegen/typescript":"^4.1.6","@graphql-codegen/typescript-apollo-angular":"^4.0.1","@graphql-codegen/typescript-operations":"^4.6.1","@monodon/rust":"^2.3.0","@nestjs/cli":"^11.0.10","@nestjs/schematics":"11.0.5","@nestjs/testing":"11.1.3","@ngx-translate/core":"^17.0.0","@ngx-translate/http-loader":"^17.0.0","@nx/eslint":"21.3.10","@nx/eslint-plugin":"21.3.10","@nx/jest":"21.3.10","@nx/js":"21.3.10","@nx/node":"21.3.10","@nx/webpack":"21.3.10","@nxrocks/nx-flutter":"^10.0.1","@schematics/angular":"20.1.4","@semantic-release/changelog":"^6.0.3","@semantic-release/commit-analyzer":"^13.0.1","@semantic-release/git":"^10.0.1","@semantic-release/npm":"^12.0.1","@semantic-release/release-notes-generator":"^14.0.3","@swc-node/register":"1.10.10","@swc/cli":"^0.7.8","@swc/core":"1.13.3","@swc/helpers":"0.5.17","@swc/jest":"0.2.39","@tailwindcss/forms":"^0.5.4","@tailwindcss/typography":"^0.5.9","@testcontainers/mysql":"^11.5.1","@testcontainers/redis":"^11.5.1","@types/busboy":"^1.5.0","@types/cron":"^2.0.1","@types/estree":"1.0.1","@types/google-libphonenumber":"^7.4.30","@types/jest":"^29.5.0","@types/multer":"^1.4.12","@types/node":"^24.0.10","@types/passport-jwt":"^4.0.1","@types/paypal__checkout-server-sdk":"^1.0.5","@types/pdfkit":"^0.17.0","@types/proper-url-join":"^2.1.5","@types/supertest":"^6.0.3","conventional-changelog-conventionalcommits":"^9.0.0","eslint":"^9.28.0","eslint-config-prettier":"10.1.5","eslint-plugin-unused-imports":"^4.1.4","jest":"^29.7.0","jest-environment-jsdom":"^29.7.0","jest-util":"^29.7.0","jsonc-eslint-parser":"^2.1.0","ng-packagr":"20.1.0","nx":"21.3.10","postcss":"^8.4.27","postcss-import":"15.1.0","postcss-preset-env":"9.1.0","postcss-url":"10.1.3","prettier":"^3.5.3","supertest":"^7.1.4","swc-loader":"^0.2.6","tailwindcss":"^3.3.3","testcontainers":"^11.5.1","ts-jest":"29.4.0","ts-node":"10.9.2","tslib":"^2.3.0","typescript":"5.8.3","typescript-eslint":"^8.33.0","webpack-cli":"^5.1.4"},"workspaces":["libs/*","apps/*"],"overrides":{"typescript":"5.8.3","eslint":"^9.28.0","rxjs":"7.8.2","typeorm":{"redis":"^5.8.2"}},"repository":{"type":"git","url":"https://github.com/ridyio/ridy-monorepo.git"},"publishConfig":{"access":"restricted"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"bettersuite","version":"5.3.2","license":"MIT","scripts":{"ng":"nx","nx":"nx","start":"ts-node src/index.ts","build":"ng build","test":"ng test","lint":"nx workspace-lint && ng lint","e2e":"ng e2e","affected:apps":"nx affected:apps","affected:libs":"nx affected:libs","affected:build":"nx affected:build","affected:e2e":"nx affected:e2e","affected:test":"nx affected:test","affected:lint":"nx affected:lint","affected:dep-graph":"nx affected:dep-graph","affected":"nx affected","format":"nx format:write","format:write":"nx format:write","format:check":"nx format:check","update":"nx migrate latest","workspace-generator":"nx workspace-generator","dep-graph":"nx dep-graph","help":"nx help","lint:fix":"eslint \'./**/*.{ts,tsx}\' --fix","i18n:extract":"ngx-translate-extract --input ./apps/admin-panel/src --output ./apps/admin-panel/src/assets/i18n/{en,es,bn,de,hi,ko,id,ja,pt,ru,ur,zh,fr,ar,hy}.json --clean --format namespaced-json","typeorm":"node --require ts-node/register ./node_modules/typeorm/cli.js","semantic-release":"semantic-release","publish-frontend":"bash scripts/docker-frontend-publish.sh","publish-backend":"bash scripts/docker-backend-publish.sh","inject-google-maps-key":"bash scripts/inject-google-maps-key.sh","client-setup":"bash scripts/client_setup/client-setup.sh","build-apks":"bash scripts/build-apks.sh","smoke-test":"bash scripts/backend-smoke-test.sh","gql-stats":"bash scripts/gql-stats.sh","load-test:seed":"node tools/load-tests/scripts/seed-database.js","load-test:seed:clean":"node tools/load-tests/scripts/seed-database.js --clean","load-test":"bash tools/load-tests/scripts/run-load-test.sh","load-test:rider":"bash tools/load-tests/scripts/run-load-test.sh rider","load-test:driver":"bash tools/load-tests/scripts/run-load-test.sh driver"},"private":true,"dependencies":{"@angular/animations":"20.1.4","@angular/cdk":"20.1.4","@angular/common":"20.1.4","@angular/compiler":"20.1.4","@angular/core":"20.1.4","@angular/forms":"20.1.4","@angular/google-maps":"20.1.4","@angular/platform-browser":"20.1.4","@angular/platform-browser-dynamic":"20.1.4","@angular/router":"20.1.4","@angular/service-worker":"20.1.4","@ant-design/icons-angular":"^20.0.0","@antv/g2":"^4.2.10","@apollo/client":"^3.13.8","@apollo/server":"^4.12.2","@aws-sdk/client-s3":"^3.886.0","@aws-sdk/client-secrets-manager":"^3.974.0","@bull-board/api":"^6.12.0","@bull-board/express":"^6.12.0","@bull-board/nestjs":"^6.12.0","@ctrl/tinycolor":"^4.1.0","@googlemaps/google-maps-services-js":"^3.4.2","@googlemaps/places":"^2.0.1","@googlemaps/routing":"^2.0.1","@ingameltd/payu":"^1.0.5","@nestjs/apollo":"^13.1.0","@nestjs/axios":"^4.0.1","@nestjs/bullmq":"^11.0.3","@nestjs/common":"11.1.5","@nestjs/config":"^4.0.2","@nestjs/core":"11.1.5","@nestjs/graphql":"^13.1.0","@nestjs/jwt":"^11.0.0","@nestjs/passport":"^11.0.5","@nestjs/platform-express":"^11.1.5","@nestjs/schedule":"^6.0.0","@nestjs/serve-static":"^5.0.3","@nestjs/typeorm":"11.0.0","@nestjs/websockets":"^11.1.3","@nx/angular":"21.3.10","@nx/web":"21.3.10","@paypal/checkout-server-sdk":"^1.0.3","@ptc-org/nestjs-query-core":"^9.1.0","@ptc-org/nestjs-query-graphql":"^9.1.0","@ptc-org/nestjs-query-typeorm":"^9.1.0","@redis/client":"^6.2.1","@redis/json":"^6.2.1","@redis/search":"^6.2.1","@sentry/cli":"^2.50.2","@sentry/nestjs":"^10.0.0","@sentry/profiling-node":"10.0.0","@simplewebauthn/server":"^13.0.0","@simplewebauthn/types":"^12.0.0","@willsoto/nestjs-prometheus":"^6.0.2","apollo-angular":"^11.0.0","autoprefixer":"^10.4.21","bullmq":"^5.56.9","class-transformer":"0.5.1","class-validator":"0.14.2","core-js":"^3.42.0","dataloader":"^2.2.3","dotenv":"16.5.0","firebase-admin":"^13.4.0","google-libphonenumber":"^3.2.43","graphql":"^16.11.0","graphql-redis-subscriptions":"^2.7.0","graphql-relay":"^0.10.2","graphql-subscriptions":"^3.0.0","graphql-tools":"^9.0.20","graphql-ws":"^6.0.6","h3-js":"^4.2.1","instamojo-payment-nodejs":"^3.0.0","ioredis":"^5.7.0","json-2-csv":"^4.0.0","jwt-decode":"^4.0.0","license-verify":"0.1.5","mercadopago":"^1.5.17","multer":"^2.0.0","mysql2":"^3.14.3","ng-zorro-antd":"^20.1.0","ngx-timeago":"^3.0.0","node-rsa":"^1.1.1","overshom-wayforpay":"^1.1.0","passport":"^0.7.0","passport-jwt":"^4.0.1","passport-local":"^1.0.0","paystack-node":"^0.3.0","paytmchecksum":"^1.5.1","pdfkit":"^0.17.1","pdfkit-table":"^0.1.99","plivo":"^4.70.0","prom-client":"^15.1.3","proper-url-join":"^2.1.2","razorpay":"^2.9.1","redis":"^6.2.1","reflect-metadata":"^0.2.2","rxjs":"7.8.2","sberbank-acquiring":"^1.2.2","sharp":"^0.34.3","stripe":"^18.4.0","tslib":"^2.6.1","twilio":"^5.6.1","typeorm":"0.3.26","uuid":"^11.1.0","zone.js":"0.15.1"},"devDependencies":{"@angular-devkit/build-angular":"20.1.4","@angular-devkit/core":"20.1.4","@angular-devkit/schematics":"20.1.4","@angular-eslint/eslint-plugin":"20.1.0","@angular-eslint/eslint-plugin-template":"20.1.0","@angular-eslint/template-parser":"20.1.0","@angular/cli":"~20.1.0","@angular/compiler-cli":"20.1.4","@angular/language-service":"20.1.4","@bartholomej/ngx-translate-extract":"^8.0.2","@graphql-codegen/cli":"^5.0.7","@graphql-codegen/introspection":"^4.0.3","@graphql-codegen/typescript":"^4.1.6","@graphql-codegen/typescript-apollo-angular":"^4.0.1","@graphql-codegen/typescript-operations":"^4.6.1","@monodon/rust":"^2.3.0","@nestjs/cli":"^11.0.10","@nestjs/schematics":"11.0.5","@nestjs/testing":"11.1.3","@ngx-translate/core":"^17.0.0","@ngx-translate/http-loader":"^17.0.0","@nx/eslint":"21.3.10","@nx/eslint-plugin":"21.3.10","@nx/jest":"21.3.10","@nx/js":"21.3.10","@nx/node":"21.3.10","@nx/webpack":"21.3.10","@nxrocks/nx-flutter":"^10.0.1","@schematics/angular":"20.1.4","@semantic-release/changelog":"^6.0.3","@semantic-release/commit-analyzer":"^13.0.1","@semantic-release/git":"^10.0.1","@semantic-release/npm":"^12.0.1","@semantic-release/release-notes-generator":"^14.0.3","@swc-node/register":"1.10.10","@swc/cli":"^0.7.8","@swc/core":"1.13.3","@swc/helpers":"0.5.17","@swc/jest":"0.2.39","@tailwindcss/forms":"^0.5.4","@tailwindcss/typography":"^0.5.9","@testcontainers/mysql":"^11.5.1","@testcontainers/redis":"^11.5.1","@types/busboy":"^1.5.0","@types/cron":"^2.0.1","@types/estree":"1.0.1","@types/google-libphonenumber":"^7.4.30","@types/jest":"^29.5.0","@types/multer":"^1.4.12","@types/node":"^24.0.10","@types/passport-jwt":"^4.0.1","@types/paypal__checkout-server-sdk":"^1.0.5","@types/pdfkit":"^0.17.0","@types/proper-url-join":"^2.1.5","@types/supertest":"^6.0.3","conventional-changelog-conventionalcommits":"^9.0.0","eslint":"^9.28.0","eslint-config-prettier":"10.1.5","eslint-plugin-unused-imports":"^4.1.4","jest":"^29.7.0","jest-environment-jsdom":"^29.7.0","jest-util":"^29.7.0","jsonc-eslint-parser":"^2.1.0","ng-packagr":"20.1.0","nx":"21.3.10","postcss":"^8.4.27","postcss-import":"15.1.0","postcss-preset-env":"9.1.0","postcss-url":"10.1.3","prettier":"^3.5.3","supertest":"^7.1.4","swc-loader":"^0.2.6","tailwindcss":"^3.3.3","testcontainers":"^11.5.1","ts-jest":"29.4.0","ts-node":"10.9.2","tslib":"^2.3.0","typescript":"5.8.3","typescript-eslint":"^8.33.0","webpack-cli":"^5.1.4"},"workspaces":["libs/*","apps/*"],"overrides":{"typescript":"5.8.3","eslint":"^9.28.0","rxjs":"7.8.2","typeorm":{"redis":"^5.8.2"}},"repository":{"type":"git","url":"https://github.com/ridyio/ridy-monorepo.git"},"publishConfig":{"access":"restricted"},"allowScripts":{"cpu-features@0.0.10":true,"core-js@3.43.0":true,"lmdb@3.4.1":true,"msgpackr-extract@3.0.3":true,"nx@21.3.10":true,"protobufjs@7.5.3":true,"sharp@0.34.3":true,"ssh2@1.16.0":true,"unrs-resolver@1.11.1":true,"@apollo/protobufjs@1.2.7":true,"@firebase/util@1.12.1":true,"@nestjs/core@11.1.5":true,"@parcel/watcher@2.6.0":true,"@sentry/cli@2.50.2":true,"@sentry-internal/node-cpu-profiler@2.2.0":true,"@swc/core@1.13.3":true,"fsevents@2.3.3":true,"esbuild@0.25.5":true}}');
 
 /***/ }),
 /* 71 */

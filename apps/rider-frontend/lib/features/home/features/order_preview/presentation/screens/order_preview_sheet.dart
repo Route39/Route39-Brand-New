@@ -4,13 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:generic_map/interfaces/place.dart';
 import 'package:ridy/config/locator/locator.dart';
-import 'package:flutter_common/core/presentation/app_card_sheet.dart';
 import 'package:ridy/core/blocs/home.bloc.dart';
 import 'package:ridy/core/blocs/payment_methods.bloc.dart';
 import 'package:ridy/core/graphql/fragments/payment_method.extensions.dart';
 import 'package:ridy/features/home/features/order_preview/presentation/dialogs/reserve_success_dialog.dart';
 import 'package:ridy/features/home/features/order_preview/presentation/screens/service_selection_sheet.dart';
-import 'package:ridy/gen/assets.gen.dart';
 
 class OrderPreviewSheet extends StatefulWidget {
   final List<Place> wayPoints;
@@ -49,12 +47,7 @@ class _OrderPreviewSheetState extends State<OrderPreviewSheet> with TickerProvid
             child: switch (state.ridePreviewFareResponse) {
               ApiResponseInitial() => const SizedBox.shrink(),
               ApiResponseError(:final errorMessage) => Text(errorMessage ?? 'An error occurred'),
-              ApiResponseLoading() => AppCardSheet(
-                  child: Assets.lottie.loading.lottie(
-                    width: double.infinity,
-                    height: 400,
-                  ),
-                ),
+              ApiResponseLoading() => const SizedBox.shrink(),
               ApiResponseLoaded(
                 :final data,
               ) =>

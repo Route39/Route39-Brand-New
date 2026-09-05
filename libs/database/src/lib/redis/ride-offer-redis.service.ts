@@ -333,6 +333,7 @@ export class RideOfferRedisService {
     pickupEta: Date;
     dropoffEta: Date;
     driverDirections: Point[];
+    pickupOtp?: string;
   }): Promise<void> {
     Logger.debug(
       `Driver ${input.driverId} accepting offer for order ${input.orderId}`,
@@ -379,6 +380,7 @@ export class RideOfferRedisService {
       riderFirstName: input.riderFirstName ?? null,
       riderAvatarUrl: input.riderAvatarUrl ?? null,
       driverDirections: input.driverDirections,
+      pickupOtp: input.pickupOtp,
     });
 
     Logger.debug(

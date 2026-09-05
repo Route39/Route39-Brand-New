@@ -23,6 +23,7 @@ export class EphemeralMessagesService {
           expiresAt: message.expiresAt,
           serviceName: message?.serviceName ?? null,
           serviceImageUrl: message?.serviceImageUrl ?? null,
+          amount: message?.amount ?? null,
         };
         return result;
       }),
@@ -34,5 +35,6 @@ export class EphemeralMessagesService {
       driverId.toString(),
       messageId,
     );
+    return true;
   }
 }

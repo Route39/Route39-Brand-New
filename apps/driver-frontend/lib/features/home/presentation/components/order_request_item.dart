@@ -4,7 +4,6 @@ import 'package:ridy_driver/core/extensions/extensions.dart';
 import 'package:ridy_driver/core/graphql/fragments/coordinate.extensions.dart';
 import 'package:ridy_driver/core/graphql/fragments/ride_offer.fragment.graphql.dart';
 import 'package:ridy_driver/features/home/presentation/blocs/home.bloc.dart';
-import 'package:ridy_driver/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
@@ -17,10 +16,7 @@ import 'package:flutter_common/core/presentation/small_chip.dart';
 class OrderRequestItem extends StatelessWidget {
   final Fragment$RideOffer request;
 
-  const OrderRequestItem({
-    super.key,
-    required this.request,
-  });
+  const OrderRequestItem({super.key, required this.request});
 
   @override
   Widget build(BuildContext context) {
@@ -28,10 +24,10 @@ class OrderRequestItem extends StatelessWidget {
       width: 400,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        image: DecorationImage(
-          image: Assets.images.orderRequestHeader.provider(),
-          fit: BoxFit.fitWidth,
-          alignment: Alignment.topCenter,
+        gradient: const LinearGradient(
+          colors: [Color(0xFFB30000), Color(0xFFFF1A1A)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
         boxShadow: const [
           BoxShadow(
@@ -39,7 +35,7 @@ class OrderRequestItem extends StatelessWidget {
             blurRadius: 8,
             offset: Offset(2, 4),
             spreadRadius: 0,
-          )
+          ),
         ],
       ),
       child: Column(
@@ -58,12 +54,10 @@ class OrderRequestItem extends StatelessWidget {
                   padding: const EdgeInsets.all(8),
                   child: const Icon(
                     Icons.account_circle,
-                    color: ColorPalette.primary30,
+                    color: Color(0xFFB30000),
                   ),
                 ),
-                const SizedBox(
-                  width: 12,
-                ),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -88,7 +82,10 @@ class OrderRequestItem extends StatelessWidget {
             ),
           ),
           Container(
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: ColorPalette.neutralVariant99),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: ColorPalette.neutralVariant99,
+            ),
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
@@ -99,17 +96,23 @@ class OrderRequestItem extends StatelessWidget {
                     children: [
                       SmallChip(
                         text: request.distance.toFormattedDistance(context),
-                        icon: const Icon(Ionicons.map, color: ColorPalette.neutral70),
+                        icon: const Icon(
+                          Ionicons.map,
+                          color: Color(0xFFB71C1C),
+                        ),
                       ),
                       SmallChip(
-                        text: context.translate.durationInMinutes(request.duration ~/ 60),
-                        icon: const Icon(Ionicons.time, color: ColorPalette.neutral70),
-                      )
+                        text: context.translate.durationInMinutes(
+                          request.duration ~/ 60,
+                        ),
+                        icon: const Icon(
+                          Ionicons.time,
+                          color: Color(0xFFB71C1C),
+                        ),
+                      ),
                     ],
                   ),
-                  const Divider(
-                    height: 12,
-                  ),
+                  const Divider(height: 12),
                   SizedBox(
                     height: 150,
                     child: SingleChildScrollView(
@@ -119,9 +122,7 @@ class OrderRequestItem extends StatelessWidget {
                     ),
                   ),
                   if (request.options.isNotEmpty) ...[
-                    const Divider(
-                      height: 12,
-                    ),
+                    const Divider(height: 12),
                     Row(
                       children: [
                         Text(
@@ -129,33 +130,32 @@ class OrderRequestItem extends StatelessWidget {
                           style: context.bodyMedium,
                         ),
                         Expanded(
-                            child: Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          alignment: WrapAlignment.end,
-                          children: [
-                            for (final preference in request.options)
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: ColorPalette.primary95,
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            alignment: WrapAlignment.end,
+                            children: [
+                              for (final preference in request.options)
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: const Color(0xFFFFE5E5),
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    preference.icon.toEntity.icon,
+                                    color: Color(0xFFB30000),
                                   ),
                                 ),
-                                child: Icon(
-                                  preference.icon.toEntity.icon,
-                                  color: ColorPalette.primary30,
-                                ),
-                              )
-                          ],
-                        ))
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ],
-                  const SizedBox(
-                    height: 12,
-                  ),
+                  const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
                     child: BlocBuilder<HomeBloc, HomeState>(
@@ -169,11 +169,11 @@ class OrderRequestItem extends StatelessWidget {
                         );
                       },
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
-          )
+          ),
         ],
       ),
     );

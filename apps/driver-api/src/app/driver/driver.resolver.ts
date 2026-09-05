@@ -60,8 +60,9 @@ export class DriverResolver {
   @Mutation(() => Boolean)
   async updateDriverLocation(
     @Args('point', { type: () => Point }) point: Point,
-  ): Promise<void> {
-    this.driverService.updateDriverLocation(this.context.req.user.id, point);
+  ): Promise<boolean> {
+    await this.driverService.updateDriverLocation(this.context.req.user.id, point);
+    return true;
   }
 
   @Query(() => [ServiceDTO])

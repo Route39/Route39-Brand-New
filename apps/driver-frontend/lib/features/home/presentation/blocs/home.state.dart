@@ -15,7 +15,7 @@ sealed class HomeState with _$HomeState {
     @Default(OnTripPage.overview) OnTripPage page,
     @Default([]) List<Fragment$ActiveOrder> activeOrders,
     String? currentOrderId,
-    @Default(ApiResponseInitial()) ApiResponse<void> acceptOrderReponse,
+    @Default(ApiResponseInitial()) ApiResponse<Fragment$ActiveOrder> acceptOrderReponse,
 
     // Ephemeral messages
     @Default([]) List<Fragment$EphemeralMessage> ephemeralMessages,

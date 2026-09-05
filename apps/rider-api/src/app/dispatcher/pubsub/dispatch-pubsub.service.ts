@@ -7,6 +7,7 @@ import {
   DriverEventType,
   DriverNotificationService,
   DriverRedisService,
+  DriverEphemeralMessageType,
 } from '@ridy/database';
 
 @Injectable()
@@ -58,6 +59,26 @@ export class DispatchPubSubService {
         driverId.toString(),
       );
       this.driverNotificationService.requests(driver?.fcmTokens || []);
+        await this.driverRedisService.createEphemeralMessage(
+          driverId.toString(),
+          {
+            type: DriverEphemeralMessageType.RideReceived,
+            orderId,
+            createdAt: new Date(),
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            riderFullName: order.passenger
+                ? [
+                    order.passenger.firstName,
+                    order.passenger.lastName,
+                  ].filter(Boolean).join(' ') || null
+                : null,
+            riderProfileUrl: order.passenger?.profilePicture ?? null,
+            serviceName: order.serviceName ?? null,
+            serviceImageUrl: order.serviceImageAddress ?? null,
+            amount: order.fareEstimate ?? null,
+          },
+        );
+
       this.pubsubService.publish(
         'driver.event',
         {

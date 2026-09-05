@@ -1,4 +1,3 @@
-import 'package:ridy_driver/core/graphql/fragments/current_order.extensions.dart';
 import 'package:ridy_driver/core/graphql/fragments/current_order.fragment.graphql.dart';
 import 'package:ridy_driver/core/graphql/schema.gql.dart';
 import 'package:flutter/cupertino.dart';
@@ -11,7 +10,7 @@ class PaymentMethodSelectField extends StatelessWidget {
   final Fragment$ActiveOrder order;
   final Function()? onPressed;
 
-  const PaymentMethodSelectField({
+  PaymentMethodSelectField({
     super.key,
     required this.order,
     required this.onPressed,
@@ -27,60 +26,44 @@ class PaymentMethodSelectField extends StatelessWidget {
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: backgroundColor,
-          border: Border.all(
-            color: borderColor,
-          ),
+          border: Border.all(color: borderColor),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           children: [
             icon(context),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    order.paymentMethod.mode == Enum$PaymentMode.Cash
-                        ? context.translate.cash
-                        : context.translate.online,
-                    style: context.labelMedium,
-                  ),
-                  Text(
-                    order.isPaid ? context.translate.rideFeePaid : context.translate.rideFeeUnpaid,
-                    style: context.bodySmall?.copyWith(
-                      color: order.isPaid ? ColorPalette.tertiary40 : ColorPalette.error40,
-                    ),
-                  ),
-                ],
+              child: Text(
+                order.paymentMethod.mode == Enum$PaymentMode.Cash
+                    ? context.translate.cash
+                    : context.translate.online,
+                style: context.labelMedium,
               ),
             ),
             Text(
               order.totalCost.formatCurrency(order.currency),
-              style: context.labelMedium?.copyWith(color: ColorPalette.primary50),
-            )
+              style: context.labelMedium?.copyWith(
+                color: const Color(0xFFE00000),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Color get borderColor => ColorPalette.primary95;
+  Color get borderColor => const Color(0xFFFFE5E5);
   Color get backgroundColor => Colors.transparent;
 
   Color get textColor => ColorPalette.neutral10;
 
   Color get chevronColor => ColorPalette.neutral70;
 
-  Color get iconColor => ColorPalette.primary30;
+  Color get iconColor => const Color(0xFFB30000);
 
-  Widget icon(BuildContext context) => order.paymentMethod.mode == Enum$PaymentMode.Cash
-      ? Icon(
-          Ionicons.cash,
-          color: iconColor,
-        )
-      : Icon(
-          Ionicons.card,
-          color: iconColor,
-        );
+  Widget icon(BuildContext context) =>
+      order.paymentMethod.mode == Enum$PaymentMode.Cash
+      ? Icon(Ionicons.cash, color: iconColor)
+      : Icon(Ionicons.card, color: iconColor);
 }

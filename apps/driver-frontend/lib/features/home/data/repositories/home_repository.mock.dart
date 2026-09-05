@@ -35,6 +35,9 @@ class HomeRepositoryMock implements HomeRepository {
   final BehaviorSubject<List<Fragment$ActiveOrder>> _activeOrders = BehaviorSubject.seeded([]);
 
   @override
+  List<Fragment$ActiveOrder> get activeOrdersValue => _activeOrders.value;
+
+  @override
   Stream<List<Fragment$EphemeralMessage>> get ephemeralMessages => _ephemeralMessages.stream;
   final BehaviorSubject<List<Fragment$EphemeralMessage>> _ephemeralMessages = BehaviorSubject.seeded([]);
 
@@ -69,6 +72,11 @@ class HomeRepositoryMock implements HomeRepository {
   Future<ApiResponse<Fragment$ActiveOrder>> startTrip({required String orderId}) async {
     final updatedOrder = mockCurrentOrder1.copyWith(status: Enum$OrderStatus.Started);
     return ApiResponse.loaded(updatedOrder);
+  }
+
+  @override
+  Future<ApiResponse<void>> verifyPickupOtp({required String orderId, required String otp}) async {
+    return const ApiResponse.loaded(null);
   }
 
   @override
@@ -151,9 +159,12 @@ class HomeRepositoryMock implements HomeRepository {
   stopListeningToOrderUpdates() {}
 
   @override
-  Future<ApiResponse<void>> acceptOrderRequest({required String requestId}) async {
+  Future<ApiResponse<Fragment$ActiveOrder>> acceptOrderRequest({required String requestId}) async {
     _profile.add(ApiResponse.loaded(mockProfile1.copyWith()));
-    return ApiResponse.loaded(null);
+    final accepted = mockCurrentOrder1.copyWith(id: requestId);
+    _activeOrders.add(_activeOrders.value.followedBy([accepted]).toList());
+    _orderRequests.add(_orderRequests.value.where((e) => e.id != requestId).toList());
+    return ApiResponse.loaded(accepted);
   }
 
   @override

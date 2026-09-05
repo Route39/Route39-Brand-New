@@ -59,7 +59,7 @@ class AppTextButton extends StatelessWidget {
   Color colorForType(BuildContext context) {
     switch (type) {
       case AppTextButtonType.primary:
-        return context.colorScheme.primary;
+        return ColorPalette.primary40;
       case AppTextButtonType.secondary:
         return context.colorScheme.secondary;
       case AppTextButtonType.tertiary:

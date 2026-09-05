@@ -100,7 +100,7 @@ export class AuthResolver {
   })
   async verifyNumber(
     @Args('mobileNumber') mobileNumber: string,
-    @Args('countryIso', { nullable: true }) countryIso: string,
+    @Args('countryIso', { nullable: true, defaultValue: 'IN' }) countryIso: string,
     @Args('forceSendOtp', { nullable: true }) forceSendOtp?: boolean,
   ): Promise<VerifyNumberDto> {
     const phoneUtil = PhoneNumberUtil.getInstance();
@@ -119,25 +119,36 @@ export class AuthResolver {
     formattedNumber = formattedNumber.substring(1);
     const rider = await this.sharedRiderService.findWithDeleted({
       mobileNumber: formattedNumber,
-    });
-    const passwordRequired =
-      process.env.PASSWORD_REQUIRED?.toLowerCase() !== 'false';
-    const isExistingUser =
-      passwordRequired && rider != null && rider.password != null;
-    if (isExistingUser && forceSendOtp !== true) {
-      return {
-        isExistingUser: true,
-      };
-    }
-    const { hash } = await this.authService.sendVerificationCode({
-      phoneNumber: formattedNumber,
-      countryIso: countryIso,
-    });
-    Logger.log(
-      `Verification code sent to ${formattedNumber} with hash ${hash}`,
-      'AuthResolver.verifyNumber',
-    );
-    return { isExistingUser: false, hash };
+    });const passwordRequired =
+  process.env.PASSWORD_REQUIRED?.toLowerCase() !== 'false';
+
+const isExistingUser =
+  rider != null && rider.password != null;
+
+if (passwordRequired && isExistingUser && forceSendOtp !== true) {
+  return {
+    isExistingUser: true,
+  };
+}
+
+const { hash, code } = await this.authService.sendVerificationCode({
+  phoneNumber: formattedNumber,
+  countryIso: countryIso,
+});
+
+Logger.log(
+  `Verification code sent to ${formattedNumber} with hash ${hash}`,
+  'AuthResolver.verifyNumber',
+);
+
+const showDevOtp =
+  process.env.SHOW_DEV_OTP?.toLowerCase() === 'true';
+
+return {
+  isExistingUser,
+  hash,
+  devOtp: showDevOtp ? code : undefined,
+};
   }
 
   @Mutation(() => VerificationDto, {

@@ -8,6 +8,7 @@ import { RangePolicy } from '../../entities/taxi/enums/range-policy.enum';
 export class ActiveOrderRedisSnapshot {
   id: string;
   status: OrderStatus;
+  pickupOtp?: string;
   type: TaxiOrderType;
   currency: string;
   waypoints: WaypointBase[];

@@ -6,6 +6,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:ridy_driver/core/extensions/extensions.dart';
 import 'package:flutter_common/core/presentation/buttons/app_back_button.dart';
 import 'package:ridy_driver/gen/assets.gen.dart';
+import 'package:ridy_driver/core/router/app_router.dart';
+import 'package:ridy_driver/features/home/presentation/screens/home_screen.mobile.dart';
 
 import 'action_buttons.dart';
 import 'user_info_hero.dart';
@@ -36,7 +38,12 @@ class ProfileHeader extends StatelessWidget {
                 context.responsive(
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: AppBackButton(onPressed: () => context.router.maybePop()),
+                    child: AppBackButton(
+                      onPressed: () {
+                        SelectedTabNotifier.instance.goToHome();
+                        context.router.navigate(const HomeRoute());
+                      },
+                    ),
                   ),
                   xl: const SizedBox(height: 36),
                 ),

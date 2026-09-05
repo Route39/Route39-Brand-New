@@ -11,7 +11,6 @@ import 'package:ridy/core/graphql/fragments/past_order.fragment.graphql.dart';
 import 'package:ridy/core/graphql/fragments/point.extensions.dart';
 import 'package:ridy/core/presentation/driver_rating.dart';
 import 'package:ridy/core/presentation/vehicle_info/vehicle_plate_view.dart';
-import 'package:flutter_common/gen/assets.gen.dart';
 
 class RideHistoryItem extends StatelessWidget {
   final Fragment$PastOrder entity;
@@ -32,9 +31,10 @@ class RideHistoryItem extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          image: DecorationImage(
-            image: Assets.images.historyRidesHeaderBackground.provider(),
-            fit: BoxFit.cover,
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [ColorPalette.primary40, ColorPalette.primary30],
           ),
         ),
         child: Column(

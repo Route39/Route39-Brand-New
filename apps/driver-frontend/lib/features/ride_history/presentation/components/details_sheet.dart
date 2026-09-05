@@ -15,10 +15,7 @@ import 'package:flutter_common/core/presentation/chips/square_icon_chip.dart';
 class RideHistoryDetailsSheet extends StatelessWidget {
   final Fragment$PastOrder entity;
 
-  const RideHistoryDetailsSheet({
-    super.key,
-    required this.entity,
-  });
+  const RideHistoryDetailsSheet({super.key, required this.entity});
 
   @override
   Widget build(BuildContext context) {
@@ -30,32 +27,25 @@ class RideHistoryDetailsSheet extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: ColorPalette.neutral99,
-            border: Border.all(
-              color: ColorPalette.primary95,
-            ),
+            border: Border.all(color: const Color(0xFFFFE5E5)),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             children: [
-              const DriverAvatarSecondary(
-                imageUrl: null,
-              ),
+              const DriverAvatarSecondary(imageUrl: null),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      entity.serviceName,
-                      style: context.labelLarge,
-                    ),
+                    Text(entity.serviceName, style: context.labelLarge),
                     const SizedBox(height: 4),
                     Text(
                       entity.pickupEta?.formatDateTime ?? "-",
                       style: context.bodyMedium?.copyWith(
                         color: context.theme.colorScheme.onSurfaceVariant,
                       ),
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -71,19 +61,14 @@ class RideHistoryDetailsSheet extends StatelessWidget {
                     style: context.bodySmall?.copyWith(
                       color: ColorPalette.neutralVariant50,
                     ),
-                  )
+                  ),
                 ],
-              )
+              ),
             ],
           ),
         ),
-        const Divider(
-          height: 24,
-        ),
-        Text(
-          context.translate.tripDetails,
-          style: context.labelLarge,
-        ),
+        const Divider(height: 24),
+        Text(context.translate.tripDetails, style: context.labelLarge),
         const SizedBox(height: 12),
         Wrap(
           spacing: 8,
@@ -95,48 +80,45 @@ class RideHistoryDetailsSheet extends StatelessWidget {
               icon: const Icon(Ionicons.map, color: ColorPalette.neutral70),
             ),
             SmallChip(
-              text: context.translate.durationInMinutes(entity.estimatedDuration ~/ 60),
+              text: context.translate.durationInMinutes(
+                entity.estimatedDuration ~/ 60,
+              ),
               icon: const Icon(Ionicons.time, color: ColorPalette.neutral70),
             ),
             SmallChip(
-              text: entity.paymentMode == Enum$PaymentMode.Cash ? context.translate.cash : context.translate.online,
+              text: entity.paymentMode == Enum$PaymentMode.Cash
+                  ? context.translate.cash
+                  : context.translate.online,
               icon: entity.paymentMode == Enum$PaymentMode.Cash
                   ? const Icon(Ionicons.cash, color: ColorPalette.neutral70)
                   : const Icon(Ionicons.card, color: ColorPalette.neutral70),
             ),
           ],
         ),
-        const Divider(
-          height: 24,
-        ),
+        const Divider(height: 24),
         WayPointsView(
           waypoints: entity.waypoints.toPlaces,
           startedAt: entity.pickupEta,
           finishedAt: entity.dropoffEta,
         ),
         if (entity.options.isNotEmpty) ...[
-          const Divider(
-            height: 24,
-          ),
+          const Divider(height: 24),
           Row(
             children: [
-              Text(
-                context.translate.preferences,
-                style: context.bodyMedium,
-              ),
+              Text(context.translate.preferences, style: context.bodyMedium),
               Expanded(
                 child: Wrap(
                   alignment: WrapAlignment.end,
                   spacing: 8,
                   children: entity.options
-                      .map(
-                    (e) => SquareIconChip(icon: e.icon.toEntity.icon),
-                  )
+                      .map((e) => SquareIconChip(icon: e.icon.toEntity.icon))
                       .followedBy([
-                    if ((entity.waitMinutes ?? 0) > 0) const SquareIconChip(icon: Ionicons.time),
-                  ]).toList(),
+                        if ((entity.waitMinutes ?? 0) > 0)
+                          const SquareIconChip(icon: Ionicons.time),
+                      ])
+                      .toList(),
                 ),
-              )
+              ),
             ],
           ),
         ],

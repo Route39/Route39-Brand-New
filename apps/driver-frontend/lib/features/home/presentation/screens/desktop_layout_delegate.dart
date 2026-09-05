@@ -24,16 +24,9 @@ class DesktopLayoutDelegate extends MultiChildLayoutDelegate {
     final searchRadiusButtonSize =
         layoutChild(searchRadiusButtonId, const BoxConstraints());
 
-    final sidebarSize = layoutChild(
-        sidebarLayoutId, BoxConstraints(maxWidth: 400, maxHeight: size.height));
-    positionChild(sidebarLayoutId, Offset(size.width - 400, 0));
-    positionChild(
-      searchRadiusButtonId,
-      Offset(
-        (size.width - searchRadiusButtonSize.width - sidebarSize.width) / 2,
-        size.height - bottomSheetSize.height - 80,
-      ),
-    );
+    const navbarTopOffset = 80.0;
+    Size navbarSize;
+
     if (bottomSheetSize.height < 50) {
       layoutChild(
         mapLayoutId,
@@ -43,10 +36,10 @@ class DesktopLayoutDelegate extends MultiChildLayoutDelegate {
         ),
       );
       positionChild(mapLayoutId, Offset.zero);
-      layoutChild(navbarId, const BoxConstraints(maxWidth: 400));
+      navbarSize = layoutChild(navbarId, const BoxConstraints(maxWidth: 400));
       positionChild(
         navbarId,
-        Offset(size.width - 400, 80),
+        Offset(size.width - 400, navbarTopOffset),
       );
       layoutChild(myLocationButtonId, const BoxConstraints());
       positionChild(
@@ -65,10 +58,10 @@ class DesktopLayoutDelegate extends MultiChildLayoutDelegate {
         ),
       );
       positionChild(mapLayoutId, Offset.zero);
-      layoutChild(navbarId, BoxConstraints(maxWidth: size.width));
+      navbarSize = layoutChild(navbarId, BoxConstraints(maxWidth: size.width));
       positionChild(
         navbarId,
-        const Offset(0, 80),
+        Offset(0, navbarTopOffset),
       );
       final myLocationSize =
           layoutChild(myLocationButtonId, const BoxConstraints());
@@ -80,6 +73,25 @@ class DesktopLayoutDelegate extends MultiChildLayoutDelegate {
         ),
       );
     }
+
+    final sidebarSize = layoutChild(
+      sidebarLayoutId,
+      BoxConstraints(
+        maxWidth: 400,
+        maxHeight: size.height - (navbarTopOffset + navbarSize.height),
+      ),
+    );
+    positionChild(
+      sidebarLayoutId,
+      Offset(size.width - 400, navbarTopOffset + navbarSize.height),
+    );
+    positionChild(
+      searchRadiusButtonId,
+      Offset(
+        (size.width - searchRadiusButtonSize.width - sidebarSize.width) / 2,
+        size.height - bottomSheetSize.height - 80,
+      ),
+    );
   }
 
   @override

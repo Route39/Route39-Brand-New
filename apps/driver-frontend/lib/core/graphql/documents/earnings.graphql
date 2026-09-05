@@ -5,6 +5,7 @@ query Earnings(
 ) {
   getStatsNew(timeframe: $timeFrame, startDate: $startDate, endDate: $endDate) {
     currency
+    lastOrderEarnings
     dataset {
       earning
       count

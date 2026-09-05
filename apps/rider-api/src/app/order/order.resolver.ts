@@ -93,6 +93,16 @@ export class OrderResolver {
 
   @Mutation(() => Boolean)
   @UseGuards(GqlAuthGuard)
+  async initiateCall(
+    @Args('orderId', { type: () => ID, nullable: false }) orderId: number,
+  ): Promise<boolean> {
+    return this.riderOrderService.initiateCall({
+      orderId: orderId,
+      riderId: this.context.req.user!.id,
+    });
+  }
+  @Mutation(() => Boolean)
+  @UseGuards(GqlAuthGuard)
   async cancelOrder(
     @Args('orderId', { type: () => ID, nullable: false }) orderId: number,
     @Args('cancelReasonId', { type: () => ID, nullable: true })

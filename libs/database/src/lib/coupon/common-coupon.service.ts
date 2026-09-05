@@ -5,6 +5,7 @@ import { TaxiOrderEntity } from '../entities/taxi/taxi-order.entity';
 import { ForbiddenError } from '@nestjs/apollo';
 import { Repository } from 'typeorm';
 import { CampaignCodeEntity, CampaignEntity } from '../entities';
+import { OrderStatus } from '../entities/enums/order-status.enum';
 
 @Injectable()
 export class CommonCouponService {
@@ -83,6 +84,14 @@ export class CommonCouponService {
       });
       if (requestsWithCoupon >= coupon.manyTimesUserCanUse) {
         throw new ForbiddenError('Coupon already used.');
+      }
+      if (coupon.isFirstTravelOnly) {
+        const completedRidesCount = await this.requestRepo.count({
+          where: { riderId, status: OrderStatus.Finished },
+        });
+        if (completedRidesCount > 0) {
+          throw new ForbiddenError('Coupon only valid for first ride.');
+        }
       }
     }
     if (!coupon.isEnabled) {

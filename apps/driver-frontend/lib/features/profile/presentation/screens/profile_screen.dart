@@ -99,6 +99,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                               const SizedBox(height: 16),
                               AppMenuItem(
+                                icon: Ionicons.wallet,
+                                title: context.translate.wallet,
+                                onPressed: () {
+                                  context.router.push(const WalletParentRoute());
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              AppMenuItem(
                                 icon: Ionicons.card,
                                 title: context.translate.paymentMethods,
                                 onPressed: () {
@@ -113,7 +121,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 icon: Ionicons.settings,
                                 title: context.translate.appSettings,
                                 onPressed: () {
-                                  context.router.navigate(const SettingsParentRoute());
+                                  context.router.push(const SettingsParentRoute());
                                 },
                               ),
                             ],

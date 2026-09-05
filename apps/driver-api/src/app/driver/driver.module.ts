@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DriverEntity, TaxiOrderEntity, SharedAuthModule } from '@ridy/database';
+import { DriverEntity, TaxiOrderEntity, SharedAuthModule, GoogleServicesModule } from '@ridy/database';
 import { DriverService } from './driver.service';
 import { RedisHelpersModule } from '@ridy/database';
 import { UploadModule } from '../upload/upload.module';
@@ -14,6 +14,7 @@ import { CronJobService } from './cron-job.service';
     SharedAuthModule,
     UploadModule,
     TimesheetModule,
+    GoogleServicesModule,
     TypeOrmModule.forFeature([DriverEntity, TaxiOrderEntity]),
   ],
   providers: [DriverService, DriverResolver, CronJobService],

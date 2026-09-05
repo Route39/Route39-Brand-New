@@ -9,6 +9,7 @@ import 'package:ridy/features/auth/presentation/blocs/login.bloc.dart';
 import 'package:ridy/features/auth/presentation/blocs/onboarding_cubit.dart';
 import 'package:ridy/features/auth/presentation/screens/auth_screen.desktop.dart';
 import 'package:ridy/features/auth/presentation/screens/auth_screen.mobile.dart';
+import 'package:flutter_common/core/color_palette/color_palette.dart';
 
 import 'onboarding_screen.mobile.dart';
 
@@ -44,6 +45,14 @@ class AuthScreen extends StatelessWidget {
                 locator<LoginBloc>().reset();
                 locator<OnboardingCubit>().skip();
                 context.router.replaceAll([const HomeRoute()]);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('Welcome to Route39!'),
+                    backgroundColor: ColorPalette.primary40,
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
                 break;
 
               default:

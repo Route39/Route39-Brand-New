@@ -2,7 +2,7 @@ FROM node:24.1.0-alpine AS build
 WORKDIR /app
 
 COPY ./package.json ./package-lock.json ./nx.json ./tsconfig.base.json ./
-RUN npm ci --force
+RUN npm install --force
 
 COPY ./apps/admin-panel ./apps/admin-panel
 RUN npx nx build admin-panel --prod

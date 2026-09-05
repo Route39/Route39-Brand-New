@@ -83,6 +83,7 @@
       "version": "4.0.0+312",
       "dependencies": [
         "api_response",
+        "audioplayers",
         "auto_route",
         "better_localization",
         "cached_network_image",
@@ -1106,6 +1107,25 @@
         "meta",
         "package_info_plus",
         "sentry"
+      ]
+    },
+    {
+      "name": "audioplayers",
+      "version": "6.8.1",
+      "dependencies": [
+        "audioplayers_android",
+        "audioplayers_darwin",
+        "audioplayers_linux",
+        "audioplayers_platform_interface",
+        "audioplayers_web",
+        "audioplayers_windows",
+        "file",
+        "flutter",
+        "http",
+        "meta",
+        "path_provider",
+        "synchronized",
+        "uuid"
       ]
     },
     {
@@ -2438,6 +2458,58 @@
         "meta",
         "stack_trace",
         "uuid"
+      ]
+    },
+    {
+      "name": "audioplayers_windows",
+      "version": "4.4.1",
+      "dependencies": [
+        "audioplayers_platform_interface",
+        "flutter"
+      ]
+    },
+    {
+      "name": "audioplayers_web",
+      "version": "5.3.0",
+      "dependencies": [
+        "audioplayers_platform_interface",
+        "flutter",
+        "flutter_web_plugins",
+        "web"
+      ]
+    },
+    {
+      "name": "audioplayers_platform_interface",
+      "version": "7.2.0",
+      "dependencies": [
+        "collection",
+        "flutter",
+        "meta",
+        "plugin_platform_interface"
+      ]
+    },
+    {
+      "name": "audioplayers_linux",
+      "version": "4.3.0",
+      "dependencies": [
+        "audioplayers_platform_interface",
+        "flutter"
+      ]
+    },
+    {
+      "name": "audioplayers_darwin",
+      "version": "6.5.0",
+      "dependencies": [
+        "audioplayers_platform_interface",
+        "flutter"
+      ]
+    },
+    {
+      "name": "audioplayers_android",
+      "version": "5.3.0",
+      "dependencies": [
+        "audioplayers_platform_interface",
+        "flutter"
       ]
     },
     {

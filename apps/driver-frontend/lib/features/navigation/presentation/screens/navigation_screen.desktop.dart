@@ -57,7 +57,12 @@ class _NavigationScreenDesktopState extends State<NavigationScreenDesktop> {
                       bottom: false,
                       child: Row(
                         children: [
-                          Assets.images.logoHeader.image(filterQuality: FilterQuality.high),
+                          SizedBox(
+                              width: 288,
+                              child: Center(
+                                child: Assets.images.logoHeader.image(filterQuality: FilterQuality.high, height: 22),
+                              ),
+                            ),
                           const Spacer(),
                           // OverlayPortal(
                           //   overlayChildBuilder: (context) {

@@ -78,8 +78,10 @@ export class EarningsService {
     const mostUsedCurrency: string = q[0].currency;
 
     // Calculate sum of current period
+    // Convert requestTimestamp to IST (+5:30) before comparing dates, since dates from
+    // the client are in IST but requestTimestamp is stored in UTC.
     const sumQuery: Array<any> = await this.requestRepository.query(
-      'SELECT SUM(costBest - providerShare) AS totalEarning FROM request WHERE DATE(requestTimestamp) >= DATE(?) AND DATE(requestTimestamp) <= DATE(?) AND driverId = ? AND currency = ?',
+      "SELECT SUM(costBest - providerShare) AS totalEarning FROM request WHERE DATE(CONVERT_TZ(requestTimestamp, '+00:00', '+05:30')) >= DATE(CONVERT_TZ(?, '+00:00', '+05:30')) AND DATE(CONVERT_TZ(requestTimestamp, '+00:00', '+05:30')) <= DATE(CONVERT_TZ(?, '+00:00', '+05:30')) AND driverId = ? AND currency = ?",
       [input.startDate, input.endDate, input.driverId, mostUsedCurrency],
     );
     const sumOfCurrentPeriod = sumQuery[0]?.totalEarning || 0;
@@ -107,15 +109,15 @@ export class EarningsService {
           ) AS time_slots
           LEFT JOIN request r ON (
             CASE 
-              WHEN HOUR(r.requestTimestamp) >= 6 AND HOUR(r.requestTimestamp) < 9 THEN '6 AM'
-              WHEN HOUR(r.requestTimestamp) >= 9 AND HOUR(r.requestTimestamp) < 12 THEN '9 AM'
-              WHEN HOUR(r.requestTimestamp) >= 12 AND HOUR(r.requestTimestamp) < 15 THEN '12 PM'
-              WHEN HOUR(r.requestTimestamp) >= 15 AND HOUR(r.requestTimestamp) < 18 THEN '3 PM'
-              WHEN HOUR(r.requestTimestamp) >= 18 AND HOUR(r.requestTimestamp) < 21 THEN '6 PM'
+              WHEN HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) >= 6 AND HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) < 9 THEN '6 AM'
+              WHEN HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) >= 9 AND HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) < 12 THEN '9 AM'
+              WHEN HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) >= 12 AND HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) < 15 THEN '12 PM'
+              WHEN HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) >= 15 AND HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) < 18 THEN '3 PM'
+              WHEN HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) >= 18 AND HOUR(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) < 21 THEN '6 PM'
               ELSE '9 PM'
             END = time_slots.name
-            AND DATE(r.requestTimestamp) >= DATE(?)
-            AND DATE(r.requestTimestamp) <= DATE(?)
+            AND DATE(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) >= DATE(CONVERT_TZ(?, '+00:00', '+05:30'))
+            AND DATE(CONVERT_TZ(r.requestTimestamp, '+00:00', '+05:30')) <= DATE(CONVERT_TZ(?, '+00:00', '+05:30'))
             AND r.driverId = ?
             AND r.currency = ?
           )
@@ -190,9 +192,17 @@ export class EarningsService {
         break;
     }
 
+    // Fetch the earnings from the driver's most recent completed order
+    const lastOrderQuery: Array<any> = await this.requestRepository.query(
+      'SELECT (costBest - providerShare) AS lastOrderEarning FROM request WHERE driverId = ? AND currency = ? ORDER BY requestTimestamp DESC LIMIT 1',
+      [input.driverId, mostUsedCurrency],
+    );
+    const lastOrderEarnings = lastOrderQuery[0]?.lastOrderEarning ?? null;
+
     return {
       currency: mostUsedCurrency,
       sumOfCurrentPeriod: sumOfCurrentPeriod,
+      lastOrderEarnings: lastOrderEarnings,
       dataset: dataset,
     };
   }

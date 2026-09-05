@@ -17,7 +17,7 @@ class MobileLayoutDelegate extends MultiChildLayoutDelegate {
         maxHeight: size.height,
       ),
     );
-    if (cardSize.height < size.height) {
+    if (cardSize.height < size.height - 20) {
       positionChild(
         cardLayoutId,
         Offset(0, size.height - cardSize.height),
@@ -30,12 +30,12 @@ class MobileLayoutDelegate extends MultiChildLayoutDelegate {
         ),
       );
       positionChild(mapLayoutId, Offset.zero);
-      layoutChild(actionButtonId, const BoxConstraints());
+      final actionButtonSize = layoutChild(actionButtonId, const BoxConstraints());
       positionChild(
         actionButtonId,
-        const Offset(
+        Offset(
           16,
-          16,
+          size.height - cardSize.height - actionButtonSize.height - 16,
         ),
       );
       final myLocationSize =

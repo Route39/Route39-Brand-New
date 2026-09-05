@@ -13,6 +13,9 @@ extension GenderGqlX on Enum$Gender {
       case Enum$Gender.Unknown:
         return Gender.unknown;
 
+      case Enum$Gender.Other:
+        return Gender.unknown;
+
       case Enum$Gender.$unknown:
         throw Exception("Unknown gender: $this");
     }

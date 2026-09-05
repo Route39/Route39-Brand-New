@@ -40,6 +40,10 @@ query verifyCouponCode($code: String!) {
   }
 }
 
+mutation initiateCall($orderId: ID!) {
+  initiateCall(orderId: $orderId)
+}
+
 mutation applyCoupon($orderId: ID!, $code: String!) {
   applyCoupon(orderId: $orderId, couponCode: $code) {
     couponDiscount

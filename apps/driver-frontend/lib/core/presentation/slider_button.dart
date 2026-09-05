@@ -42,8 +42,9 @@ class _SliderButtonState extends State<SliderButton>
       vsync: this,
       duration: widget.animationDuration,
     );
-    _sliderAnimation =
-        CurveTween(curve: Curves.easeInQuad).animate(_animationController);
+    _sliderAnimation = CurveTween(
+      curve: Curves.easeInQuad,
+    ).animate(_animationController);
 
     _animationController.addListener(() {
       setState(() {
@@ -80,8 +81,9 @@ class _SliderButtonState extends State<SliderButton>
           return Stack(
             children: [
               _buildBackground(
-                  width: constraints.maxWidth,
-                  backgroundSplitX: sliderPosX + sliderRadius),
+                width: constraints.maxWidth,
+                backgroundSplitX: sliderPosX + sliderRadius,
+              ),
               _buildText(),
               _buildSlider(sliderMaxX: sliderMaxX, sliderPositionX: sliderPosX),
             ],
@@ -91,18 +93,14 @@ class _SliderButtonState extends State<SliderButton>
     );
   }
 
-  Widget _buildBackground(
-      {required double width, required double backgroundSplitX}) {
+  Widget _buildBackground({
+    required double width,
+    required double backgroundSplitX,
+  }) {
     return Row(
       children: [
-        SizedBox(
-          height: widget.height,
-          width: backgroundSplitX,
-        ),
-        SizedBox(
-          height: widget.height,
-          width: width - backgroundSplitX,
-        ),
+        SizedBox(height: widget.height, width: backgroundSplitX),
+        SizedBox(height: widget.height, width: width - backgroundSplitX),
       ],
     );
   }
@@ -122,8 +120,10 @@ class _SliderButtonState extends State<SliderButton>
     );
   }
 
-  Widget _buildSlider(
-      {required double sliderMaxX, required double sliderPositionX}) {
+  Widget _buildSlider({
+    required double sliderMaxX,
+    required double sliderPositionX,
+  }) {
     return Positioned(
       left: sliderPositionX,
       child: GestureDetector(
@@ -131,6 +131,7 @@ class _SliderButtonState extends State<SliderButton>
           if (!widget.enabled) {
             return;
           }
+
           _startedDraggingAtX = sliderPositionX;
           _animationController.stop();
         },
@@ -138,9 +139,12 @@ class _SliderButtonState extends State<SliderButton>
           if (!widget.enabled) {
             return;
           }
+
           final newSliderPositionX =
               _startedDraggingAtX + update.localPosition.dx;
+
           final newSliderRelativePosition = newSliderPositionX / sliderMaxX;
+
           setState(() {
             _sliderRelativePosition = max(0, min(1, newSliderRelativePosition));
           });
@@ -149,6 +153,7 @@ class _SliderButtonState extends State<SliderButton>
           if (!widget.enabled) {
             return;
           }
+
           if (_sliderRelativePosition == 1.0) {
             widget.onSlided();
             reset();
@@ -159,12 +164,22 @@ class _SliderButtonState extends State<SliderButton>
         child: Container(
           height: widget.height,
           width: widget.height,
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: ColorPalette.primary99,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Assets.images.blueArrow.image(),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: ColorPalette.primary40,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.arrow_forward_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
         ),
       ),
     );

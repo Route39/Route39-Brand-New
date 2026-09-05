@@ -24,7 +24,7 @@ class AppIconButton extends StatelessWidget {
         ),
         child: Icon(
           icon,
-          color: ColorPalette.primary30,
+          color: ColorPalette.primary40,
           size: 20,
         ),
       ), minimumSize: Size(0, 0),

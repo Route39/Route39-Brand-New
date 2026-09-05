@@ -1916,6 +1916,13 @@ class $AssetsImagesGen {
   /// File path: assets/images/car.png
   AssetGenImage get car => const AssetGenImage('assets/images/car.png');
 
+  /// File path: assets/images/city_bg.png
+  AssetGenImage get cityBg => const AssetGenImage('assets/images/city_bg.png');
+
+  /// File path: assets/images/ev_auto_icon.png
+  AssetGenImage get evAutoIcon =>
+      const AssetGenImage('assets/images/ev_auto_icon.png');
+
   /// File path: assets/images/language.png
   AssetGenImage get language =>
       const AssetGenImage('assets/images/language.png');
@@ -1935,15 +1942,37 @@ class $AssetsImagesGen {
   AssetGenImage get onboarding2 =>
       const AssetGenImage('assets/images/onboarding-2.png');
 
+  /// File path: assets/images/popular_bus_stand.jpg
+  AssetGenImage get popularBusStand =>
+      const AssetGenImage('assets/images/popular_bus_stand.jpg');
+
+  /// File path: assets/images/popular_railway_station.jpg
+  AssetGenImage get popularRailwayStation =>
+      const AssetGenImage('assets/images/popular_railway_station.jpg');
+
+  /// File path: assets/images/route39_auto_photo.png
+  AssetGenImage get route39AutoPhoto =>
+      const AssetGenImage('assets/images/route39_auto_photo.png');
+
+  /// File path: assets/images/route39_logo.png
+  AssetGenImage get route39Logo =>
+      const AssetGenImage('assets/images/route39_logo.png');
+
   /// List of all assets
   List<AssetGenImage> get values => [
     blueArrow,
     car,
+    cityBg,
+    evAutoIcon,
     language,
     logoHeader,
     logo,
     onboarding1,
     onboarding2,
+    popularBusStand,
+    popularRailwayStation,
+    route39AutoPhoto,
+    route39Logo,
   ];
 }
 

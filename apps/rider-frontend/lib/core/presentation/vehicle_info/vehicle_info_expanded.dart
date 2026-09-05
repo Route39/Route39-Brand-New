@@ -24,10 +24,26 @@ class VehicleInfoExpanded extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        CachedNetworkImage(
-          imageUrl: imageUrl,
-          width: extraLarge ? 190 : 120,
-          height: extraLarge ? 190 : 120,
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: CachedNetworkImage(
+            imageUrl: imageUrl,
+            width: extraLarge ? 190 : 120,
+            height: extraLarge ? 190 : 120,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Container(
+              width: extraLarge ? 190 : 120,
+              height: extraLarge ? 190 : 120,
+              color: Colors.grey.shade100,
+              child: const Icon(Icons.directions_car, color: Colors.grey, size: 48),
+            ),
+            errorWidget: (context, url, error) => Container(
+              width: extraLarge ? 190 : 120,
+              height: extraLarge ? 190 : 120,
+              color: Colors.grey.shade100,
+              child: const Icon(Icons.directions_car, color: Colors.grey, size: 48),
+            ),
+          ),
         ),
         Text(
           [vehicleModel, vehicleColor].nonNulls.join(' - '),

@@ -6,7 +6,8 @@ import 'package:ridy/config/locator/locator.dart';
 import 'package:ridy/config/router/app_router.dart';
 import 'package:flutter_common/core/theme/animation_duration.dart';
 import 'package:ridy/core/extensions/extensions.dart';
-import 'package:flutter_common/core/presentation/buttons/app_back_button.dart';
+import 'package:ridy/features/home/presentation/components/route39_nav_bar.dart';
+import 'package:ridy/features/home/features/order_preview/presentation/components/route39_header.dart';
 import 'package:ridy/features/ride_history/presentation/components/ride_history_empty_state.dart';
 import 'package:ridy/features/ride_history/presentation/components/ride_history_item.dart';
 import 'package:ridy/gen/assets.gen.dart';
@@ -32,26 +33,28 @@ class _RideHistoryScreenState extends State<RideHistoryScreen> {
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: locator<RideHistoryBloc>(),
-      child: Container(
-        color: context.theme.scaffoldBackgroundColor,
-        padding: const EdgeInsets.all(16),
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              context.responsive(
-                AppBackButton(onPressed: () {
-                  context.router.maybePop();
-                }),
-                xl: const SizedBox.shrink(),
-              ),
-              SizedBox(height: context.responsive(16, xl: 84)),
-              Text(
-                context.translate.rideHistory,
-                style: context.headlineSmall,
-              ),
-              const SizedBox(height: 24),
+      child: Scaffold(
+        backgroundColor: context.theme.scaffoldBackgroundColor,
+        bottomNavigationBar: const Route39NavBar(currentIndex: 1),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                context.responsive(
+                  Route39Header(onBackPressed: () {
+                    context.router.maybePop();
+                  }),
+                  xl: const SizedBox.shrink(),
+                ),
+                SizedBox(height: context.responsive(16, xl: 116)),
+                Text(
+                  context.translate.rideHistory,
+                  style: context.headlineSmall,
+                ),
+                const SizedBox(height: 24),
               Expanded(
                 child: BlocBuilder<RideHistoryBloc, RideHistoryState>(
                   builder: (context, state) {
@@ -91,6 +94,7 @@ class _RideHistoryScreenState extends State<RideHistoryScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

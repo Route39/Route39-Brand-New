@@ -12,6 +12,7 @@ import 'package:ridy_driver/gen/assets.gen.dart';
 
 import '../blocs/ride_history.bloc.dart';
 import '../components/ride_history_item.dart';
+import 'package:ridy_driver/features/home/presentation/screens/home_screen.mobile.dart';
 
 @RoutePage()
 class RideHistoryScreen extends StatefulWidget {
@@ -40,16 +41,15 @@ class _RideHistoryScreenState extends State<RideHistoryScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               context.responsive(
-                AppBackButton(onPressed: () {
-                  context.router.maybePop();
-                }),
+                AppBackButton(
+                  onPressed: () {
+                    SelectedTabNotifier.instance.goToHome();
+                  },
+                ),
                 xl: const SizedBox.shrink(),
               ),
               SizedBox(height: context.responsive(16, xl: 84)),
-              Text(
-                context.translate.rideHistory,
-                style: context.headlineSmall,
-              ),
+              Text(context.translate.rideHistory, style: context.headlineSmall),
               const SizedBox(height: 24),
               Expanded(
                 child: BlocBuilder<RideHistoryBloc, RideHistoryState>(
@@ -59,25 +59,31 @@ class _RideHistoryScreenState extends State<RideHistoryScreen> {
                       child: switch (state.rideHistoryState) {
                         ApiResponseInitial() => const SizedBox.shrink(),
                         ApiResponseLoading() => Assets.lottie.loading.lottie(
-                            width: double.infinity,
-                            height: double.infinity,
-                          ),
-                        ApiResponseLoaded(:final data) => data.pastOrders.isEmpty
-                            ? RideHistoryEmptyState()
-                            : ListView.separated(
-                                padding: EdgeInsets.zero,
-                                itemBuilder: (context, index) {
-                                  return RideHistoryItem(
-                                    entity: data.pastOrders[index],
-                                    onPressed: () => context.router.push(
-                                      RideHistoryDetailsRoute(entity: data.pastOrders[index]),
-                                    ),
-                                  );
-                                },
-                                separatorBuilder: (context, index) => const SizedBox(height: 16),
-                                itemCount: data.pastOrders.length,
-                              ),
-                        ApiResponseError(:final message) => Center(child: Text(message)),
+                          width: double.infinity,
+                          height: double.infinity,
+                        ),
+                        ApiResponseLoaded(:final data) =>
+                          data.pastOrders.isEmpty
+                              ? const RideHistoryEmptyState()
+                              : ListView.separated(
+                                  padding: EdgeInsets.zero,
+                                  itemBuilder: (context, index) {
+                                    return RideHistoryItem(
+                                      entity: data.pastOrders[index],
+                                      onPressed: () => context.router.push(
+                                        RideHistoryDetailsRoute(
+                                          entity: data.pastOrders[index],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  separatorBuilder: (context, index) =>
+                                      const SizedBox(height: 16),
+                                  itemCount: data.pastOrders.length,
+                                ),
+                        ApiResponseError(:final message) => Center(
+                          child: Text(message),
+                        ),
                       },
                     );
                   },

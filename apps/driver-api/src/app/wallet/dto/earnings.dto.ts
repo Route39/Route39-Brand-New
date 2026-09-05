@@ -14,6 +14,8 @@ export class StatisticsResult {
   currency!: string;
   @Field(() => Float)
   sumOfCurrentPeriod!: number;
+  @Field(() => Float, { nullable: true })
+  lastOrderEarnings?: number;
   @Field(() => [Datapoint], { nullable: false })
   dataset!: Datapoint[];
 }

@@ -162,7 +162,7 @@ class _LocateFavoriteLocationScreenMobileState extends State<LocateFavoriteLocat
           id: LocateLocationLayoutDelegate.actionButtonId,
           child: FloatingActionButton.small(
             onPressed: () => context.router.maybePop(),
-            child: const Icon(Icons.arrow_back),
+            child: const Icon(Icons.menu),
           ),
         ),
         LayoutId(

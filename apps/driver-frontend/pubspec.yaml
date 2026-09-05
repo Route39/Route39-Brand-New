@@ -11,6 +11,7 @@ environment:
 resolution: workspace
 
 dependencies:
+  audioplayers: ^6.1.0
   sentry_flutter: any
   flutter:
     sdk: flutter

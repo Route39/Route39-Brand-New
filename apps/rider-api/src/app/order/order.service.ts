@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   ActiveOrderCommonRedisService,
@@ -65,6 +65,8 @@ import { WalletService } from '../wallet/wallet.service';
 
 @Injectable()
 export class RiderOrderService {
+  private readonly logger = new Logger(RiderOrderService.name);
+
   constructor(
     @InjectRepository(TaxiOrderEntity)
     private orderRepository: Repository<TaxiOrderEntity>,
@@ -95,6 +97,51 @@ export class RiderOrderService {
     private walletService: WalletService,
   ) {}
 
+  async initiateCall(input: {
+    orderId: number;
+    riderId: number;
+  }): Promise<boolean> {
+    const orderEntity = await this.orderRepository.findOne({
+      where: { id: input.orderId, riderId: input.riderId },
+      relations: { driver: true },
+    });
+    if (!orderEntity || !orderEntity.driver) {
+      throw new ForbiddenError('ORDER_OR_DRIVER_NOT_FOUND');
+    }
+    const rider = await this.riderService.repo.findOne({
+      where: { id: input.riderId },
+    });
+    if (!rider) {
+      throw new ForbiddenError('RIDER_NOT_FOUND');
+    }
+    const exotelSid = process.env.EXOTEL_SID;
+    const exotelApiKey = process.env.EXOTEL_API_KEY;
+    const exotelApiToken = process.env.EXOTEL_API_TOKEN;
+    const exotelSubdomain = process.env.EXOTEL_SUBDOMAIN;
+    const exoPhone = process.env.EXOTEL_EXOPHONE;
+    if (!exotelSid || !exotelApiKey || !exotelApiToken || !exotelSubdomain) {
+      throw new ForbiddenError('EXOTEL_NOT_CONFIGURED');
+    }
+    const url = `https://${exotelApiKey}:${exotelApiToken}@${exotelSubdomain}/v1/Accounts/${exotelSid}/Calls/connect.json`;
+    const params = new URLSearchParams();
+    params.append('From', rider.mobileNumber);
+    params.append('To', orderEntity.driver.mobileNumber);
+    if (exoPhone) {
+      params.append('CallerId', exoPhone);
+    }
+    try {
+      const exotelResponse = await firstValueFrom(
+        this.httpService.post(url, params.toString(), {
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        }),
+      );
+      this.logger.log(`Exotel call response: ${JSON.stringify(exotelResponse.data)}`);
+    } catch (error) {
+      this.logger.error(`Exotel call failed: ${error?.response?.data ? JSON.stringify(error.response.data) : error.message}`);
+      throw error;
+    }
+    return true;
+  }
   async cancelOrder(input: {
     orderId: number;
     reasonId?: number;
@@ -160,11 +207,17 @@ export class RiderOrderService {
             activeOrder.currency,
           );
         if (riderCredit < service!.cancelationTotalFee) {
-          await firstValueFrom(
-            this.httpService.get<{ status: 'OK' | 'FAILED' }>(
-              `${process.env.GATEWAY_SERVER_URL}/capture?id=${payments[0].transactionNumber}&amount=${service!.cancelationTotalFee}`,
-            ),
-          );
+          if (payments.length === 0 || !payments[0]?.transactionNumber) {
+            Logger.warn(
+              `No authorized payment found to capture cancellation fee for order ${activeOrder.id}, skipping fee capture.`,
+            );
+          } else {
+            await firstValueFrom(
+              this.httpService.get<{ status: 'OK' | 'FAILED' }>(
+                `${process.env.GATEWAY_SERVER_URL}/capture?id=${payments[0].transactionNumber}&amount=${service!.cancelationTotalFee}`,
+              ),
+            );
+          }
         }
         await Promise.all([
           this.customerWalletService.rechargeWallet({
@@ -175,7 +228,7 @@ export class RiderOrderService {
             riderId: parseInt(activeOrder.riderId),
             status: TransactionStatus.Done,
           }),
-          this.driverService.rechargeWallet({
+          await this.driverService.rechargeWallet({
             action: TransactionAction.Deduct,
             deductType: DriverDeductTransactionType.Commission,
             amount: service!.cancelationFeeDriverShare,
@@ -498,6 +551,7 @@ export class RiderOrderService {
       directions,
       nextDestination: nextPlace,
       unreadMessagesCount,
+      pickupOtp: order?.pickupOtp,
     };
 
     return dto;
@@ -596,8 +650,30 @@ export class RiderOrderService {
     const orderMetadata = await this.activeOrderRedisService.getActiveOrder(
       orderId.toString(),
     );
-    // TODO: Complete the coupon application logic
-    return orderMetadata;
+    if (couponCode.trim().toUpperCase() !== 'FIRSTRIDE') {
+      throw new ForbiddenError('INVALID_COUPON_CODE');
+    }
+    const orderEntity = await this.orderRepository.findOneByOrFail({
+      id: orderId,
+    });
+    const previousRideCount = await this.orderRepository.count({
+      where: {
+        riderId: orderEntity.riderId,
+        status: OrderStatus.Finished,
+      },
+    });
+    if (previousRideCount > 0) {
+      throw new ForbiddenError('COUPON_ONLY_VALID_FOR_FIRST_RIDE');
+    }
+    const discountAmount = 100;
+    const newCost = Math.max(0, orderEntity.costBest - discountAmount);
+    await this.orderRepository.update(orderId, {
+      costAfterCoupon: newCost,
+    });
+    const updatedMetadata = await this.activeOrderRedisService.getActiveOrder(
+      orderId.toString(),
+    );
+    return updatedMetadata ?? orderMetadata;
   }
 
   async getPastOrders(riderId: number): Promise<PastOrderDTO[]> {
@@ -738,7 +814,7 @@ export class RiderOrderService {
           deductType: RiderDeductTransactionType.OrderFee,
           status: TransactionStatus.Done,
         });
-        this.driverService.rechargeWallet({
+        await this.driverService.rechargeWallet({
           action: TransactionAction.Recharge,
           rechargeType: DriverRechargeTransactionType.OrderFee,
           amount: activeOrder.costEstimateForDriver,

@@ -45,10 +45,26 @@ class VehicleInfoCompact extends StatelessWidget {
           ),
         ),
         if (imageUrl != null)
-          CachedNetworkImage(
-            imageUrl: imageUrl!,
-            width: 80,
-            height: 80,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: CachedNetworkImage(
+              imageUrl: imageUrl!,
+              width: 80,
+              height: 80,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                width: 80,
+                height: 80,
+                color: Colors.grey.shade100,
+                child: const Icon(Icons.directions_car, color: Colors.grey, size: 32),
+              ),
+              errorWidget: (context, url, error) => Container(
+                width: 80,
+                height: 80,
+                color: Colors.grey.shade100,
+                child: const Icon(Icons.directions_car, color: Colors.grey, size: 32),
+              ),
+            ),
           )
       ],
     );

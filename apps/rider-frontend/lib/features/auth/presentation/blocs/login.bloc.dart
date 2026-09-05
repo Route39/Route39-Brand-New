@@ -44,6 +44,7 @@ class LoginBloc extends Cubit<LoginState> {
               loginPage: const LoginPage.enterOtp(),
               mobileNumber: (countryCode, mobileNumber),
               hash: data.verifyNumber.hash,
+              devOtp: data.verifyNumber.devOtp,
               lastOtpSentAt: DateTime.now(),
             ),
           );
@@ -86,6 +87,7 @@ class LoginBloc extends Cubit<LoginState> {
           state.copyWith(
             loginPage: const LoginPage.enterOtp(),
             hash: data.verifyNumber.hash,
+            devOtp: data.verifyNumber.devOtp,
             lastOtpSentAt: DateTime.now(),
           ),
         );

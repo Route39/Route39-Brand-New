@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Icons, Colors, BoxFit, Image, FilterQuality;
 import 'package:ridy/core/extensions/extensions.dart';
-import 'package:ridy/gen/assets.gen.dart';
 
 class WhereAreYouGoingButton extends StatelessWidget {
   final VoidCallback? onPressed;
@@ -26,18 +26,30 @@ class WhereAreYouGoingButton extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Transform.translate(
-              offset: const Offset(-20, 0),
-              child: Assets.images.car.image(
-                  width: 53, height: 53, filterQuality: FilterQuality.high),
+            Image.asset(
+              'assets/images/ev_auto_icon.png',
+              width: 48,
+              height: 48,
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.high,
             ),
+            const SizedBox(width: 16),
             Expanded(
                 child: Text(
-              context.translate.whereAreYouGoing,
+              'Where do you want to go?',
               style: context.bodyLarge
                   ?.copyWith(color: context.theme.colorScheme.onSurfaceVariant),
             )),
-            Assets.images.blueArrow.image(width: 42, height: 42),
+            Container(
+              width: 36,
+              height: 36,
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color(0xFFBA1A1A),
+              ),
+              child: const Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+            ),
           ],
         ),
       ),

@@ -197,6 +197,14 @@ export class OrderService {
         pickupEta.getTime() + tripTravelMetrics.duration * 1000,
       );
 
+      // Generate 4-digit pickup OTP
+      const existingOrderForOtp = await this.orderRepository.findOne({
+        where: { id: input.orderId },
+      });
+      const pickupOtp =
+        existingOrderForOtp?.pickupOtp ??
+        Math.floor(1000 + Math.random() * 9000).toString();
+
       // Accept offer in Redis
       await this.rideOfferRedisService.acceptOfferByDriver({
         orderId: input.orderId.toString(),
@@ -208,12 +216,14 @@ export class OrderService {
         pickupEta,
         dropoffEta,
         driverDirections: driverTravelMetrics.directions,
+        pickupOtp,
       });
 
       // CRITICAL FIX: Await the database update
       await this.orderRepository.update(input.orderId, {
         status: OrderStatus.DriverAccepted,
         driverId: input.driverId,
+        pickupOtp: pickupOtp,
       });
 
       // Notify all drivers that the offer is revoked
@@ -375,6 +385,47 @@ export class OrderService {
         this.createNextDestination(order.waypoints, order.currentLegIndex) ??
         undefined,
     };
+  }
+
+  // DEV ONLY - remove before production/git push
+  async devGetPickupOtp(orderId: number): Promise<string | null> {
+    const orderEntity = await this.orderRepository.findOne({
+      where: { id: orderId },
+    });
+    return orderEntity?.pickupOtp ?? null;
+  }
+
+  async verifyPickupOtp(input: {
+    orderId: number;
+    driverId: number;
+    otp: string;
+    waitSeconds?: number;
+  }): Promise<UpdateStatusDTO> {
+    const orderEntity = await this.orderRepository.findOne({
+      where: { id: input.orderId },
+    });
+
+    if (!orderEntity) {
+      throw new ForbiddenError('ORDER_NOT_FOUND');
+    }
+
+    if (orderEntity.driverId !== input.driverId) {
+      throw new ForbiddenError('ORDER_NOT_ASSIGNED_TO_DRIVER');
+    }
+
+    if (!orderEntity.pickupOtp || orderEntity.pickupOtp !== input.otp) {
+      throw new ForbiddenError('INVALID_OTP');
+    }
+
+    await this.orderRepository.update(input.orderId, {
+      pickupOtpVerifiedAt: new Date(),
+      waitSeconds: input.waitSeconds,
+    });
+
+    return this.initiateRide({
+      orderId: input.orderId,
+      driverId: input.driverId,
+    });
   }
 
   async arrivedToDestination(input: {
@@ -1167,5 +1218,57 @@ export class OrderService {
       orderId: input.orderId,
       totalCost: input.fee,
     };
+  }
+
+  async initiateCall(input: {
+    orderId: number;
+    driverId: number;
+  }): Promise<boolean> {
+    const orderEntity = await this.orderRepository.findOne({
+      where: { id: input.orderId, driverId: input.driverId },
+      relations: { rider: true },
+    });
+    if (!orderEntity || !orderEntity.rider) {
+      throw new ForbiddenError('ORDER_OR_RIDER_NOT_FOUND');
+    }
+    const driver = await this.driverRepository.findOne({
+      where: { id: input.driverId },
+    });
+    if (!driver) {
+      throw new ForbiddenError('DRIVER_NOT_FOUND');
+    }
+    const exotelSid = process.env.EXOTEL_SID;
+    const exotelApiKey = process.env.EXOTEL_API_KEY;
+    const exotelApiToken = process.env.EXOTEL_API_TOKEN;
+    const exotelSubdomain = process.env.EXOTEL_SUBDOMAIN;
+    const exoPhone = process.env.EXOTEL_EXOPHONE;
+    if (!exotelSid || !exotelApiKey || !exotelApiToken || !exotelSubdomain) {
+      throw new ForbiddenError('EXOTEL_NOT_CONFIGURED');
+    }
+    const url = `https://${exotelApiKey}:${exotelApiToken}@${exotelSubdomain}/v1/Accounts/${exotelSid}/Calls/connect.json`;
+    const params = new URLSearchParams();
+    params.append('From', driver.mobileNumber);
+    params.append('To', orderEntity.rider.mobileNumber);
+    if (exoPhone) {
+      params.append('CallerId', exoPhone);
+    }
+    try {
+      const exotelResponse = await firstValueFrom(
+        this.httpService.post(url, params.toString(), {
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        }),
+      );
+      Logger.log(
+        `Exotel call response: ${JSON.stringify(exotelResponse.data)}`,
+        'OrderService.initiateCall',
+      );
+    } catch (error) {
+      Logger.error(
+        `Exotel call failed: ${error?.response?.data ? JSON.stringify(error.response.data) : error.message}`,
+        'OrderService.initiateCall',
+      );
+      throw error;
+    }
+    return true;
   }
 }

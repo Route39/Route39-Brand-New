@@ -42,25 +42,33 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           add(HomeEvent.requestUpdatedOrderRequests());
           await Future.wait([
             emit.forEach(
-              _repository.orderRequests,
+              _repository.orderRequests.handleError((error, stack) {
+                //debugPrint('HomeBloc.orderRequests stream error: $error');
+              }),
               onData: (data) {
                 return state.copyWith(orderRequests: data);
               },
             ),
             emit.forEach(
-              _repository.activeOrders,
+              _repository.activeOrders.handleError((error, stack) {
+                //debugPrint('HomeBloc.activeOrders stream error: $error');
+              }),
               onData: (data) {
                 return state.copyWith(activeOrders: data);
               },
             ),
             emit.forEach(
-              _repository.ephemeralMessages,
+              _repository.ephemeralMessages.handleError((error, stack) {
+                //debugPrint('HomeBloc.ephemeralMessages stream error: $error');
+              }),
               onData: (data) {
                 return state.copyWith(ephemeralMessages: data);
               },
             ),
             emit.forEach(
-              _repository.profile,
+              _repository.profile.handleError((error, stack) {
+                //debugPrint('HomeBloc.profile stream error: $error');
+              }),
               onData: (data) {
                 final previousStatus = state.profileFragment.data?.status;
                 final newStatus = data.data?.status;
@@ -77,8 +85,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
               },
             ),
             emit.forEach(
-              _locationDatasource.driverLocation,
-              onData: (data) {
+              _locationDatasource.driverLocation.handleError((error, stack) {
+                //debugPrint('HomeBloc.driverLocation stream error: $error');
+              }),              onData: (data) {
                 return state.copyWith(
                   driverLocation: data.data ?? state.driverLocation,
                   lastLocationUpdate: DateTime.now(),
@@ -125,40 +134,119 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         //   break;
 
         case HomeEvent$OnAcceptOrder(:final request):
-          emit(state.copyWith(acceptOrderReponse: ApiResponse.loading()));
-          final order = await _repository.acceptOrderRequest(requestId: request.id);
-          if (order.isLoaded) {
-            emit(state.copyWith(acceptOrderReponse: order));
-            emit(
-              state.copyWith(
-                acceptOrderReponse: ApiResponse.initial(),
-                currentOrderId: state.activeOrders.firstOrNull?.id,
-                page: OnTripPage.overview,
-              ),
-            );
-          } else {
-            emit(state.copyWith(acceptOrderReponse: order));
-            emit(state.copyWith(acceptOrderReponse: ApiResponse.initial()));
-          }
-          break;
+          emit(
+    state.copyWith(
+      acceptOrderReponse: ApiResponse.loading(),
+    ),
+  );
+
+  final response = await _repository.acceptOrderRequest(
+    requestId: request.id,
+  );
+
+  if (response.isLoaded && response.data != null) {
+    final acceptedOrder = response.data!;
+
+    // Read the repository's synchronous snapshot instead of diffing
+    // state.activeOrders. By the time acceptOrderRequest() has returned,
+    // the repository has already settled with the server, so this is
+    // guaranteed authoritative — unlike state.activeOrders, which can be
+    // raced and overwritten by a concurrent background stream listener
+    // (e.g. a server-pushed ActiveOrderAssigned event triggering its own
+    // refresh at the same moment).
+    final updatedActiveOrders = _repository.activeOrdersValue;
+
+    emit(
+      state.copyWith(
+        acceptOrderReponse: ApiResponse.initial(),
+        activeOrders: updatedActiveOrders,
+        currentOrderId: acceptedOrder.id,
+        page: OnTripPage.overview,
+      ),
+    );
+
+    // Safety net: a concurrent network request (e.g. a frequent location
+    // update) can occasionally collide with this response at the browser's
+    // networking layer and corrupt/drop it, leaving the driver stuck showing
+    // "online" instead of the accepted trip even though acceptRideOffer
+    // succeeded server-side. Verify shortly after that the accepted order
+    // actually stuck in local state, and if not, force a fresh fetch from
+    // the server instead of leaving the driver silently stranded.
+    await Future.delayed(const Duration(seconds: 2));
+    final stillHasOrder = _repository.activeOrdersValue.any((o) => o.id == acceptedOrder.id);
+    if (!stillHasOrder) {
+      //debugPrint('[ACCEPT-DEBUG] accepted order ${acceptedOrder.id} missing after emit - forcing refresh');
+      _repository.refreshActiveOrders();
+      await Future.delayed(const Duration(seconds: 1));
+      final refreshed = _repository.activeOrdersValue;
+      if (refreshed.any((o) => o.id == acceptedOrder.id)) {
+        emit(
+          state.copyWith(
+            activeOrders: refreshed,
+            currentOrderId: acceptedOrder.id,
+            page: OnTripPage.overview,
+          ),
+        );
+      }
+    }
+
+  } else {
+    emit(
+      state.copyWith(
+        acceptOrderReponse: response,
+      ),
+    );
+
+    emit(
+      state.copyWith(
+        acceptOrderReponse: ApiResponse.initial(),
+      ),
+    );
+  }
+
+  break;
 
         case HomeEvent$OnCancelOrder(:final orderId, :final reasonId, :final reasonNote):
           await _repository.cancelOrder(orderId: orderId, reasonId: reasonId, reasonNote: reasonNote);
-
+          emit(state.copyWith(
+            activeOrders: state.activeOrders.where((o) => o.id != orderId).toList(),
+          ));
           break;
 
         case HomeEvent$OnArrivedToPickupPoint(:final orderId):
-          await _repository.arrivedToPickup(orderId: orderId);
-
+          final pickupResponse = await _repository.arrivedToPickup(orderId: orderId);
+          final pickupOrder = pickupResponse.data;
+          emit(state.copyWith(
+            activeOrders: pickupOrder != null
+                ? [...state.activeOrders.where((o) => o.id != pickupOrder.id), pickupOrder]
+                : state.activeOrders.where((o) => o.id != orderId).toList(),
+          ));
           break;
 
         case HomeEvent$OnTripStarted(:final orderId):
-          await _repository.startTrip(orderId: orderId);
+          final tripResponse = await _repository.startTrip(orderId: orderId);
+          final tripOrder = tripResponse.data;
+          emit(state.copyWith(
+            activeOrders: tripOrder != null
+                ? [...state.activeOrders.where((o) => o.id != tripOrder.id), tripOrder]
+                : state.activeOrders.where((o) => o.id != orderId).toList(),
+          ));
+          break;
+
+        case HomeEvent$OnVerifyPickupOtp(:final orderId, :final otp):
+          final response = await _repository.verifyPickupOtp(orderId: orderId, otp: otp);
+          emit(state.copyWith(updateStatusResponse: response));
 
           break;
 
         case HomeEvent$OnArrivedToDestination(:final order):
-          await _repository.arrivedToDestination(order: order);
+          final destinationResponse = await _repository.arrivedToDestination(order: order);
+          final destinationOrder = destinationResponse.data;
+          emit(state.copyWith(
+            activeOrders: destinationOrder != null
+                ? [...state.activeOrders.where((o) => o.id != destinationOrder.id), destinationOrder]
+                : state.activeOrders.where((o) => o.id != order.id).toList(),
+          ));
           break;
 
         case HomeEvent$OnShowChat():
@@ -175,8 +263,13 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           break;
 
         case HomeEvent$PaidInCash(:final orderId, :final amount):
-          await _repository.paidInCash(orderId: orderId, amount: amount);
-          break;
+final paidResponse = await _repository.paidInCash(orderId: orderId, amount: amount);
+          final paidOrder = paidResponse.data;
+          emit(state.copyWith(
+            activeOrders: paidOrder != null
+                ? [...state.activeOrders.where((o) => o.id != paidOrder.id), paidOrder]
+                : state.activeOrders.where((o) => o.id != orderId).toList(),
+          ));          break;
 
         case HomeEvent$OnSummaryConfirmed():
           // TODO: implement summary confirmation

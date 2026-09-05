@@ -34,6 +34,13 @@ class AppAvatarCompact extends StatelessWidget {
                   filterQuality: FilterQuality.high,
                   width: 48,
                   height: 48,
+                  errorWidget: (context, url, error) => Image.asset(
+                    defaultAvatarPath,
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.high,
+                    isAntiAlias: true,
+                    package: 'flutter_common',
+                  ),
                 ),
       ),
     );

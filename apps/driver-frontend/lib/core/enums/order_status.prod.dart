@@ -34,6 +34,8 @@ extension OrderStatusProdX on Enum$OrderStatus {
         return OrderStatus.booked;
       case Enum$OrderStatus.Expired:
         return OrderStatus.expired;
+      case Enum$OrderStatus.WaitingForDriverFee:
+        return OrderStatus.waitingForPostPay;
 
       case Enum$OrderStatus.$unknown:
         throw Exception('Unknown OrderStatus');

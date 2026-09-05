@@ -1,7 +1,6 @@
 import 'package:ridy_driver/core/graphql/fragments/coordinate.extensions.dart';
 import 'package:ridy_driver/core/graphql/fragments/past_order.fragment.graphql.dart';
 import 'package:ridy_driver/core/graphql/schema.gql.dart';
-import 'package:ridy_driver/gen/assets.gen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
@@ -27,9 +26,10 @@ class RideHistoryItem extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          image: DecorationImage(
-            image: Assets.images.historyRidesHeaderBackground.provider(),
-            fit: BoxFit.cover,
+          gradient: const LinearGradient(
+            colors: [Color(0xFFB30000), Color(0xFFE00000), Color(0xFFFF4B4B)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
           ),
         ),
         child: Column(
@@ -50,7 +50,7 @@ class RideHistoryItem extends StatelessWidget {
                     padding: const EdgeInsets.all(8),
                     child: const Icon(
                       Ionicons.car,
-                      color: ColorPalette.primary30,
+                      color: Color(0xFFB30000),
                       size: 28,
                     ),
                   ),
@@ -73,7 +73,7 @@ class RideHistoryItem extends StatelessWidget {
                               style: context.labelLarge?.copyWith(
                                 color: ColorPalette.neutral99,
                               ),
-                            )
+                            ),
                           ],
                         ),
                         const SizedBox(height: 2),
@@ -87,7 +87,8 @@ class RideHistoryItem extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            if (entity.status == Enum$OrderStatus.DriverCanceled ||
+                            if (entity.status ==
+                                    Enum$OrderStatus.DriverCanceled ||
                                 entity.status == Enum$OrderStatus.RiderCanceled)
                               Text(
                                 context.translate.canceled,
@@ -95,7 +96,8 @@ class RideHistoryItem extends StatelessWidget {
                                   color: ColorPalette.error80,
                                 ),
                               ),
-                            if (entity.status != Enum$OrderStatus.DriverCanceled &&
+                            if (entity.status !=
+                                    Enum$OrderStatus.DriverCanceled &&
                                 entity.status != Enum$OrderStatus.RiderCanceled)
                               Text(
                                 entity.paymentMode == Enum$PaymentMode.Cash
@@ -106,10 +108,10 @@ class RideHistoryItem extends StatelessWidget {
                                 ),
                               ),
                           ],
-                        )
+                        ),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -118,15 +120,13 @@ class RideHistoryItem extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 color: ColorPalette.neutral99,
-                border: Border.all(
-                  color: ColorPalette.primary95,
-                ),
+                border: Border.all(color: const Color(0xFFFFE5E5)),
                 boxShadow: const [
                   BoxShadow(
                     color: Color(0x1464748B),
                     blurRadius: 8,
                     offset: Offset(2, 4),
-                  )
+                  ),
                 ],
               ),
               child: WayPointsView(
@@ -134,7 +134,7 @@ class RideHistoryItem extends StatelessWidget {
                 startedAt: entity.createdAt,
                 finishedAt: entity.dropoffEta,
               ),
-            )
+            ),
           ],
         ),
       ),

@@ -53,6 +53,8 @@ export class DriverAPIModule implements OnModuleInit {
 
   static async register(): Promise<DynamicModule> {
     const config = await getConfig(process.env.NODE_ENV ?? 'production');
+    console.log(process.env.NODE_ENV, 'DriverAPIModule.register.NODE_ENV');
+    console.log(config, 'DriverAPIModule.register.config');
     if (config) {
       return {
         module: DriverAPIModule,

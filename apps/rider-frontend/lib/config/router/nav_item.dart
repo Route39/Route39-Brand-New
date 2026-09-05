@@ -39,9 +39,9 @@ const signedInNavItems = [
 ];
 
 const signedOutNavItems = [
-  NavItem.signIn,
   NavItem.settings,
   NavItem.about,
+  NavItem.signIn,
 ];
 
 extension NavItemX on NavItem {

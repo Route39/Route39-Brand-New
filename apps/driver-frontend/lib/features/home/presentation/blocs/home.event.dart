@@ -32,6 +32,11 @@ sealed class HomeEvent with _$HomeEvent {
     required String orderId,
   }) = HomeEvent$OnTripStarted;
 
+  const factory HomeEvent.onVerifyPickupOtp({
+    required String orderId,
+    required String otp,
+  }) = HomeEvent$OnVerifyPickupOtp;
+
   const factory HomeEvent.onArrivedToDestination({
     required Fragment$ActiveOrder order,
   }) = HomeEvent$OnArrivedToDestination;

@@ -656,6 +656,11 @@ type VerifyNumberDto {
   Hash that will need to be passed in subsequent verify code call in order for match and verifcation to happen.
   """
   hash: String
+
+  """
+  The actual OTP code, only returned when SHOW_DEV_OTP=true on the server. Never populated in production.
+  """
+  devOtp: String
 }
 
 type SendEmailVerificationDto {
@@ -943,6 +948,7 @@ type DriverWallet {
 type StatisticsResult {
   currency: String!
   sumOfCurrentPeriod: Float!
+  lastOrderEarnings: Float
   dataset: [Datapoint!]!
 }
 
@@ -1031,12 +1037,16 @@ type EphemeralMessage {
   riderProfileUrl: String
   serviceName: String
   serviceImageUrl: String
+  amount: Float
 }
 
 enum EphemeralMessageType {
   RateRider
   RiderCanceled
   AddPayoutMethod
+  RideReceived
+  RideCompleted
+  RideCancelled
 }
 
 input PointInput {
@@ -1087,6 +1097,9 @@ type Query {
   activeServices: [Service!]!
   callMaskingConfig: CallMaskingConfig
   lostPropertyEligibility(orderId: ID!): LostPropertyEligibility!
+
+  """DEV ONLY - fetch pickup OTP for testing. Remove before production."""
+  devGetPickupOtp(orderId: ID!): String
   activeOrders: [ActiveOrder!]!
 
   """Get all ride offers for the driver"""
@@ -1239,10 +1252,12 @@ type Mutation {
   updateLastSeenMessagesAt(orderId: ID!): Boolean!
   acceptRideOffer(orderId: ID!): ActiveOrder!
   rejectRideOffer(orderId: ID!): Boolean!
+  initiateCall(orderId: ID!): Boolean!
   submitReview(input: RiderReviewInput!): Boolean!
   arrivedToPickup(orderId: ID!): UpdateStatus!
   arrivedToDestination(orderId: ID!): UpdateStatus!
   initiateRide(orderId: ID!): UpdateStatus!
+  verifyPickupOtp(orderId: ID!, otp: String!, waitSeconds: Int): UpdateStatus!
   cancelRide(orderId: ID!, reasonId: ID!, reasonNote: String): UpdateStatus!
   riderPaidInCash(orderId: ID!): UpdateStatus!
   submitOrderFee(orderId: ID!, fee: Float!): UpdateStatus!

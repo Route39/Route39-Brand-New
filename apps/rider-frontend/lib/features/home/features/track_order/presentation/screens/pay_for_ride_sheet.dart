@@ -1,28 +1,19 @@
 import 'package:api_response/api_response.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_common/core/enums/order_status.dart';
-import 'package:flutter_common/core/enums/payment_mode.dart';
-import 'package:flutter_common/core/presentation/buttons/app_close_button.dart';
-import 'package:flutter_common/core/presentation/snackbar/snackbar.dart';
-import 'package:ionicons/ionicons.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
+import 'package:flutter_common/core/presentation/snackbar/snackbar.dart';
 import 'package:ridy/config/locator/locator.dart';
-import 'package:flutter_common/core/entities/payment_method_union.dart';
 import 'package:ridy/core/blocs/auth_bloc.dart';
 import 'package:ridy/core/blocs/home.bloc.dart';
 import 'package:ridy/core/enums/order_status.prod.dart';
 import 'package:ridy/core/extensions/extensions.dart';
-import 'package:flutter_common/core/presentation/buttons/app_primary_button.dart';
-import 'package:flutter_common/core/presentation/payment_method_list_view.dart';
 import 'package:ridy/core/graphql/fragments/active_order.extensions.dart';
 import 'package:ridy/features/home/features/track_order/presentation/dialogs/pay_in_cash_dialog.dart';
 
-import 'package:flutter_common/gen/assets.gen.dart';
 import 'package:ridy/gen/assets.gen.dart' as rider_assets;
 
-import 'package:dotted_border/dotted_border.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../blocs/pay_for_ride.bloc.dart';
@@ -36,7 +27,8 @@ class PayForRideSheet extends StatefulWidget {
 }
 
 class _SelectPaymentMethodSheetState extends State<PayForRideSheet> {
-  double customCredit = 0;
+  double tip = 0;
+  final customTipController = TextEditingController();
 
   @override
   void initState() {
@@ -49,6 +41,42 @@ class _SelectPaymentMethodSheetState extends State<PayForRideSheet> {
       cashEnabled: true,
     );
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    customTipController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickCustomTip(BuildContext context) async {
+    final result = await showDialog<double>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Custom tip'),
+        content: TextField(
+          controller: customTipController,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(hintText: 'Enter amount'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final value = double.tryParse(customTipController.text) ?? 0;
+              Navigator.of(context).pop(value);
+            },
+            child: const Text('Apply'),
+          ),
+        ],
+      ),
+    );
+    if (result != null) {
+      setState(() => tip = result);
+    }
   }
 
   @override
@@ -68,301 +96,217 @@ class _SelectPaymentMethodSheetState extends State<PayForRideSheet> {
                 launchUrlString(data.url!, mode: LaunchMode.externalApplication);
                 return;
               }
-              if (state.selectedPaymentMethod?.paymentMode == PaymentMode.cash ||
-                  state.selectedPaymentMethod?.paymentMode == PaymentMode.wallet) {
-                locator<HomeBloc>().add(HomeEvent.changeTrackOrderPage(page: TrackOrderPage.overview));
-                return;
-              }
               locator<HomeBloc>().add(HomeEvent.changeTrackOrderPage(page: TrackOrderPage.overview));
-
               break;
 
             default:
               break;
           }
         },
-        child: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, authState) {
-            final profile = authState.profile;
-            return BlocBuilder<HomeBloc, HomeState>(
-              builder: (context, state) {
-                final activeOrder = state.activeOrder;
-                if (activeOrder == null) {
-                  return const SizedBox.shrink();
-                }
-                return Container(
-                  decoration: BoxDecoration(
-                    color: context.theme.scaffoldBackgroundColor,
-                    image: DecorationImage(
-                      image: Assets.images.backgroundDotted.provider(),
-                      alignment: Alignment.topCenter,
-                      fit: BoxFit.fitWidth,
+        child: BlocBuilder<HomeBloc, HomeState>(
+          builder: (context, state) {
+            final activeOrder = state.activeOrder;
+            if (activeOrder == null) {
+              return const SizedBox.shrink();
+            }
+            final total = activeOrder.totalCost + tip;
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28), bottom: Radius.circular(28)),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: SafeArea(
+                bottom: false,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      child: Text(
+                        'Kindly verify the trip details',
+                        textAlign: TextAlign.center,
+                        style: context.titleMedium?.copyWith(color: Colors.black, fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                  child: SafeArea(
-                    bottom: false,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: ColorPalette.neutralVariant99,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: Colors.red.withOpacity(0.2)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Text(
+                                'SINGLE RIDE',
+                                style: TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Stack(
-                                  children: [
-                                    if (activeOrder.status.toEntity != OrderStatus.waitingForPostPay)
-                                      AppCloseButton(
-                                        onPressed: () {
-                                          if (activeOrder.status.toEntity == OrderStatus.waitingForPrePay) {
-                                            showDialog(
-                                              context: context,
-                                              useSafeArea: false,
-                                              builder: (context) => CancelRideReasonDialog(orderId: activeOrder.id),
-                                            );
-                                          } else {
-                                            locator<HomeBloc>().add(
-                                              HomeEvent.changeTrackOrderPage(page: TrackOrderPage.overview),
-                                            );
-                                          }
-                                        },
-                                      ),
-                                    Center(child: Text(context.translate.payment, style: context.titleMedium)),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                Stack(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(bottom: 32),
-                                      child: DottedBorder(
-                                        options: RoundedRectDottedBorderOptions(
-                                          radius: const Radius.circular(12),
-                                          color: ColorPalette.primary40,
-                                          strokeWidth: 2,
-                                          dashPattern: const [8, 4],
-                                        ),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(12),
-                                            color: ColorPalette.primary99,
-                                          ),
-                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                          child: Column(
-                                            children: [
-                                              invoiceItem(
-                                                context.translate.serviceFee,
-                                                activeOrder.totalCost,
-                                                activeOrder.currency,
-                                              ),
-                                              const SizedBox(height: 8),
-                                              invoiceItem(context.translate.serviceOptionFee, 0, activeOrder.currency),
-                                              const SizedBox(height: 8),
-                                              invoiceItem(
-                                                context.translate.couponDiscount,
-                                                activeOrder.couponDiscount ?? 0,
-                                                activeOrder.currency,
-                                              ),
-                                              const Divider(color: ColorPalette.neutral90, indent: 4, endIndent: 4),
-                                              const SizedBox(height: 8),
-                                              invoiceItem(
-                                                context.translate.walletBalance,
-                                                profile?.walletCredit ?? 0,
-                                                profile?.currency ?? '',
-                                              ),
-                                              const SizedBox(height: 8),
-                                              BlocBuilder<PayForRideCubit, PayForRideState>(
-                                                builder: (context, state) {
-                                                  final isCashOrWallet =
-                                                      state.selectedPaymentMethod?.paymentMode == PaymentMode.cash ||
-                                                      state.selectedPaymentMethod?.paymentMode == PaymentMode.wallet;
-
-                                                  if (isCashOrWallet) {
-                                                    return const SizedBox.shrink();
-                                                  }
-                                                  return Row(
-                                                    children: [
-                                                      Container(
-                                                        padding: const EdgeInsets.all(12),
-                                                        decoration: BoxDecoration(
-                                                          color: ColorPalette.neutral99,
-                                                          borderRadius: BorderRadius.circular(12),
-                                                          border: Border.all(color: ColorPalette.neutral90),
-                                                        ),
-                                                        child: const Icon(
-                                                          Ionicons.wallet,
-                                                          color: ColorPalette.primary40,
-                                                        ),
-                                                      ),
-                                                      const SizedBox(width: 12),
-                                                      Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          Text(
-                                                            context.translate.walletBalance,
-                                                            style: context.labelSmall,
-                                                          ),
-                                                          Text(
-                                                            context.translate.addCustomCredit,
-                                                            style: context.labelMedium,
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      const Spacer(),
-                                                      SizedBox(
-                                                        width: 80,
-                                                        child: TextField(
-                                                          inputFormatters: [
-                                                            FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
-                                                          ],
-                                                          onChanged: (value) =>
-                                                              setState(() => customCredit = double.tryParse(value) ?? 0),
-                                                          decoration: InputDecoration(
-                                                            contentPadding: const EdgeInsets.all(8),
-                                                            fillColor: ColorPalette.neutral99,
-                                                            hintText: context.translate.custom,
-                                                            border: InputBorder.none,
-                                                            isCollapsed: true,
-                                                          ),
-                                                          style: context.bodyMedium,
-                                                          keyboardType: TextInputType.number,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  );
-                                                },
-                                              ),
-                                              const SizedBox(height: 32),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      bottom: 0,
-                                      left: 64,
-                                      right: 64,
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(12),
-                                          image: DecorationImage(
-                                            image: Assets.images.gradientTotal.provider(),
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Text(
-                                              context.translate.totalPrice,
-                                              style: context.labelMedium?.copyWith(color: ColorPalette.neutral99),
-                                            ),
-                                            const Spacer(),
-                                            Text(
-                                              (activeOrder.totalCost).formatCurrency(activeOrder.currency),
-                                              style: context.headlineMedium?.copyWith(color: ColorPalette.neutral99),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                const Text('Total Amount', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600)),
+                                Text(
+                                  total.formatCurrency(activeOrder.currency),
+                                  style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 18),
                                 ),
                               ],
                             ),
-                          ),
+                          ],
                         ),
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                            color: ColorPalette.neutralVariant99,
-                            boxShadow: [
-                              BoxShadow(
-                                color: ColorPalette.primary20.withValues(alpha: 0.08),
-                                blurRadius: 20,
-                                offset: const Offset(2, 5),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              const SizedBox(height: 8),
-                              BlocBuilder<PayForRideCubit, PayForRideState>(
-                                builder: (context, state) {
-                                  return switch (state.savedPaymentMethodsState) {
-                                    ApiResponseInitial() => const SizedBox.shrink(),
-                                    ApiResponseLoading() => rider_assets.Assets.lottie.loading.lottie(
-                                      width: 100,
-                                      height: 100,
-                                    ),
-                                    ApiResponseError(:final errorMessage) => Center(
-                                      child: Text(errorMessage ?? context.translate.somethingWentWrong),
-                                    ),
-                                    ApiResponseLoaded() => PaymentMethodListView(
-                                      paymentMethods: state.paymentMethods(
-                                        cashPaymentEnabled: true,
-                                        isWalletCreditSufficient: (profile?.walletCredit ?? 0) > activeOrder.totalCost,
-                                      ),
-                                      selectedPaymentMethod: state.selectedPaymentMethod,
-                                      onSelected: (method) {
-                                        locator<PayForRideCubit>().changePaymentMethod(selectedPaymentMethod: method!);
-                                        if (method.paymentMode == PaymentMode.cash ||
-                                            method.paymentMode == PaymentMode.wallet) {
-                                          setState(() {
-                                            customCredit = 0;
-                                          });
-                                        }
-                                      },
-                                    ),
-                                  };
-                                },
-                              ),
-                              SafeArea(
-                                top: false,
-                                child: BlocBuilder<PayForRideCubit, PayForRideState>(
-                                  builder: (context, state) {
-                                    return AppPrimaryButton(
-                                      isDisabled: state.paymentStatus.isLoading || state.selectedPaymentMethod == null,
-                                      onPressed: () {
-                                        if (state.selectedPaymentMethod?.paymentMode == PaymentMode.cash) {
-                                          showDialog(
-                                            context: context,
-                                            useSafeArea: false,
-                                            builder: (context) => const PayInCashDialog(),
-                                          );
-                                          return;
-                                        }
-                                        locator<PayForRideCubit>().pay(
-                                          currency: activeOrder.currency,
-                                          amount: activeOrder.totalCost,
-                                          orderId: activeOrder.id,
-                                          canPreauth: activeOrder.status.toEntity == OrderStatus.waitingForPrePay,
-                                        );
-                                      },
-                                      child: Text(context.translate.confirmPay),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                );
-              },
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+                      child: Text(
+                        'SUPPORT YOUR DRIVER WITH A TIP',
+                        style: context.bodySmall?.copyWith(color: ColorPalette.neutralVariant50, letterSpacing: 0.5, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _TipChip(label: 'No Tip', selected: tip == 0, onTap: () => setState(() => tip = 0)),
+                            const SizedBox(width: 8),
+                            _TipChip(label: '₹10', selected: tip == 10, onTap: () => setState(() => tip = 10)),
+                            const SizedBox(width: 8),
+                            _TipChip(label: '₹20', selected: tip == 20, onTap: () => setState(() => tip = 20)),
+                            const SizedBox(width: 8),
+                            _TipChip(label: '₹50', selected: tip == 50, onTap: () => setState(() => tip = 50)),
+                            const SizedBox(width: 8),
+                            _TipChip(
+                              label: 'Custom',
+                              selected: ![0, 10, 20, 50].contains(tip),
+                              onTap: () => _pickCustomTip(context),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: BlocBuilder<PayForRideCubit, PayForRideState>(
+                        builder: (context, state) {
+                          return switch (state.savedPaymentMethodsState) {
+                            ApiResponseInitial() => const SizedBox.shrink(),
+                            ApiResponseLoading() => Center(
+                              child: rider_assets.Assets.lottie.loading.lottie(width: 60, height: 60),
+                            ),
+                            ApiResponseError(:final errorMessage) => Center(
+                              child: Text(errorMessage ?? context.translate.somethingWentWrong),
+                            ),
+                            ApiResponseLoaded() => Row(
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                                    ),
+                                    onPressed: () {
+                                      showDialog(
+                                        context: context,
+                                        useSafeArea: false,
+                                        builder: (context) => const PayInCashDialog(),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.payments_outlined, size: 18),
+                                    label: Text('Cash (${total.formatCurrency(activeOrder.currency)})'),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                                    ),
+                                    onPressed: () {
+                                      locator<PayForRideCubit>().pay(
+                                        currency: activeOrder.currency,
+                                        amount: total,
+                                        orderId: activeOrder.id,
+                                        canPreauth: activeOrder.status.toEntity == OrderStatus.waitingForPrePay,
+                                      );
+                                    },
+                                    icon: const Icon(Icons.credit_card, size: 18),
+                                    label: Text('UPI (${total.formatCurrency(activeOrder.currency)})'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          };
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8, bottom: 16),
+                      child: Text(
+                        '* 2% GATEWAY FEE APPLIES TO ONLINE/UPI PAYMENTS',
+                        textAlign: TextAlign.center,
+                        style: context.bodySmall?.copyWith(color: ColorPalette.neutralVariant50, fontSize: 10),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             );
           },
         ),
       ),
     );
   }
+}
 
-  Widget invoiceItem(String title, double value, String currency) {
-    return Row(children: [Text(title), const Spacer(), Text(value.formatCurrency(currency))]);
+class _TipChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _TipChip({required this.label, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? Colors.red : ColorPalette.neutralVariant99,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: selected ? Colors.red : ColorPalette.neutralVariant80),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? Colors.white : Colors.black87,
+            fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+            fontSize: 13,
+          ),
+        ),
+      ),
+    );
   }
 }

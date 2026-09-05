@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:ridy/config/router/app_router.dart';
 import 'package:ridy/core/extensions/extensions.dart';
@@ -20,29 +19,35 @@ class ActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ActionButtonsGroup(
-      items: [
-        HeaderActionButtonItem(
-          title: context.translate.totalRides,
-          subtilte: totalRides.toString(),
-          icon: Ionicons.car,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: ActionButtonsGroup(
+          items: [
+            HeaderActionButtonItem(
+              title: context.translate.totalRides,
+              subtilte: totalRides.toString(),
+              icon: Ionicons.car,
+            ),
+            HeaderActionButtonItem(
+              title: context.translate.distanceTraveled,
+              subtilte: totalDistanceTraveled.toFormattedDistance(context),
+              icon: Ionicons.map,
+            ),
+            HeaderActionButtonItem(
+              title: context.translate.favoriteDrivers,
+              subtilte: favoriteDrivers.toString(),
+              icon: Icons.account_circle,
+              onPressed: () {
+                context.router.push(
+                  const FavoriteDriversRoute(),
+                );
+              },
+            )
+          ],
         ),
-        HeaderActionButtonItem(
-          title: context.translate.distanceTraveled,
-          subtilte: totalDistanceTraveled.toFormattedDistance(context),
-          icon: Ionicons.map,
-        ),
-        HeaderActionButtonItem(
-          title: context.translate.favoriteDrivers,
-          subtilte: favoriteDrivers.toString(),
-          icon: Icons.account_circle,
-          onPressed: () {
-            context.router.push(
-              const FavoriteDriversRoute(),
-            );
-          },
-        )
-      ],
+      ),
     );
   }
 }

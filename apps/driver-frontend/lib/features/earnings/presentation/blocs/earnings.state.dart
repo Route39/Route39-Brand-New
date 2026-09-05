@@ -23,8 +23,8 @@ sealed class EarningsState with _$EarningsState {
 
   factory EarningsState.initial() => EarningsState(
         timeframe: Enum$TimeQuery.Daily,
-        startDate: DateTime.now(),
-        endDate: DateTime.now().subtract(const Duration(days: 7)),
+        startDate: DateTime.now().subtract(const Duration(days: 7)),
+        endDate: DateTime.now(),
         earningsState: const ApiResponse.initial(),
       );
 }

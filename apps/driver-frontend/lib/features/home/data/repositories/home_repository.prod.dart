@@ -38,6 +38,9 @@ class HomeRepositoryImpl implements HomeRepository {
   final BehaviorSubject<List<Fragment$ActiveOrder>> _activeOrders = BehaviorSubject.seeded([]);
 
   @override
+  List<Fragment$ActiveOrder> get activeOrdersValue => _activeOrders.value;
+
+  @override
   Stream<List<Fragment$EphemeralMessage>> get ephemeralMessages => _ephemeralMessages.stream;
   final BehaviorSubject<List<Fragment$EphemeralMessage>> _ephemeralMessages = BehaviorSubject.seeded([]);
 
@@ -187,13 +190,38 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 
   @override
-  Future<ApiResponse<void>> acceptOrderRequest({required String requestId}) async {
-    final order = await graphQLDatasource.mutate(
-      Options$Mutation$acceptRideOffer(variables: Variables$Mutation$acceptRideOffer(offerId: requestId)),
+Future<ApiResponse<Fragment$ActiveOrder>> acceptOrderRequest({
+  required String requestId,
+}) async {
+  final order = await graphQLDatasource.mutate(
+    Options$Mutation$acceptRideOffer(
+      variables: Variables$Mutation$acceptRideOffer(
+        offerId: requestId,
+      ),
+    ),
+  );
+
+  final accepted = order.mapData((r) => r.acceptRideOffer);
+
+  if (accepted.data != null) {
+    _activeOrders.add(
+      _activeOrders.value.followedBy([accepted.data!]).toList(),
     );
-    _activeOrders.add(_activeOrders.value.followedBy([order.data!.acceptRideOffer]).toList());
-    _orderRequests.add(_orderRequests.value.where((e) => e.id != requestId).toList());
-    return order;
+
+    _orderRequests.add(
+      _orderRequests.value.where((e) => e.id != requestId).toList(),
+    );
+
+    // A server-pushed ActiveOrderAssigned websocket event can independently
+    // trigger a full refresh around the same moment as this accept, and
+    // there's no guarantee which one lands last. Explicitly settle here so
+    // activeOrdersValue is guaranteed authoritative by the time this
+    // function returns, instead of depending on which async write wins.
+    await refreshActiveOrders();
+  }
+
+  return accepted;
+
   }
 
   @override
@@ -215,7 +243,7 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 
   @override
-  Future<ApiResponse<void>> arrivedToDestination({required Fragment$ActiveOrder order}) async {
+  Future<ApiResponse<Fragment$ActiveOrder?>> arrivedToDestination({required Fragment$ActiveOrder order}) async {
     final updateResponse = await graphQLDatasource.mutate(
       Options$Mutation$arrivedToDestination(
         fetchPolicy: FetchPolicy.noCache,
@@ -226,7 +254,7 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 
   @override
-  Future<ApiResponse<void>> arrivedToPickup({required String orderId}) async {
+  Future<ApiResponse<Fragment$ActiveOrder?>> arrivedToPickup({required String orderId}) async {
     final updateResponse = await graphQLDatasource.mutate(
       Options$Mutation$arrivedToPickup(
         fetchPolicy: FetchPolicy.noCache,
@@ -237,7 +265,7 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 
   @override
-  Future<ApiResponse<void>> cancelOrder({required String orderId, required String reasonId, String? reasonNote}) async {
+  Future<ApiResponse<Fragment$ActiveOrder?>> cancelOrder({required String orderId, required String reasonId, String? reasonNote}) async {
     final updateResponse = await graphQLDatasource.mutate(
       Options$Mutation$CancelRide(
         fetchPolicy: FetchPolicy.noCache,
@@ -248,7 +276,7 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 
   @override
-  Future<ApiResponse<void>> startTrip({required String orderId}) async {
+  Future<ApiResponse<Fragment$ActiveOrder?>> startTrip({required String orderId}) async {
     final updateResponse = await graphQLDatasource.mutate(
       Options$Mutation$initiateRide(
         fetchPolicy: FetchPolicy.noCache,
@@ -258,21 +286,39 @@ class HomeRepositoryImpl implements HomeRepository {
     return _updateOrderStatus(updateResponse.mapData((r) => r.initiateRide));
   }
 
-  Future<ApiResponse<void>> _updateOrderStatus(ApiResponse<Fragment$UpdateStatus> response) async {
+  @override
+  Future<ApiResponse<void>> verifyPickupOtp({required String orderId, required String otp}) async {
+    final updateResponse = await graphQLDatasource.mutate(
+      Options$Mutation$verifyPickupOtp(
+        fetchPolicy: FetchPolicy.noCache,
+        variables: Variables$Mutation$verifyPickupOtp(id: orderId, otp: otp),
+      ),
+    );
+    return _updateOrderStatus(updateResponse.mapData((r) => r.verifyPickupOtp));
+  }
+
+  Future<ApiResponse<Fragment$ActiveOrder?>> _updateOrderStatus(ApiResponse<Fragment$UpdateStatus> response) async {
     final data = response.data;
-    if (data == null) return response;
+    if (data == null) {
+      return response.fold(
+        (error, {failure}) => ApiResponse.error(error, failure: failure),
+        (_) => ApiResponse.loaded(null),
+      );
+    }
     final currentActiveOrders = _activeOrders.value;
+    Fragment$ActiveOrder? mergedOrder;
     final updatedOrders = currentActiveOrders
         .map((e) {
           if (e.id == data.orderId) {
             if (data.status == Enum$OrderStatus.Finished || data.status == Enum$OrderStatus.DriverCanceled) {
               return null; // Remove the order if it's finished
             }
-            return e.copyWith(
+            mergedOrder = e.copyWith(
               status: data.status,
               directions: data.directions ?? e.directions,
               nextDestination: data.nextDestination ?? e.nextDestination,
             );
+            return mergedOrder;
           }
           return e;
         })
@@ -282,7 +328,9 @@ class HomeRepositoryImpl implements HomeRepository {
       _profile.add(ApiResponse.loaded(_profile.value.data!.copyWith(status: Enum$DriverStatus.Online)));
     }
     _activeOrders.add(updatedOrders);
-    return response;
+    // Return the merged order directly so the bloc can update the UI
+    // immediately instead of waiting on the async activeOrders stream.
+    return ApiResponse.loaded(mergedOrder);
   }
 
   @override
@@ -302,7 +350,7 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 
   @override
-  Future<ApiResponse<void>> paidInCash({required String orderId, required double amount}) async {
+  Future<ApiResponse<Fragment$ActiveOrder?>> paidInCash({required String orderId, required double amount}) async {
     final updateResponse = await graphQLDatasource.mutate(
       Options$Mutation$riderPaidInCash(
         fetchPolicy: FetchPolicy.noCache,
@@ -371,7 +419,18 @@ class HomeRepositoryImpl implements HomeRepository {
   @override
   Future<void> refreshActiveOrders() async {
     final activeOrders = await graphQLDatasource.query(Options$Query$ActiveOrders());
-    _activeOrders.add(activeOrders.data?.activeOrders ?? []);
+    if (activeOrders.isLoaded) {
+      _activeOrders.add(activeOrders.data?.activeOrders ?? []);
+    } else {
+      // A failed fetch (e.g. auth not fully ready yet right after a page refresh)
+      // should not be treated as "no active ride" - retry once shortly after
+      // instead of silently clearing an in-progress trip.
+      await Future.delayed(const Duration(seconds: 2));
+      final retry = await graphQLDatasource.query(Options$Query$ActiveOrders());
+      if (retry.isLoaded) {
+        _activeOrders.add(retry.data?.activeOrders ?? []);
+      }
+    }
   }
 
   @override
