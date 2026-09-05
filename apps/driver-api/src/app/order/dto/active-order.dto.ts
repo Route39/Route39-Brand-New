@@ -73,6 +73,22 @@ export class ActiveOrderDTO {
   paymentMethod!: PaymentMethodBase;
   @Field(() => Float, { nullable: true })
   couponDiscount?: number;
+  @Field(() => Float, { nullable: false })
+  costBest!: number;
+  @Field(() => Float, { nullable: false })
+  providerShare!: number;
+  @Field(() => Float, { nullable: true })
+  gstPercent?: number;
+  @Field(() => Float, { nullable: false })
+  gstAmount!: number;
+  @Field(() => Float, { nullable: true })
+  platformFee?: number;
+  @Field(() => Float, { nullable: false })
+  platformFeeAmount!: number;
+  @Field(() => Float, { nullable: true })
+  paymentGatewayFeePercent?: number;
+  @Field(() => Float, { nullable: false })
+  paymentGatewayFeeAmount!: number;
   @Field(() => [Point], { defaultValue: [] })
   directions!: Point[];
   @Field(() => Int, { defaultValue: 0 })

@@ -2,6 +2,7 @@ import { useQuery } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 
 import { DataTable, type DataTableColumn } from "@/components/tables/DataTable";
+import { WalletExportButton } from "@/components/tables/WalletExportButton";
 import { PageHeader } from "@/components/panel/PageHeader";
 import { RIDER_WALLETS_LIST_QUERY } from "@/lib/graphql/documents/payouts";
 import {
@@ -34,7 +35,11 @@ export default function RiderFinancialsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Rider wallets" description="Balances held by riders." />
+      <PageHeader
+        title="Rider wallets"
+        description="Balances held by riders."
+        actions={<WalletExportButton table="RiderWallet" relations={["rider"]} entityLabel="Rider wallets" />}
+      />
       <DataTable
         columns={columns}
         rows={rows}

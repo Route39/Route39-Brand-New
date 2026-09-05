@@ -602,6 +602,21 @@ export class SharedOrderService {
           break;
       }
     }
+    // GST and Platform Fee apply to every order; Payment Gateway Fee only
+    // applies when the rider is actually paying through a gateway (a saved
+    // card or a fresh gateway payment) — not for cash or wallet.
+    const isOnlinePayment =
+      input.paymentMode === PaymentMode.PaymentGateway ||
+      input.paymentMode === PaymentMode.SavedPaymentMethod;
+    const gstAmount = (cost * (service.gstPercent ?? 0)) / 100;
+    const platformFeeAmount = service.platformFee ?? 0;
+    const paymentGatewayFeeAmount = isOnlinePayment
+      ? (cost * (service.paymentGatewayFee ?? 0)) / 100
+      : 0;
+    Logger.log(
+      { cost, gstAmount, platformFeeAmount, paymentGatewayFeeAmount, isOnlinePayment },
+      'SharedOrderService.createOrder.feeBreakdown',
+    );
     const orderObject: TaxiOrderEntity = this.orderRepository.create({
       serviceId: input.serviceId,
       type: input.type,
@@ -645,6 +660,9 @@ export class SharedOrderService {
       fleetId: input.fleetId,
       providerShare:
         service.providerShareFlat + (service.providerSharePercent * cost) / 100,
+        gstAmount,
+      platformFeeAmount,
+      paymentGatewayFeeAmount,
       options: options,
     });
     let order = await this.orderRepository.save(orderObject);
@@ -723,8 +741,33 @@ export class SharedOrderService {
       scheduledAt: order.expectedTimestamp!,
       pickupLocation: order.points[0],
       fleetId: order.fleetId,
-      costEstimateForRider: order.costAfterCoupon,
-      costEstimateForDriver: order.costBest - order.providerShare,
+      //costEstimateForRider: order.costAfterCoupon,
+      //costEstimateForDriver: order.costBest - order.providerShare,
+            // costAfterCoupon = costBest − couponDiscount already, so adding the
+      // fee total here gives: (costBest + fees) − couponDiscount for the
+      // rider, and (costBest + fees) − providerShare − couponDiscount for
+      // the driver — matching the agreed fee-inclusive formula for both.
+      costEstimateForRider:
+        order.costAfterCoupon +
+        order.gstAmount +
+        order.platformFeeAmount +
+        order.paymentGatewayFeeAmount,
+      costEstimateForDriver:
+        order.costAfterCoupon +
+        order.gstAmount +
+        order.platformFeeAmount +
+        order.paymentGatewayFeeAmount,
+      // Same value the rider side already computes (costBest − costAfterCoupon).
+      // One coupon, one order — both apps must show the identical number.
+      couponDiscount: order.costBest - order.costAfterCoupon,
+      costBest: order.costBest,
+      providerShare: order.providerShare!,
+      gstPercent: order.service!.gstPercent ?? 0,
+      gstAmount: order.gstAmount,
+      platformFee: order.service!.platformFee ?? 0,
+      platformFeeAmount: order.platformFeeAmount,
+      paymentGatewayFeePercent: order.service!.paymentGatewayFee ?? 0,
+      paymentGatewayFeeAmount: order.paymentGatewayFeeAmount,
       costMin: order.costMin,
       costMax: order.costMax,
       pricingMode: order.pricingMode,
@@ -1420,6 +1463,7 @@ export class SharedOrderService {
         status: OrderStatus.DriverAccepted,
         pickupEta: etaPickup,
         riderId: parseInt(rider.id),
+        directions: driverTravel.directions,
         pickupOtp: rideOffer?.pickupOtp ?? activeOrder?.pickupOtp,
       },
     );

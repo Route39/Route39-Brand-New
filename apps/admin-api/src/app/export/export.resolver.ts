@@ -45,6 +45,7 @@ import omit from 'lodash.omit';
 import { writeFile } from 'fs/promises';
 import { json2csv } from 'json-2-csv';
 import { join } from 'path';
+import urlJoin from 'proper-url-join';
 import pdfKit = require('pdfkit');
 import { Writable } from 'stream';
 // import * as pdfkit from 'pdfkit-table';
@@ -263,10 +264,24 @@ export const Exportable =
           });
           return filteredRow;
         });
+
         const fileName = `${new Date().getTime().toString()}.csv`;
+        const uploadDir = join(process.cwd(), 'uploads');
+        const filePath = join(uploadDir, fileName);
+
         const csv = await json2csv(json);
-        await writeFile(join(process.cwd(), 'uploads', fileName), csv, 'utf8');
-        return join(process.env.CDN_URL, `${fileName}`);
+
+        await writeFile(filePath, csv, 'utf8');
+
+        const cdnUrl = process.env.CDN_URL;
+
+        if (!cdnUrl) {
+          throw new Error(
+            'CDN_URL is not configured. Please set CDN_URL in the admin API environment.',
+          );
+        }
+
+        return urlJoin(cdnUrl, fileName);
       }
 
       // Converts an array of objects to a PDF file
@@ -364,11 +379,16 @@ export const Exportable =
         });
 
         // Write buffer to a file in uploads folder
-        const fileName = `${Date.now()}.pdf`;
-        const filePath = join(process.cwd(), 'uploads', fileName);
-        await writeFile(filePath, Buffer.concat(chunks));
+        // const fileName = `${Date.now()}.pdf`;
+        // const filePath = join(process.cwd(), 'uploads', fileName);
+        // await writeFile(filePath, Buffer.concat(chunks));
 
-        return join(process.env.CDN_URL, `${fileName}`);
+        // return join(process.env.CDN_URL, `${fileName}`);
+        const fileName = `${Date.now()}.pdf`;
+const filePath = join(process.cwd(), 'uploads', fileName);
+await writeFile(filePath, Buffer.concat(chunks));
+
+return join(process.env.CDN_URL, `${fileName}`);
       }
     }
 

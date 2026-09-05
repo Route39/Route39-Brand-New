@@ -1,6 +1,8 @@
 import { useQuery } from "@apollo/client";
-import { useNavigate } from "react-router-dom";
+import { Plus } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
+import { Button } from "@/components/ui/button";
 import { DataTable, type DataTableColumn } from "@/components/tables/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/panel/PageHeader";
@@ -62,7 +64,18 @@ export default function OperatorsListPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Users" description="Admin operators with access to this dashboard." />
+      <PageHeader
+        title="Users"
+        description="Admin operators with access to this dashboard."
+        actions={
+          <Button asChild>
+            <Link to="/management/users/new">
+              <Plus className="size-4" />
+              New user
+            </Link>
+          </Button>
+        }
+      />
       <DataTable
         columns={columns}
         rows={rows}

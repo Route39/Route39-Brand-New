@@ -5933,6 +5933,30 @@ service_entity_ts_decorate([
     service_entity_ts_metadata("design:type", Number)
 ], ServiceEntity.prototype, "roundingFactor", void 0);
 service_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        nullable: true,
+        precision: 10,
+        scale: 2
+    }),
+    service_entity_ts_metadata("design:type", Number)
+], ServiceEntity.prototype, "gstPercent", void 0);
+service_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        nullable: true,
+        precision: 10,
+        scale: 2
+    }),
+    service_entity_ts_metadata("design:type", Number)
+], ServiceEntity.prototype, "platformFee", void 0);
+service_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        nullable: true,
+        precision: 10,
+        scale: 2
+    }),
+    service_entity_ts_metadata("design:type", Number)
+], ServiceEntity.prototype, "paymentGatewayFee", void 0);
+service_entity_ts_decorate([
     (0,external_typeorm_.OneToOne)(function() {
         return MediaEntity;
     }, {
@@ -17115,6 +17139,30 @@ taxi_order_entity_ts_decorate([
     }),
     taxi_order_entity_ts_metadata("design:type", Number)
 ], TaxiOrderEntity.prototype, "providerShare", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        precision: 10,
+        default: 0,
+        scale: 2
+    }),
+    taxi_order_entity_ts_metadata("design:type", Number)
+], TaxiOrderEntity.prototype, "gstAmount", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        precision: 10,
+        default: 0,
+        scale: 2
+    }),
+    taxi_order_entity_ts_metadata("design:type", Number)
+], TaxiOrderEntity.prototype, "platformFeeAmount", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        precision: 10,
+        default: 0,
+        scale: 2
+    }),
+    taxi_order_entity_ts_metadata("design:type", Number)
+], TaxiOrderEntity.prototype, "paymentGatewayFeeAmount", void 0);
 taxi_order_entity_ts_decorate([
     (0,external_typeorm_.Column)('float', {
         nullable: true,
@@ -29772,10 +29820,19 @@ var ServiceService = /*#__PURE__*/ function() {
         if (fleetMultiplier === void 0) fleetMultiplier = 1;
         if (waitMinutes === void 0) waitMinutes = 0;
         if (optionFee === void 0) optionFee = 0;
-        var i = service.baseFare;
         var multiplier = 1;
-        console.log("Calculating Trip fee with base fare " + i + " distance of " + distance + " meters and duration of " + duration);
-        i += service.perHundredMeters * distance / 100 + service.perMinuteDrive * (duration / 60);
+        console.log("Calculating Trip fee with base fare " + service.baseFare + " distance of " + distance + " meters and duration of " + duration);
+        // Distance fare: "Base Fare" covers the first 2 km entirely. Every
+        // additional km (or part of a km) beyond that is charged at the
+        // "Minimum Fee" rate, rounded UP to the next whole km.
+        // e.g. a 5 km trip = Base Fare + 3 × Minimum Fee (km 3, 4, 5).
+        var distanceKm = distance / 1000;
+        var includedKm = 2;
+        var totalKm = Math.round(distanceKm);
+        var additionalKm = totalKm > includedKm ? totalKm - includedKm : 0;
+        var i = service.baseFare + additionalKm * service.minimumFee;
+        console.log("Distance fare: " + distanceKm.toFixed(2) + "km rounds to " + totalKm + "km => baseFare(" + service.baseFare + ") + " + additionalKm + "km x minimumFee(" + service.minimumFee + ") = " + i);
+        i += service.perMinuteDrive * (duration / 60);
         console.log("Initial calculation without multiplier: " + i);
         var ratioCost = 0;
         var newRatioCost = 0;
@@ -29824,10 +29881,10 @@ var ServiceService = /*#__PURE__*/ function() {
         i *= fleetMultiplier;
         multiplier *= fleetMultiplier;
         console.log("After fleet multiplier: " + i);
-        if (i < service.minimumFee * multiplier) {
-            i = service.minimumFee * multiplier;
-            console.log("After Minimum fee applied: " + i);
-        }
+        // "Minimum Fee" is now the per-additional-km rate used above in the
+        // distance tier, not a fare floor — the old floor clamp against
+        // service.minimumFee is removed since that field no longer represents
+        // a "minimum amount" and would silently reintroduce the old meaning.
         // Add wait time fee and option fees BEFORE rounding
         var waitFee = service.perMinuteWait * waitMinutes;
         i += waitFee + optionFee;
@@ -29842,7 +29899,9 @@ var ServiceService = /*#__PURE__*/ function() {
         // Check if service uses RANGE pricing mode
         if (service.pricingMode === PricingMode.RANGE) {
             // Calculate range using service-specific percentages
-            var min = Math.max(cost * service.priceRangeMinPercent, service.minimumFee * multiplier);
+            // service.minimumFee is now the per-additional-km rate, not a fare
+            // floor, so it's no longer a valid lower bound here.
+            var min = cost * service.priceRangeMinPercent;
             var max = cost * service.priceRangeMaxPercent;
             // Apply rounding factor to min and max if configured
             if (service.roundingFactor != null && service.roundingFactor > 0) {
@@ -32368,7 +32427,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.createOrder = function createOrder(input) {
         return shared_order_service_async_to_generator(function() {
-            var _this, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, zonePricing, eta, _iterator, _step, _multiplier, startMinutes, nowMinutes, endMinutes, regions, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, _input_waitMinutes2, _input_waitMinutes3, orderObject, order, couponResult, activityType;
+            var _this, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, zonePricing, eta, _iterator, _step, _multiplier, startMinutes, nowMinutes, endMinutes, regions, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, isOnlinePayment, _service_gstPercent, gstAmount, _service_platformFee, platformFeeAmount, _service_paymentGatewayFee, paymentGatewayFeeAmount, _input_waitMinutes2, _input_waitMinutes3, orderObject, order, couponResult, activityType;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32561,6 +32620,20 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         }
                         _state.label = 14;
                     case 14:
+                        // GST and Platform Fee apply to every order; Payment Gateway Fee only
+                        // applies when the rider is actually paying through a gateway (a saved
+                        // card or a fresh gateway payment) — not for cash or wallet.
+                        isOnlinePayment = input.paymentMode === PaymentMode.PaymentGateway || input.paymentMode === PaymentMode.SavedPaymentMethod;
+                        gstAmount = cost * ((_service_gstPercent = service.gstPercent) != null ? _service_gstPercent : 0) / 100;
+                        platformFeeAmount = (_service_platformFee = service.platformFee) != null ? _service_platformFee : 0;
+                        paymentGatewayFeeAmount = isOnlinePayment ? cost * ((_service_paymentGatewayFee = service.paymentGatewayFee) != null ? _service_paymentGatewayFee : 0) / 100 : 0;
+                        common_.Logger.log({
+                            cost: cost,
+                            gstAmount: gstAmount,
+                            platformFeeAmount: platformFeeAmount,
+                            paymentGatewayFeeAmount: paymentGatewayFeeAmount,
+                            isOnlinePayment: isOnlinePayment
+                        }, 'SharedOrderService.createOrder.feeBreakdown');
                         orderObject = this.orderRepository.create({
                             serviceId: input.serviceId,
                             type: input.type,
@@ -32600,6 +32673,9 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             rideOptionsCost: optionFee,
                             fleetId: input.fleetId,
                             providerShare: service.providerShareFlat + service.providerSharePercent * cost / 100,
+                            gstAmount: gstAmount,
+                            platformFeeAmount: platformFeeAmount,
+                            paymentGatewayFeeAmount: paymentGatewayFeeAmount,
                             options: options
                         });
                         return [
@@ -32678,7 +32754,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.dispatchRide = function dispatchRide(order) {
         return shared_order_service_async_to_generator(function() {
-            var _order_driverId, _order_rider_media, _order_rider_wallets_filter_, _order_rider_wallets, now, config, _config_preDispatchBufferMinutes, preDispatchBufferMinutes, timeUntilScheduled, intervalMinutes, _order_rider_wallets_filter__balance, _order_options;
+            var _order_driverId, _order_rider_media, _order_rider_wallets_filter_, _order_rider_wallets, now, config, _config_preDispatchBufferMinutes, preDispatchBufferMinutes, timeUntilScheduled, intervalMinutes, _order_service_gstPercent, _order_service_platformFee, _order_service_paymentGatewayFee, _order_rider_wallets_filter__balance, _order_options;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32709,8 +32785,25 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 scheduledAt: order.expectedTimestamp,
                                 pickupLocation: order.points[0],
                                 fleetId: order.fleetId,
-                                costEstimateForRider: order.costAfterCoupon,
-                                costEstimateForDriver: order.costBest - order.providerShare,
+                                //costEstimateForRider: order.costAfterCoupon,
+                                //costEstimateForDriver: order.costBest - order.providerShare,
+                                // costAfterCoupon = costBest − couponDiscount already, so adding the
+                                // fee total here gives: (costBest + fees) − couponDiscount for the
+                                // rider, and (costBest + fees) − providerShare − couponDiscount for
+                                // the driver — matching the agreed fee-inclusive formula for both.
+                                costEstimateForRider: order.costAfterCoupon + order.gstAmount + order.platformFeeAmount + order.paymentGatewayFeeAmount,
+                                costEstimateForDriver: order.costAfterCoupon + order.gstAmount + order.platformFeeAmount + order.paymentGatewayFeeAmount,
+                                // Same value the rider side already computes (costBest − costAfterCoupon).
+                                // One coupon, one order — both apps must show the identical number.
+                                couponDiscount: order.costBest - order.costAfterCoupon,
+                                costBest: order.costBest,
+                                providerShare: order.providerShare,
+                                gstPercent: (_order_service_gstPercent = order.service.gstPercent) != null ? _order_service_gstPercent : 0,
+                                gstAmount: order.gstAmount,
+                                platformFee: (_order_service_platformFee = order.service.platformFee) != null ? _order_service_platformFee : 0,
+                                platformFeeAmount: order.platformFeeAmount,
+                                paymentGatewayFeePercent: (_order_service_paymentGatewayFee = order.service.paymentGatewayFee) != null ? _order_service_paymentGatewayFee : 0,
+                                paymentGatewayFeeAmount: order.paymentGatewayFeeAmount,
                                 costMin: order.costMin,
                                 costMax: order.costMax,
                                 pricingMode: order.pricingMode,
@@ -33543,6 +33636,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             status: OrderStatus.DriverAccepted,
                             pickupEta: etaPickup,
                             riderId: parseInt(rider.id),
+                            directions: driverTravel.directions,
                             pickupOtp: (_rideOffer_pickupOtp = rideOffer == null ? void 0 : rideOffer.pickupOtp) != null ? _rideOffer_pickupOtp : activeOrder == null ? void 0 : activeOrder.pickupOtp
                         });
                         // 5) Persist order record
@@ -45443,6 +45537,7 @@ const _lodashomit = /*#__PURE__*/ _interop_require_default._(__webpack_require__
 const _promises = __webpack_require__(29);
 const _json2csv = __webpack_require__(42);
 const _path = __webpack_require__(10);
+const _properurljoin = /*#__PURE__*/ _interop_require_default._(__webpack_require__(19));
 const _stream = __webpack_require__(60);
 const _fs = __webpack_require__(22);
 const pdfKit = __webpack_require__(61);
@@ -45550,9 +45645,15 @@ const Exportable = (DTOClass, opts)=>(BaseClass)=>{
                     return filteredRow;
                 });
                 const fileName = `${new Date().getTime().toString()}.csv`;
+                const uploadDir = (0, _path.join)(process.cwd(), 'uploads');
+                const filePath = (0, _path.join)(uploadDir, fileName);
                 const csv = await (0, _json2csv.json2csv)(json);
-                await (0, _promises.writeFile)((0, _path.join)(process.cwd(), 'uploads', fileName), csv, 'utf8');
-                return (0, _path.join)(process.env.CDN_URL, `${fileName}`);
+                await (0, _promises.writeFile)(filePath, csv, 'utf8');
+                const cdnUrl = process.env.CDN_URL;
+                if (!cdnUrl) {
+                    throw new Error('CDN_URL is not configured. Please set CDN_URL in the admin API environment.');
+                }
+                return (0, _properurljoin.default)(cdnUrl, fileName);
             }
             // Converts an array of objects to a PDF file
             // Each object represents a row, and the keys of the objects represent the columns
@@ -45624,6 +45725,10 @@ const Exportable = (DTOClass, opts)=>(BaseClass)=>{
                     writable.on('error', reject);
                 });
                 // Write buffer to a file in uploads folder
+                // const fileName = `${Date.now()}.pdf`;
+                // const filePath = join(process.cwd(), 'uploads', fileName);
+                // await writeFile(filePath, Buffer.concat(chunks));
+                // return join(process.env.CDN_URL, `${fileName}`);
                 const fileName = `${Date.now()}.pdf`;
                 const filePath = (0, _path.join)(process.cwd(), 'uploads', fileName);
                 await (0, _promises.writeFile)(filePath, Buffer.concat(chunks));
@@ -49998,6 +50103,24 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", Number)
 ], ServiceDTO.prototype, "roundingFactor", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceDTO.prototype, "gstPercent", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceDTO.prototype, "platformFee", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceDTO.prototype, "paymentGatewayFee", void 0);
 _ts_decorate._([
     (0, _graphql.Field)(()=>_graphql.Float, {
         nullable: false
@@ -64275,6 +64398,24 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", Number)
 ], ServiceInput.prototype, "roundingFactor", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceInput.prototype, "gstPercent", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceInput.prototype, "platformFee", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceInput.prototype, "paymentGatewayFee", void 0);
 _ts_decorate._([
     (0, _graphql.Field)(()=>_graphql.Float, {
         nullable: false

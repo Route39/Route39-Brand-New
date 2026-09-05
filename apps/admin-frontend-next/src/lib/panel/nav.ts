@@ -111,6 +111,7 @@ export const NAV: NavEntry[] = [
       { label: "menu.marketing.coupons", to: "/marketing/coupons", perm: ["Coupons_View"] },
       { label: "menu.marketing.announcements", to: "/marketing/announcements", perm: ["Announcements_View"] },
       { label: "menu.marketing.giftCards", to: "/marketing/gift-cards", perm: ["GiftBatch_View"] },
+      { label: "menu.marketing.rewards", to: "/marketing/rewards" },
     ],
   },
   {
@@ -130,6 +131,7 @@ export const NAV: NavEntry[] = [
     items: [
       { label: "menu.management.regions", to: "/management/regions", icon: MapPin, perm: ["Regions_View"] },
       { label: "menu.management.services", to: "/management/services", icon: Compass, perm: ["Services_View"] },
+      { label: "menu.management.serviceOptions", to: "/management/service-options", icon: Ticket, perm: ["Services_View"] },
       { label: "menu.management.fleets", to: "/management/fleets", icon: Building2, perm: ["Fleets_View"] },
       { label: "menu.management.zonePrices", to: "/management/zone-prices", icon: Tag, perm: ["Services_View"] },
       { label: "menu.management.orderCancelReasons", to: "/management/order-cancel-reasons", icon: AlertTriangle, perm: ["Services_View"] },

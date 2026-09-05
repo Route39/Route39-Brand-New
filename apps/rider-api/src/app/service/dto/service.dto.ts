@@ -35,6 +35,12 @@ export class ServiceDTO {
   discountedCostResult?: FixedCostDTO | RangeCostDTO;
   @Field(() => Float, { nullable: false })
   cancellationTotalFee!: number;
+  @Field(() => Float, { nullable: true })
+  gstPercent?: number;
+  @Field(() => Float, { nullable: true })
+  platformFee?: number;
+  @Field(() => Float, { nullable: true })
+  paymentGatewayFee?: number;
   @Field(() => Int, { nullable: false })
   prepayPercent!: number;
   @Field(() => Boolean, { nullable: false })

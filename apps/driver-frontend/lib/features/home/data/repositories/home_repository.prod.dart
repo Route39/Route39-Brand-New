@@ -177,8 +177,13 @@ class HomeRepositoryImpl implements HomeRepository {
           }
           _activeOrders.add(updatedOrders);
           break;
-        case Enum$DriverEventType.ActiveOrderAssigned:
-          refreshActiveOrders();
+        
+case Enum$DriverEventType.ActiveOrderAssigned:
+  // acceptOrderRequest() already updates _activeOrders immediately.
+  // Do not refresh here because a stale server response can overwrite
+  // the newly accepted order before the UI rebuilds.
+  break;
+
       }
     });
   }
@@ -189,40 +194,46 @@ class HomeRepositoryImpl implements HomeRepository {
     eventStreamSubscription = null;
   }
 
-  @override
+@override
 Future<ApiResponse<Fragment$ActiveOrder>> acceptOrderRequest({
   required String requestId,
 }) async {
-  final order = await graphQLDatasource.mutate(
+  final response = await graphQLDatasource.mutate(
     Options$Mutation$acceptRideOffer(
+      fetchPolicy: FetchPolicy.noCache,
       variables: Variables$Mutation$acceptRideOffer(
         offerId: requestId,
       ),
     ),
   );
 
-  final accepted = order.mapData((r) => r.acceptRideOffer);
+  final accepted = response.mapData((r) => r.acceptRideOffer);
 
   if (accepted.data != null) {
-    _activeOrders.add(
-      _activeOrders.value.followedBy([accepted.data!]).toList(),
-    );
+    final acceptedOrder = accepted.data!;
 
+    // Immediately update the local active-order state.
+    // This allows the UI to rebuild without waiting for
+    // ActiveOrderAssigned websocket/refresh events.
+    final updatedOrders = [
+      ..._activeOrders.value.where(
+        (order) => order.id != acceptedOrder.id,
+      ),
+      acceptedOrder,
+    ];
+
+    _activeOrders.add(updatedOrders);
+
+    // Remove the accepted request from pending ride requests.
     _orderRequests.add(
-      _orderRequests.value.where((e) => e.id != requestId).toList(),
+      _orderRequests.value
+          .where((request) => request.id != requestId)
+          .toList(),
     );
-
-    // A server-pushed ActiveOrderAssigned websocket event can independently
-    // trigger a full refresh around the same moment as this accept, and
-    // there's no guarantee which one lands last. Explicitly settle here so
-    // activeOrdersValue is guaranteed authoritative by the time this
-    // function returns, instead of depending on which async write wins.
-    await refreshActiveOrders();
   }
 
   return accepted;
-
-  }
+}
 
   @override
   void onLoggedIn({required Fragment$Profile profile}) async {

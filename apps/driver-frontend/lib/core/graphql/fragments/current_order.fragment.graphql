@@ -39,6 +39,14 @@ fragment ActiveOrder on ActiveOrder {
   status
   totalCost
   couponDiscount
+  costBest
+  providerShare
+  gstPercent
+  gstAmount
+  platformFee
+  platformFeeAmount
+  paymentGatewayFeePercent
+  paymentGatewayFeeAmount
   paymentMethod {
     ...PaymentMethod
   }

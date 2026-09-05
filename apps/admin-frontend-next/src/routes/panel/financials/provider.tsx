@@ -3,12 +3,15 @@ import { useQuery } from "@apollo/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type DataTableColumn } from "@/components/tables/DataTable";
+import { CsvExportButton } from "@/components/tables/CsvExportButton";
+import { WalletExportButton } from "@/components/tables/WalletExportButton";
 import { PageHeader } from "@/components/panel/PageHeader";
 import { LoadingBlock } from "@/components/panel/StateBlock";
 import {
   PROVIDER_TRANSACTIONS_QUERY,
   PROVIDER_WALLETS_QUERY,
 } from "@/lib/graphql/documents/payouts";
+import { EXPORT_PROVIDER_TRANSACTIONS_QUERY } from "@/lib/graphql/documents/extras-2";
 import {
   buildFilterInput,
   buildOffsetPaging,
@@ -62,7 +65,11 @@ export default function ProviderFinancialsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Provider wallets" description="Platform-level admin balances and transactions." />
+      <PageHeader
+        title="Provider wallets"
+        description="Platform-level admin balances and transactions."
+        actions={<WalletExportButton table="ProviderWallet" entityLabel="Provider wallets" />}
+      />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {wallets.length === 0 ? (
           <Card>
@@ -82,6 +89,21 @@ export default function ProviderFinancialsPage() {
             </Card>
           ))
         )}
+      </div>
+      <div className="flex justify-end">
+        <CsvExportButton
+          query={EXPORT_PROVIDER_TRANSACTIONS_QUERY}
+          resultField="exportProviderTransactions"
+          fields={[
+            { field: "createdAt", label: "Date" },
+            { field: "action", label: "Action" },
+            { field: "amount", label: "Amount" },
+            { field: "currency", label: "Currency" },
+          ]}
+          filter={filters.length > 0 ? Object.fromEntries(filters.map((f) => [f.field, { [f.operator]: f.value }])) : {}}
+          sorting={sort ? [{ field: sort.field, direction: sort.direction }] : []}
+          entityLabel="provider-transactions"
+        />
       </div>
       <DataTable
         columns={columns}

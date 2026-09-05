@@ -3414,6 +3414,9 @@ type Service {
   categoryId: ID!
   baseFare: Float!
   roundingFactor: Float
+  gstPercent: Float
+  platformFee: Float
+  paymentGatewayFee: Float
   perHundredMeters: Float!
   perMinuteDrive: Float!
   perMinuteWait: Float!
@@ -9222,6 +9225,9 @@ type ServiceDeleteResponse {
   categoryId: ID
   baseFare: Float
   roundingFactor: Float
+  gstPercent: Float
+  platformFee: Float
+  paymentGatewayFee: Float
   perHundredMeters: Float
   perMinuteDrive: Float
   perMinuteWait: Float
@@ -17554,6 +17560,9 @@ input ServiceInput {
   orderTypes: [TaxiOrderType!]! = [Ride]
   displayPriority: Int! = 0
   roundingFactor: Float
+  gstPercent: Float
+  platformFee: Float
+  paymentGatewayFee: Float
   perHundredMeters: Float!
   perMinuteDrive: Float!
   perMinuteWait: Float!

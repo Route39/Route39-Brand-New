@@ -49,6 +49,12 @@ export class ServiceDTO {
   baseFare!: number;
   @Field(() => Float, { nullable: true })
   roundingFactor?: number;
+  @Field(() => Float, { nullable: true })
+  gstPercent?: number;
+  @Field(() => Float, { nullable: true })
+  platformFee?: number;
+  @Field(() => Float, { nullable: true })
+  paymentGatewayFee?: number;
   @Field(() => Float, { nullable: false })
   perHundredMeters: number;
   @Field(() => Float, { nullable: false })

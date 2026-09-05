@@ -363,6 +363,9 @@ export class OrderService {
         lastTrackingPoint: driver?.location,
       },
     );
+    const nextDestination =
+      this.createNextDestination(order.waypoints, order.currentLegIndex) ??
+      undefined;
     this.pubsub.publish(
       'rider.order.updated',
       {
@@ -374,6 +377,7 @@ export class OrderService {
         riderId: parseInt(order.riderId),
         status: OrderStatus.Started,
         directions: order.tripDirections,
+        nextDestination,
       },
     );
     this.riderNotificationService.started(rider?.fcmTokens?.[0]);
@@ -381,9 +385,7 @@ export class OrderService {
       orderId: input.orderId,
       status: OrderStatus.Started,
       directions: order.tripDirections,
-      nextDestination:
-        this.createNextDestination(order.waypoints, order.currentLegIndex) ??
-        undefined,
+      nextDestination,
     };
   }
 
@@ -838,6 +840,14 @@ export class OrderService {
             },
       paymentMethod: order.paymentMethod,
       couponDiscount: order.couponDiscount,
+      costBest: order.costBest ?? 0,
+      providerShare: order.providerShare ?? 0,
+      gstPercent: order.gstPercent,
+      gstAmount: order.gstAmount ?? 0,
+      platformFee: order.platformFee,
+      platformFeeAmount: order.platformFeeAmount ?? 0,
+      paymentGatewayFeePercent: order.paymentGatewayFeePercent,
+      paymentGatewayFeeAmount: order.paymentGatewayFeeAmount ?? 0,
       directions: directions ?? [],
       unreadMessagesCount,
       nextDestination: nextDestination ?? undefined,
@@ -940,7 +950,11 @@ export class OrderService {
             point: point,
             address: order.addresses[order.points.indexOf(point)],
           })) ?? [],
-        totalCost: order.costAfterCoupon - (order.providerShare ?? 0),
+        totalCost:
+          order.costAfterCoupon +
+          (order.gstAmount ?? 0) +
+          (order.platformFeeAmount ?? 0) +
+          (order.paymentGatewayFeeAmount ?? 0),
         paymentMode: order.paymentMode ?? PaymentMode.Cash,
         directions: order.directions ?? [],
       };
@@ -1150,12 +1164,12 @@ export class OrderService {
         );
     }
 
-    // 4) Calculate driver share and provider share
+    // 4) Calculate provider share (kept for records/reporting only — not
+    // deducted from the driver's payout; drivers keep 100% of the fee)
     const providerSharePercent = dbOrder.service.providerSharePercent;
     const providerShareFlat = dbOrder.service.providerShareFlat;
     const providerShare =
       (input.fee * providerSharePercent) / 100 + providerShareFlat;
-    const driverShare = input.fee - providerShare;
 
     // 5) Update database order with driver-entered fee
     await this.orderRepository.update(input.orderId, {
@@ -1171,7 +1185,7 @@ export class OrderService {
       {
         status: OrderStatus.WaitingForPostPay,
         costEstimateForRider: input.fee,
-        costEstimateForDriver: driverShare,
+        costEstimateForDriver: input.fee,
         // ✅ FIX: Reset totalPaid to 0 when fare is adjusted
         // This ensures finish() recalculates payment correctly with new amount
         totalPaid: 0,

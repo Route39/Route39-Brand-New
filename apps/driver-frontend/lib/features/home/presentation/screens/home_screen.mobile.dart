@@ -156,17 +156,38 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
 
   Widget _buildHomeContent() {
     return BlocBuilder<HomeBloc, HomeState>(
-      buildWhen: (previous, current) {
-        final result = current.orderRequests.isEmpty != previous.orderRequests.isEmpty ||
-              current.driverStatus != previous.driverStatus ||
-              current.currentOrder?.status != previous.currentOrder?.status ||
-              current.currentOrder?.id != previous.currentOrder?.id ||
-              current.page != previous.page;
-          debugPrint('[ACCEPT-DEBUG] OUTER buildWhen at ${DateTime.now()}: prev.driverStatus=${previous.driverStatus} cur.driverStatus=${current.driverStatus} prev.orderRequests.isEmpty=${previous.orderRequests.isEmpty} cur.orderRequests.isEmpty=${current.orderRequests.isEmpty} => rebuild=$result');
-          return result;
-        },
-        builder: (context, state) {
-          debugPrint('[ACCEPT-DEBUG] OUTER builder RAN at ${DateTime.now()}, driverStatus=${state.driverStatus}');
+  buildWhen: (previous, current) {
+    final result =
+        previous.orderRequests.length != current.orderRequests.length ||
+        previous.activeOrders.length != current.activeOrders.length ||
+        previous.currentOrderId != current.currentOrderId ||
+        previous.currentOrder?.id != current.currentOrder?.id ||
+        previous.currentOrder?.status != current.currentOrder?.status ||
+        previous.driverStatus != current.driverStatus ||
+        previous.page != current.page ||
+        previous.acceptOrderReponse != current.acceptOrderReponse;
+
+    debugPrint(
+      '[ACCEPT-DEBUG] OUTER buildWhen at ${DateTime.now()}: '
+      'prev.activeOrders=${previous.activeOrders.length}, '
+      'cur.activeOrders=${current.activeOrders.length}, '
+      'prev.currentOrderId=${previous.currentOrderId}, '
+      'cur.currentOrderId=${current.currentOrderId}, '
+      'prev.driverStatus=${previous.driverStatus}, '
+      'cur.driverStatus=${current.driverStatus}, '
+      'rebuild=$result',
+    );
+
+    return result;
+  },
+  builder: (context, state) {
+    debugPrint(
+      '[ACCEPT-DEBUG] OUTER builder RAN at ${DateTime.now()}, '
+      'driverStatus=${state.driverStatus}, '
+      'activeOrders=${state.activeOrders.length}, '
+      'currentOrderId=${state.currentOrderId}, '
+      'orderStatus=${state.currentOrder?.status}',
+    );
         return CustomMultiChildLayout(
           delegate: MobileLayoutDelegate(
             isMapFull: state.orderRequests.isNotEmpty,

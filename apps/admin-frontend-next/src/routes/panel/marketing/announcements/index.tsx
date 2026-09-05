@@ -1,6 +1,8 @@
 import { useQuery } from "@apollo/client";
-import { useNavigate } from "react-router-dom";
+import { Plus } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
+import { Button } from "@/components/ui/button";
 import { DataTable, type DataTableColumn } from "@/components/tables/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/panel/PageHeader";
@@ -57,7 +59,18 @@ export default function AnnouncementsListPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Announcements" description="In-app banners and push messages." />
+      <PageHeader
+        title="Announcements"
+        description="In-app banners and push messages."
+        actions={
+          <Button asChild>
+            <Link to="/marketing/announcements/new">
+              <Plus className="size-4" />
+              New announcement
+            </Link>
+          </Button>
+        }
+      />
       <DataTable
         columns={columns}
         rows={rows}

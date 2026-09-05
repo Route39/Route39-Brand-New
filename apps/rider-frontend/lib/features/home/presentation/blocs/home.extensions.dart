@@ -71,9 +71,21 @@ extension HomeStateX on HomeState {
 
   List<Fragment$Coordinate> get directions => switch (mode) {
     HomeMode.ridePreview => ridePreviewFareResponse.data?.getFares.directions ?? [],
-    HomeMode.rideInProgress => activeOrder!.directions,
+    HomeMode.rideInProgress => _rideInProgressDirections,
     _ => [],
   };
+
+  List<Fragment$Coordinate> get _rideInProgressDirections {
+    final order = activeOrder!;
+    final fullRoute = order.directions;
+    final driverLocation = order.driver?.location;
+    final isEnRouteToPickup =
+        order.status.toEntity == OrderStatus.driverAccepted || order.status.toEntity == OrderStatus.arrived;
+    if (isEnRouteToPickup && driverLocation != null && fullRoute.isNotEmpty) {
+      return fullRoute.trimToNearest(driverLocation.toLatLng);
+    }
+    return fullRoute;
+  }
 
   List<PolyLineLayer> polylines(BuildContext context) => directions.isEmpty ? [] : [directions.toPolyLineLayer(context)];
 }

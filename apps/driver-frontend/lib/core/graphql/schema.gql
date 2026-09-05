@@ -35,6 +35,14 @@ type ActiveOrder {
   costResult: CostResult!
   paymentMethod: PaymentMethodBase!
   couponDiscount: Float
+  costBest: Float!
+  providerShare: Float!
+  gstPercent: Float
+  gstAmount: Float!
+  platformFee: Float
+  platformFeeAmount: Float!
+  paymentGatewayFeePercent: Float
+  paymentGatewayFeeAmount: Float!
   directions: [Point!]!
   unreadMessagesCount: Int!
   nextDestination: WaypointBase

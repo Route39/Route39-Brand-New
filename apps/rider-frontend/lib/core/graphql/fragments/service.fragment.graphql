@@ -15,4 +15,7 @@ fragment Service on Service {
   costAfterCoupon
   cancellationTotalFee
   twoWayAvailable
+  gstPercent
+  platformFee
+  paymentGatewayFee
 }

@@ -50,13 +50,52 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
               },
             ),
             emit.forEach(
-              _repository.activeOrders.handleError((error, stack) {
-                //debugPrint('HomeBloc.activeOrders stream error: $error');
-              }),
-              onData: (data) {
-                return state.copyWith(activeOrders: data);
-              },
-            ),
+  _repository.activeOrders.handleError((error, stack) {
+    debugPrint('[ACCEPT-DEBUG] activeOrders stream error: $error');
+  }),
+  onData: (data) {
+    final currentOrderId = state.currentOrderId;
+
+    debugPrint(
+      '[ACCEPT-DEBUG] activeOrders STREAM UPDATE: '
+      'received=${data.length}, '
+      'currentOrderId=$currentOrderId',
+    );
+
+    // If the driver has just accepted an order, do not allow an
+    // older websocket/stream response to remove it from the UI.
+    if (currentOrderId != null) {
+      final currentOrder = state.currentOrder;
+
+      if (currentOrder != null &&
+          !data.any((order) => order.id == currentOrderId)) {
+        final protectedOrders = [
+          ...data,
+          currentOrder,
+        ];
+
+        debugPrint(
+          '[ACCEPT-DEBUG] PROTECTING ACCEPTED ORDER: '
+          'orderId=$currentOrderId, '
+          'activeOrders=${protectedOrders.length}',
+        );
+
+        return state.copyWith(
+          activeOrders: protectedOrders,
+        );
+      }
+    }
+
+    debugPrint(
+      '[ACCEPT-DEBUG] APPLYING activeOrders STREAM: '
+      'count=${data.length}',
+    );
+
+    return state.copyWith(
+      activeOrders: data,
+    );
+  },
+),
             emit.forEach(
               _repository.ephemeralMessages.handleError((error, stack) {
                 //debugPrint('HomeBloc.ephemeralMessages stream error: $error');
@@ -134,62 +173,36 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         //   break;
 
         case HomeEvent$OnAcceptOrder(:final request):
-          emit(
+  emit(
     state.copyWith(
       acceptOrderReponse: ApiResponse.loading(),
     ),
   );
 
   final response = await _repository.acceptOrderRequest(
-    requestId: request.id,
-  );
+  requestId: request.id,
+);
 
-  if (response.isLoaded && response.data != null) {
+if (response.isLoaded && response.data != null) {
     final acceptedOrder = response.data!;
 
-    // Read the repository's synchronous snapshot instead of diffing
-    // state.activeOrders. By the time acceptOrderRequest() has returned,
-    // the repository has already settled with the server, so this is
-    // guaranteed authoritative — unlike state.activeOrders, which can be
-    // raced and overwritten by a concurrent background stream listener
-    // (e.g. a server-pushed ActiveOrderAssigned event triggering its own
-    // refresh at the same moment).
-    final updatedActiveOrders = _repository.activeOrdersValue;
+    // The acceptRideOffer mutation has already returned the authoritative
+    // accepted order. Put that exact order into Bloc state immediately.
+    final updatedActiveOrders = [
+      ...state.activeOrders.where(
+        (order) => order.id != acceptedOrder.id,
+      ),
+      acceptedOrder,
+    ];
 
     emit(
-      state.copyWith(
-        acceptOrderReponse: ApiResponse.initial(),
-        activeOrders: updatedActiveOrders,
-        currentOrderId: acceptedOrder.id,
-        page: OnTripPage.overview,
-      ),
-    );
-
-    // Safety net: a concurrent network request (e.g. a frequent location
-    // update) can occasionally collide with this response at the browser's
-    // networking layer and corrupt/drop it, leaving the driver stuck showing
-    // "online" instead of the accepted trip even though acceptRideOffer
-    // succeeded server-side. Verify shortly after that the accepted order
-    // actually stuck in local state, and if not, force a fresh fetch from
-    // the server instead of leaving the driver silently stranded.
-    await Future.delayed(const Duration(seconds: 2));
-    final stillHasOrder = _repository.activeOrdersValue.any((o) => o.id == acceptedOrder.id);
-    if (!stillHasOrder) {
-      //debugPrint('[ACCEPT-DEBUG] accepted order ${acceptedOrder.id} missing after emit - forcing refresh');
-      _repository.refreshActiveOrders();
-      await Future.delayed(const Duration(seconds: 1));
-      final refreshed = _repository.activeOrdersValue;
-      if (refreshed.any((o) => o.id == acceptedOrder.id)) {
-        emit(
-          state.copyWith(
-            activeOrders: refreshed,
-            currentOrderId: acceptedOrder.id,
-            page: OnTripPage.overview,
-          ),
-        );
-      }
-    }
-
+  state.copyWith(
+    activeOrders: updatedActiveOrders,
+    currentOrderId: acceptedOrder.id,
+    page: OnTripPage.overview,
+    acceptOrderReponse: ApiResponse.initial(),
+  ),
+);
   } else {
     emit(
       state.copyWith(

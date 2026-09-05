@@ -208,6 +208,27 @@ export class ServiceEntity {
   })
   roundingFactor?: number;
 
+  @Column('float', {
+    nullable: true,
+    precision: 10,
+    scale: 2,
+  })
+  gstPercent?: number;
+
+  @Column('float', {
+    nullable: true,
+    precision: 10,
+    scale: 2,
+  })
+  platformFee?: number;
+
+  @Column('float', {
+    nullable: true,
+    precision: 10,
+    scale: 2,
+  })
+  paymentGatewayFee?: number;
+
   @OneToOne(() => MediaEntity, { eager: true })
   @JoinColumn()
   media!: MediaEntity;

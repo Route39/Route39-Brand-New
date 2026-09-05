@@ -97,6 +97,14 @@ export class ActiveOrderCommonRedisService {
     paymentMethod: PaymentMethodBase;
     costEstimateForRider: number;
     costEstimateForDriver: number;
+    costBest: number;
+    providerShare: number;
+    gstPercent?: number;
+    gstAmount: number;
+    platformFee?: number;
+    platformFeeAmount: number;
+    paymentGatewayFeePercent?: number;
+    paymentGatewayFeeAmount: number;
     costMin?: number;
     costMax?: number;
     pricingMode: PricingMode;

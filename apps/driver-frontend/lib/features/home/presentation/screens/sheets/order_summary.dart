@@ -2,6 +2,7 @@ import 'package:ridy_driver/config/locator/locator.dart';
 import 'package:ridy_driver/core/enums/order_status.prod.dart';
 import 'package:ridy_driver/core/extensions/extensions.dart';
 import 'package:ridy_driver/core/graphql/fragments/current_order.fragment.graphql.dart';
+import 'package:ridy_driver/core/graphql/schema.gql.dart';
 import 'package:ridy_driver/features/home/presentation/blocs/home.bloc.dart';
 import 'package:ridy_driver/features/home/presentation/dialogs/confirm_cash_payment.dart';
 import 'package:ridy_driver/gen/assets.gen.dart';
@@ -84,15 +85,28 @@ class OrderSummary extends StatelessWidget {
           const SizedBox(height: 16),
           Center(
             child: Padding(
+              // items: [
+                //   ("Service fee", order.totalCost),
+                //   ("Discount", -(order.couponDiscount ?? 0)),
+                // ],
               padding: const EdgeInsets.all(16),
               child: Invoice(
                 currency: order.currency,
+                // order.totalCost already has providerShare subtracted on the
+                // backend (costAfterCoupon − providerShare + fees). Adding it
+                // back here gives costAfterCoupon + fees, without needing any
+                // backend change.
                 total: order.totalCost,
                 items: [
-                  (
-                    "Service fee",
-                    order.totalCost - (order.couponDiscount ?? 0),
-                  ),
+                  ("Ride Amount", order.costBest),
+                  ("GST ${order.gstPercent ?? 0}%", order.gstAmount),
+                  ("Platform Fee ${order.platformFee ?? 0}", order.platformFeeAmount),
+                  if (order.paymentMethod.mode == Enum$PaymentMode.PaymentGateway ||
+                      order.paymentMethod.mode == Enum$PaymentMode.SavedPaymentMethod)
+                    (
+                      "Payment Gateway ${order.paymentGatewayFeePercent ?? 0}%",
+                      order.paymentGatewayFeeAmount,
+                    ),
                   ("Discount", -(order.couponDiscount ?? 0)),
                 ],
               ),

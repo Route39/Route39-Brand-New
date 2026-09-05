@@ -1,6 +1,8 @@
 import { useQuery } from "@apollo/client";
-import { useNavigate } from "react-router-dom";
+import { Plus } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
+import { Button } from "@/components/ui/button";
 import { DataTable, type DataTableColumn } from "@/components/tables/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/panel/PageHeader";
@@ -50,7 +52,18 @@ export default function RewardsListPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Rewards" description="Loyalty rewards earned by riders or drivers." />
+      <PageHeader
+        title="Rewards"
+        description="Loyalty rewards earned by riders or drivers."
+        actions={
+          <Button asChild>
+            <Link to="/marketing/rewards/new">
+              <Plus className="size-4" />
+              New reward
+            </Link>
+          </Button>
+        }
+      />
       <DataTable
         columns={columns}
         rows={rows}

@@ -7,6 +7,7 @@ import 'package:flutter_common/core/color_palette/color_palette.dart';
 import 'package:flutter_common/core/extensions/extensions.dart' as fc_ext;
 import 'package:ridy/config/locator/locator.dart';
 import 'package:flutter_common/core/entities/payment_method_union.dart';
+import 'package:flutter_common/core/enums/payment_mode.dart';
 import 'package:ridy/core/entities/place.prod.dart';
 import 'package:ridy/features/profile/presentation/blocs/profile.bloc.dart';
 import 'package:api_response/api_response.dart';
@@ -102,7 +103,7 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
                           const SizedBox(height: 16),
                           _buildRouteSection(context, pickup, dropoff),
                           const SizedBox(height: 16),
-                          _buildRidePreferencesRow(context, selectedService),
+                          _buildRidePreferencesRow(context, state, selectedService),
                           const SizedBox(height: 16),
                           BlocBuilder<ProfileBloc, ProfileState>(
                             bloc: locator<ProfileBloc>(),
@@ -381,6 +382,11 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
     );
   }
 
+  String _formatAmount(double amount) {
+    final formatted = amount.formatCurrency(widget.currency);
+    return formatted.replaceFirst(widget.currency, '${widget.currency}: ');
+  }
+
   String _placeLabel(dynamic place) {
     final title = place?.title as String?;
     if (title != null && title.trim().isNotEmpty) return title;
@@ -399,9 +405,18 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
     );
   }
 
-  Widget _buildRidePreferencesRow(BuildContext context, dynamic selectedService) {
+  Widget _buildRidePreferencesRow(BuildContext context, HomeState state, dynamic selectedService) {
     final baseFare = ((selectedService?.cost ?? 0) as num).toDouble();
-    final total = ((selectedService?.costAfterCoupon ?? selectedService?.cost ?? 0) as num).toDouble();
+    final gstPercent = ((selectedService?.gstPercent ?? 0) as num).toDouble();
+    final platformFee = ((selectedService?.platformFee ?? 0) as num).toDouble();
+    final paymentGatewayFeePercent = ((selectedService?.paymentGatewayFee ?? 0) as num).toDouble();
+    final isOnlinePayment = state.selectedPaymentMethod?.paymentMode == PaymentMode.paymentGateway ||
+        state.selectedPaymentMethod?.paymentMode == PaymentMode.savedPaymentMethod;
+    final gstAmount = baseFare * gstPercent / 100;
+    final platformFeeAmount = platformFee;
+    final paymentGatewayFeeAmount = isOnlinePayment ? baseFare * paymentGatewayFeePercent / 100 : 0.0;
+    final distanceMeters = ((state.ridePreviewFareResponse.data?.getFares.distance ?? 0) as num).toDouble();
+    final totalKm = distanceMeters / 1000;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       decoration: BoxDecoration(color: ColorPalette.neutralVariant99, borderRadius: BorderRadius.circular(12)),
@@ -430,21 +445,49 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Base Fare', style: context.bodyMedium?.copyWith(color: ColorPalette.neutralVariant50)),
-                Text(baseFare.formatCurrency(widget.currency), style: context.bodyMedium),
+                Text('Total Km', style: context.bodyMedium?.copyWith(color: ColorPalette.neutralVariant50)),
+                Text('${totalKm.toStringAsFixed(2)} km', style: context.bodyMedium),
               ],
             ),
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
-                Text(
-                  total.formatCurrency(widget.currency),
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
-                ),
+                Text('Km charges', style: context.bodyMedium?.copyWith(color: ColorPalette.neutralVariant50)),
+                Text(_formatAmount(baseFare), style: context.bodyMedium),
               ],
             ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('GST $gstPercent%', style: context.bodyMedium?.copyWith(color: ColorPalette.neutralVariant50)),
+                Text(_formatAmount(gstAmount), style: context.bodyMedium),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Platform Fee', style: context.bodyMedium?.copyWith(color: ColorPalette.neutralVariant50)),
+                Text(_formatAmount(platformFeeAmount), style: context.bodyMedium),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'For online payments, a Payment Gateway charge of $paymentGatewayFeePercent% will be applied.',
+              style: context.bodySmall?.copyWith(color: ColorPalette.neutralVariant50),
+            ),
+            if (isOnlinePayment) ...[
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Payment Gateway $paymentGatewayFeePercent%', style: context.bodyMedium?.copyWith(color: ColorPalette.neutralVariant50)),
+                  Text(_formatAmount(paymentGatewayFeeAmount), style: context.bodyMedium),
+                ],
+              ),
+            ],
           ],
         ],
       ),
@@ -488,16 +531,28 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
   }
 
   Widget _buildTotalRow(BuildContext context, HomeState state, dynamic selectedService) {
-    final serviceFee = selectedService?.cost ?? 0;
-    final double totalAmount = ((selectedService?.costAfterCoupon ?? serviceFee) as num).toDouble();
+    final serviceFee = ((selectedService?.cost ?? 0) as num).toDouble();
+    final costAfterCoupon = ((selectedService?.costAfterCoupon ?? serviceFee) as num).toDouble();
+    final gstAmount = serviceFee * ((selectedService?.gstPercent ?? 0) as num).toDouble() / 100;
+    final platformFeeAmount = ((selectedService?.platformFee ?? 0) as num).toDouble();
+    final isOnlinePayment = state.selectedPaymentMethod?.paymentMode == PaymentMode.paymentGateway ||
+        state.selectedPaymentMethod?.paymentMode == PaymentMode.savedPaymentMethod;
+    final paymentGatewayFeeAmount =
+        isOnlinePayment ? serviceFee * ((selectedService?.paymentGatewayFee ?? 0) as num).toDouble() / 100 : 0.0;
+    final double totalAmount = costAfterCoupon + gstAmount + platformFeeAmount + paymentGatewayFeeAmount;
     return Align(
       alignment: Alignment.centerLeft,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('TOTAL AMOUNT', style: context.bodySmall?.copyWith(color: ColorPalette.neutralVariant50)),
-          Text(totalAmount.formatCurrency(widget.currency),
-              style: context.titleLarge?.copyWith(color: Colors.black, fontWeight: FontWeight.bold)),
+          Text(
+            _formatAmount(totalAmount),
+            style: context.titleLarge?.copyWith(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );

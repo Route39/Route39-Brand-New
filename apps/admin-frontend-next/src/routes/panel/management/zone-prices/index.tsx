@@ -1,6 +1,8 @@
 import { useQuery } from "@apollo/client";
-import { useNavigate } from "react-router-dom";
+import { Plus } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
+import { Button } from "@/components/ui/button";
 import { DataTable, type DataTableColumn } from "@/components/tables/DataTable";
 import { PageHeader } from "@/components/panel/PageHeader";
 import { ZONE_PRICES_LIST_QUERY } from "@/lib/graphql/documents/management";
@@ -36,7 +38,18 @@ export default function ZonePricesListPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Zone prices" description="Geo-fenced flat-rate routes." />
+      <PageHeader
+        title="Zone prices"
+        description="Geo-fenced flat-rate routes."
+        actions={
+          <Button asChild>
+            <Link to="/management/zone-prices/new">
+              <Plus className="size-4" />
+              New zone price
+            </Link>
+          </Button>
+        }
+      />
       <DataTable
         columns={columns}
         rows={rows}
