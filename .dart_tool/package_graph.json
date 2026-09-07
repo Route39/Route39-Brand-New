@@ -18,6 +18,7 @@
       "version": "4.0.0+312",
       "dependencies": [
         "api_response",
+        "audioplayers",
         "auto_route",
         "better_localization",
         "cached_network_image",

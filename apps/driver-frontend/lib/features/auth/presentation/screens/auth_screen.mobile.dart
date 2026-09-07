@@ -60,12 +60,7 @@ class AuthScreenMobile extends StatelessWidget {
             builder: (context, state) {
               return Column(
                 children: [
-                  if (state.loginPage.loginStep != null)
-                    Container(
-                      width: 185,
-                      margin: const EdgeInsets.all(16),
-                      child: AppStepSlider(count: 4, currentStep: state.loginPage.loginStep!),
-                    ),
+
                   if (state.loginPage.wizardStep != null)
                     Container(
                       width: 300,

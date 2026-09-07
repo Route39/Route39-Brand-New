@@ -50,7 +50,11 @@ class OrderInProgressSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           context.responsive(const NoticeBar(), xl: const SizedBox()),
-          AppCardSheet(
+          Container(
+            constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.95),
+            child: AppCardSheet(
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
             child: SingleChildScrollView(
               child: Column(
               mainAxisSize: MainAxisSize.min,

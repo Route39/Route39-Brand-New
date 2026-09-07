@@ -1958,6 +1958,10 @@ class $AssetsImagesGen {
   AssetGenImage get route39Logo =>
       const AssetGenImage('assets/images/route39_logo.png');
 
+  /// File path: assets/images/route39_logo_white.png
+  AssetGenImage get route39LogoWhite =>
+      const AssetGenImage('assets/images/route39_logo_white.png');
+
   /// List of all assets
   List<AssetGenImage> get values => [
     blueArrow,
@@ -1973,6 +1977,7 @@ class $AssetsImagesGen {
     popularRailwayStation,
     route39AutoPhoto,
     route39Logo,
+    route39LogoWhite,
   ];
 }
 
@@ -2003,6 +2008,10 @@ abstract final class Assets {
   static const $AssetsCountriesGen countries = $AssetsCountriesGen();
   static const $AssetsImagesGen images = $AssetsImagesGen();
   static const $AssetsLottieGen lottie = $AssetsLottieGen();
+  static const String notification = 'assets/notification.mp3';
+
+  /// List of all assets
+  static List<String> get values => [notification];
 }
 
 class AssetGenImage {

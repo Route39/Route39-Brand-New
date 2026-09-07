@@ -24,6 +24,7 @@ import {
   PricingMode,
   SharedCustomerService,
   DriverReviewEntity,
+  private smsService: SMSService,
 } from '@ridy/database';
 import { OrderStatus } from '@ridy/database';
 import { PaymentStatus } from '@ridy/database';
@@ -204,6 +205,18 @@ export class OrderService {
       const pickupOtp =
         existingOrderForOtp?.pickupOtp ??
         Math.floor(1000 + Math.random() * 9000).toString();
+      
+      // Send pickup OTP via SMS only on first generation
+      if (!existingOrderForOtp?.pickupOtp && rider?.mobileNumber) {
+        try {
+          await this.smsService.sendSMS(
+            rider.mobileNumber,
+            `Your Route39 ride pickup OTP is ${pickupOtp}. Share this with your driver only.`,
+          );
+        } catch (err) {
+          Logger.warn(`Failed to send pickup OTP SMS for order ${input.orderId}`, err);
+        }
+      }
 
       // Accept offer in Redis
       await this.rideOfferRedisService.acceptOfferByDriver({

@@ -6,6 +6,7 @@ import {
   SharedOrderModule,
   SharedCustomerModule,
   DriverReviewEntity,
+  SMSModule,
 } from '@ridy/database';
 import { DriverTransactionEntity } from '@ridy/database';
 import { DriverWalletEntity } from '@ridy/database';
@@ -43,6 +44,7 @@ import { SharedCustomerWalletModule } from '@ridy/database';
     RedisHelpersModule,
     DriverModule,
     SharedOrderModule,
+    SMSModule,
     SharedCustomerModule,
     CommonCouponModule,
     SharedCustomerWalletModule,

@@ -13,6 +13,7 @@ import { PahappaService } from './providers/pahappa.service';
 import { AuthRedisService } from './auth-redis.service';
 import { VentisService } from './providers/ventis.service';
 import { ClickSMSService } from './providers/clicksms.service';
+import { BulkSMSPlansService } from './providers/bulksmsplans.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([SMSProviderEntity]), HttpModule],
@@ -26,6 +27,7 @@ import { ClickSMSService } from './providers/clicksms.service';
     VonageService,
     VentisService,
     ClickSMSService,
+    BulkSMSPlansService,
     SharedConfigurationService,
     AuthRedisService,
   ],

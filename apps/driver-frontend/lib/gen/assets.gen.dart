@@ -2149,6 +2149,14 @@ class $AssetsImagesGen {
   AssetGenImage get rideHistoryEmptyState =>
       const AssetGenImage('assets/images/ride-history-empty-state.png');
 
+      /// File path: assets/images/route39_auto_photo.png
+  AssetGenImage get route39AutoPhoto =>
+      const AssetGenImage('assets/images/route39_auto_photo.png');
+
+  /// File path: assets/images/route39_logo.png
+  AssetGenImage get route39Logo =>
+      const AssetGenImage('assets/images/route39_logo.png');
+
   /// File path: assets/images/scheduled-rides-header-background.png
   AssetGenImage get scheduledRidesHeaderBackground => const AssetGenImage(
     'assets/images/scheduled-rides-header-background.png',
@@ -2223,6 +2231,8 @@ class $AssetsImagesGen {
     paypal,
     profileHeaderBackground,
     rideHistoryEmptyState,
+    route39AutoPhoto,
+    route39Logo,
     scheduledRidesHeaderBackground,
     signIn1,
     signInContactDetails,

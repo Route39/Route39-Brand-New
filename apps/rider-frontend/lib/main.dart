@@ -17,6 +17,7 @@ import 'package:ridy/firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'config/router/app_router.dart';
 import 'config/router/router_observer.dart';
+import 'core/presentation/route39_splash.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 void main() async {
@@ -79,6 +80,9 @@ class MyApp extends StatelessWidget {
             routerConfig: locator<AppRouter>().config(
               navigatorObservers: () => [RouterObserver()],
             ),
+            builder: (context, child) {
+              return Route39Splash(child: child ?? const SizedBox());
+            },
           );
         },
       ),

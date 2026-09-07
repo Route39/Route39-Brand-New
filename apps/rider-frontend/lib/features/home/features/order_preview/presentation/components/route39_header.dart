@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:ridy/config/router/app_router.dart';
 
 class Route39Header extends StatelessWidget {
   final VoidCallback? onBackPressed;
@@ -28,13 +30,7 @@ class Route39Header extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.notifications_none, color: Colors.black),
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('No new notifications'),
-                      behavior: SnackBarBehavior.floating,
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
+                  context.router.push(const NotificationHistoryRoute());
                 },
               ),
             ],

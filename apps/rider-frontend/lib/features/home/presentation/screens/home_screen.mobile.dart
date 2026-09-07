@@ -52,8 +52,7 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> with SingleTickerPr
             bottom: false,
             child: BlocBuilder<HomeBloc, HomeState>(
               builder: (context, state) {
-                final hideHeader = state.mode == HomeMode.preSubmission &&
-                    state.orderSubmissionPage == OrderSubmissionPage.welcome;
+                final hideHeader = false;
                 if (hideHeader) return const SizedBox.shrink();
                 final needsBack = state.mode == HomeMode.ridePreview ||
                     state.mode == HomeMode.rideInProgress ||

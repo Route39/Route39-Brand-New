@@ -6,6 +6,7 @@ import 'package:ridy/core/graphql/fragments/favorite_location.fragment.graphql.d
 import 'package:ridy/core/graphql/fragments/past_order.fragment.graphql.dart';
 import 'package:ridy/core/graphql/schema.gql.dart';
 import 'package:ridy/features/announcements/presentation/screens/announcements_screen.dart';
+import 'package:ridy/features/home/presentation/screens/notification_history_screen.dart';
 import 'package:ridy/features/auth/presentation/screens/auth_screen.dart';
 import 'package:ridy/features/favorite_locations/presentation/screens/add_screen.dart';
 import 'package:ridy/features/favorite_locations/presentation/screens/edit_screen.dart';
@@ -79,6 +80,10 @@ class AppRouter extends RootStackRouter {
             AutoRoute(
               page: AnnouncementsRoute.page,
               path: 'announcements',
+            ),
+            AutoRoute(
+              page: NotificationHistoryRoute.page,
+              path: 'notification-history',
             ),
             AutoRoute(
               page: WalletParentRoute.page,
