@@ -35532,218 +35532,219 @@ ClickSMSService = clicksms_service_ts_decorate([
         typeof axios_.HttpService === "undefined" ? Object : axios_.HttpService
     ])
 ], ClickSMSService);
-    ;// ../../libs/database/src/lib/sms/providers/bulksmsplans.service.ts
-    function bulksmsplans_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
-        try {
-            var info = gen[key](arg);
-            var value = info.value;
-        } catch (error) {
-            reject(error);
-            return;
-        }
-        if (info.done) {
-            resolve(value);
-        } else {
-            Promise.resolve(value).then(_next, _throw);
-        }
+
+;// ../../libs/database/src/lib/sms/providers/bulksmsplans.service.ts
+function bulksmsplans_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+    try {
+        var info = gen[key](arg);
+        var value = info.value;
+    } catch (error) {
+        reject(error);
+        return;
     }
-    function bulksmsplans_service_async_to_generator(fn) {
-        return function () {
-            var self = this, args = arguments;
-            return new Promise(function (resolve, reject) {
-                var gen = fn.apply(self, args);
-                function _next(value) {
-                    bulksmsplans_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
-                }
-                function _throw(err) {
-                    bulksmsplans_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
-                }
-                _next(undefined);
-            });
+    if (info.done) {
+        resolve(value);
+    } else {
+        Promise.resolve(value).then(_next, _throw);
+    }
+}
+function bulksmsplans_service_async_to_generator(fn) {
+    return function() {
+        var self = this, args = arguments;
+        return new Promise(function(resolve, reject) {
+            var gen = fn.apply(self, args);
+            function _next(value) {
+                bulksmsplans_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+            }
+            function _throw(err) {
+                bulksmsplans_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+            }
+            _next(undefined);
+        });
+    };
+}
+function bulksmsplans_service_ts_decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+function bulksmsplans_service_ts_generator(thisArg, body) {
+    var f, y, t, _ = {
+        label: 0,
+        sent: function() {
+            if (t[0] & 1) throw t[1];
+            return t[1];
+        },
+        trys: [],
+        ops: []
+    }, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() {
+        return this;
+    }), g;
+    function verb(n) {
+        return function(v) {
+            return step([
+                n,
+                v
+            ]);
         };
     }
-    function bulksmsplans_service_ts_decorate(decorators, target, key, desc) {
-        var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-        else for (var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-        return c > 3 && r && Object.defineProperty(target, key, r), r;
-    }
-    function bulksmsplans_service_ts_generator(thisArg, body) {
-        var f, y, t, _ = {
-            label: 0,
-            sent: function () {
-                if (t[0] & 1) throw t[1];
-                return t[1];
-            },
-            trys: [],
-            ops: []
-        }, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
-        return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function () {
-            return this;
-        }), g;
-        function verb(n) {
-            return function (v) {
-                return step([
-                    n,
-                    v
-                ]);
-            };
-        }
-        function step(op) {
-            if (f) throw new TypeError("Generator is already executing.");
-            while (g && (g = 0, op[0] && (_ = 0)), _) try {
-                if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-                if (y = 0, t) op = [
-                    op[0] & 2,
-                    t.value
-                ];
-                switch (op[0]) {
-                    case 0:
-                    case 1:
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while(g && (g = 0, op[0] && (_ = 0)), _)try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [
+                op[0] & 2,
+                t.value
+            ];
+            switch(op[0]){
+                case 0:
+                case 1:
+                    t = op;
+                    break;
+                case 4:
+                    _.label++;
+                    return {
+                        value: op[1],
+                        done: false
+                    };
+                case 5:
+                    _.label++;
+                    y = op[1];
+                    op = [
+                        0
+                    ];
+                    continue;
+                case 7:
+                    op = _.ops.pop();
+                    _.trys.pop();
+                    continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+                        _ = 0;
+                        continue;
+                    }
+                    if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+                        _.label = op[1];
+                        break;
+                    }
+                    if (op[0] === 6 && _.label < t[1]) {
+                        _.label = t[1];
                         t = op;
                         break;
-                    case 4:
-                        _.label++;
-                        return {
-                            value: op[1],
-                            done: false
-                        };
-                    case 5:
-                        _.label++;
-                        y = op[1];
-                        op = [
-                            0
-                        ];
-                        continue;
-                    case 7:
-                        op = _.ops.pop();
-                        _.trys.pop();
-                        continue;
-                    default:
-                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
-                            _ = 0;
-                            continue;
-                        }
-                        if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
-                            _.label = op[1];
-                            break;
-                        }
-                        if (op[0] === 6 && _.label < t[1]) {
-                            _.label = t[1];
-                            t = op;
-                            break;
-                        }
-                        if (t && _.label < t[2]) {
-                            _.label = t[2];
-                            _.ops.push(op);
-                            break;
-                        }
-                        if (t[2]) _.ops.pop();
-                        _.trys.pop();
-                        continue;
-                }
-                op = body.call(thisArg, _);
-            } catch (e) {
-                op = [
-                    6,
-                    e
-                ];
-                y = 0;
-            } finally {
-                f = t = 0;
-            }
-            if (op[0] & 5) throw op[1];
-            return {
-                value: op[0] ? op[1] : void 0,
-                done: true
-            };
-        }
-    }
-    function bulksmsplans_service_ts_metadata(k, v) {
-        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-    }
-
-
-
-
-    var BulkSMSPlansService = /*#__PURE__*/ function () {
-        "use strict";
-        function BulkSMSPlansService(httpService) {
-            this.httpService = httpService;
-        }
-        var _proto = BulkSMSPlansService.prototype;
-        _proto.sendOTP = function sendOTP(input) {
-            return bulksmsplans_service_async_to_generator(function () {
-                var providerEntity, phoneNumber, message, url, params, response, body, statusStr, msgStr, isError, error;
-                return bulksmsplans_service_ts_generator(this, function (_state) {
-                    switch (_state.label) {
-                        case 0:
-                            providerEntity = input.providerEntity, phoneNumber = input.phoneNumber, message = input.message;
-                            _state.label = 1;
-                        case 1:
-                            _state.trys.push([
-                                1,
-                                3,
-                                ,
-                                4
-                            ]);
-                            url = 'https://bulksmsplans.com/api/send_sms';
-                            params = {
-                                api_id: providerEntity.authToken,
-                                api_password: providerEntity.accountId,
-                                sms_type: 'Transactional',
-                                sms_encoding: 'text',
-                                sender: providerEntity.fromNumber || '',
-                                number: phoneNumber.replace(/\D/g, '').slice(-10),
-                                message: message,
-                                template_id: providerEntity.smsType || ''
-                            };
-                            return [
-                                4,
-                                (0, external_rxjs_.firstValueFrom)(this.httpService.post(url, null, {
-                                    params: params
-                                }))
-                            ];
-                        case 2:
-                            response = _state.sent();
-                            body = response.data;
-                            common_.Logger.log("BulkSMSPlans response: " + JSON.stringify(body), 'BulkSMSPlansService.sendOTP');
-                            statusStr = String((body == null ? void 0 : body.status) || (body == null ? void 0 : body.Status) || '').toLowerCase();
-                            msgStr = String((body == null ? void 0 : body.message) || (body == null ? void 0 : body.msg) || '').toLowerCase();
-                            isError = statusStr && ![
-                                'success',
-                                'ok',
-                                'true',
-                                'submitted'
-                            ].includes(statusStr) || msgStr.includes('error') || msgStr.includes('invalid') || msgStr.includes('fail');
-                            if (response.status < 200 || response.status >= 300 || isError) {
-                                throw new apollo_.ForbiddenError("BulkSMSPlans rejected the request: " + JSON.stringify(body));
-                            }
-                            return [
-                                3,
-                                4
-                            ];
-                        case 3:
-                            error = _state.sent();
-                            common_.Logger.error(error, 'BulkSMSPlansService.sendOTP');
-                            throw new apollo_.ForbiddenError("Failed to send BulkSMSPlans SMS: " + error.message);
-                        case 4:
-                            return [
-                                2
-                            ];
                     }
-                });
-            }).call(this);
+                    if (t && _.label < t[2]) {
+                        _.label = t[2];
+                        _.ops.push(op);
+                        break;
+                    }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop();
+                    continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) {
+            op = [
+                6,
+                e
+            ];
+            y = 0;
+        } finally{
+            f = t = 0;
+        }
+        if (op[0] & 5) throw op[1];
+        return {
+            value: op[0] ? op[1] : void 0,
+            done: true
         };
-        return BulkSMSPlansService;
-    }();
-    BulkSMSPlansService = bulksmsplans_service_ts_decorate([
-        (0, common_.Injectable)(),
-        bulksmsplans_service_ts_metadata("design:type", Function),
-        bulksmsplans_service_ts_metadata("design:paramtypes", [
-            typeof axios_.HttpService === "undefined" ? Object : axios_.HttpService
-        ])
-    ], BulkSMSPlansService);
+    }
+}
+function bulksmsplans_service_ts_metadata(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+}
+
+
+
+
+var BulkSMSPlansService = /*#__PURE__*/ function() {
+    "use strict";
+    function BulkSMSPlansService(httpService) {
+        this.httpService = httpService;
+    }
+    var _proto = BulkSMSPlansService.prototype;
+    _proto.sendOTP = function sendOTP(input) {
+        return bulksmsplans_service_async_to_generator(function() {
+            var providerEntity, phoneNumber, message, url, params, response, body, statusStr, msgStr, isError, error;
+            return bulksmsplans_service_ts_generator(this, function(_state) {
+                switch(_state.label){
+                    case 0:
+                        providerEntity = input.providerEntity, phoneNumber = input.phoneNumber, message = input.message;
+                        _state.label = 1;
+                    case 1:
+                        _state.trys.push([
+                            1,
+                            3,
+                            ,
+                            4
+                        ]);
+                        url = 'https://bulksmsplans.com/api/send_sms';
+                        params = {
+                            api_id: providerEntity.authToken,
+                            api_password: providerEntity.accountId,
+                            sms_type: 'Transactional',
+                            sms_encoding: 'text',
+                            sender: providerEntity.fromNumber || '',
+                            number: phoneNumber.replace(/\D/g, '').slice(-10),
+                            message: message,
+                            template_id: providerEntity.smsType || ''
+                        };
+                        return [
+                            4,
+                            (0,external_rxjs_.firstValueFrom)(this.httpService.post(url, null, {
+                                params: params
+                            }))
+                        ];
+                    case 2:
+                        response = _state.sent();
+                        body = response.data;
+                        common_.Logger.log("BulkSMSPlans response: " + JSON.stringify(body), 'BulkSMSPlansService.sendOTP');
+                        statusStr = String((body == null ? void 0 : body.status) || (body == null ? void 0 : body.Status) || '').toLowerCase();
+                        msgStr = String((body == null ? void 0 : body.message) || (body == null ? void 0 : body.msg) || '').toLowerCase();
+                        isError = statusStr && ![
+                            'success',
+                            'ok',
+                            'true',
+                            'submitted'
+                        ].includes(statusStr) || msgStr.includes('error') || msgStr.includes('invalid') || msgStr.includes('fail');
+                        if (response.status < 200 || response.status >= 300 || isError) {
+                            throw new apollo_.ForbiddenError("BulkSMSPlans rejected the request: " + JSON.stringify(body));
+                        }
+                        return [
+                            3,
+                            4
+                        ];
+                    case 3:
+                        error = _state.sent();
+                        common_.Logger.error(error, 'BulkSMSPlansService.sendOTP');
+                        throw new apollo_.ForbiddenError("Failed to send BulkSMSPlans SMS: " + error.message);
+                    case 4:
+                        return [
+                            2
+                        ];
+                }
+            });
+        }).call(this);
+    };
+    return BulkSMSPlansService;
+}();
+BulkSMSPlansService = bulksmsplans_service_ts_decorate([
+    (0,common_.Injectable)(),
+    bulksmsplans_service_ts_metadata("design:type", Function),
+    bulksmsplans_service_ts_metadata("design:paramtypes", [
+        typeof axios_.HttpService === "undefined" ? Object : axios_.HttpService
+    ])
+], BulkSMSPlansService);
 
 ;// ../../libs/database/src/lib/sms/sms.service.ts
 function sms_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
@@ -35888,9 +35889,10 @@ function sms_service_ts_metadata(k, v) {
 
 
 
+
 var SMSService = /*#__PURE__*/ function() {
     "use strict";
-    function SMSService(smsProviderService, sharedConfigService, twilioService, broadnetService, plivoService, vonageService, pahappaService, ventisService, clickSMSService) {
+    function SMSService(smsProviderService, sharedConfigService, twilioService, broadnetService, plivoService, vonageService, pahappaService, ventisService, clickSMSService, bulkSMSPlansService) {
         this.smsProviderService = smsProviderService;
         this.sharedConfigService = sharedConfigService;
         this.twilioService = twilioService;
@@ -35900,6 +35902,7 @@ var SMSService = /*#__PURE__*/ function() {
         this.pahappaService = pahappaService;
         this.ventisService = ventisService;
         this.clickSMSService = clickSMSService;
+        this.bulkSMSPlansService = bulkSMSPlansService;
     }
     var _proto = SMSService.prototype;
     _proto.sendSMS = function sendSMS(phoneNumber, message) {
@@ -36254,6 +36257,7 @@ function sms_module_ts_decorate(decorators, target, key, desc) {
     else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 }
+
 
 
 
@@ -46453,7 +46457,7 @@ const _rxjs = __webpack_require__(21);
 const _typeorm1 = __webpack_require__(13);
 const _redis = __webpack_require__(20);
 let OrderService = class OrderService {
-    constructor(orderRepository, activityRepository, paymentRepository, reviewRepository, driverReviewRepository, driverRepository, riderRepository, cancelReasonRepository, serviceRepository, googleServices, sharedOrderService, serviceService, rideOfferRedisService, activeOrderRedisService, driverRedisService, riderRedisService, pubsub, httpService, riderNotificationService, sharedCustomerService, redisClient){
+    constructor(orderRepository, activityRepository, paymentRepository, reviewRepository, driverReviewRepository, driverRepository, riderRepository, cancelReasonRepository, serviceRepository, googleServices, sharedOrderService, serviceService, rideOfferRedisService, activeOrderRedisService, driverRedisService, riderRedisService, pubsub, httpService, riderNotificationService, sharedCustomerService, smsService, redisClient){
         this.orderRepository = orderRepository;
         this.activityRepository = activityRepository;
         this.paymentRepository = paymentRepository;

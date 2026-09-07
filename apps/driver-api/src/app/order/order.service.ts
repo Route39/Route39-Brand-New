@@ -24,7 +24,7 @@ import {
   PricingMode,
   SharedCustomerService,
   DriverReviewEntity,
-  private smsService: SMSService,
+  SMSService,
 } from '@ridy/database';
 import { OrderStatus } from '@ridy/database';
 import { PaymentStatus } from '@ridy/database';
@@ -78,6 +78,7 @@ export class OrderService {
     private httpService: HttpService,
     private riderNotificationService: RiderNotificationService,
     private sharedCustomerService: SharedCustomerService,
+    private smsService: SMSService,
     @Inject(REDIS) private readonly redisClient: RedisClientType,
   ) {}
 

@@ -9813,6 +9813,7 @@ enum SMSProviderType {
   MessageBird
   VentisSMS
   ClickSMSNet
+  BulkSMSPlans
 }
 
 input SMSAggregateFilter {
