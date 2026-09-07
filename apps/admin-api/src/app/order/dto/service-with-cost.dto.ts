@@ -18,6 +18,10 @@ export class ServiceWithCostDTO {
     cost: number;
   @Field(() => CostResultUnion, { nullable: false })
     costResult: FixedCostDTO | RangeCostDTO;
+  @Field(() => Float, { nullable: true })
+    gstPercent?: number;
+  @Field(() => Float, { nullable: true })
+    platformFee?: number;
   @Field(() => MediaDTO, { nullable: false })
     media: MediaDTO;
   @Field(() => [ServiceOptionDTO], { nullable: false })

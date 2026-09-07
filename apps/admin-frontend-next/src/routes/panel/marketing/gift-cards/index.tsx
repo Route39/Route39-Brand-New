@@ -1,6 +1,8 @@
 import { useQuery } from "@apollo/client";
-import { useNavigate } from "react-router-dom";
+import { Plus } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
+import { Button } from "@/components/ui/button";
 import { DataTable, type DataTableColumn } from "@/components/tables/DataTable";
 import { PageHeader } from "@/components/panel/PageHeader";
 import { GIFT_BATCHES_LIST_QUERY } from "@/lib/graphql/documents/marketing";
@@ -43,7 +45,18 @@ export default function GiftCardsListPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Gift cards" description="Issued gift card batches." />
+      <PageHeader
+        title="Gift cards"
+        description="Issued gift card batches."
+        actions={
+          <Button asChild>
+            <Link to="/marketing/gift-cards/new">
+              <Plus className="size-4" />
+              New batch
+            </Link>
+          </Button>
+        }
+      />
       <DataTable
         columns={columns}
         rows={rows}

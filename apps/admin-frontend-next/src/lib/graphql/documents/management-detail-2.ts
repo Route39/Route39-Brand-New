@@ -258,6 +258,15 @@ export const SERVICE_QUERY = graphql(`
       cancellationTotalFee
       cancellationDriverShare
       providerSharePercent
+      providerShareFlat
+      gstPercent
+      platformFee
+      paymentGatewayFee
+      mediaId
+      media {
+        id
+        address
+      }
     }
   }
 `);

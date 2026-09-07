@@ -145,6 +145,24 @@ export class SharedOrderService {
     return pricings;
   }
 
+  async getRouteDistance(points: Point[]): Promise<{
+  distance: number;
+  duration: number;
+}> {
+  if (points.length < 2) {
+    throw new ForbiddenError(
+      'At least two points are required to calculate route distance.',
+    );
+  }
+
+  const metrics = await this.googleServices.getSumDistanceAndDuration(points);
+
+  return {
+    distance: metrics.distance,
+    duration: metrics.duration,
+  };
+}
+
   async calculateFare(input: {
     points: Point[];
     twoWay?: boolean;
@@ -189,10 +207,9 @@ export class SharedOrderService {
     if ((input.twoWay ?? false) && input.points.length > 1) {
       input.points.push(input.points[0]);
     }
-    const metrics =
-      servicesInRegion.findIndex((x) => x.perHundredMeters > 0) > -1
-        ? await this.googleServices.getSumDistanceAndDuration(input.points)
-        : { distance: 0, duration: 0, directions: [] };
+    const metrics = await this.googleServices.getSumDistanceAndDuration(
+  input.points,
+);
     Logger.log(
       {
         pointsCount: input.points.length,
@@ -264,60 +281,47 @@ export class SharedOrderService {
           .filter((x) => x.orderTypes.includes(input.orderType))
           .map((service) => {
             let cost = 0;
-            let costResult: {
-              cost: number;
-              min?: number;
-              max?: number;
-            } | null = null;
-            const zonePricesWithService = zonePricings.filter((zone) =>
-              zone.services.find((_service) => _service.id == service.id),
-            );
-            if (zonePricesWithService.length > 0) {
-              cost = zonePricesWithService[0].cost;
-              const eta = new Date();
-              for (const _multiplier of zonePricesWithService[0]
-                .timeMultipliers) {
-                const startMinutes =
-                  parseInt(_multiplier.startTime.split(':')[0]) * 60 +
-                  parseInt(_multiplier.startTime.split(':')[1]);
-                const nowMinutes = eta.getHours() * 60 + eta.getMinutes();
-                const endMinutes =
-                  parseInt(_multiplier.endTime.split(':')[0]) * 60 +
-                  parseInt(_multiplier.endTime.split(':')[1]);
-                if (nowMinutes >= startMinutes && nowMinutes <= endMinutes) {
-                  cost *= _multiplier.multiply;
-                }
-              }
-            } else {
-              const timestamp = new Date();
-              costResult = this.servicesService.calculateCost(
-                service,
-                metrics.distance,
-                metrics.duration,
-                timestamp,
-                feeMultiplier,
-                input.waitTime ?? 0,
-                optionFee, // Include selected option fees in fare calculation
-              );
-              cost = costResult.cost;
-              Logger.log(
-                {
-                  serviceId: service.id,
-                  serviceName: service.name,
-                  distance: metrics.distance,
-                  duration: metrics.duration,
-                  timestamp: timestamp.toISOString(),
-                  feeMultiplier,
-                  waitTime: input.waitTime ?? 0,
-                  optionFee,
-                  cost,
-                  min: costResult.min,
-                  max: costResult.max,
-                  pricingMode: service.pricingMode,
-                },
-                'SharedOrderService.calculateFare.costCalculation',
-              );
-            }
+let costResult: {
+  cost: number;
+  min?: number;
+  max?: number;
+} | null = null;
+
+const timestamp = new Date();
+
+costResult = this.servicesService.calculateCost(
+  service,
+  metrics.distance,
+  metrics.duration,
+  timestamp,
+  feeMultiplier,
+  input.waitTime ?? 0,
+  optionFee,
+);
+
+cost = costResult.cost;
+
+Logger.log(
+  {
+    serviceId: service.id,
+    serviceName: service.name,
+    distance: metrics.distance,
+    distanceKm: metrics.distance / 1000,
+    roundedDistanceKm: Math.round(metrics.distance / 1000),
+    duration: metrics.duration,
+    timestamp: timestamp.toISOString(),
+    baseFare: service.baseFare,
+    minimumFee: service.minimumFee,
+    feeMultiplier,
+    waitTime: input.waitTime ?? 0,
+    optionFee,
+    cost,
+    min: costResult.min,
+    max: costResult.max,
+    pricingMode: service.pricingMode,
+  },
+  'SharedOrderService.calculateFare.costCalculation',
+);
 
             // Build CostResult union based on pricing mode
             // NOTE: Provider share is NOT added to rider cost - it's deducted from driver earnings
@@ -535,29 +539,19 @@ export class SharedOrderService {
       },
       'SharedOrderService.createOrder.costCalculation',
     );
-    const zonePricing = zonePricings.filter((price) => {
-      return (
-        price.services.filter((service) => service.id == input.serviceId)
-          .length > 0
-      );
-    });
-    Logger.log(zonePricing, 'SharedOrderService.createOrder.zonePricing');
-    if (zonePricing.length > 0) {
-      cost = zonePricing[0].cost;
-      const eta = new Date();
-      for (const _multiplier of zonePricings[0].timeMultipliers) {
-        const startMinutes =
-          parseInt(_multiplier.startTime.split(':')[0]) * 60 +
-          parseInt(_multiplier.startTime.split(':')[1]);
-        const nowMinutes = eta.getHours() * 60 + eta.getMinutes();
-        const endMinutes =
-          parseInt(_multiplier.endTime.split(':')[0]) * 60 +
-          parseInt(_multiplier.endTime.split(':')[1]);
-        if (nowMinutes >= startMinutes && nowMinutes <= endMinutes) {
-          cost *= _multiplier.multiply;
-        }
-      }
-    }
+    Logger.log(
+  {
+    serviceId: service.id,
+    serviceName: service.name,
+    cost,
+    distance: metrics.distance,
+    distanceKm: metrics.distance / 1000,
+    roundedDistanceKm: Math.round(metrics.distance / 1000),
+    baseFare: service.baseFare,
+    minimumFee: service.minimumFee,
+  },
+  'SharedOrderService.createOrder.finalCost',
+);
 
     const regions = await this.regionService.getRegionWithPoint(
       input.waypoints[0].point,
@@ -602,6 +596,21 @@ export class SharedOrderService {
           break;
       }
     }
+    // GST and Platform Fee apply to every order; Payment Gateway Fee only
+    // applies when the rider is actually paying through a gateway (a saved
+    // card or a fresh gateway payment) — not for cash or wallet.
+    const isOnlinePayment =
+      input.paymentMode === PaymentMode.PaymentGateway ||
+      input.paymentMode === PaymentMode.SavedPaymentMethod;
+    const gstAmount = (cost * (service.gstPercent ?? 0)) / 100;
+    const platformFeeAmount = service.platformFee ?? 0;
+    const paymentGatewayFeeAmount = isOnlinePayment
+      ? (cost * (service.paymentGatewayFee ?? 0)) / 100
+      : 0;
+    Logger.log(
+      { cost, gstAmount, platformFeeAmount, paymentGatewayFeeAmount, isOnlinePayment },
+      'SharedOrderService.createOrder.feeBreakdown',
+    );
     const orderObject: TaxiOrderEntity = this.orderRepository.create({
       serviceId: input.serviceId,
       type: input.type,
@@ -645,6 +654,9 @@ export class SharedOrderService {
       fleetId: input.fleetId,
       providerShare:
         service.providerShareFlat + (service.providerSharePercent * cost) / 100,
+        gstAmount,
+      platformFeeAmount,
+      paymentGatewayFeeAmount,
       options: options,
     });
     let order = await this.orderRepository.save(orderObject);
@@ -713,6 +725,9 @@ export class SharedOrderService {
       status: order.status,
       currency: order.currency,
       type: order.type,
+      // Booked by a dispatcher/operator (admin panel) — driver app should
+      // not ask for pickup OTP once a driver accepts this ride.
+      pickupOtpRequired: order.operatorId == null,
       estimatedDistance: order.distanceBest,
       estimatedDuration: order.durationBest,
       orderId: order.id.toString(),
@@ -723,8 +738,33 @@ export class SharedOrderService {
       scheduledAt: order.expectedTimestamp!,
       pickupLocation: order.points[0],
       fleetId: order.fleetId,
-      costEstimateForRider: order.costAfterCoupon,
-      costEstimateForDriver: order.costBest - order.providerShare,
+      //costEstimateForRider: order.costAfterCoupon,
+      //costEstimateForDriver: order.costBest - order.providerShare,
+            // costAfterCoupon = costBest − couponDiscount already, so adding the
+      // fee total here gives: (costBest + fees) − couponDiscount for the
+      // rider, and (costBest + fees) − providerShare − couponDiscount for
+      // the driver — matching the agreed fee-inclusive formula for both.
+      costEstimateForRider:
+        order.costAfterCoupon +
+        order.gstAmount +
+        order.platformFeeAmount +
+        order.paymentGatewayFeeAmount,
+      costEstimateForDriver:
+        order.costAfterCoupon +
+        order.gstAmount +
+        order.platformFeeAmount +
+        order.paymentGatewayFeeAmount,
+      // Same value the rider side already computes (costBest − costAfterCoupon).
+      // One coupon, one order — both apps must show the identical number.
+      couponDiscount: order.costBest - order.costAfterCoupon,
+      costBest: order.costBest,
+      providerShare: order.providerShare!,
+      gstPercent: order.service!.gstPercent ?? 0,
+      gstAmount: order.gstAmount,
+      platformFee: order.service!.platformFee ?? 0,
+      platformFeeAmount: order.platformFeeAmount,
+      paymentGatewayFeePercent: order.service!.paymentGatewayFee ?? 0,
+      paymentGatewayFeeAmount: order.paymentGatewayFeeAmount,
       costMin: order.costMin,
       costMax: order.costMax,
       pricingMode: order.pricingMode,
@@ -1343,11 +1383,15 @@ export class SharedOrderService {
         pickupEta: etaPickup,
         dropoffEta: etaDropoff,
         driverDirections: driverTravel.directions,
+        // Manual dispatcher assignment — the driver app should not ask for pickup OTP.
+        pickupOtpRequired: false,
       });
     } else {
       // Transition active order to this driver, notify the previous one if any
       await this.activeOrderRedisService.updateOrderStatus(orderId.toString(), {
         driverId: driverId.toString(),
+        // Manual dispatcher assignment — the driver app should not ask for pickup OTP.
+        pickupOtpRequired: false,
       });
 
       if (
@@ -1420,6 +1464,7 @@ export class SharedOrderService {
         status: OrderStatus.DriverAccepted,
         pickupEta: etaPickup,
         riderId: parseInt(rider.id),
+        directions: driverTravel.directions,
         pickupOtp: rideOffer?.pickupOtp ?? activeOrder?.pickupOtp,
       },
     );
@@ -1430,6 +1475,8 @@ export class SharedOrderService {
       pickupEta: etaPickup,
       dropOffEta: etaDropoff,
       driverId,
+      // Manual dispatcher assignment — the driver app should not ask for pickup OTP.
+      pickupOtpRequired: false,
     });
   }
 }

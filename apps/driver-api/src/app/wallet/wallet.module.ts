@@ -22,6 +22,9 @@ import { HttpModule } from '@nestjs/axios';
 import { CryptoService } from '@ridy/database';
 import { WalletService } from './wallet.service';
 import { DriverEntity } from '@ridy/database';
+import { RazorpayService } from '@ridy/database';
+import { PayoutAccountEntity } from '@ridy/database';
+import { SharedDriverService } from '@ridy/database';
 
 @Module({
   imports: [
@@ -29,6 +32,9 @@ import { DriverEntity } from '@ridy/database';
       TaxiOrderEntity,
       DriverEntity,
       SavedPaymentMethodEntity,
+      DriverWalletEntity,
+      DriverTransactionEntity,
+      PayoutAccountEntity,
     ]),
     CommonCouponModule,
     HttpModule,
@@ -65,7 +71,7 @@ import { DriverEntity } from '@ridy/database';
       ],
     }),
   ],
-  providers: [WalletResolver, EarningsService, CryptoService, WalletService],
+  providers: [WalletResolver, EarningsService, CryptoService, WalletService, RazorpayService, SharedDriverService],
   exports: [WalletService],
 })
 export class WalletModule {}

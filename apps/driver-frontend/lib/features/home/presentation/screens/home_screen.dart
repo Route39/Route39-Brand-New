@@ -52,7 +52,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onStateChanged(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        locator<HomeBloc>().onStarted();
+        final homeBloc = locator<HomeBloc>();
+        if (homeBloc.state.profile == null) {
+          homeBloc.onStarted();
+        }
 
         locator<AuthBloc>().requestUserInfo();
 
@@ -249,6 +252,18 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                           },
                         );
+                        homeBloc.add(
+                          HomeEvent.markEphemeralMessageAsSeen(
+                            messageId: message.messageId,
+                          ),
+                        );
+                        break;
+                        case Enum$EphemeralMessageType.RideReceived:
+                      case Enum$EphemeralMessageType.RideCompleted:
+                      case Enum$EphemeralMessageType.RideCancelled:
+                        // TODO: decide what these should show to the driver.
+                        // Marking as seen for now so the switch compiles and
+                        // these messages don't loop unhandled.
                         homeBloc.add(
                           HomeEvent.markEphemeralMessageAsSeen(
                             messageId: message.messageId,

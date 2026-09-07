@@ -1,6 +1,8 @@
 import { useQuery } from "@apollo/client";
-import { useNavigate } from "react-router-dom";
+import { Plus } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
+import { Button } from "@/components/ui/button";
 import { DataTable, type DataTableColumn } from "@/components/tables/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/panel/PageHeader";
@@ -48,7 +50,18 @@ export default function PaymentGatewaysListPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Payment gateways" description="Configured payment processors for the platform." />
+      <PageHeader
+        title="Payment gateways"
+        description="Configured payment processors for the platform."
+        actions={
+          <Button asChild>
+            <Link to="/management/payment-gateways/new">
+              <Plus className="size-4" />
+              New gateway
+            </Link>
+          </Button>
+        }
+      />
       <DataTable
         columns={columns}
         rows={rows}

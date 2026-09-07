@@ -3414,6 +3414,9 @@ type Service {
   categoryId: ID!
   baseFare: Float!
   roundingFactor: Float
+  gstPercent: Float
+  platformFee: Float
+  paymentGatewayFee: Float
   perHundredMeters: Float!
   perMinuteDrive: Float!
   perMinuteWait: Float!
@@ -4961,6 +4964,8 @@ type ServiceWithCost {
   personCapacity: Int
   cost: Float! @deprecated(reason: "Use costResult instead for range pricing support")
   costResult: CostResult!
+  gstPercent: Float
+  platformFee: Float
   media: Media!
   options: [ServiceOption!]!
 }
@@ -9222,6 +9227,9 @@ type ServiceDeleteResponse {
   categoryId: ID
   baseFare: Float
   roundingFactor: Float
+  gstPercent: Float
+  platformFee: Float
+  paymentGatewayFee: Float
   perHundredMeters: Float
   perMinuteDrive: Float
   perMinuteWait: Float
@@ -9807,6 +9815,7 @@ enum SMSProviderType {
   MessageBird
   VentisSMS
   ClickSMSNet
+  BulkSMSPlans
 }
 
 input SMSAggregateFilter {
@@ -17554,6 +17563,9 @@ input ServiceInput {
   orderTypes: [TaxiOrderType!]! = [Ride]
   displayPriority: Int! = 0
   roundingFactor: Float
+  gstPercent: Float
+  platformFee: Float
+  paymentGatewayFee: Float
   perHundredMeters: Float!
   perMinuteDrive: Float!
   perMinuteWait: Float!

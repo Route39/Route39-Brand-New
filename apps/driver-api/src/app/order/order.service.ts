@@ -24,6 +24,7 @@ import {
   PricingMode,
   SharedCustomerService,
   DriverReviewEntity,
+  SMSService,
 } from '@ridy/database';
 import { OrderStatus } from '@ridy/database';
 import { PaymentStatus } from '@ridy/database';
@@ -77,6 +78,7 @@ export class OrderService {
     private httpService: HttpService,
     private riderNotificationService: RiderNotificationService,
     private sharedCustomerService: SharedCustomerService,
+    private smsService: SMSService,
     @Inject(REDIS) private readonly redisClient: RedisClientType,
   ) {}
 
@@ -198,12 +200,26 @@ export class OrderService {
       );
 
       // Generate 4-digit pickup OTP
+      const otpRequired = orderMetadata.pickupOtpRequired !== false;
       const existingOrderForOtp = await this.orderRepository.findOne({
         where: { id: input.orderId },
       });
-      const pickupOtp =
-        existingOrderForOtp?.pickupOtp ??
-        Math.floor(1000 + Math.random() * 9000).toString();
+      const pickupOtp = otpRequired
+        ? (existingOrderForOtp?.pickupOtp ??
+            Math.floor(1000 + Math.random() * 9000).toString())
+        : undefined;
+      
+      // Send pickup OTP via SMS only on first generation
+      if (!existingOrderForOtp?.pickupOtp && rider?.mobileNumber) {
+        try {
+          await this.smsService.sendSMS(
+            rider.mobileNumber,
+            `Your Route39 ride pickup OTP is ${pickupOtp}. Share this with your driver only.`,
+          );
+        } catch (err) {
+          Logger.warn(`Failed to send pickup OTP SMS for order ${input.orderId}`, err);
+        }
+      }
 
       // Accept offer in Redis
       await this.rideOfferRedisService.acceptOfferByDriver({
@@ -217,6 +233,7 @@ export class OrderService {
         dropoffEta,
         driverDirections: driverTravelMetrics.directions,
         pickupOtp,
+        pickupOtpRequired: otpRequired,
       });
 
       // CRITICAL FIX: Await the database update
@@ -224,6 +241,7 @@ export class OrderService {
         status: OrderStatus.DriverAccepted,
         driverId: input.driverId,
         pickupOtp: pickupOtp,
+        pickupOtpRequired: otpRequired,
       });
 
       // Notify all drivers that the offer is revoked
@@ -342,6 +360,22 @@ export class OrderService {
     orderId: number;
     driverId: number;
   }): Promise<UpdateStatusDTO> {
+        // Guard: this mutation is callable directly by the driver app (no OTP arg),
+    // so it must only proceed when OTP isn't required for this order, or the
+    // OTP has already been verified via verifyPickupOtp().
+    const orderEntityForGuard = await this.orderRepository.findOne({
+      where: { id: input.orderId },
+    });
+    if (!orderEntityForGuard) {
+      throw new ForbiddenError('ORDER_NOT_FOUND');
+    }
+    if (orderEntityForGuard.driverId !== input.driverId) {
+      throw new ForbiddenError('ORDER_NOT_ASSIGNED_TO_DRIVER');
+    }
+    const otpRequiredForGuard = orderEntityForGuard.pickupOtpRequired !== false;
+    if (otpRequiredForGuard && !orderEntityForGuard.pickupOtpVerifiedAt) {
+      throw new ForbiddenError('OTP_VERIFICATION_REQUIRED');
+    }
     const order = await this.activeOrderRedisService.getActiveOrder(
       input.orderId.toString(),
     );
@@ -363,6 +397,9 @@ export class OrderService {
         lastTrackingPoint: driver?.location,
       },
     );
+    const nextDestination =
+      this.createNextDestination(order.waypoints, order.currentLegIndex) ??
+      undefined;
     this.pubsub.publish(
       'rider.order.updated',
       {
@@ -374,6 +411,7 @@ export class OrderService {
         riderId: parseInt(order.riderId),
         status: OrderStatus.Started,
         directions: order.tripDirections,
+        nextDestination,
       },
     );
     this.riderNotificationService.started(rider?.fcmTokens?.[0]);
@@ -381,9 +419,7 @@ export class OrderService {
       orderId: input.orderId,
       status: OrderStatus.Started,
       directions: order.tripDirections,
-      nextDestination:
-        this.createNextDestination(order.waypoints, order.currentLegIndex) ??
-        undefined,
+      nextDestination,
     };
   }
 
@@ -413,7 +449,8 @@ export class OrderService {
       throw new ForbiddenError('ORDER_NOT_ASSIGNED_TO_DRIVER');
     }
 
-    if (!orderEntity.pickupOtp || orderEntity.pickupOtp !== input.otp) {
+    const otpRequired = orderEntity.pickupOtpRequired !== false;
+    if (otpRequired && (!orderEntity.pickupOtp || orderEntity.pickupOtp !== input.otp)) {
       throw new ForbiddenError('INVALID_OTP');
     }
 
@@ -811,6 +848,8 @@ export class OrderService {
       pickupEta: order.pickupEta,
       dropoffEta: order.dropoffEta,
       status: order.status,
+      pickupOtpRequired: order.pickupOtpRequired ?? true,
+      
       serviceName: order.serviceName,
       serviceImageAddress: order.serviceImageAddress,
       chatMessages: chatMessages.map((msg: ChatMessageRedisSnapshot) => ({
@@ -838,6 +877,14 @@ export class OrderService {
             },
       paymentMethod: order.paymentMethod,
       couponDiscount: order.couponDiscount,
+      costBest: order.costBest ?? 0,
+      providerShare: order.providerShare ?? 0,
+      gstPercent: order.gstPercent,
+      gstAmount: order.gstAmount ?? 0,
+      platformFee: order.platformFee,
+      platformFeeAmount: order.platformFeeAmount ?? 0,
+      paymentGatewayFeePercent: order.paymentGatewayFeePercent,
+      paymentGatewayFeeAmount: order.paymentGatewayFeeAmount ?? 0,
       directions: directions ?? [],
       unreadMessagesCount,
       nextDestination: nextDestination ?? undefined,
@@ -940,7 +987,11 @@ export class OrderService {
             point: point,
             address: order.addresses[order.points.indexOf(point)],
           })) ?? [],
-        totalCost: order.costAfterCoupon - (order.providerShare ?? 0),
+        totalCost:
+          order.costAfterCoupon +
+          (order.gstAmount ?? 0) +
+          (order.platformFeeAmount ?? 0) +
+          (order.paymentGatewayFeeAmount ?? 0),
         paymentMode: order.paymentMode ?? PaymentMode.Cash,
         directions: order.directions ?? [],
       };
@@ -1150,12 +1201,12 @@ export class OrderService {
         );
     }
 
-    // 4) Calculate driver share and provider share
+    // 4) Calculate provider share (kept for records/reporting only — not
+    // deducted from the driver's payout; drivers keep 100% of the fee)
     const providerSharePercent = dbOrder.service.providerSharePercent;
     const providerShareFlat = dbOrder.service.providerShareFlat;
     const providerShare =
       (input.fee * providerSharePercent) / 100 + providerShareFlat;
-    const driverShare = input.fee - providerShare;
 
     // 5) Update database order with driver-entered fee
     await this.orderRepository.update(input.orderId, {
@@ -1171,7 +1222,7 @@ export class OrderService {
       {
         status: OrderStatus.WaitingForPostPay,
         costEstimateForRider: input.fee,
-        costEstimateForDriver: driverShare,
+        costEstimateForDriver: input.fee,
         // ✅ FIX: Reset totalPaid to 0 when fare is adjusted
         // This ensures finish() recalculates payment correctly with new amount
         totalPaid: 0,

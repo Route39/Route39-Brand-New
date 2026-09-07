@@ -310,6 +310,7 @@
   "preferences": "Preferences",
   "onboardingDescription": "You are moments away from registering your account and enjoying comfortable rides.",
   "signInSignUp": "Sign in/ Sign up",
+  "getOtp": "Get OTP",
   "enterOtp": "Enter OTP",
   "enterPassword": "Enter password",
   "enterPasswordDescription": "Please enter your password to continue",

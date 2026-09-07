@@ -12,6 +12,7 @@ export enum SMSProviderType {
   MessageBird = 'MessageBird',
   VentisSMS = 'VentisSMS',
   ClickSMSNet = 'ClickSMSNet',
+  BulkSMSPlans = 'BulkSMSPlans',
 }
 
 registerEnumType(SMSProviderType, {

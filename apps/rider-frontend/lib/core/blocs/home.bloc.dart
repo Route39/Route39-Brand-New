@@ -54,12 +54,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
                 onData: (data) {
                   return state.copyWith(currentOrdersResponse: data);
                 },
+                onError: (error, stackTrace) => state,
               ),
               emit.forEach(
                 orderRepository.ephemeralMessagesStream,
                 onData: (data) {
                   return state.copyWith(ephemeralMessages: data.data ?? []);
                 },
+                onError: (error, stackTrace) => state,
               ),
               emit.forEach(
                 geoDatasource.currentAddress,

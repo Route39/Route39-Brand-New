@@ -61,15 +61,15 @@ const _drivermodule = __webpack_require__(35);
 const _feedbacksmodule = __webpack_require__(86);
 const _ordermodule = __webpack_require__(50);
 const _payoutmodule = __webpack_require__(91);
-const _sosmodule = __webpack_require__(110);
+const _sosmodule = __webpack_require__(111);
 const _uploadmodule = __webpack_require__(38);
 const _walletmodule = __webpack_require__(102);
 const _core = __webpack_require__(3);
-const _nestjsprometheus = __webpack_require__(114);
+const _nestjsprometheus = __webpack_require__(115);
 const _licenseverify = __webpack_require__(15);
-const _notificationmodule = __webpack_require__(115);
-const _ephemeralmessagesmodule = __webpack_require__(118);
-const _supportmodule = __webpack_require__(122);
+const _notificationmodule = __webpack_require__(116);
+const _ephemeralmessagesmodule = __webpack_require__(119);
+const _supportmodule = __webpack_require__(123);
 let DriverAPIModule = class DriverAPIModule {
     constructor(licenseService){
         this.licenseService = licenseService;
@@ -121,7 +121,7 @@ let DriverAPIModule = class DriverAPIModule {
                                 }
                             }
                         },
-                        autoSchemaFile: (0, _path.join)(process.cwd(), 'apps/taxi-driver-frontend/lib/core/graphql/schema.gql')
+                        autoSchemaFile: (0, _path.join)(process.cwd(), 'apps/driver-frontend/lib/core/graphql/schema.gql')
                     }),
                     _typeorm.TypeOrmModule.forFeature(_database.entities),
                     _authmodule.AuthModule.register(),
@@ -447,6 +447,7 @@ __webpack_require__.d(__webpack_exports__, {
   RangeCostDTO: () => (/* reexport */ RangeCostDTO),
   RangePolicy: () => (/* reexport */ RangePolicy),
   RatingAggregate: () => (/* reexport */ RatingAggregate),
+  RazorpayService: () => (/* reexport */ RazorpayService),
   RedisHelpersModule: () => (/* reexport */ RedisHelpersModule),
   RedisSearchMigrationService: () => (/* reexport */ RedisSearchMigrationService),
   RegionCategoryEntity: () => (/* reexport */ RegionCategoryEntity),
@@ -5801,6 +5802,30 @@ service_entity_ts_decorate([
     }),
     service_entity_ts_metadata("design:type", Number)
 ], ServiceEntity.prototype, "roundingFactor", void 0);
+service_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        nullable: true,
+        precision: 10,
+        scale: 2
+    }),
+    service_entity_ts_metadata("design:type", Number)
+], ServiceEntity.prototype, "gstPercent", void 0);
+service_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        nullable: true,
+        precision: 10,
+        scale: 2
+    }),
+    service_entity_ts_metadata("design:type", Number)
+], ServiceEntity.prototype, "platformFee", void 0);
+service_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        nullable: true,
+        precision: 10,
+        scale: 2
+    }),
+    service_entity_ts_metadata("design:type", Number)
+], ServiceEntity.prototype, "paymentGatewayFee", void 0);
 service_entity_ts_decorate([
     (0,external_typeorm_.OneToOne)(function() {
         return MediaEntity;
@@ -13526,6 +13551,7 @@ var SMSProviderType = /*#__PURE__*/ function(SMSProviderType) {
     SMSProviderType["MessageBird"] = "MessageBird";
     SMSProviderType["VentisSMS"] = "VentisSMS";
     SMSProviderType["ClickSMSNet"] = "ClickSMSNet";
+    SMSProviderType["BulkSMSPlans"] = "BulkSMSPlans";
     return SMSProviderType;
 }({});
 (0,graphql_.registerEnumType)(SMSProviderType, {
@@ -16986,6 +17012,30 @@ taxi_order_entity_ts_decorate([
 ], TaxiOrderEntity.prototype, "providerShare", void 0);
 taxi_order_entity_ts_decorate([
     (0,external_typeorm_.Column)('float', {
+        precision: 10,
+        default: 0,
+        scale: 2
+    }),
+    taxi_order_entity_ts_metadata("design:type", Number)
+], TaxiOrderEntity.prototype, "gstAmount", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        precision: 10,
+        default: 0,
+        scale: 2
+    }),
+    taxi_order_entity_ts_metadata("design:type", Number)
+], TaxiOrderEntity.prototype, "platformFeeAmount", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        precision: 10,
+        default: 0,
+        scale: 2
+    }),
+    taxi_order_entity_ts_metadata("design:type", Number)
+], TaxiOrderEntity.prototype, "paymentGatewayFeeAmount", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
         nullable: true,
         precision: 10,
         scale: 2
@@ -17011,6 +17061,13 @@ taxi_order_entity_ts_decorate([
     }),
     taxi_order_entity_ts_metadata("design:type", typeof Date === "undefined" ? Object : Date)
 ], TaxiOrderEntity.prototype, "pickupOtpVerifiedAt", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        type: 'boolean',
+        default: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", Boolean)
+], TaxiOrderEntity.prototype, "pickupOtpRequired", void 0);
 taxi_order_entity_ts_decorate([
     (0,external_typeorm_.Column)({
         nullable: true
@@ -23603,11 +23660,12 @@ var ActiveOrderCommonRedisService = /*#__PURE__*/ function() {
     };
     _proto.createActiveOrder = function createActiveOrder(input) {
         return active_order_common_redis_service_async_to_generator(function() {
-            var activeOrder;
+            var _input_pickupOtpRequired, activeOrder;
             return active_order_common_redis_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
                         activeOrder = active_order_common_redis_service_extends({}, input, {
+                            pickupOtpRequired: (_input_pickupOtpRequired = input.pickupOtpRequired) != null ? _input_pickupOtpRequired : true,
                             currentLegIndex: 0,
                             chatMessages: [],
                             commissionDeducted: false,
@@ -24355,11 +24413,12 @@ var RideOfferRedisService = /*#__PURE__*/ function() {
     };
     _proto.createRideOffer = function createRideOffer(input) {
         return ride_offer_redis_service_async_to_generator(function() {
-            var _input_scheduledAt, metadata, onlineRider;
+            var _input_scheduledAt, _input_pickupOtpRequired, metadata, onlineRider;
             return ride_offer_redis_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
                         metadata = ride_offer_redis_service_extends({}, input, {
+                            pickupOtpRequired: (_input_pickupOtpRequired = input.pickupOtpRequired) != null ? _input_pickupOtpRequired : true,
                             id: input.orderId,
                             pickupLocation: input.pickupLocation.lng + ", " + input.pickupLocation.lat,
                             createdAt: input.createdAt.getTime(),
@@ -24475,7 +24534,8 @@ var RideOfferRedisService = /*#__PURE__*/ function() {
                                 riderFirstName: (_input_riderFirstName = input.riderFirstName) != null ? _input_riderFirstName : null,
                                 riderAvatarUrl: (_input_riderAvatarUrl = input.riderAvatarUrl) != null ? _input_riderAvatarUrl : null,
                                 driverDirections: input.driverDirections,
-                                pickupOtp: input.pickupOtp
+                                pickupOtp: input.pickupOtp,
+                                pickupOtpRequired: input.pickupOtpRequired
                             }))
                         ];
                     case 4:
@@ -29641,10 +29701,19 @@ var ServiceService = /*#__PURE__*/ function() {
         if (fleetMultiplier === void 0) fleetMultiplier = 1;
         if (waitMinutes === void 0) waitMinutes = 0;
         if (optionFee === void 0) optionFee = 0;
-        var i = service.baseFare;
         var multiplier = 1;
-        console.log("Calculating Trip fee with base fare " + i + " distance of " + distance + " meters and duration of " + duration);
-        i += service.perHundredMeters * distance / 100 + service.perMinuteDrive * (duration / 60);
+        console.log("Calculating Trip fee with base fare " + service.baseFare + " distance of " + distance + " meters and duration of " + duration);
+        // Distance fare: "Base Fare" covers the first 2 km entirely. Every
+        // additional km (or part of a km) beyond that is charged at the
+        // "Minimum Fee" rate, rounded UP to the next whole km.
+        // e.g. a 5 km trip = Base Fare + 3 × Minimum Fee (km 3, 4, 5).
+        var distanceKm = distance / 1000;
+        var includedKm = 2;
+        var totalKm = Math.round(distanceKm);
+        var additionalKm = totalKm > includedKm ? totalKm - includedKm : 0;
+        var i = service.baseFare + additionalKm * service.minimumFee;
+        console.log("Distance fare: " + distanceKm.toFixed(2) + "km rounds to " + totalKm + "km => baseFare(" + service.baseFare + ") + " + additionalKm + "km x minimumFee(" + service.minimumFee + ") = " + i);
+        i += service.perMinuteDrive * (duration / 60);
         console.log("Initial calculation without multiplier: " + i);
         var ratioCost = 0;
         var newRatioCost = 0;
@@ -29693,10 +29762,10 @@ var ServiceService = /*#__PURE__*/ function() {
         i *= fleetMultiplier;
         multiplier *= fleetMultiplier;
         console.log("After fleet multiplier: " + i);
-        if (i < service.minimumFee * multiplier) {
-            i = service.minimumFee * multiplier;
-            console.log("After Minimum fee applied: " + i);
-        }
+        // "Minimum Fee" is now the per-additional-km rate used above in the
+        // distance tier, not a fare floor — the old floor clamp against
+        // service.minimumFee is removed since that field no longer represents
+        // a "minimum amount" and would silently reintroduce the old meaning.
         // Add wait time fee and option fees BEFORE rounding
         var waitFee = service.perMinuteWait * waitMinutes;
         i += waitFee + optionFee;
@@ -29711,7 +29780,9 @@ var ServiceService = /*#__PURE__*/ function() {
         // Check if service uses RANGE pricing mode
         if (service.pricingMode === PricingMode.RANGE) {
             // Calculate range using service-specific percentages
-            var min = Math.max(cost * service.priceRangeMinPercent, service.minimumFee * multiplier);
+            // service.minimumFee is now the per-additional-km rate, not a fare
+            // floor, so it's no longer a valid lower bound here.
+            var min = cost * service.priceRangeMinPercent;
             var max = cost * service.priceRangeMaxPercent;
             // Apply rounding factor to min and max if configured
             if (service.roundingFactor != null && service.roundingFactor > 0) {
@@ -31952,9 +32023,35 @@ var SharedOrderService = /*#__PURE__*/ function() {
             });
         }).call(this);
     };
+    _proto.getRouteDistance = function getRouteDistance(points) {
+        return shared_order_service_async_to_generator(function() {
+            var metrics;
+            return shared_order_service_ts_generator(this, function(_state) {
+                switch(_state.label){
+                    case 0:
+                        if (points.length < 2) {
+                            throw new apollo_.ForbiddenError('At least two points are required to calculate route distance.');
+                        }
+                        return [
+                            4,
+                            this.googleServices.getSumDistanceAndDuration(points)
+                        ];
+                    case 1:
+                        metrics = _state.sent();
+                        return [
+                            2,
+                            {
+                                distance: metrics.distance,
+                                duration: metrics.duration
+                            }
+                        ];
+                }
+            });
+        }).call(this);
+    };
     _proto.calculateFare = function calculateFare(input) {
         return shared_order_service_async_to_generator(function() {
-            var _this, distances, totalDistance, zonePricings, regions, servicesInRegion, _input_twoWay, metrics, _tmp, cats, feeMultiplier, optionFee, options, paidOptions, _cats;
+            var _this, distances, totalDistance, zonePricings, regions, servicesInRegion, _input_twoWay, metrics, cats, feeMultiplier, optionFee, options, paidOptions, _cats;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32005,31 +32102,12 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         if (((_input_twoWay = input.twoWay) != null ? _input_twoWay : false) && input.points.length > 1) {
                             input.points.push(input.points[0]);
                         }
-                        if (!(servicesInRegion.findIndex(function(x) {
-                            return x.perHundredMeters > 0;
-                        }) > -1)) return [
-                            3,
-                            6
-                        ];
                         return [
                             4,
                             this.googleServices.getSumDistanceAndDuration(input.points)
                         ];
                     case 5:
-                        _tmp = _state.sent();
-                        return [
-                            3,
-                            7
-                        ];
-                    case 6:
-                        _tmp = {
-                            distance: 0,
-                            duration: 0,
-                            directions: []
-                        };
-                        _state.label = 7;
-                    case 7:
-                        metrics = _tmp;
+                        metrics = _state.sent();
                         common_.Logger.log({
                             pointsCount: input.points.length,
                             points: input.points,
@@ -32059,19 +32137,19 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 }
                             })
                         ];
-                    case 8:
+                    case 6:
                         cats = _state.sent();
                         return [
                             4,
                             this.sharedFleetService.getFleetMultiplierInPoint(input.points[0])
                         ];
-                    case 9:
+                    case 7:
                         feeMultiplier = _state.sent();
                         // Calculate option fees from selected options
                         optionFee = 0;
                         if (!(input.selectedOptionIds && input.selectedOptionIds.length > 0)) return [
                             3,
-                            11
+                            9
                         ];
                         return [
                             4,
@@ -32083,7 +32161,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 }
                             })
                         ];
-                    case 10:
+                    case 8:
                         options = _state.sent();
                         paidOptions = options.filter(function(option) {
                             return option.type == ServiceOptionType.Paid;
@@ -32095,8 +32173,8 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             return current += previous;
                         });
                         common_.Logger.log("Calculated option fee: " + optionFee + " from " + paidOptions.length + " paid options", 'SharedOrderService.calculateFare');
-                        _state.label = 11;
-                    case 11:
+                        _state.label = 9;
+                    case 9:
                         _cats = cats.map(function(cat) {
                             var services = cat.services, _cat = _object_without_properties_loose(cat, [
                                 "services"
@@ -32110,44 +32188,29 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             }).map(function(service) {
                                 var cost = 0;
                                 var costResult = null;
-                                var zonePricesWithService = zonePricings.filter(function(zone) {
-                                    return zone.services.find(function(_service) {
-                                        return _service.id == service.id;
-                                    });
-                                });
-                                if (zonePricesWithService.length > 0) {
-                                    cost = zonePricesWithService[0].cost;
-                                    var eta = new Date();
-                                    for(var _iterator = shared_order_service_create_for_of_iterator_helper_loose(zonePricesWithService[0].timeMultipliers), _step; !(_step = _iterator()).done;){
-                                        var _multiplier = _step.value;
-                                        var startMinutes = parseInt(_multiplier.startTime.split(':')[0]) * 60 + parseInt(_multiplier.startTime.split(':')[1]);
-                                        var nowMinutes = eta.getHours() * 60 + eta.getMinutes();
-                                        var endMinutes = parseInt(_multiplier.endTime.split(':')[0]) * 60 + parseInt(_multiplier.endTime.split(':')[1]);
-                                        if (nowMinutes >= startMinutes && nowMinutes <= endMinutes) {
-                                            cost *= _multiplier.multiply;
-                                        }
-                                    }
-                                } else {
-                                    var timestamp = new Date();
-                                    var _input_waitTime;
-                                    costResult = _this.servicesService.calculateCost(service, metrics.distance, metrics.duration, timestamp, feeMultiplier, (_input_waitTime = input.waitTime) != null ? _input_waitTime : 0, optionFee);
-                                    cost = costResult.cost;
-                                    var _input_waitTime1;
-                                    common_.Logger.log({
-                                        serviceId: service.id,
-                                        serviceName: service.name,
-                                        distance: metrics.distance,
-                                        duration: metrics.duration,
-                                        timestamp: timestamp.toISOString(),
-                                        feeMultiplier: feeMultiplier,
-                                        waitTime: (_input_waitTime1 = input.waitTime) != null ? _input_waitTime1 : 0,
-                                        optionFee: optionFee,
-                                        cost: cost,
-                                        min: costResult.min,
-                                        max: costResult.max,
-                                        pricingMode: service.pricingMode
-                                    }, 'SharedOrderService.calculateFare.costCalculation');
-                                }
+                                var timestamp = new Date();
+                                var _input_waitTime;
+                                costResult = _this.servicesService.calculateCost(service, metrics.distance, metrics.duration, timestamp, feeMultiplier, (_input_waitTime = input.waitTime) != null ? _input_waitTime : 0, optionFee);
+                                cost = costResult.cost;
+                                var _input_waitTime1;
+                                common_.Logger.log({
+                                    serviceId: service.id,
+                                    serviceName: service.name,
+                                    distance: metrics.distance,
+                                    distanceKm: metrics.distance / 1000,
+                                    roundedDistanceKm: Math.round(metrics.distance / 1000),
+                                    duration: metrics.duration,
+                                    timestamp: timestamp.toISOString(),
+                                    baseFare: service.baseFare,
+                                    minimumFee: service.minimumFee,
+                                    feeMultiplier: feeMultiplier,
+                                    waitTime: (_input_waitTime1 = input.waitTime) != null ? _input_waitTime1 : 0,
+                                    optionFee: optionFee,
+                                    cost: cost,
+                                    min: costResult.min,
+                                    max: costResult.max,
+                                    pricingMode: service.pricingMode
+                                }, 'SharedOrderService.calculateFare.costCalculation');
                                 // Build CostResult union based on pricing mode
                                 // NOTE: Provider share is NOT added to rider cost - it's deducted from driver earnings
                                 var costResultDTO;
@@ -32237,7 +32300,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.createOrder = function createOrder(input) {
         return shared_order_service_async_to_generator(function() {
-            var _this, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, zonePricing, eta, _iterator, _step, _multiplier, startMinutes, nowMinutes, endMinutes, regions, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, _input_waitMinutes2, _input_waitMinutes3, orderObject, order, couponResult, activityType;
+            var _this, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, regions, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, isOnlinePayment, _service_gstPercent, gstAmount, _service_platformFee, platformFeeAmount, _service_paymentGatewayFee, paymentGatewayFeeAmount, _input_waitMinutes2, _input_waitMinutes3, orderObject, order, couponResult, activityType;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32365,25 +32428,16 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             max: costCalculation.max,
                             pricingMode: service.pricingMode
                         }, 'SharedOrderService.createOrder.costCalculation');
-                        zonePricing = zonePricings.filter(function(price) {
-                            return price.services.filter(function(service) {
-                                return service.id == input.serviceId;
-                            }).length > 0;
-                        });
-                        common_.Logger.log(zonePricing, 'SharedOrderService.createOrder.zonePricing');
-                        if (zonePricing.length > 0) {
-                            cost = zonePricing[0].cost;
-                            eta = new Date();
-                            for(_iterator = shared_order_service_create_for_of_iterator_helper_loose(zonePricings[0].timeMultipliers); !(_step = _iterator()).done;){
-                                _multiplier = _step.value;
-                                startMinutes = parseInt(_multiplier.startTime.split(':')[0]) * 60 + parseInt(_multiplier.startTime.split(':')[1]);
-                                nowMinutes = eta.getHours() * 60 + eta.getMinutes();
-                                endMinutes = parseInt(_multiplier.endTime.split(':')[0]) * 60 + parseInt(_multiplier.endTime.split(':')[1]);
-                                if (nowMinutes >= startMinutes && nowMinutes <= endMinutes) {
-                                    cost *= _multiplier.multiply;
-                                }
-                            }
-                        }
+                        common_.Logger.log({
+                            serviceId: service.id,
+                            serviceName: service.name,
+                            cost: cost,
+                            distance: metrics.distance,
+                            distanceKm: metrics.distance / 1000,
+                            roundedDistanceKm: Math.round(metrics.distance / 1000),
+                            baseFare: service.baseFare,
+                            minimumFee: service.minimumFee
+                        }, 'SharedOrderService.createOrder.finalCost');
                         return [
                             4,
                             this.regionService.getRegionWithPoint(input.waypoints[0].point)
@@ -32430,6 +32484,20 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         }
                         _state.label = 14;
                     case 14:
+                        // GST and Platform Fee apply to every order; Payment Gateway Fee only
+                        // applies when the rider is actually paying through a gateway (a saved
+                        // card or a fresh gateway payment) — not for cash or wallet.
+                        isOnlinePayment = input.paymentMode === PaymentMode.PaymentGateway || input.paymentMode === PaymentMode.SavedPaymentMethod;
+                        gstAmount = cost * ((_service_gstPercent = service.gstPercent) != null ? _service_gstPercent : 0) / 100;
+                        platformFeeAmount = (_service_platformFee = service.platformFee) != null ? _service_platformFee : 0;
+                        paymentGatewayFeeAmount = isOnlinePayment ? cost * ((_service_paymentGatewayFee = service.paymentGatewayFee) != null ? _service_paymentGatewayFee : 0) / 100 : 0;
+                        common_.Logger.log({
+                            cost: cost,
+                            gstAmount: gstAmount,
+                            platformFeeAmount: platformFeeAmount,
+                            paymentGatewayFeeAmount: paymentGatewayFeeAmount,
+                            isOnlinePayment: isOnlinePayment
+                        }, 'SharedOrderService.createOrder.feeBreakdown');
                         orderObject = this.orderRepository.create({
                             serviceId: input.serviceId,
                             type: input.type,
@@ -32469,6 +32537,9 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             rideOptionsCost: optionFee,
                             fleetId: input.fleetId,
                             providerShare: service.providerShareFlat + service.providerSharePercent * cost / 100,
+                            gstAmount: gstAmount,
+                            platformFeeAmount: platformFeeAmount,
+                            paymentGatewayFeeAmount: paymentGatewayFeeAmount,
                             options: options
                         });
                         return [
@@ -32547,7 +32618,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.dispatchRide = function dispatchRide(order) {
         return shared_order_service_async_to_generator(function() {
-            var _order_driverId, _order_rider_media, _order_rider_wallets_filter_, _order_rider_wallets, now, config, _config_preDispatchBufferMinutes, preDispatchBufferMinutes, timeUntilScheduled, intervalMinutes, _order_rider_wallets_filter__balance, _order_options;
+            var _order_driverId, _order_rider_media, _order_rider_wallets_filter_, _order_rider_wallets, now, config, _config_preDispatchBufferMinutes, preDispatchBufferMinutes, timeUntilScheduled, intervalMinutes, _order_service_gstPercent, _order_service_platformFee, _order_service_paymentGatewayFee, _order_rider_wallets_filter__balance, _order_options;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32568,6 +32639,9 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 status: order.status,
                                 currency: order.currency,
                                 type: order.type,
+                                // Booked by a dispatcher/operator (admin panel) — driver app should
+                                // not ask for pickup OTP once a driver accepts this ride.
+                                pickupOtpRequired: order.operatorId == null,
                                 estimatedDistance: order.distanceBest,
                                 estimatedDuration: order.durationBest,
                                 orderId: order.id.toString(),
@@ -32578,8 +32652,25 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 scheduledAt: order.expectedTimestamp,
                                 pickupLocation: order.points[0],
                                 fleetId: order.fleetId,
-                                costEstimateForRider: order.costAfterCoupon,
-                                costEstimateForDriver: order.costBest - order.providerShare,
+                                //costEstimateForRider: order.costAfterCoupon,
+                                //costEstimateForDriver: order.costBest - order.providerShare,
+                                // costAfterCoupon = costBest − couponDiscount already, so adding the
+                                // fee total here gives: (costBest + fees) − couponDiscount for the
+                                // rider, and (costBest + fees) − providerShare − couponDiscount for
+                                // the driver — matching the agreed fee-inclusive formula for both.
+                                costEstimateForRider: order.costAfterCoupon + order.gstAmount + order.platformFeeAmount + order.paymentGatewayFeeAmount,
+                                costEstimateForDriver: order.costAfterCoupon + order.gstAmount + order.platformFeeAmount + order.paymentGatewayFeeAmount,
+                                // Same value the rider side already computes (costBest − costAfterCoupon).
+                                // One coupon, one order — both apps must show the identical number.
+                                couponDiscount: order.costBest - order.costAfterCoupon,
+                                costBest: order.costBest,
+                                providerShare: order.providerShare,
+                                gstPercent: (_order_service_gstPercent = order.service.gstPercent) != null ? _order_service_gstPercent : 0,
+                                gstAmount: order.gstAmount,
+                                platformFee: (_order_service_platformFee = order.service.platformFee) != null ? _order_service_platformFee : 0,
+                                platformFeeAmount: order.platformFeeAmount,
+                                paymentGatewayFeePercent: (_order_service_paymentGatewayFee = order.service.paymentGatewayFee) != null ? _order_service_paymentGatewayFee : 0,
+                                paymentGatewayFeeAmount: order.paymentGatewayFeeAmount,
                                 costMin: order.costMin,
                                 costMax: order.costMax,
                                 pricingMode: order.pricingMode,
@@ -33341,7 +33432,9 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 driverId: driverId.toString(),
                                 pickupEta: etaPickup,
                                 dropoffEta: etaDropoff,
-                                driverDirections: driverTravel.directions
+                                driverDirections: driverTravel.directions,
+                                // Manual dispatcher assignment — the driver app should not ask for pickup OTP.
+                                pickupOtpRequired: false
                             })
                         ];
                     case 4:
@@ -33355,7 +33448,9 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         return [
                             4,
                             this.activeOrderRedisService.updateOrderStatus(orderId.toString(), {
-                                driverId: driverId.toString()
+                                driverId: driverId.toString(),
+                                // Manual dispatcher assignment — the driver app should not ask for pickup OTP.
+                                pickupOtpRequired: false
                             })
                         ];
                     case 6:
@@ -33412,6 +33507,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             status: OrderStatus.DriverAccepted,
                             pickupEta: etaPickup,
                             riderId: parseInt(rider.id),
+                            directions: driverTravel.directions,
                             pickupOtp: (_rideOffer_pickupOtp = rideOffer == null ? void 0 : rideOffer.pickupOtp) != null ? _rideOffer_pickupOtp : activeOrder == null ? void 0 : activeOrder.pickupOtp
                         });
                         // 5) Persist order record
@@ -33421,7 +33517,9 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 status: OrderStatus.DriverAccepted,
                                 pickupEta: etaPickup,
                                 dropOffEta: etaDropoff,
-                                driverId: driverId
+                                driverId: driverId,
+                                // Manual dispatcher assignment — the driver app should not ask for pickup OTP.
+                                pickupOtpRequired: false
                             })
                         ];
                     case 9:
@@ -35437,6 +35535,219 @@ ClickSMSService = clicksms_service_ts_decorate([
     ])
 ], ClickSMSService);
 
+;// ../../libs/database/src/lib/sms/providers/bulksmsplans.service.ts
+function bulksmsplans_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+    try {
+        var info = gen[key](arg);
+        var value = info.value;
+    } catch (error) {
+        reject(error);
+        return;
+    }
+    if (info.done) {
+        resolve(value);
+    } else {
+        Promise.resolve(value).then(_next, _throw);
+    }
+}
+function bulksmsplans_service_async_to_generator(fn) {
+    return function() {
+        var self = this, args = arguments;
+        return new Promise(function(resolve, reject) {
+            var gen = fn.apply(self, args);
+            function _next(value) {
+                bulksmsplans_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+            }
+            function _throw(err) {
+                bulksmsplans_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+            }
+            _next(undefined);
+        });
+    };
+}
+function bulksmsplans_service_ts_decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+function bulksmsplans_service_ts_generator(thisArg, body) {
+    var f, y, t, _ = {
+        label: 0,
+        sent: function() {
+            if (t[0] & 1) throw t[1];
+            return t[1];
+        },
+        trys: [],
+        ops: []
+    }, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() {
+        return this;
+    }), g;
+    function verb(n) {
+        return function(v) {
+            return step([
+                n,
+                v
+            ]);
+        };
+    }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while(g && (g = 0, op[0] && (_ = 0)), _)try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [
+                op[0] & 2,
+                t.value
+            ];
+            switch(op[0]){
+                case 0:
+                case 1:
+                    t = op;
+                    break;
+                case 4:
+                    _.label++;
+                    return {
+                        value: op[1],
+                        done: false
+                    };
+                case 5:
+                    _.label++;
+                    y = op[1];
+                    op = [
+                        0
+                    ];
+                    continue;
+                case 7:
+                    op = _.ops.pop();
+                    _.trys.pop();
+                    continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+                        _ = 0;
+                        continue;
+                    }
+                    if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+                        _.label = op[1];
+                        break;
+                    }
+                    if (op[0] === 6 && _.label < t[1]) {
+                        _.label = t[1];
+                        t = op;
+                        break;
+                    }
+                    if (t && _.label < t[2]) {
+                        _.label = t[2];
+                        _.ops.push(op);
+                        break;
+                    }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop();
+                    continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) {
+            op = [
+                6,
+                e
+            ];
+            y = 0;
+        } finally{
+            f = t = 0;
+        }
+        if (op[0] & 5) throw op[1];
+        return {
+            value: op[0] ? op[1] : void 0,
+            done: true
+        };
+    }
+}
+function bulksmsplans_service_ts_metadata(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+}
+
+
+
+
+var BulkSMSPlansService = /*#__PURE__*/ function() {
+    "use strict";
+    function BulkSMSPlansService(httpService) {
+        this.httpService = httpService;
+    }
+    var _proto = BulkSMSPlansService.prototype;
+    _proto.sendOTP = function sendOTP(input) {
+        return bulksmsplans_service_async_to_generator(function() {
+            var providerEntity, phoneNumber, message, url, params, response, body, statusStr, msgStr, isError, error;
+            return bulksmsplans_service_ts_generator(this, function(_state) {
+                switch(_state.label){
+                    case 0:
+                        providerEntity = input.providerEntity, phoneNumber = input.phoneNumber, message = input.message;
+                        _state.label = 1;
+                    case 1:
+                        _state.trys.push([
+                            1,
+                            3,
+                            ,
+                            4
+                        ]);
+                        url = 'https://bulksmsplans.com/api/send_sms';
+                        params = {
+                            api_id: providerEntity.authToken,
+                            api_password: providerEntity.accountId,
+                            sms_type: 'Transactional',
+                            sms_encoding: 'text',
+                            sender: providerEntity.fromNumber || '',
+                            number: phoneNumber.replace(/\D/g, '').slice(-10),
+                            message: message,
+                            template_id: providerEntity.smsType || ''
+                        };
+                        return [
+                            4,
+                            (0,external_rxjs_.firstValueFrom)(this.httpService.post(url, null, {
+                                params: params
+                            }))
+                        ];
+                    case 2:
+                        response = _state.sent();
+                        body = response.data;
+                        common_.Logger.log("BulkSMSPlans response: " + JSON.stringify(body), 'BulkSMSPlansService.sendOTP');
+                        statusStr = String((body == null ? void 0 : body.status) || (body == null ? void 0 : body.Status) || '').toLowerCase();
+                        msgStr = String((body == null ? void 0 : body.message) || (body == null ? void 0 : body.msg) || '').toLowerCase();
+                        isError = statusStr && ![
+                            'success',
+                            'ok',
+                            'true',
+                            'submitted'
+                        ].includes(statusStr) || msgStr.includes('error') || msgStr.includes('invalid') || msgStr.includes('fail');
+                        if (response.status < 200 || response.status >= 300 || isError) {
+                            throw new apollo_.ForbiddenError("BulkSMSPlans rejected the request: " + JSON.stringify(body));
+                        }
+                        return [
+                            3,
+                            4
+                        ];
+                    case 3:
+                        error = _state.sent();
+                        common_.Logger.error(error, 'BulkSMSPlansService.sendOTP');
+                        throw new apollo_.ForbiddenError("Failed to send BulkSMSPlans SMS: " + error.message);
+                    case 4:
+                        return [
+                            2
+                        ];
+                }
+            });
+        }).call(this);
+    };
+    return BulkSMSPlansService;
+}();
+BulkSMSPlansService = bulksmsplans_service_ts_decorate([
+    (0,common_.Injectable)(),
+    bulksmsplans_service_ts_metadata("design:type", Function),
+    bulksmsplans_service_ts_metadata("design:paramtypes", [
+        typeof axios_.HttpService === "undefined" ? Object : axios_.HttpService
+    ])
+], BulkSMSPlansService);
+
 ;// ../../libs/database/src/lib/sms/sms.service.ts
 function sms_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
     try {
@@ -35580,9 +35891,10 @@ function sms_service_ts_metadata(k, v) {
 
 
 
+
 var SMSService = /*#__PURE__*/ function() {
     "use strict";
-    function SMSService(smsProviderService, sharedConfigService, twilioService, broadnetService, plivoService, vonageService, pahappaService, ventisService, clickSMSService) {
+    function SMSService(smsProviderService, sharedConfigService, twilioService, broadnetService, plivoService, vonageService, pahappaService, ventisService, clickSMSService, bulkSMSPlansService) {
         this.smsProviderService = smsProviderService;
         this.sharedConfigService = sharedConfigService;
         this.twilioService = twilioService;
@@ -35592,6 +35904,7 @@ var SMSService = /*#__PURE__*/ function() {
         this.pahappaService = pahappaService;
         this.ventisService = ventisService;
         this.clickSMSService = clickSMSService;
+        this.bulkSMSPlansService = bulkSMSPlansService;
     }
     var _proto = SMSService.prototype;
     _proto.sendSMS = function sendSMS(phoneNumber, message) {
@@ -35643,15 +35956,20 @@ var SMSService = /*#__PURE__*/ function() {
                                     3,
                                     14
                                 ];
-                            case SMSProviderType.Firebase:
+                            case SMSProviderType.BulkSMSPlans:
                                 return [
                                     3,
                                     16
                                 ];
+                            case SMSProviderType.Firebase:
+                                return [
+                                    3,
+                                    18
+                                ];
                         }
                         return [
                             3,
-                            17
+                            19
                         ];
                     case 2:
                         return [
@@ -35666,7 +35984,7 @@ var SMSService = /*#__PURE__*/ function() {
                         _state.sent();
                         return [
                             3,
-                            18
+                            20
                         ];
                     case 4:
                         return [
@@ -35681,7 +35999,7 @@ var SMSService = /*#__PURE__*/ function() {
                         _state.sent();
                         return [
                             3,
-                            18
+                            20
                         ];
                     case 6:
                         return [
@@ -35696,7 +36014,7 @@ var SMSService = /*#__PURE__*/ function() {
                         _state.sent();
                         return [
                             3,
-                            18
+                            20
                         ];
                     case 8:
                         return [
@@ -35711,7 +36029,7 @@ var SMSService = /*#__PURE__*/ function() {
                         _state.sent();
                         return [
                             3,
-                            18
+                            20
                         ];
                     case 10:
                         return [
@@ -35726,7 +36044,7 @@ var SMSService = /*#__PURE__*/ function() {
                         _state.sent();
                         return [
                             3,
-                            18
+                            20
                         ];
                     case 12:
                         return [
@@ -35741,7 +36059,7 @@ var SMSService = /*#__PURE__*/ function() {
                         _state.sent();
                         return [
                             3,
-                            18
+                            20
                         ];
                     case 14:
                         return [
@@ -35756,17 +36074,32 @@ var SMSService = /*#__PURE__*/ function() {
                         _state.sent();
                         return [
                             3,
-                            18
+                            20
                         ];
                     case 16:
+                        return [
+                            4,
+                            this.bulkSMSPlansService.sendOTP({
+                                providerEntity: provider,
+                                phoneNumber: phoneNumber,
+                                message: message
+                            })
+                        ];
+                    case 17:
+                        _state.sent();
+                        return [
+                            3,
+                            20
+                        ];
+                    case 18:
                         // Firebase doesn't actually send SMS, just return
                         return [
                             3,
-                            18
+                            20
                         ];
-                    case 17:
+                    case 19:
                         throw new apollo_.ForbiddenError('The SMS provider is not supported');
-                    case 18:
+                    case 20:
                         return [
                             2
                         ];
@@ -35794,11 +36127,11 @@ var SMSService = /*#__PURE__*/ function() {
                         postData = JSON.stringify({
                             api_id: process.env.SMS_API_ID || 'APIuep8QlcP149188',
                             api_password: process.env.SMS_API_PASSWORD || 'y6IzcYhq',
-                            sms_type: 'Transactional',
-                            sms_encoding: 'text',
+                            sms_type: 'OTP',
+                            sms_encoding: 1,
                             sender: process.env.SMS_SENDER_ID || 'ROUTEX',
                             number: cleanNumber,
-                            message: random6Digit,
+                            message: "Your Route39 app verification OTP is " + random6Digit + ". Keep it confidential for your security.",
                             template_id: process.env.SMS_TEMPLATE_ID_OTP || '189966'
                         });
                         options = {
@@ -35839,10 +36172,7 @@ var SMSService = /*#__PURE__*/ function() {
                     case 3:
                         e = _state.sent();
                         console.error('Failed to send SMS via BulkSMSPlans:', e);
-                        return [
-                            3,
-                            4
-                        ];
+                        throw e;
                     case 4:
                         return [
                             2,
@@ -35917,7 +36247,8 @@ SMSService = sms_service_ts_decorate([
         typeof VonageService === "undefined" ? Object : VonageService,
         typeof PahappaService === "undefined" ? Object : PahappaService,
         typeof VentisService === "undefined" ? Object : VentisService,
-        typeof ClickSMSService === "undefined" ? Object : ClickSMSService
+        typeof ClickSMSService === "undefined" ? Object : ClickSMSService,
+        typeof BulkSMSPlansService === "undefined" ? Object : BulkSMSPlansService
     ])
 ], SMSService);
 
@@ -35928,6 +36259,7 @@ function sms_module_ts_decorate(decorators, target, key, desc) {
     else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 }
+
 
 
 
@@ -35964,6 +36296,7 @@ SMSModule = sms_module_ts_decorate([
             VonageService,
             VentisService,
             ClickSMSService,
+            BulkSMSPlansService,
             SharedConfigurationService,
             AuthRedisService
         ],
@@ -43828,7 +44161,180 @@ function loadSecrets() {
 ;// ../../libs/database/src/lib/secrets/index.ts
 
 
+;// external "razorpay"
+const external_razorpay_namespaceObject = require("razorpay");
+var external_razorpay_default = /*#__PURE__*/__webpack_require__.n(external_razorpay_namespaceObject);
+;// ../../libs/database/src/lib/payments/razorpay.service.ts
+function razorpay_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+    try {
+        var info = gen[key](arg);
+        var value = info.value;
+    } catch (error) {
+        reject(error);
+        return;
+    }
+    if (info.done) {
+        resolve(value);
+    } else {
+        Promise.resolve(value).then(_next, _throw);
+    }
+}
+function razorpay_service_async_to_generator(fn) {
+    return function() {
+        var self = this, args = arguments;
+        return new Promise(function(resolve, reject) {
+            var gen = fn.apply(self, args);
+            function _next(value) {
+                razorpay_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+            }
+            function _throw(err) {
+                razorpay_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+            }
+            _next(undefined);
+        });
+    };
+}
+function razorpay_service_ts_decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+function razorpay_service_ts_generator(thisArg, body) {
+    var f, y, t, _ = {
+        label: 0,
+        sent: function() {
+            if (t[0] & 1) throw t[1];
+            return t[1];
+        },
+        trys: [],
+        ops: []
+    }, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() {
+        return this;
+    }), g;
+    function verb(n) {
+        return function(v) {
+            return step([
+                n,
+                v
+            ]);
+        };
+    }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while(g && (g = 0, op[0] && (_ = 0)), _)try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [
+                op[0] & 2,
+                t.value
+            ];
+            switch(op[0]){
+                case 0:
+                case 1:
+                    t = op;
+                    break;
+                case 4:
+                    _.label++;
+                    return {
+                        value: op[1],
+                        done: false
+                    };
+                case 5:
+                    _.label++;
+                    y = op[1];
+                    op = [
+                        0
+                    ];
+                    continue;
+                case 7:
+                    op = _.ops.pop();
+                    _.trys.pop();
+                    continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+                        _ = 0;
+                        continue;
+                    }
+                    if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+                        _.label = op[1];
+                        break;
+                    }
+                    if (op[0] === 6 && _.label < t[1]) {
+                        _.label = t[1];
+                        t = op;
+                        break;
+                    }
+                    if (t && _.label < t[2]) {
+                        _.label = t[2];
+                        _.ops.push(op);
+                        break;
+                    }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop();
+                    continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) {
+            op = [
+                6,
+                e
+            ];
+            y = 0;
+        } finally{
+            f = t = 0;
+        }
+        if (op[0] & 5) throw op[1];
+        return {
+            value: op[0] ? op[1] : void 0,
+            done: true
+        };
+    }
+}
+function razorpay_service_ts_metadata(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+}
+
+
+
+var RazorpayService = /*#__PURE__*/ function() {
+    "use strict";
+    function RazorpayService() {
+        this.client = new (external_razorpay_default())({
+            key_id: process.env.RAZORPAY_KEY_ID,
+            key_secret: process.env.RAZORPAY_KEY_SECRET
+        });
+    }
+    var _proto = RazorpayService.prototype;
+    _proto.createOrder = function createOrder(amount, currency, receipt) {
+        return razorpay_service_async_to_generator(function() {
+            return razorpay_service_ts_generator(this, function(_state) {
+                // amount in paise (INR smallest unit) — multiply rupees by 100
+                return [
+                    2,
+                    this.client.orders.create({
+                        amount: Math.round(amount * 100),
+                        currency: currency,
+                        receipt: receipt
+                    })
+                ];
+            });
+        }).call(this);
+    };
+    _proto.verifySignature = function verifySignature(orderId, paymentId, signature) {
+        var generated = external_crypto_.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET).update(orderId + "|" + paymentId).digest('hex');
+        return generated === signature;
+    };
+    return RazorpayService;
+}();
+RazorpayService = razorpay_service_ts_decorate([
+    (0,common_.Injectable)(),
+    razorpay_service_ts_metadata("design:type", Function),
+    razorpay_service_ts_metadata("design:paramtypes", [])
+], RazorpayService);
+
 ;// ../../libs/database/src/index.ts
+
 
 
 
@@ -45518,6 +46024,7 @@ OrderModule = _ts_decorate._([
             _database.RedisHelpersModule,
             _drivermodule.DriverModule,
             _database.SharedOrderModule,
+            _database.SMSModule,
             _database.SharedCustomerModule,
             _database.CommonCouponModule,
             _database.SharedCustomerWalletModule,
@@ -45952,7 +46459,7 @@ const _rxjs = __webpack_require__(21);
 const _typeorm1 = __webpack_require__(13);
 const _redis = __webpack_require__(20);
 let OrderService = class OrderService {
-    constructor(orderRepository, activityRepository, paymentRepository, reviewRepository, driverReviewRepository, driverRepository, riderRepository, cancelReasonRepository, serviceRepository, googleServices, sharedOrderService, serviceService, rideOfferRedisService, activeOrderRedisService, driverRedisService, riderRedisService, pubsub, httpService, riderNotificationService, sharedCustomerService, redisClient){
+    constructor(orderRepository, activityRepository, paymentRepository, reviewRepository, driverReviewRepository, driverRepository, riderRepository, cancelReasonRepository, serviceRepository, googleServices, sharedOrderService, serviceService, rideOfferRedisService, activeOrderRedisService, driverRedisService, riderRedisService, pubsub, httpService, riderNotificationService, sharedCustomerService, smsService, redisClient){
         this.orderRepository = orderRepository;
         this.activityRepository = activityRepository;
         this.paymentRepository = paymentRepository;
@@ -45973,6 +46480,7 @@ let OrderService = class OrderService {
         this.httpService = httpService;
         this.riderNotificationService = riderNotificationService;
         this.sharedCustomerService = sharedCustomerService;
+        this.smsService = smsService;
         this.redisClient = redisClient;
     }
     async submitReview(input) {
@@ -46056,12 +46564,21 @@ let OrderService = class OrderService {
             const pickupEta = new Date(new Date().getTime() + driverTravelMetrics.duration * 1000);
             const dropoffEta = new Date(pickupEta.getTime() + tripTravelMetrics.duration * 1000);
             // Generate 4-digit pickup OTP
+            const otpRequired = orderMetadata.pickupOtpRequired !== false;
             const existingOrderForOtp = await this.orderRepository.findOne({
                 where: {
                     id: input.orderId
                 }
             });
-            const pickupOtp = existingOrderForOtp?.pickupOtp ?? Math.floor(1000 + Math.random() * 9000).toString();
+            const pickupOtp = otpRequired ? existingOrderForOtp?.pickupOtp ?? Math.floor(1000 + Math.random() * 9000).toString() : undefined;
+            // Send pickup OTP via SMS only on first generation
+            if (!existingOrderForOtp?.pickupOtp && rider?.mobileNumber) {
+                try {
+                    await this.smsService.sendSMS(rider.mobileNumber, `Your Route39 ride pickup OTP is ${pickupOtp}. Share this with your driver only.`);
+                } catch (err) {
+                    _common.Logger.warn(`Failed to send pickup OTP SMS for order ${input.orderId}`, err);
+                }
+            }
             // Accept offer in Redis
             await this.rideOfferRedisService.acceptOfferByDriver({
                 orderId: input.orderId.toString(),
@@ -46073,13 +46590,15 @@ let OrderService = class OrderService {
                 pickupEta,
                 dropoffEta,
                 driverDirections: driverTravelMetrics.directions,
-                pickupOtp
+                pickupOtp,
+                pickupOtpRequired: otpRequired
             });
             // CRITICAL FIX: Await the database update
             await this.orderRepository.update(input.orderId, {
                 status: _database.OrderStatus.DriverAccepted,
                 driverId: input.driverId,
-                pickupOtp: pickupOtp
+                pickupOtp: pickupOtp,
+                pickupOtpRequired: otpRequired
             });
             // Notify all drivers that the offer is revoked
             for (const driverId of orderMetadata.offeredToDriverIds){
@@ -46164,6 +46683,24 @@ let OrderService = class OrderService {
         };
     }
     async initiateRide(input) {
+        // Guard: this mutation is callable directly by the driver app (no OTP arg),
+        // so it must only proceed when OTP isn't required for this order, or the
+        // OTP has already been verified via verifyPickupOtp().
+        const orderEntityForGuard = await this.orderRepository.findOne({
+            where: {
+                id: input.orderId
+            }
+        });
+        if (!orderEntityForGuard) {
+            throw new _apollo.ForbiddenError('ORDER_NOT_FOUND');
+        }
+        if (orderEntityForGuard.driverId !== input.driverId) {
+            throw new _apollo.ForbiddenError('ORDER_NOT_ASSIGNED_TO_DRIVER');
+        }
+        const otpRequiredForGuard = orderEntityForGuard.pickupOtpRequired !== false;
+        if (otpRequiredForGuard && !orderEntityForGuard.pickupOtpVerifiedAt) {
+            throw new _apollo.ForbiddenError('OTP_VERIFICATION_REQUIRED');
+        }
         const order = await this.activeOrderRedisService.getActiveOrder(input.orderId.toString());
         const driver = await this.driverRedisService.getOnlineDriverMetaData(input.driverId.toString());
         order.currentLegIndex = 1;
@@ -46180,6 +46717,7 @@ let OrderService = class OrderService {
             rideStartTime: Date.now(),
             lastTrackingPoint: driver?.location
         });
+        const nextDestination = this.createNextDestination(order.waypoints, order.currentLegIndex) ?? undefined;
         this.pubsub.publish('rider.order.updated', {
             riderId: parseInt(order.riderId)
         }, {
@@ -46187,14 +46725,15 @@ let OrderService = class OrderService {
             orderId: input.orderId,
             riderId: parseInt(order.riderId),
             status: _database.OrderStatus.Started,
-            directions: order.tripDirections
+            directions: order.tripDirections,
+            nextDestination
         });
         this.riderNotificationService.started(rider?.fcmTokens?.[0]);
         return {
             orderId: input.orderId,
             status: _database.OrderStatus.Started,
             directions: order.tripDirections,
-            nextDestination: this.createNextDestination(order.waypoints, order.currentLegIndex) ?? undefined
+            nextDestination
         };
     }
     // DEV ONLY - remove before production/git push
@@ -46218,7 +46757,8 @@ let OrderService = class OrderService {
         if (orderEntity.driverId !== input.driverId) {
             throw new _apollo.ForbiddenError('ORDER_NOT_ASSIGNED_TO_DRIVER');
         }
-        if (!orderEntity.pickupOtp || orderEntity.pickupOtp !== input.otp) {
+        const otpRequired = orderEntity.pickupOtpRequired !== false;
+        if (otpRequired && (!orderEntity.pickupOtp || orderEntity.pickupOtp !== input.otp)) {
             throw new _apollo.ForbiddenError('INVALID_OTP');
         }
         await this.orderRepository.update(input.orderId, {
@@ -46461,6 +47001,7 @@ let OrderService = class OrderService {
             pickupEta: order.pickupEta,
             dropoffEta: order.dropoffEta,
             status: order.status,
+            pickupOtpRequired: order.pickupOtpRequired ?? true,
             serviceName: order.serviceName,
             serviceImageAddress: order.serviceImageAddress,
             chatMessages: chatMessages.map((msg)=>({
@@ -46483,6 +47024,14 @@ let OrderService = class OrderService {
             },
             paymentMethod: order.paymentMethod,
             couponDiscount: order.couponDiscount,
+            costBest: order.costBest ?? 0,
+            providerShare: order.providerShare ?? 0,
+            gstPercent: order.gstPercent,
+            gstAmount: order.gstAmount ?? 0,
+            platformFee: order.platformFee,
+            platformFeeAmount: order.platformFeeAmount ?? 0,
+            paymentGatewayFeePercent: order.paymentGatewayFeePercent,
+            paymentGatewayFeeAmount: order.paymentGatewayFeeAmount ?? 0,
             directions: directions ?? [],
             unreadMessagesCount,
             nextDestination: nextDestination ?? undefined
@@ -46569,7 +47118,7 @@ let OrderService = class OrderService {
                         point: point,
                         address: order.addresses[order.points.indexOf(point)]
                     })) ?? [],
-                totalCost: order.costAfterCoupon - (order.providerShare ?? 0),
+                totalCost: order.costAfterCoupon + (order.gstAmount ?? 0) + (order.platformFeeAmount ?? 0) + (order.paymentGatewayFeeAmount ?? 0),
                 paymentMode: order.paymentMode ?? _database.PaymentMode.Cash,
                 directions: order.directions ?? []
             };
@@ -46711,11 +47260,11 @@ let OrderService = class OrderService {
             default:
                 throw new _apollo.ForbiddenError(`Unknown range policy: ${dbOrder.service.rangePolicy}`);
         }
-        // 4) Calculate driver share and provider share
+        // 4) Calculate provider share (kept for records/reporting only — not
+        // deducted from the driver's payout; drivers keep 100% of the fee)
         const providerSharePercent = dbOrder.service.providerSharePercent;
         const providerShareFlat = dbOrder.service.providerShareFlat;
         const providerShare = input.fee * providerSharePercent / 100 + providerShareFlat;
-        const driverShare = input.fee - providerShare;
         // 5) Update database order with driver-entered fee
         await this.orderRepository.update(input.orderId, {
             driverEnteredFee: input.fee,
@@ -46727,7 +47276,7 @@ let OrderService = class OrderService {
         await this.activeOrderRedisService.updateOrderStatus(input.orderId.toString(), {
             status: _database.OrderStatus.WaitingForPostPay,
             costEstimateForRider: input.fee,
-            costEstimateForDriver: driverShare,
+            costEstimateForDriver: input.fee,
             // ✅ FIX: Reset totalPaid to 0 when fare is adjusted
             // This ensures finish() recalculates payment correctly with new amount
             totalPaid: 0
@@ -46816,7 +47365,7 @@ OrderService = _ts_decorate._([
     _ts_param._(6, (0, _typeorm.InjectRepository)(_database.CustomerEntity)),
     _ts_param._(7, (0, _typeorm.InjectRepository)(_database.OrderCancelReasonEntity)),
     _ts_param._(8, (0, _typeorm.InjectRepository)(_database.ServiceEntity)),
-    _ts_param._(20, (0, _common.Inject)(_database.REDIS)),
+    _ts_param._(21, (0, _common.Inject)(_database.REDIS)),
     _ts_metadata._("design:type", Function),
     _ts_metadata._("design:paramtypes", [
         typeof _typeorm1.Repository === "undefined" ? Object : _typeorm1.Repository,
@@ -46839,6 +47388,7 @@ OrderService = _ts_decorate._([
         typeof _axios.HttpService === "undefined" ? Object : _axios.HttpService,
         typeof _database.RiderNotificationService === "undefined" ? Object : _database.RiderNotificationService,
         typeof _database.SharedCustomerService === "undefined" ? Object : _database.SharedCustomerService,
+        typeof _database.SMSService === "undefined" ? Object : _database.SMSService,
         typeof _redis.RedisClientType === "undefined" ? Object : _redis.RedisClientType
     ])
 ], OrderService);
@@ -47105,6 +47655,54 @@ _ts_decorate._([
     _ts_metadata._("design:type", Number)
 ], ActiveOrderDTO.prototype, "couponDiscount", void 0);
 _ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", Number)
+], ActiveOrderDTO.prototype, "costBest", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", Number)
+], ActiveOrderDTO.prototype, "providerShare", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ActiveOrderDTO.prototype, "gstPercent", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", Number)
+], ActiveOrderDTO.prototype, "gstAmount", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ActiveOrderDTO.prototype, "platformFee", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", Number)
+], ActiveOrderDTO.prototype, "platformFeeAmount", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ActiveOrderDTO.prototype, "paymentGatewayFeePercent", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", Number)
+], ActiveOrderDTO.prototype, "paymentGatewayFeeAmount", void 0);
+_ts_decorate._([
     (0, _graphql.Field)(()=>[
             _database.Point
         ], {
@@ -47124,6 +47722,12 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", typeof _database.WaypointBase === "undefined" ? Object : _database.WaypointBase)
 ], ActiveOrderDTO.prototype, "nextDestination", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>Boolean, {
+        defaultValue: true
+    }),
+    _ts_metadata._("design:type", Boolean)
+], ActiveOrderDTO.prototype, "pickupOtpRequired", void 0);
 ActiveOrderDTO = _ts_decorate._([
     (0, _graphql.ObjectType)('ActiveOrder')
 ], ActiveOrderDTO);
@@ -49474,7 +50078,7 @@ RestJwtAuthGuard = _ts_decorate._([
 /* 85 */
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"bettersuite","version":"5.3.2","license":"MIT","scripts":{"ng":"nx","nx":"nx","start":"ts-node src/index.ts","build":"ng build","test":"ng test","lint":"nx workspace-lint && ng lint","e2e":"ng e2e","affected:apps":"nx affected:apps","affected:libs":"nx affected:libs","affected:build":"nx affected:build","affected:e2e":"nx affected:e2e","affected:test":"nx affected:test","affected:lint":"nx affected:lint","affected:dep-graph":"nx affected:dep-graph","affected":"nx affected","format":"nx format:write","format:write":"nx format:write","format:check":"nx format:check","update":"nx migrate latest","workspace-generator":"nx workspace-generator","dep-graph":"nx dep-graph","help":"nx help","lint:fix":"eslint \'./**/*.{ts,tsx}\' --fix","i18n:extract":"ngx-translate-extract --input ./apps/admin-panel/src --output ./apps/admin-panel/src/assets/i18n/{en,es,bn,de,hi,ko,id,ja,pt,ru,ur,zh,fr,ar,hy}.json --clean --format namespaced-json","typeorm":"node --require ts-node/register ./node_modules/typeorm/cli.js","semantic-release":"semantic-release","publish-frontend":"bash scripts/docker-frontend-publish.sh","publish-backend":"bash scripts/docker-backend-publish.sh","inject-google-maps-key":"bash scripts/inject-google-maps-key.sh","client-setup":"bash scripts/client_setup/client-setup.sh","build-apks":"bash scripts/build-apks.sh","smoke-test":"bash scripts/backend-smoke-test.sh","gql-stats":"bash scripts/gql-stats.sh","load-test:seed":"node tools/load-tests/scripts/seed-database.js","load-test:seed:clean":"node tools/load-tests/scripts/seed-database.js --clean","load-test":"bash tools/load-tests/scripts/run-load-test.sh","load-test:rider":"bash tools/load-tests/scripts/run-load-test.sh rider","load-test:driver":"bash tools/load-tests/scripts/run-load-test.sh driver"},"private":true,"dependencies":{"@angular/animations":"20.1.4","@angular/cdk":"20.1.4","@angular/common":"20.1.4","@angular/compiler":"20.1.4","@angular/core":"20.1.4","@angular/forms":"20.1.4","@angular/google-maps":"20.1.4","@angular/platform-browser":"20.1.4","@angular/platform-browser-dynamic":"20.1.4","@angular/router":"20.1.4","@angular/service-worker":"20.1.4","@ant-design/icons-angular":"^20.0.0","@antv/g2":"^4.2.10","@apollo/client":"^3.13.8","@apollo/server":"^4.12.2","@aws-sdk/client-s3":"^3.886.0","@aws-sdk/client-secrets-manager":"^3.974.0","@bull-board/api":"^6.12.0","@bull-board/express":"^6.12.0","@bull-board/nestjs":"^6.12.0","@ctrl/tinycolor":"^4.1.0","@googlemaps/google-maps-services-js":"^3.4.2","@googlemaps/places":"^2.0.1","@googlemaps/routing":"^2.0.1","@ingameltd/payu":"^1.0.5","@nestjs/apollo":"^13.1.0","@nestjs/axios":"^4.0.1","@nestjs/bullmq":"^11.0.3","@nestjs/common":"11.1.5","@nestjs/config":"^4.0.2","@nestjs/core":"11.1.5","@nestjs/graphql":"^13.1.0","@nestjs/jwt":"^11.0.0","@nestjs/passport":"^11.0.5","@nestjs/platform-express":"^11.1.5","@nestjs/schedule":"^6.0.0","@nestjs/serve-static":"^5.0.3","@nestjs/typeorm":"11.0.0","@nestjs/websockets":"^11.1.3","@nx/angular":"21.3.10","@nx/web":"21.3.10","@paypal/checkout-server-sdk":"^1.0.3","@ptc-org/nestjs-query-core":"^9.1.0","@ptc-org/nestjs-query-graphql":"^9.1.0","@ptc-org/nestjs-query-typeorm":"^9.1.0","@redis/client":"^6.2.1","@redis/json":"^6.2.1","@redis/search":"^6.2.1","@sentry/cli":"^2.50.2","@sentry/nestjs":"^10.0.0","@sentry/profiling-node":"10.0.0","@simplewebauthn/server":"^13.0.0","@simplewebauthn/types":"^12.0.0","@willsoto/nestjs-prometheus":"^6.0.2","apollo-angular":"^11.0.0","autoprefixer":"^10.4.21","bullmq":"^5.56.9","class-transformer":"0.5.1","class-validator":"0.14.2","core-js":"^3.42.0","dataloader":"^2.2.3","dotenv":"16.5.0","firebase-admin":"^13.4.0","google-libphonenumber":"^3.2.43","graphql":"^16.11.0","graphql-redis-subscriptions":"^2.7.0","graphql-relay":"^0.10.2","graphql-subscriptions":"^3.0.0","graphql-tools":"^9.0.20","graphql-ws":"^6.0.6","h3-js":"^4.2.1","instamojo-payment-nodejs":"^3.0.0","ioredis":"^5.7.0","json-2-csv":"^4.0.0","jwt-decode":"^4.0.0","license-verify":"0.1.5","mercadopago":"^1.5.17","multer":"^2.0.0","mysql2":"^3.14.3","ng-zorro-antd":"^20.1.0","ngx-timeago":"^3.0.0","node-rsa":"^1.1.1","overshom-wayforpay":"^1.1.0","passport":"^0.7.0","passport-jwt":"^4.0.1","passport-local":"^1.0.0","paystack-node":"^0.3.0","paytmchecksum":"^1.5.1","pdfkit":"^0.17.1","pdfkit-table":"^0.1.99","plivo":"^4.70.0","prom-client":"^15.1.3","proper-url-join":"^2.1.2","razorpay":"^2.9.1","redis":"^6.2.1","reflect-metadata":"^0.2.2","rxjs":"7.8.2","sberbank-acquiring":"^1.2.2","sharp":"^0.34.3","stripe":"^18.4.0","tslib":"^2.6.1","twilio":"^5.6.1","typeorm":"0.3.26","uuid":"^11.1.0","zone.js":"0.15.1"},"devDependencies":{"@angular-devkit/build-angular":"20.1.4","@angular-devkit/core":"20.1.4","@angular-devkit/schematics":"20.1.4","@angular-eslint/eslint-plugin":"20.1.0","@angular-eslint/eslint-plugin-template":"20.1.0","@angular-eslint/template-parser":"20.1.0","@angular/cli":"~20.1.0","@angular/compiler-cli":"20.1.4","@angular/language-service":"20.1.4","@bartholomej/ngx-translate-extract":"^8.0.2","@graphql-codegen/cli":"^5.0.7","@graphql-codegen/introspection":"^4.0.3","@graphql-codegen/typescript":"^4.1.6","@graphql-codegen/typescript-apollo-angular":"^4.0.1","@graphql-codegen/typescript-operations":"^4.6.1","@monodon/rust":"^2.3.0","@nestjs/cli":"^11.0.10","@nestjs/schematics":"11.0.5","@nestjs/testing":"11.1.3","@ngx-translate/core":"^17.0.0","@ngx-translate/http-loader":"^17.0.0","@nx/eslint":"21.3.10","@nx/eslint-plugin":"21.3.10","@nx/jest":"21.3.10","@nx/js":"21.3.10","@nx/node":"21.3.10","@nx/webpack":"21.3.10","@nxrocks/nx-flutter":"^10.0.1","@schematics/angular":"20.1.4","@semantic-release/changelog":"^6.0.3","@semantic-release/commit-analyzer":"^13.0.1","@semantic-release/git":"^10.0.1","@semantic-release/npm":"^12.0.1","@semantic-release/release-notes-generator":"^14.0.3","@swc-node/register":"1.10.10","@swc/cli":"^0.7.8","@swc/core":"1.13.3","@swc/helpers":"0.5.17","@swc/jest":"0.2.39","@tailwindcss/forms":"^0.5.4","@tailwindcss/typography":"^0.5.9","@testcontainers/mysql":"^11.5.1","@testcontainers/redis":"^11.5.1","@types/busboy":"^1.5.0","@types/cron":"^2.0.1","@types/estree":"1.0.1","@types/google-libphonenumber":"^7.4.30","@types/jest":"^29.5.0","@types/multer":"^1.4.12","@types/node":"^24.0.10","@types/passport-jwt":"^4.0.1","@types/paypal__checkout-server-sdk":"^1.0.5","@types/pdfkit":"^0.17.0","@types/proper-url-join":"^2.1.5","@types/supertest":"^6.0.3","conventional-changelog-conventionalcommits":"^9.0.0","eslint":"^9.28.0","eslint-config-prettier":"10.1.5","eslint-plugin-unused-imports":"^4.1.4","jest":"^29.7.0","jest-environment-jsdom":"^29.7.0","jest-util":"^29.7.0","jsonc-eslint-parser":"^2.1.0","ng-packagr":"20.1.0","nx":"21.3.10","postcss":"^8.4.27","postcss-import":"15.1.0","postcss-preset-env":"9.1.0","postcss-url":"10.1.3","prettier":"^3.5.3","supertest":"^7.1.4","swc-loader":"^0.2.6","tailwindcss":"^3.3.3","testcontainers":"^11.5.1","ts-jest":"29.4.0","ts-node":"10.9.2","tslib":"^2.3.0","typescript":"5.8.3","typescript-eslint":"^8.33.0","webpack-cli":"^5.1.4"},"workspaces":["libs/*","apps/*"],"overrides":{"typescript":"5.8.3","eslint":"^9.28.0","rxjs":"7.8.2","typeorm":{"redis":"^5.8.2"}},"repository":{"type":"git","url":"https://github.com/ridyio/ridy-monorepo.git"},"publishConfig":{"access":"restricted"},"allowScripts":{"cpu-features@0.0.10":true,"core-js@3.43.0":true,"lmdb@3.4.1":true,"msgpackr-extract@3.0.3":true,"nx@21.3.10":true,"protobufjs@7.5.3":true,"sharp@0.34.3":true,"ssh2@1.16.0":true,"unrs-resolver@1.11.1":true,"@apollo/protobufjs@1.2.7":true,"@firebase/util@1.12.1":true,"@nestjs/core@11.1.5":true,"@parcel/watcher@2.6.0":true,"@sentry/cli@2.50.2":true,"@sentry-internal/node-cpu-profiler@2.2.0":true,"@swc/core@1.13.3":true,"fsevents@2.3.3":true,"esbuild@0.25.5":true}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"bettersuite","version":"5.3.2","license":"MIT","scripts":{"ng":"nx","nx":"nx","start":"ts-node src/index.ts","build":"ng build","test":"ng test","lint":"nx workspace-lint && ng lint","e2e":"ng e2e","affected:apps":"nx affected:apps","affected:libs":"nx affected:libs","affected:build":"nx affected:build","affected:e2e":"nx affected:e2e","affected:test":"nx affected:test","affected:lint":"nx affected:lint","affected:dep-graph":"nx affected:dep-graph","affected":"nx affected","format":"nx format:write","format:write":"nx format:write","format:check":"nx format:check","update":"nx migrate latest","workspace-generator":"nx workspace-generator","dep-graph":"nx dep-graph","help":"nx help","lint:fix":"eslint \'./**/*.{ts,tsx}\' --fix","i18n:extract":"ngx-translate-extract --input ./apps/admin-panel/src --output ./apps/admin-panel/src/assets/i18n/{en,es,bn,de,hi,ko,id,ja,pt,ru,ur,zh,fr,ar,hy}.json --clean --format namespaced-json","typeorm":"node --require ts-node/register ./node_modules/typeorm/cli.js","semantic-release":"semantic-release","publish-frontend":"bash scripts/docker-frontend-publish.sh","publish-backend":"bash scripts/docker-backend-publish.sh","inject-google-maps-key":"bash scripts/inject-google-maps-key.sh","client-setup":"bash scripts/client_setup/client-setup.sh","build-apks":"bash scripts/build-apks.sh","smoke-test":"bash scripts/backend-smoke-test.sh","gql-stats":"bash scripts/gql-stats.sh","load-test:seed":"node tools/load-tests/scripts/seed-database.js","load-test:seed:clean":"node tools/load-tests/scripts/seed-database.js --clean","load-test":"bash tools/load-tests/scripts/run-load-test.sh","load-test:rider":"bash tools/load-tests/scripts/run-load-test.sh rider","load-test:driver":"bash tools/load-tests/scripts/run-load-test.sh driver"},"private":true,"dependencies":{"@angular/animations":"20.1.4","@angular/cdk":"20.1.4","@angular/common":"20.1.4","@angular/compiler":"20.1.4","@angular/core":"20.1.4","@angular/forms":"20.1.4","@angular/google-maps":"20.1.4","@angular/platform-browser":"20.1.4","@angular/platform-browser-dynamic":"20.1.4","@angular/router":"20.1.4","@angular/service-worker":"20.1.4","@ant-design/icons-angular":"^20.0.0","@antv/g2":"^4.2.10","@apollo/client":"^3.13.8","@apollo/server":"^4.12.2","@aws-sdk/client-s3":"^3.886.0","@aws-sdk/client-secrets-manager":"^3.974.0","@bull-board/api":"^6.12.0","@bull-board/express":"^6.12.0","@bull-board/nestjs":"^6.12.0","@ctrl/tinycolor":"^4.1.0","@googlemaps/google-maps-services-js":"^3.4.2","@googlemaps/places":"^2.0.1","@googlemaps/routing":"^2.0.1","@ingameltd/payu":"^1.0.5","@nestjs/apollo":"^13.1.0","@nestjs/axios":"^4.0.1","@nestjs/bullmq":"^11.0.3","@nestjs/common":"11.1.5","@nestjs/config":"^4.0.2","@nestjs/core":"11.1.5","@nestjs/graphql":"^13.1.0","@nestjs/jwt":"^11.0.0","@nestjs/passport":"^11.0.5","@nestjs/platform-express":"^11.1.5","@nestjs/schedule":"^6.0.0","@nestjs/serve-static":"^5.0.3","@nestjs/typeorm":"11.0.0","@nestjs/websockets":"^11.1.3","@nx/angular":"21.3.10","@nx/web":"21.3.10","@paypal/checkout-server-sdk":"^1.0.3","@ptc-org/nestjs-query-core":"^9.1.0","@ptc-org/nestjs-query-graphql":"^9.1.0","@ptc-org/nestjs-query-typeorm":"^9.1.0","@redis/client":"^6.2.1","@redis/json":"^6.2.1","@redis/search":"^6.2.1","@sentry/cli":"^2.50.2","@sentry/nestjs":"^10.0.0","@sentry/profiling-node":"10.0.0","@simplewebauthn/server":"^13.0.0","@simplewebauthn/types":"^12.0.0","@willsoto/nestjs-prometheus":"^6.0.2","apollo-angular":"^11.0.0","autoprefixer":"^10.4.21","bullmq":"^5.56.9","class-transformer":"0.5.1","class-validator":"0.14.2","core-js":"^3.42.0","dataloader":"^2.2.3","dotenv":"16.5.0","firebase-admin":"^13.4.0","google-libphonenumber":"^3.2.43","graphql":"^16.11.0","graphql-redis-subscriptions":"^2.7.0","graphql-relay":"^0.10.2","graphql-subscriptions":"^3.0.0","graphql-tools":"^9.0.20","graphql-ws":"^6.0.6","h3-js":"^4.2.1","instamojo-payment-nodejs":"^3.0.0","ioredis":"^5.7.0","json-2-csv":"^4.0.0","jwt-decode":"^4.0.0","license-verify":"0.1.5","mercadopago":"^1.5.17","multer":"^2.0.0","mysql2":"^3.14.3","ng-zorro-antd":"^20.1.0","ngx-timeago":"^3.0.0","node-rsa":"^1.1.1","overshom-wayforpay":"^1.1.0","passport":"^0.7.0","passport-jwt":"^4.0.1","passport-local":"^1.0.0","paystack-node":"^0.3.0","paytmchecksum":"^1.5.1","pdfkit":"^0.17.1","pdfkit-table":"^0.1.99","plivo":"^4.70.0","prom-client":"^15.1.3","proper-url-join":"^2.1.2","razorpay":"^2.9.8","redis":"^6.2.1","reflect-metadata":"^0.2.2","rxjs":"7.8.2","sberbank-acquiring":"^1.2.2","sharp":"^0.34.3","stripe":"^18.4.0","tslib":"^2.6.1","twilio":"^5.6.1","typeorm":"0.3.26","uuid":"^11.1.0","zone.js":"0.15.1"},"devDependencies":{"@angular-devkit/build-angular":"20.1.4","@angular-devkit/core":"20.1.4","@angular-devkit/schematics":"20.1.4","@angular-eslint/eslint-plugin":"20.1.0","@angular-eslint/eslint-plugin-template":"20.1.0","@angular-eslint/template-parser":"20.1.0","@angular/cli":"~20.1.0","@angular/compiler-cli":"20.1.4","@angular/language-service":"20.1.4","@bartholomej/ngx-translate-extract":"^8.0.2","@graphql-codegen/cli":"^5.0.7","@graphql-codegen/introspection":"^4.0.3","@graphql-codegen/typescript":"^4.1.6","@graphql-codegen/typescript-apollo-angular":"^4.0.1","@graphql-codegen/typescript-operations":"^4.6.1","@monodon/rust":"^2.3.0","@nestjs/cli":"^11.0.10","@nestjs/schematics":"11.0.5","@nestjs/testing":"11.1.3","@ngx-translate/core":"^17.0.0","@ngx-translate/http-loader":"^17.0.0","@nx/eslint":"21.3.10","@nx/eslint-plugin":"21.3.10","@nx/jest":"21.3.10","@nx/js":"21.3.10","@nx/node":"21.3.10","@nx/webpack":"21.3.10","@nxrocks/nx-flutter":"^10.0.1","@schematics/angular":"20.1.4","@semantic-release/changelog":"^6.0.3","@semantic-release/commit-analyzer":"^13.0.1","@semantic-release/git":"^10.0.1","@semantic-release/npm":"^12.0.1","@semantic-release/release-notes-generator":"^14.0.3","@swc-node/register":"1.10.10","@swc/cli":"^0.7.8","@swc/core":"1.13.3","@swc/helpers":"0.5.17","@swc/jest":"0.2.39","@tailwindcss/forms":"^0.5.4","@tailwindcss/typography":"^0.5.9","@testcontainers/mysql":"^11.5.1","@testcontainers/redis":"^11.5.1","@types/busboy":"^1.5.0","@types/cron":"^2.0.1","@types/estree":"1.0.1","@types/google-libphonenumber":"^7.4.30","@types/jest":"^29.5.0","@types/multer":"^1.4.12","@types/node":"^24.0.10","@types/passport-jwt":"^4.0.1","@types/paypal__checkout-server-sdk":"^1.0.5","@types/pdfkit":"^0.17.0","@types/proper-url-join":"^2.1.5","@types/supertest":"^6.0.3","conventional-changelog-conventionalcommits":"^9.0.0","eslint":"^9.28.0","eslint-config-prettier":"10.1.5","eslint-plugin-unused-imports":"^4.1.4","jest":"^29.7.0","jest-environment-jsdom":"^29.7.0","jest-util":"^29.7.0","jsonc-eslint-parser":"^2.1.0","ng-packagr":"20.1.0","nx":"21.3.10","postcss":"^8.4.27","postcss-import":"15.1.0","postcss-preset-env":"9.1.0","postcss-url":"10.1.3","prettier":"^3.5.3","supertest":"^7.1.4","swc-loader":"^0.2.6","tailwindcss":"^3.3.3","testcontainers":"^11.5.1","ts-jest":"29.4.0","ts-node":"10.9.2","tslib":"^2.3.0","typescript":"5.8.3","typescript-eslint":"^8.33.0","webpack-cli":"^5.1.4"},"workspaces":["libs/*","apps/*"],"overrides":{"typescript":"5.8.3","eslint":"^9.28.0","rxjs":"7.8.2","typeorm":{"redis":"^5.8.2"}},"repository":{"type":"git","url":"https://github.com/ridyio/ridy-monorepo.git"},"publishConfig":{"access":"restricted"},"allowScripts":{"cpu-features@0.0.10":true,"core-js@3.43.0":true,"lmdb@3.4.1":true,"msgpackr-extract@3.0.3":true,"nx@21.3.10":true,"protobufjs@7.5.3":true,"sharp@0.34.3":true,"ssh2@1.16.0":true,"unrs-resolver@1.11.1":true,"@apollo/protobufjs@1.2.7":true,"@firebase/util@1.12.1":true,"@nestjs/core@11.1.5":true,"@parcel/watcher@2.6.0":true,"@sentry/cli@2.50.2":true,"@sentry-internal/node-cpu-profiler@2.2.0":true,"@swc/core@1.13.3":true,"fsevents@2.3.3":true,"esbuild@0.25.5":true}}');
 
 /***/ }),
 /* 86 */
@@ -50870,7 +51474,10 @@ WalletModule = _ts_decorate._([
             _typeorm.TypeOrmModule.forFeature([
                 _database.TaxiOrderEntity,
                 _database.DriverEntity,
-                _database.SavedPaymentMethodEntity
+                _database.SavedPaymentMethodEntity,
+                _database.DriverWalletEntity,
+                _database.DriverTransactionEntity,
+                _database.PayoutAccountEntity
             ]),
             _database.CommonCouponModule,
             _axios.HttpModule,
@@ -50935,7 +51542,9 @@ WalletModule = _ts_decorate._([
             _walletresolver.WalletResolver,
             _earningsservice.EarningsService,
             _database.CryptoService,
-            _walletservice.WalletService
+            _walletservice.WalletService,
+            _database.RazorpayService,
+            _database.SharedDriverService
         ],
         exports: [
             _walletservice.WalletService
@@ -51355,8 +51964,9 @@ const _setup_payment_methoddto = __webpack_require__(108);
 const _rxjs = __webpack_require__(21);
 const _axios = __webpack_require__(18);
 const _walletservice = __webpack_require__(109);
+const _razorpayorderdto = __webpack_require__(110);
 let WalletResolver = class WalletResolver {
-    constructor(gatewayRepo, driverRepo, context, earningsService, commonGiftCardService, httpService, cryptoService, walletService){
+    constructor(gatewayRepo, driverRepo, context, earningsService, commonGiftCardService, httpService, cryptoService, walletService, razorpayService, sharedDriverService){
         this.gatewayRepo = gatewayRepo;
         this.driverRepo = driverRepo;
         this.context = context;
@@ -51365,6 +51975,8 @@ let WalletResolver = class WalletResolver {
         this.httpService = httpService;
         this.cryptoService = cryptoService;
         this.walletService = walletService;
+        this.razorpayService = razorpayService;
+        this.sharedDriverService = sharedDriverService;
     }
     async topUpWallet(input) {
         const gateway = await this.gatewayRepo.findOneByOrFail({
@@ -51375,6 +51987,36 @@ let WalletResolver = class WalletResolver {
             status: _topupwalletinput.TopUpWalletStatus.Redirect,
             url: `${process.env.GATEWAY_SERVER_URL}/pay?${params}`
         };
+    }
+    async createRazorpayTopUpOrder(amount) {
+        const order = await this.razorpayService.createOrder(amount, 'INR', `topup_${this.context.req.user.id}_${Date.now()}`);
+        return {
+            orderId: order.id,
+            amount: amount,
+            currency: 'INR',
+            keyId: process.env.RAZORPAY_KEY_ID
+        };
+    }
+    async verifyRazorpayTopUp(razorpayOrderId, razorpayPaymentId, razorpaySignature, amount) {
+        const isValid = this.razorpayService.verifySignature(razorpayOrderId, razorpayPaymentId, razorpaySignature);
+        if (!isValid) {
+            throw new Error('INVALID_PAYMENT_SIGNATURE');
+        }
+        await this.sharedDriverService.rechargeWallet({
+            status: _database.TransactionStatus.Done,
+            driverId: this.context.req.user.id,
+            currency: 'INR',
+            action: _database.TransactionAction.Recharge,
+            rechargeType: _database.DriverRechargeTransactionType.InAppPayment,
+            amount: amount,
+            requestId: null,
+            operatorId: null,
+            paymentGatewayId: null,
+            refrenceNumber: razorpayPaymentId,
+            description: 'Razorpay wallet top-up',
+            giftCardId: null
+        });
+        return true;
     }
     async getStats(timeFrame) {
         return this.earningsService.getStats(this.context.req.user.id, timeFrame);
@@ -51453,6 +52095,40 @@ _ts_decorate._([
     ]),
     _ts_metadata._("design:returntype", Promise)
 ], WalletResolver.prototype, "topUpWallet", null);
+_ts_decorate._([
+    (0, _graphql.Mutation)(()=>_razorpayorderdto.RazorpayOrderDTO),
+    _ts_param._(0, (0, _graphql.Args)('amount', {
+        type: ()=>Number
+    })),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        Number
+    ]),
+    _ts_metadata._("design:returntype", Promise)
+], WalletResolver.prototype, "createRazorpayTopUpOrder", null);
+_ts_decorate._([
+    (0, _graphql.Mutation)(()=>Boolean),
+    _ts_param._(0, (0, _graphql.Args)('razorpayOrderId', {
+        type: ()=>String
+    })),
+    _ts_param._(1, (0, _graphql.Args)('razorpayPaymentId', {
+        type: ()=>String
+    })),
+    _ts_param._(2, (0, _graphql.Args)('razorpaySignature', {
+        type: ()=>String
+    })),
+    _ts_param._(3, (0, _graphql.Args)('amount', {
+        type: ()=>Number
+    })),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        String,
+        String,
+        String,
+        Number
+    ]),
+    _ts_metadata._("design:returntype", Promise)
+], WalletResolver.prototype, "verifyRazorpayTopUp", null);
 _ts_decorate._([
     (0, _graphql.Query)(()=>_earningsdto.StatisticsResult),
     _ts_param._(0, (0, _graphql.Args)('timeframe', {
@@ -51552,7 +52228,9 @@ WalletResolver = _ts_decorate._([
         typeof _database.CommonGiftCardService === "undefined" ? Object : _database.CommonGiftCardService,
         typeof _axios.HttpService === "undefined" ? Object : _axios.HttpService,
         typeof _database.CryptoService === "undefined" ? Object : _database.CryptoService,
-        typeof _walletservice.WalletService === "undefined" ? Object : _walletservice.WalletService
+        typeof _walletservice.WalletService === "undefined" ? Object : _walletservice.WalletService,
+        typeof _database.RazorpayService === "undefined" ? Object : _database.RazorpayService,
+        typeof _database.SharedDriverService === "undefined" ? Object : _database.SharedDriverService
     ])
 ], WalletResolver);
 
@@ -51734,6 +52412,46 @@ WalletService = _ts_decorate._([
 Object.defineProperty(exports, "__esModule", ({
     value: true
 }));
+Object.defineProperty(exports, "RazorpayOrderDTO", ({
+    enumerable: true,
+    get: function() {
+        return RazorpayOrderDTO;
+    }
+}));
+const _ts_decorate = __webpack_require__(6);
+const _ts_metadata = __webpack_require__(7);
+const _graphql = __webpack_require__(9);
+let RazorpayOrderDTO = class RazorpayOrderDTO {
+};
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.ID),
+    _ts_metadata._("design:type", String)
+], RazorpayOrderDTO.prototype, "orderId", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float),
+    _ts_metadata._("design:type", Number)
+], RazorpayOrderDTO.prototype, "amount", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String),
+    _ts_metadata._("design:type", String)
+], RazorpayOrderDTO.prototype, "currency", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String),
+    _ts_metadata._("design:type", String)
+], RazorpayOrderDTO.prototype, "keyId", void 0);
+RazorpayOrderDTO = _ts_decorate._([
+    (0, _graphql.ObjectType)()
+], RazorpayOrderDTO);
+
+
+/***/ }),
+/* 111 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({
+    value: true
+}));
 Object.defineProperty(exports, "SOSModule", ({
     enumerable: true,
     get: function() {
@@ -51744,8 +52462,8 @@ const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
-const _sosresolver = __webpack_require__(111);
-const _sosservice = __webpack_require__(113);
+const _sosresolver = __webpack_require__(112);
+const _sosservice = __webpack_require__(114);
 let SOSModule = class SOSModule {
 };
 SOSModule = _ts_decorate._([
@@ -51765,7 +52483,7 @@ SOSModule = _ts_decorate._([
 
 
 /***/ }),
-/* 111 */
+/* 112 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51785,8 +52503,8 @@ const _common = __webpack_require__(2);
 const _graphql = __webpack_require__(9);
 const _database = __webpack_require__(12);
 const _jwtgqlauthguard = __webpack_require__(43);
-const _sosdto = __webpack_require__(112);
-const _sosservice = __webpack_require__(113);
+const _sosdto = __webpack_require__(113);
+const _sosservice = __webpack_require__(114);
 let SOSResolver = class SOSResolver {
     constructor(sosService){
         this.sosService = sosService;
@@ -51825,7 +52543,7 @@ SOSResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 112 */
+/* 113 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51854,7 +52572,7 @@ SOSDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 113 */
+/* 114 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51925,13 +52643,13 @@ SOSService = _ts_decorate._([
 
 
 /***/ }),
-/* 114 */
+/* 115 */
 /***/ ((module) => {
 
 module.exports = require("@willsoto/nestjs-prometheus");
 
 /***/ }),
-/* 115 */
+/* 116 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51946,8 +52664,8 @@ Object.defineProperty(exports, "NotificationModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _notificationservice = __webpack_require__(116);
-const _notificationresolver = __webpack_require__(117);
+const _notificationservice = __webpack_require__(117);
+const _notificationresolver = __webpack_require__(118);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 let NotificationModule = class NotificationModule {
@@ -51970,7 +52688,7 @@ NotificationModule = _ts_decorate._([
 
 
 /***/ }),
-/* 116 */
+/* 117 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52023,7 +52741,7 @@ NotificationService = _ts_decorate._([
 
 
 /***/ }),
-/* 117 */
+/* 118 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52041,7 +52759,7 @@ const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(29);
 const _common = __webpack_require__(2);
 const _graphql = __webpack_require__(9);
-const _notificationservice = __webpack_require__(116);
+const _notificationservice = __webpack_require__(117);
 const _authenticateduser = __webpack_require__(44);
 const _jwtgqlauthguard = __webpack_require__(43);
 let NotificationResolver = class NotificationResolver {
@@ -52079,7 +52797,7 @@ NotificationResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 118 */
+/* 119 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52095,8 +52813,8 @@ Object.defineProperty(exports, "EphemeralMessagesModule", ({
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
-const _ephemeralmessagesservice = __webpack_require__(119);
-const _ephemeralmessagesresolver = __webpack_require__(120);
+const _ephemeralmessagesservice = __webpack_require__(120);
+const _ephemeralmessagesresolver = __webpack_require__(121);
 const _ordermodule = __webpack_require__(50);
 let EphemeralMessagesModule = class EphemeralMessagesModule {
 };
@@ -52115,7 +52833,7 @@ EphemeralMessagesModule = _ts_decorate._([
 
 
 /***/ }),
-/* 119 */
+/* 120 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52169,7 +52887,7 @@ EphemeralMessagesService = _ts_decorate._([
 
 
 /***/ }),
-/* 120 */
+/* 121 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52186,8 +52904,8 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(29);
 const _graphql = __webpack_require__(9);
-const _ephemeralmessagesservice = __webpack_require__(119);
-const _ephemeralmessagedto = __webpack_require__(121);
+const _ephemeralmessagesservice = __webpack_require__(120);
+const _ephemeralmessagedto = __webpack_require__(122);
 const _common = __webpack_require__(2);
 const _authenticateduser = __webpack_require__(44);
 const _jwtgqlauthguard = __webpack_require__(43);
@@ -52235,7 +52953,7 @@ EphemeralMessagesResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 121 */
+/* 122 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52313,7 +53031,7 @@ EphemeralMessageDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 122 */
+/* 123 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52328,8 +53046,8 @@ Object.defineProperty(exports, "SupportModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _supportservice = __webpack_require__(123);
-const _supportresolver = __webpack_require__(124);
+const _supportservice = __webpack_require__(124);
+const _supportresolver = __webpack_require__(125);
 let SupportModule = class SupportModule {
 };
 SupportModule = _ts_decorate._([
@@ -52346,7 +53064,7 @@ SupportModule = _ts_decorate._([
 
 
 /***/ }),
-/* 123 */
+/* 124 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52378,7 +53096,7 @@ SupportService = _ts_decorate._([
 
 
 /***/ }),
-/* 124 */
+/* 125 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52398,7 +53116,7 @@ const _graphql = __webpack_require__(9);
 const _common = __webpack_require__(2);
 const _jwtgqlauthguard = __webpack_require__(43);
 const _authenticateduser = __webpack_require__(44);
-const _supportservice = __webpack_require__(123);
+const _supportservice = __webpack_require__(124);
 let SupportResolver = class SupportResolver {
     constructor(context, supportService){
         this.context = context;
@@ -52430,13 +53148,13 @@ SupportResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 125 */
+/* 126 */
 /***/ ((module) => {
 
 module.exports = require("firebase-admin/app");
 
 /***/ }),
-/* 126 */
+/* 127 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 // Import with `const Sentry = require("@sentry/nestjs");` if you are using CJS
@@ -52447,9 +53165,9 @@ Object.defineProperty(exports, "__esModule", ({
 const _interop_require_wildcard = __webpack_require__(1);
 const _apollo = __webpack_require__(17);
 const _common = __webpack_require__(2);
-const _nestjs = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(127));
-const _profilingnode = __webpack_require__(128);
-const _dotenv = __webpack_require__(129);
+const _nestjs = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(128));
+const _profilingnode = __webpack_require__(129);
+const _dotenv = __webpack_require__(130);
 (0, _dotenv.config)({
     path: __dirname + '/.env'
 });
@@ -52474,19 +53192,19 @@ _nestjs.init({
 
 
 /***/ }),
-/* 127 */
+/* 128 */
 /***/ ((module) => {
 
 module.exports = require("@sentry/nestjs");
 
 /***/ }),
-/* 128 */
+/* 129 */
 /***/ ((module) => {
 
 module.exports = require("@sentry/profiling-node");
 
 /***/ }),
-/* 129 */
+/* 130 */
 /***/ ((module) => {
 
 module.exports = require("dotenv");
@@ -52573,10 +53291,10 @@ const _common = __webpack_require__(2);
 const _core = __webpack_require__(3);
 const _express = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(4));
 const _driverapimodule = __webpack_require__(5);
-const _app = __webpack_require__(125);
+const _app = __webpack_require__(126);
 const _firebaseadmin = __webpack_require__(22);
 const _database = __webpack_require__(12);
-__webpack_require__(126);
+__webpack_require__(127);
 const _licenseverify = __webpack_require__(15);
 async function bootstrap() {
     await (0, _database.loadSecrets)();

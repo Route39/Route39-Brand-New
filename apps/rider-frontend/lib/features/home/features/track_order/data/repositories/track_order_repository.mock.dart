@@ -120,6 +120,23 @@ class TrackOrderRepositoryMock implements TrackOrderRepository {
   }
 
   @override
+  Future<ApiResponse<Mutation$CreateRazorpayRideOrder>> createRazorpayRideOrder({
+    required String orderId,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<ApiResponse<Mutation$VerifyRazorpayRidePayment>> verifyRazorpayRidePayment({
+    required String orderId,
+    required String razorpayOrderId,
+    required String razorpayPaymentId,
+    required String razorpaySignature,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
   Future<ApiResponse<Query$PaymentMethods>> getPaymentMethods() async {
     return ApiResponse.loaded(
       Query$PaymentMethods(paymentMethods: [mockPaymentMethod]),

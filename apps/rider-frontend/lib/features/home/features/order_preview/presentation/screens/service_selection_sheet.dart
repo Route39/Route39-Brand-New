@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+//import 'package:latlong2/latlong.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ionicons/ionicons.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_common/core/color_palette/color_palette.dart';
 import 'package:flutter_common/core/extensions/extensions.dart' as fc_ext;
 import 'package:ridy/config/locator/locator.dart';
 import 'package:flutter_common/core/entities/payment_method_union.dart';
+import 'package:flutter_common/core/enums/payment_mode.dart';
 import 'package:ridy/core/entities/place.prod.dart';
 import 'package:ridy/features/profile/presentation/blocs/profile.bloc.dart';
 import 'package:api_response/api_response.dart';
@@ -20,7 +22,10 @@ import 'package:flutter_common/core/presentation/buttons/app_primary_button.dart
 import 'package:flutter_common/core/presentation/card_handle.dart';
 import 'package:ridy/core/graphql/fragments/ride_option.fragment.graphql.dart';
 import 'package:ridy/core/graphql/fragments/service_category.fragment.graphql.dart';
+//import 'package:ridy/core/graphql/documents/get_route_distance.graphql.dart';
 import 'package:ridy/core/graphql/schema.gql.dart';
+import 'package:ridy/core/graphql/fragments/point.extensions.dart';
+import 'package:ridy/core/repositories/order_repository.dart';
 import 'package:ridy/features/home/features/apply_coupon/presentation/dialogs/enter_coupon_dialog.dart';
 
 import '../dialogs/reserve_time_dialog.dart';
@@ -50,6 +55,9 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
   late final DateTime _weekStart;
   int _selectedDayIndex = DateTime.now().weekday - 1;
   bool _showFareBreakdown = false;
+
+  final Map<String, Future<double?>> _routeDistanceCache = {};
+
   static const _dayLabels = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
   @override
@@ -67,6 +75,41 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
   void dispose() {
     couponController.dispose();
     super.dispose();
+  }
+
+  Future<double?> _getRouteDistance(
+    Place? pickup,
+    Place? dropoff,
+  ) {
+    if (pickup == null || dropoff == null) {
+      return Future.value(null);
+    }
+
+    final key =
+        '${pickup.latLng.latitude.toStringAsFixed(6)},'
+        '${pickup.latLng.longitude.toStringAsFixed(6)}-'
+        '${dropoff.latLng.latitude.toStringAsFixed(6)},'
+        '${dropoff.latLng.longitude.toStringAsFixed(6)}';
+
+    return _routeDistanceCache.putIfAbsent(
+      key,
+      () async {
+        final response = await locator<OrderRepository>().getRouteDistance(
+          args: Input$GetRouteDistanceInput(
+            points: [
+              pickup.latLng.toPointInput,
+              dropoff.latLng.toPointInput,
+            ],
+          ),
+        );
+
+        if (!response.isLoaded || response.data == null) {
+          return null;
+        }
+
+        return response.data!.getRouteDistance.distance;
+      },
+    );
   }
 
   @override
@@ -102,7 +145,7 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
                           const SizedBox(height: 16),
                           _buildRouteSection(context, pickup, dropoff),
                           const SizedBox(height: 16),
-                          _buildRidePreferencesRow(context, selectedService),
+                          _buildRidePreferencesRow(context, state, selectedService, pickup, dropoff),
                           const SizedBox(height: 16),
                           BlocBuilder<ProfileBloc, ProfileState>(
                             bloc: locator<ProfileBloc>(),
@@ -381,6 +424,11 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
     );
   }
 
+  String _formatAmount(double amount) {
+    final formatted = amount.formatCurrency(widget.currency);
+    return formatted.replaceFirst(widget.currency, '${widget.currency}: ');
+  }
+
   String _placeLabel(dynamic place) {
     final title = place?.title as String?;
     if (title != null && title.trim().isNotEmpty) return title;
@@ -399,9 +447,28 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
     );
   }
 
-  Widget _buildRidePreferencesRow(BuildContext context, dynamic selectedService) {
+  Widget _buildRidePreferencesRow(BuildContext context, HomeState state, dynamic selectedService, dynamic pickup, dynamic dropoff) {
     final baseFare = ((selectedService?.cost ?? 0) as num).toDouble();
-    final total = ((selectedService?.costAfterCoupon ?? selectedService?.cost ?? 0) as num).toDouble();
+    final gstPercent = ((selectedService?.gstPercent ?? 0) as num).toDouble();
+    final platformFee = ((selectedService?.platformFee ?? 0) as num).toDouble();
+    final paymentGatewayFeePercent = ((selectedService?.paymentGatewayFee ?? 0) as num).toDouble();
+    final isOnlinePayment = state.selectedPaymentMethod?.paymentMode == PaymentMode.paymentGateway ||
+        state.selectedPaymentMethod?.paymentMode == PaymentMode.savedPaymentMethod;
+    final gstAmount = baseFare * gstPercent / 100;
+    final platformFeeAmount = platformFee;
+    final paymentGatewayFeeAmount = isOnlinePayment ? baseFare * paymentGatewayFeePercent / 100 : 0.0;
+    // final apiDistanceMeters = ((state.ridePreviewFareResponse.data?.getFares.distance ?? 0) as num).toDouble();
+    // // The backend returns distance = 0 for flat/zone-priced services (it
+    // // skips the routing API call for them). Fall back to a straight-line
+    // // distance between the already-selected pickup/drop-off points so we
+    // // never show "0.00 km" here.
+    // final pickupLatLng = pickup?.latLng as LatLng?;
+    // final dropoffLatLng = dropoff?.latLng as LatLng?;
+    // final fallbackDistanceMeters = (pickupLatLng != null && dropoffLatLng != null)
+    //     ? pickupLatLng.distanceTo(dropoffLatLng).toDouble()
+    //     : 0.0;
+    // final totalKm = (apiDistanceMeters > 0 ? apiDistanceMeters : fallbackDistanceMeters) / 1000;
+    final routeDistanceFuture = _getRouteDistance(pickup, dropoff);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       decoration: BoxDecoration(color: ColorPalette.neutralVariant99, borderRadius: BorderRadius.circular(12)),
@@ -430,21 +497,75 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Base Fare', style: context.bodyMedium?.copyWith(color: ColorPalette.neutralVariant50)),
-                Text(baseFare.formatCurrency(widget.currency), style: context.bodyMedium),
+                Text('Total Km', style: context.bodyMedium?.copyWith(color: ColorPalette.neutralVariant50)),
+                FutureBuilder<double?>(
+        future: routeDistanceFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Text(
+              'Calculating...',
+              style: context.bodyMedium,
+            );
+          }
+
+          final distanceMeters = snapshot.data;
+
+          if (distanceMeters == null) {
+            return Text(
+              '-- km',
+              style: context.bodyMedium,
+            );
+          }
+
+          final totalKm = distanceMeters / 1000;
+
+          return Text(
+            '${totalKm.toStringAsFixed(2)} km',
+            style: context.bodyMedium,
+          );
+        },
+      ),
               ],
             ),
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
-                Text(
-                  total.formatCurrency(widget.currency),
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
-                ),
+                Text('Km charges', style: context.bodyMedium?.copyWith(color: ColorPalette.neutralVariant50)),
+                Text(_formatAmount(baseFare), style: context.bodyMedium),
               ],
             ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('GST $gstPercent%', style: context.bodyMedium?.copyWith(color: ColorPalette.neutralVariant50)),
+                Text(_formatAmount(gstAmount), style: context.bodyMedium),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Platform Fee', style: context.bodyMedium?.copyWith(color: ColorPalette.neutralVariant50)),
+                Text(_formatAmount(platformFeeAmount), style: context.bodyMedium),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'For online payments, a Payment Gateway charge of $paymentGatewayFeePercent% will be applied.',
+              style: context.bodySmall?.copyWith(color: ColorPalette.neutralVariant50),
+            ),
+            if (isOnlinePayment) ...[
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Payment Gateway $paymentGatewayFeePercent%', style: context.bodyMedium?.copyWith(color: ColorPalette.neutralVariant50)),
+                  Text(_formatAmount(paymentGatewayFeeAmount), style: context.bodyMedium),
+                ],
+              ),
+            ],
           ],
         ],
       ),
@@ -488,16 +609,28 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
   }
 
   Widget _buildTotalRow(BuildContext context, HomeState state, dynamic selectedService) {
-    final serviceFee = selectedService?.cost ?? 0;
-    final double totalAmount = ((selectedService?.costAfterCoupon ?? serviceFee) as num).toDouble();
+    final serviceFee = ((selectedService?.cost ?? 0) as num).toDouble();
+    final costAfterCoupon = ((selectedService?.costAfterCoupon ?? serviceFee) as num).toDouble();
+    final gstAmount = serviceFee * ((selectedService?.gstPercent ?? 0) as num).toDouble() / 100;
+    final platformFeeAmount = ((selectedService?.platformFee ?? 0) as num).toDouble();
+    final isOnlinePayment = state.selectedPaymentMethod?.paymentMode == PaymentMode.paymentGateway ||
+        state.selectedPaymentMethod?.paymentMode == PaymentMode.savedPaymentMethod;
+    final paymentGatewayFeeAmount =
+        isOnlinePayment ? serviceFee * ((selectedService?.paymentGatewayFee ?? 0) as num).toDouble() / 100 : 0.0;
+    final double totalAmount = costAfterCoupon + gstAmount + platformFeeAmount + paymentGatewayFeeAmount;
     return Align(
       alignment: Alignment.centerLeft,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('TOTAL AMOUNT', style: context.bodySmall?.copyWith(color: ColorPalette.neutralVariant50)),
-          Text(totalAmount.formatCurrency(widget.currency),
-              style: context.titleLarge?.copyWith(color: Colors.black, fontWeight: FontWeight.bold)),
+          Text(
+            _formatAmount(totalAmount),
+            style: context.titleLarge?.copyWith(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );

@@ -91,8 +91,7 @@ export class RiderAPIModule implements OnModuleInit {
             installSubscriptionHandlers: true,
             autoSchemaFile: join(
               process.cwd(),
-              'apps/taxi-rider-frontend/lib/core/graphql/schema.gql',
-              // 'apps/rider-frontend/lib/core/graphql/schema.gql',
+              'apps/rider-frontend/lib/core/graphql/schema.gql',
             ),
             subscriptions: {
               'graphql-ws': {

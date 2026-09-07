@@ -137,7 +137,7 @@ class _TodayEarningsBarState extends State<TodayEarningsBar> {
         }
       },
       child: Container(
-        margin: const EdgeInsets.only(top: 8),
+        margin: const EdgeInsets.only(top: 4),
         decoration: BoxDecoration(
           color: liteRed,
           borderRadius: BorderRadius.circular(12),

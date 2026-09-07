@@ -31,14 +31,25 @@ export class ServiceService {
     waitMinutes = 0,
     optionFee = 0,
   ): CostCalculationResult {
-    let i = service.baseFare;
     let multiplier = 1;
     console.log(
-      `Calculating Trip fee with base fare ${i} distance of ${distance} meters and duration of ${duration}`,
+      `Calculating Trip fee with base fare ${service.baseFare} distance of ${distance} meters and duration of ${duration}`,
     );
-    i +=
-      (service.perHundredMeters * distance) / 100 +
-      service.perMinuteDrive * (duration / 60);
+
+    // Distance fare: "Base Fare" covers the first 2 km entirely. Every
+    // additional km (or part of a km) beyond that is charged at the
+    // "Minimum Fee" rate, rounded UP to the next whole km.
+    // e.g. a 5 km trip = Base Fare + 3 × Minimum Fee (km 3, 4, 5).
+        const distanceKm = distance / 1000;
+    const includedKm = 2;
+    const totalKm = Math.round(distanceKm);
+    const additionalKm = totalKm > includedKm ? totalKm - includedKm : 0;
+    let i = service.baseFare + additionalKm * service.minimumFee;
+    console.log(
+      `Distance fare: ${distanceKm.toFixed(2)}km rounds to ${totalKm}km => baseFare(${service.baseFare}) + ${additionalKm}km x minimumFee(${service.minimumFee}) = ${i}`,
+    );
+
+    i += service.perMinuteDrive * (duration / 60);
     console.log(`Initial calculation without multiplier: ${i}`);
     let ratioCost = 0;
     let newRatioCost = 0;
@@ -88,10 +99,10 @@ export class ServiceService {
     i *= fleetMultiplier;
     multiplier *= fleetMultiplier;
     console.log(`After fleet multiplier: ${i}`);
-    if (i < service.minimumFee * multiplier) {
-      i = service.minimumFee * multiplier;
-      console.log(`After Minimum fee applied: ${i}`);
-    }
+    // "Minimum Fee" is now the per-additional-km rate used above in the
+    // distance tier, not a fare floor — the old floor clamp against
+    // service.minimumFee is removed since that field no longer represents
+    // a "minimum amount" and would silently reintroduce the old meaning.
 
     // Add wait time fee and option fees BEFORE rounding
     const waitFee = service.perMinuteWait * waitMinutes;
@@ -117,10 +128,9 @@ export class ServiceService {
     // Check if service uses RANGE pricing mode
     if (service.pricingMode === PricingMode.RANGE) {
       // Calculate range using service-specific percentages
-      let min = Math.max(
-        cost * service.priceRangeMinPercent,
-        service.minimumFee * multiplier,
-      );
+      // service.minimumFee is now the per-additional-km rate, not a fare
+      // floor, so it's no longer a valid lower bound here.
+      let min = cost * service.priceRangeMinPercent;
       let max = cost * service.priceRangeMaxPercent;
 
       // Apply rounding factor to min and max if configured

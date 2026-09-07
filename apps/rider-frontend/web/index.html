@@ -38,6 +38,36 @@
 
 
   <style id="splash-screen-style">
+    @keyframes splashLoop {
+      0% { opacity: 0; }
+      8% { opacity: 0; }
+      20% { opacity: 1; }
+      45% { opacity: 1; }
+      55% { opacity: 0; }
+      100% { opacity: 0; }
+    }
+    @keyframes splashLoopScale {
+      0% { transform: scale(0.3); }
+      8% { transform: scale(0.3); }
+      20% { transform: scale(1.15); }
+      28% { transform: scale(0.95); }
+      35% { transform: scale(1); }
+      100% { transform: scale(1); }
+    }
+    @keyframes logoLoop {
+      0% { opacity: 0; transform: scale(0.85); }
+      45% { opacity: 0; transform: scale(0.85); }
+      60% { opacity: 1; transform: scale(1); }
+      85% { opacity: 1; transform: scale(1); }
+      95% { opacity: 0; transform: scale(1); }
+      100% { opacity: 0; transform: scale(0.85); }
+    }
+    #splash-pin {
+      animation: splashLoop 3s linear infinite, splashLoopScale 3s linear infinite;
+    }
+    #splash-logo {
+      animation: logoLoop 3s linear infinite;
+    }
     html {
       height: 100%
     }
@@ -45,7 +75,7 @@
     body {
       margin: 0;
       min-height: 100%;
-      background-color: #096EFF;
+      background-color: #FFFFFF;
       background-size: 100% 100%;
     }
 
@@ -100,7 +130,7 @@
 
     @media (prefers-color-scheme: dark) {
       body {
-        background-color: #096EFF;
+        background-color: #FFFFFF;
       }
     }
   </style>
@@ -115,18 +145,21 @@
 
 <body>
   <picture id="splash">
-    <source
-      srcset="splash/img/light-1x.png 1x, splash/img/light-2x.png 2x, splash/img/light-3x.png 3x, splash/img/light-4x.png 4x"
-      media="(prefers-color-scheme: light)">
-    <source
-      srcset="splash/img/dark-1x.png 1x, splash/img/dark-2x.png 2x, splash/img/dark-3x.png 3x, splash/img/dark-4x.png 4x"
-      media="(prefers-color-scheme: dark)">
-    <img class="center" aria-hidden="true" src="splash/img/light-1x.png" alt="">
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:220px;height:120px;">
+      <svg id="splash-pin" style="position:absolute;top:0;left:50%;margin-left:-30px;" width="60" height="60"
+        viewBox="0 0 24 24" fill="#D32F2F">
+        <path
+          d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" />
+      </svg>
+      <img id="splash-logo" src="assets/assets/images/route39_logo.png" alt=""
+        style="position:absolute;top:0;left:0;width:220px;height:auto;">
+    </div>
   </picture>
 
 
   <!-- Google Maps API for Flutter Web -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCfFU3rDAmKn7OilPL3kFSj2_GlTZ5ArWc&loading=async"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCfFU3rDAmKn7OilPL3kFSj2_GlTZ5ArWc"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script src="flutter_bootstrap.js" async=""></script>
 
 

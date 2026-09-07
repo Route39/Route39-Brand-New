@@ -48,4 +48,36 @@ class TrackOrderRepositoryImpl implements TrackOrderRepository {
     );
     return paymentMethodsResponse;
   }
+
+  @override
+  Future<ApiResponse<Mutation$CreateRazorpayRideOrder>> createRazorpayRideOrder({
+    required String orderId,
+  }) async {
+    return graphQLDatasource.mutate(
+      Options$Mutation$CreateRazorpayRideOrder(
+        variables: Variables$Mutation$CreateRazorpayRideOrder(
+          orderId: orderId,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Future<ApiResponse<Mutation$VerifyRazorpayRidePayment>> verifyRazorpayRidePayment({
+    required String orderId,
+    required String razorpayOrderId,
+    required String razorpayPaymentId,
+    required String razorpaySignature,
+  }) async {
+    return graphQLDatasource.mutate(
+      Options$Mutation$VerifyRazorpayRidePayment(
+        variables: Variables$Mutation$VerifyRazorpayRidePayment(
+          orderId: orderId,
+          razorpayOrderId: razorpayOrderId,
+          razorpayPaymentId: razorpayPaymentId,
+          razorpaySignature: razorpaySignature,
+        ),
+      ),
+    );
+  }
 }

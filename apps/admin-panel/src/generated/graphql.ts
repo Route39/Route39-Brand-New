@@ -2568,6 +2568,8 @@ export type DriverAggregateFilter = {
   and?: InputMaybe<Array<DriverAggregateFilter>>;
   carColorId?: InputMaybe<IdFilterComparison>;
   carId?: InputMaybe<IdFilterComparison>;
+  carPlate?: InputMaybe<StringFieldComparison>;
+  firstName?: InputMaybe<StringFieldComparison>;
   fleetId?: InputMaybe<IdFilterComparison>;
   gender?: InputMaybe<GenderFilterComparison>;
   id?: InputMaybe<IdFilterComparison>;
@@ -2584,6 +2586,8 @@ export type DriverAggregateGroupBy = {
   __typename?: 'DriverAggregateGroupBy';
   carColorId?: Maybe<Scalars['ID']['output']>;
   carId?: Maybe<Scalars['ID']['output']>;
+  carPlate?: Maybe<Scalars['String']['output']>;
+  firstName?: Maybe<Scalars['String']['output']>;
   fleetId?: Maybe<Scalars['ID']['output']>;
   gender?: Maybe<Gender>;
   id?: Maybe<Scalars['ID']['output']>;
@@ -2629,6 +2633,8 @@ export type DriverCountAggregate = {
   __typename?: 'DriverCountAggregate';
   carColorId?: Maybe<Scalars['Int']['output']>;
   carId?: Maybe<Scalars['Int']['output']>;
+  carPlate?: Maybe<Scalars['Int']['output']>;
+  firstName?: Maybe<Scalars['Int']['output']>;
   fleetId?: Maybe<Scalars['Int']['output']>;
   gender?: Maybe<Scalars['Int']['output']>;
   id?: Maybe<Scalars['Int']['output']>;
@@ -2974,6 +2980,8 @@ export type DriverFilter = {
   and?: InputMaybe<Array<DriverFilter>>;
   carColorId?: InputMaybe<IdFilterComparison>;
   carId?: InputMaybe<IdFilterComparison>;
+  carPlate?: InputMaybe<StringFieldComparison>;
+  firstName?: InputMaybe<StringFieldComparison>;
   fleetId?: InputMaybe<IdFilterComparison>;
   gender?: InputMaybe<GenderFilterComparison>;
   id?: InputMaybe<IdFilterComparison>;
@@ -2998,6 +3006,8 @@ export type DriverMaxAggregate = {
   __typename?: 'DriverMaxAggregate';
   carColorId?: Maybe<Scalars['ID']['output']>;
   carId?: Maybe<Scalars['ID']['output']>;
+  carPlate?: Maybe<Scalars['String']['output']>;
+  firstName?: Maybe<Scalars['String']['output']>;
   fleetId?: Maybe<Scalars['ID']['output']>;
   gender?: Maybe<Gender>;
   id?: Maybe<Scalars['ID']['output']>;
@@ -3013,6 +3023,8 @@ export type DriverMinAggregate = {
   __typename?: 'DriverMinAggregate';
   carColorId?: Maybe<Scalars['ID']['output']>;
   carId?: Maybe<Scalars['ID']['output']>;
+  carPlate?: Maybe<Scalars['String']['output']>;
+  firstName?: Maybe<Scalars['String']['output']>;
   fleetId?: Maybe<Scalars['ID']['output']>;
   gender?: Maybe<Gender>;
   id?: Maybe<Scalars['ID']['output']>;
@@ -3460,6 +3472,8 @@ export type DriverSort = {
 export enum DriverSortFields {
   CarColorId = 'carColorId',
   CarId = 'carId',
+  CarPlate = 'carPlate',
+  FirstName = 'firstName',
   FleetId = 'fleetId',
   Gender = 'gender',
   Id = 'id',
@@ -4580,9 +4594,14 @@ export type ExportSessionToCsvInput = {
 };
 
 export type ExportSortArg = {
-  direction: SortDirection;
+  direction: ExportSortDirection;
   property: Scalars['String']['input'];
 };
+
+export enum ExportSortDirection {
+  Asc = 'ASC',
+  Desc = 'DESC'
+}
 
 export enum ExportTable {
   DriverWallet = 'DriverWallet',
@@ -5007,6 +5026,8 @@ export type FleetDriversAggregateGroupBy = {
   __typename?: 'FleetDriversAggregateGroupBy';
   carColorId?: Maybe<Scalars['ID']['output']>;
   carId?: Maybe<Scalars['ID']['output']>;
+  carPlate?: Maybe<Scalars['String']['output']>;
+  firstName?: Maybe<Scalars['String']['output']>;
   fleetId?: Maybe<Scalars['ID']['output']>;
   gender?: Maybe<Gender>;
   id?: Maybe<Scalars['ID']['output']>;
@@ -5052,6 +5073,8 @@ export type FleetDriversCountAggregate = {
   __typename?: 'FleetDriversCountAggregate';
   carColorId?: Maybe<Scalars['Int']['output']>;
   carId?: Maybe<Scalars['Int']['output']>;
+  carPlate?: Maybe<Scalars['Int']['output']>;
+  firstName?: Maybe<Scalars['Int']['output']>;
   fleetId?: Maybe<Scalars['Int']['output']>;
   gender?: Maybe<Scalars['Int']['output']>;
   id?: Maybe<Scalars['Int']['output']>;
@@ -5067,6 +5090,8 @@ export type FleetDriversMaxAggregate = {
   __typename?: 'FleetDriversMaxAggregate';
   carColorId?: Maybe<Scalars['ID']['output']>;
   carId?: Maybe<Scalars['ID']['output']>;
+  carPlate?: Maybe<Scalars['String']['output']>;
+  firstName?: Maybe<Scalars['String']['output']>;
   fleetId?: Maybe<Scalars['ID']['output']>;
   gender?: Maybe<Gender>;
   id?: Maybe<Scalars['ID']['output']>;
@@ -5082,6 +5107,8 @@ export type FleetDriversMinAggregate = {
   __typename?: 'FleetDriversMinAggregate';
   carColorId?: Maybe<Scalars['ID']['output']>;
   carId?: Maybe<Scalars['ID']['output']>;
+  carPlate?: Maybe<Scalars['String']['output']>;
+  firstName?: Maybe<Scalars['String']['output']>;
   fleetId?: Maybe<Scalars['ID']['output']>;
   gender?: Maybe<Gender>;
   id?: Maybe<Scalars['ID']['output']>;
@@ -16560,6 +16587,7 @@ export type Service = {
   description?: Maybe<Scalars['String']['output']>;
   displayPriority: Scalars['Int']['output'];
   distanceMultipliers: Array<DistanceMultiplier>;
+  gstPercent?: Maybe<Scalars['Float']['output']>;
   id: Scalars['ID']['output'];
   maximumDestinationDistance: Scalars['Int']['output'];
   media: Media;
@@ -16568,11 +16596,13 @@ export type Service = {
   name: Scalars['String']['output'];
   options: Array<ServiceOption>;
   orderTypes: Array<TaxiOrderType>;
+  paymentGatewayFee?: Maybe<Scalars['Float']['output']>;
   paymentMethod: ServicePaymentMethod;
   perHundredMeters: Scalars['Float']['output'];
   perMinuteDrive: Scalars['Float']['output'];
   perMinuteWait: Scalars['Float']['output'];
   personCapacity?: Maybe<Scalars['Int']['output']>;
+  platformFee?: Maybe<Scalars['Float']['output']>;
   prepayPercent: Scalars['Float']['output'];
   priceRangeMaxPercent: Scalars['Float']['output'];
   priceRangeMinPercent: Scalars['Float']['output'];
@@ -16657,17 +16687,20 @@ export type ServiceDeleteResponse = {
   description?: Maybe<Scalars['String']['output']>;
   displayPriority?: Maybe<Scalars['Int']['output']>;
   distanceMultipliers?: Maybe<Array<DistanceMultiplier>>;
+  gstPercent?: Maybe<Scalars['Float']['output']>;
   id?: Maybe<Scalars['ID']['output']>;
   maximumDestinationDistance?: Maybe<Scalars['Int']['output']>;
   mediaId?: Maybe<Scalars['ID']['output']>;
   minimumFee?: Maybe<Scalars['Float']['output']>;
   name?: Maybe<Scalars['String']['output']>;
   orderTypes?: Maybe<Array<TaxiOrderType>>;
+  paymentGatewayFee?: Maybe<Scalars['Float']['output']>;
   paymentMethod?: Maybe<ServicePaymentMethod>;
   perHundredMeters?: Maybe<Scalars['Float']['output']>;
   perMinuteDrive?: Maybe<Scalars['Float']['output']>;
   perMinuteWait?: Maybe<Scalars['Float']['output']>;
   personCapacity?: Maybe<Scalars['Int']['output']>;
+  platformFee?: Maybe<Scalars['Float']['output']>;
   prepayPercent?: Maybe<Scalars['Float']['output']>;
   priceRangeMaxPercent?: Maybe<Scalars['Float']['output']>;
   priceRangeMinPercent?: Maybe<Scalars['Float']['output']>;
@@ -16700,16 +16733,19 @@ export type ServiceInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   displayPriority?: Scalars['Int']['input'];
   distanceMultipliers: Array<DistanceMultiplierInput>;
+  gstPercent?: InputMaybe<Scalars['Float']['input']>;
   maximumDestinationDistance: Scalars['Int']['input'];
   mediaId: Scalars['ID']['input'];
   minimumFee: Scalars['Float']['input'];
   name: Scalars['String']['input'];
   orderTypes?: Array<TaxiOrderType>;
+  paymentGatewayFee?: InputMaybe<Scalars['Float']['input']>;
   paymentMethod: ServicePaymentMethod;
   perHundredMeters: Scalars['Float']['input'];
   perMinuteDrive: Scalars['Float']['input'];
   perMinuteWait: Scalars['Float']['input'];
   personCapacity?: InputMaybe<Scalars['Int']['input']>;
+  platformFee?: InputMaybe<Scalars['Float']['input']>;
   prepayPercent: Scalars['Float']['input'];
   priceRangeMaxPercent?: Scalars['Float']['input'];
   priceRangeMinPercent?: Scalars['Float']['input'];
@@ -16815,11 +16851,13 @@ export type ServiceWithCost = {
   cost: Scalars['Float']['output'];
   costResult: CostResult;
   description?: Maybe<Scalars['String']['output']>;
+  gstPercent?: Maybe<Scalars['Float']['output']>;
   id: Scalars['ID']['output'];
   media: Media;
   name: Scalars['String']['output'];
   options: Array<ServiceOption>;
   personCapacity?: Maybe<Scalars['Int']['output']>;
+  platformFee?: Maybe<Scalars['Float']['output']>;
 };
 
 export type SessionInfo = {
@@ -22063,7 +22101,7 @@ export type DispatcherCalculateFareQueryVariables = Exact<{
 }>;
 
 
-export type DispatcherCalculateFareQuery = { __typename?: 'Query', calculateFare: { __typename?: 'CalculateFare', currency: string, distance: number, duration: number, services: Array<{ __typename?: 'ServiceCategoryWithCost', name: string, services: Array<{ __typename?: 'ServiceWithCost', id: string, name: string, cost: number }> }> } };
+export type DispatcherCalculateFareQuery = { __typename?: 'Query', calculateFare: { __typename?: 'CalculateFare', currency: string, distance: number, duration: number, services: Array<{ __typename?: 'ServiceCategoryWithCost', name: string, services: Array<{ __typename?: 'ServiceWithCost', id: string, name: string, cost: number, gstPercent?: number | null, platformFee?: number | null }> }> } };
 
 export type CreateOrderMutationVariables = Exact<{
   riderId: Scalars['ID']['input'];
@@ -23716,6 +23754,8 @@ export const DispatcherCalculateFareDocument = gql`
         id
         name
         cost
+        gstPercent
+        platformFee
       }
     }
   }

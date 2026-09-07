@@ -11,6 +11,7 @@ import { ForbiddenError } from '@nestjs/apollo';
 import { PahappaService } from './providers/pahappa.service';
 import { VentisService } from './providers/ventis.service';
 import { ClickSMSService } from './providers/clicksms.service';
+import { BulkSMSPlansService } from './providers/bulksmsplans.service';
 
 @Injectable()
 export class SMSService {
@@ -24,6 +25,7 @@ export class SMSService {
     private pahappaService: PahappaService,
     private ventisService: VentisService,
     private clickSMSService: ClickSMSService,
+    private bulkSMSPlansService: BulkSMSPlansService,
   ) {}
 
   async sendSMS(phoneNumber: string, message: string): Promise<void> {
@@ -85,6 +87,13 @@ export class SMSService {
           message,
         });
         break;
+      case SMSProviderType.BulkSMSPlans:
+        await this.bulkSMSPlansService.sendOTP({
+          providerEntity: provider,
+          phoneNumber,
+          message,
+        });
+        break;
 
       case SMSProviderType.Firebase:
         // Firebase doesn't actually send SMS, just return
@@ -104,11 +113,11 @@ export class SMSService {
       const postData = JSON.stringify({
         api_id: process.env.SMS_API_ID || 'APIuep8QlcP149188',
         api_password: process.env.SMS_API_PASSWORD || 'y6IzcYhq',
-        sms_type: 'Transactional',
-        sms_encoding: 'text',
+        sms_type: 'OTP',
+        sms_encoding: 1,
         sender: process.env.SMS_SENDER_ID || 'ROUTEX',
         number: cleanNumber,
-        message: random6Digit,
+        message: `Your Route39 app verification OTP is ${random6Digit}. Keep it confidential for your security.`,
         template_id: process.env.SMS_TEMPLATE_ID_OTP || '189966'
       });
       
@@ -137,6 +146,7 @@ export class SMSService {
       });
     } catch (e) {
       console.error('Failed to send SMS via BulkSMSPlans:', e);
+    throw e;
     }
 
     return random6Digit;

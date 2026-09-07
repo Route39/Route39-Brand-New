@@ -9,6 +9,7 @@ import 'package:time/time.dart';
 
 final mockCurrentOrder1 = Fragment$ActiveOrder(
   id: "1",
+  pickupOtpRequired: true,
   type: Enum$TaxiOrderType.Ride,
   estimatedDistance: 5400,
   estimatedDuration: 1200,
@@ -26,6 +27,15 @@ final mockCurrentOrder1 = Fragment$ActiveOrder(
   dropoffEta: 20.minutes.fromNow,
   createdAt: 12.minutes.ago,
   totalCost: 25.0,
+  costBest: 700.0,
+  providerShare: 50.0,
+  gstPercent: 18.0,
+  gstAmount: 25.43,
+  platformFee: 10.0,
+  platformFeeAmount: 10.0,
+  paymentGatewayFeePercent: 0.0,
+  paymentGatewayFeeAmount: 0.0,
+  couponDiscount: 0.0,
   paymentMethod: mockPaymentMethod,
   unreadMessagesCount: 10,
 );

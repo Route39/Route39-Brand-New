@@ -2,6 +2,7 @@ import 'package:api_response/api_response.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:ridy_driver/config/locator/locator.dart';
 import 'package:ridy_driver/core/graphql/schema.gql.dart';
+import 'package:ridy_driver/core/graphql/documents/home.graphql.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,6 +16,8 @@ import 'package:flutter_common/core/presentation/responsive_dialog/app_responsiv
 import 'package:flutter_common/core/presentation/app_segmented_amount_field.dart';
 import 'package:flutter_common/core/presentation/payment_method_list_view.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:ridy_driver/core/datasources/graphql_datasource.dart';
+import '../../data/razorpay_js_interop.dart';
 
 import '../blocs/top_up_wallet.bloc.dart';
 import '../blocs/wallet.bloc.dart';
@@ -37,6 +40,65 @@ class _AddCreditDialogState extends State<AddCreditDialog> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   double? amount;
   PaymentMethodUnion? paymentMethodUnion;
+  bool _isProcessingPayment = false;
+
+  Future<void> _startRazorpayPayment(BuildContext context) async {
+    if (_isProcessingPayment) return;
+    _isProcessingPayment = true;
+    final datasource = locator<GraphqlDatasource>();
+
+    final orderResponse = await datasource.mutate(
+      Options$Mutation$CreateRazorpayTopUpOrder(
+        variables: Variables$Mutation$CreateRazorpayTopUpOrder(amount: amount!),
+      ),
+    );
+
+    // ignore: avoid_print
+    print('[PAY-DEBUG] orderResponse: \${orderResponse.data}, error: \${orderResponse is ApiResponseError ? (orderResponse as ApiResponseError).error : null}');
+    final order = orderResponse.data?.createRazorpayTopUpOrder;
+    if (order == null) {
+      if (context.mounted) {
+        context.showSnackBar(message: 'Could not start payment');
+      }
+      return;
+    }
+
+    openRazorpayCheckout(
+      keyId: order.keyId,
+      orderId: order.orderId,
+      amountInPaise: amount! * 100,
+      name: 'Route39 Wallet Top-up',
+      description: 'Wallet recharge',
+      onSuccess: (paymentId, respOrderId, signature) async {
+        final verifyResponse = await datasource.mutate(
+          Options$Mutation$VerifyRazorpayTopUp(
+            variables: Variables$Mutation$VerifyRazorpayTopUp(
+              razorpayOrderId: respOrderId,
+              razorpayPaymentId: paymentId,
+              razorpaySignature: signature,
+              amount: amount!,
+            ),
+          ),
+        );
+        if (verifyResponse.data?.verifyRazorpayTopUp == true) {
+          if (context.mounted) {
+            context.router.maybePop();
+            locator<WalletBloc>().fetchWalletData();
+            context.showSnackBar(message: context.translate.topUpSuccess);
+          }
+        } else {
+          if (context.mounted) {
+            context.showSnackBar(message: 'Payment verification failed');
+          }
+        }
+      },
+      onError: (reason) {
+        if (context.mounted) {
+          context.showSnackBar(message: 'Payment failed: \$reason');
+        }
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,14 +146,11 @@ class _AddCreditDialogState extends State<AddCreditDialog> {
                 _ => false,
               },
               onPressed: () {
+                // ignore: avoid_print
+                print('[PAY-DEBUG] Button pressed, amount=\$amount, formValid=\${formKey.currentState?.validate()}');
                 if (formKey.currentState?.validate() == true) {
                   formKey.currentState?.save();
-                  locator<TopUpWalletBloc>().topUpWallet(
-                    paymentMode: paymentMethodUnion!.paymentMode,
-                    paymentMethodId: paymentMethodUnion!.id ?? "0",
-                    currency: widget.currency,
-                    amount: amount!,
-                  );
+                  _startRazorpayPayment(context);
                 }
               },
               child: Text(

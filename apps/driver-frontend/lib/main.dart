@@ -17,6 +17,7 @@ import 'package:ridy_driver/core/blocs/settings.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'core/router/app_router.dart';
 import 'core/router/router_observer.dart';
+import 'core/presentation/route39_splash.dart';
 
 import 'firebase_options.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -72,6 +73,7 @@ class MyApp extends StatelessWidget {
             localizationsDelegates: const [...S.localizationsDelegates, common_messages.S.delegate],
             supportedLocales: S.supportedLocales,
             routerConfig: locator<AppRouter>().config(navigatorObservers: () => [RouterObserver()]),
+
           );
         },
       ),

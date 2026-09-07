@@ -1,0 +1,6 @@
+query GetRouteDistance($input: GetRouteDistanceInput!) {
+  getRouteDistance(input: $input) {
+    distance
+    duration
+  }
+}

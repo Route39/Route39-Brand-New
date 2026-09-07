@@ -1,7 +1,9 @@
 import { useQuery } from "@apollo/client";
+import { Plus } from "lucide-react";
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
+import { Button } from "@/components/ui/button";
 import { DataTable, type DataTableColumn } from "@/components/tables/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/panel/PageHeader";
@@ -39,7 +41,18 @@ export default function ReviewParametersListPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Review parameters" description="Feedback chips offered when rating a ride." />
+      <PageHeader
+        title="Review parameters"
+        description="Feedback chips offered when rating a ride."
+        actions={
+          <Button asChild>
+            <Link to="/management/review-parameters/new">
+              <Plus className="size-4" />
+              New parameter
+            </Link>
+          </Button>
+        }
+      />
       <DataTable
         columns={columns}
         rows={rows}

@@ -51,6 +51,16 @@ export const PROVIDER_WALLETS_QUERY = graphql(`
   }
 `);
 
+// Wallet-balance export — same backend query (`export`) that admin-panel (:4200)
+// already uses for Driver/Rider/Fleet/Provider wallet CSV downloads.
+export const WALLET_EXPORT_QUERY = graphql(`
+  query WalletExport($input: ExportArgs!) {
+    export(input: $input) {
+      url
+    }
+  }
+`);
+
 export const PROVIDER_TRANSACTIONS_QUERY = graphql(`
   query ProviderTransactions(
     $paging: OffsetPaging!

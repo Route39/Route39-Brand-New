@@ -56,3 +56,26 @@ query CancelReasons {
     ...cancelReason
   }
 }
+
+mutation CreateRazorpayRideOrder($orderId: ID!) {
+  createRazorpayRideOrder(orderId: $orderId) {
+    orderId
+    amount
+    currency
+    keyId
+  }
+}
+
+mutation VerifyRazorpayRidePayment(
+  $orderId: ID!
+  $razorpayOrderId: String!
+  $razorpayPaymentId: String!
+  $razorpaySignature: String!
+) {
+  verifyRazorpayRidePayment(
+    orderId: $orderId
+    razorpayOrderId: $razorpayOrderId
+    razorpayPaymentId: $razorpayPaymentId
+    razorpaySignature: $razorpaySignature
+  )
+}

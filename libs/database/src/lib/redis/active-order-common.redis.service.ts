@@ -97,6 +97,14 @@ export class ActiveOrderCommonRedisService {
     paymentMethod: PaymentMethodBase;
     costEstimateForRider: number;
     costEstimateForDriver: number;
+    costBest: number;
+    providerShare: number;
+    gstPercent?: number;
+    gstAmount: number;
+    platformFee?: number;
+    platformFeeAmount: number;
+    paymentGatewayFeePercent?: number;
+    paymentGatewayFeeAmount: number;
     costMin?: number;
     costMax?: number;
     pricingMode: PricingMode;
@@ -105,9 +113,11 @@ export class ActiveOrderCommonRedisService {
     waypoints: WaypointBase[];
     options: RideOptionDTO[];
     pickupOtp?: string;
+    pickupOtpRequired?: boolean;
   }): Promise<void> {
     const activeOrder: ActiveOrderRedisSnapshot = {
       ...input,
+      pickupOtpRequired: input.pickupOtpRequired ?? true,
       currentLegIndex: 0,
       chatMessages: [],
       commissionDeducted: false,

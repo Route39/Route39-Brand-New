@@ -10,6 +10,7 @@ environment:
 
 resolution: workspace
 dependencies:
+  audioplayers: ^6.1.0
   sentry_flutter: any
   flutter:
     sdk: flutter
@@ -79,6 +80,7 @@ dependencies:
     path: ../../libs/flutter_localizations
   image_faker: any
   moment_dart: any
+  web: ^1.1.1
 
 dev_dependencies:
   sentry_dart_plugin: any
@@ -104,6 +106,7 @@ flutter:
     - .env.prod
     - assets/images/
     - assets/lottie/
+    - assets/notification.mp3
     - assets/countries/
 
   fonts:

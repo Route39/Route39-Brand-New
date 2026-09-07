@@ -5,6 +5,7 @@ import { RiderAPIModule } from './app/rider-api.module';
 import { credential } from 'firebase-admin';
 import { initializeApp } from 'firebase-admin/app';
 import { loadSecrets } from '@ridy/database';
+import { config as dotenvConfig } from 'dotenv';
 
 import './instrument';
 import { getConfig } from 'license-verify';
@@ -14,6 +15,10 @@ process.on('unhandledRejection', (reason) => {
 });
 
 async function bootstrap() {
+  // Load the monorepo root .env for local development before initializing services.
+  dotenvConfig({ path: `${process.cwd()}/.env` });
+
+  // Load external/AWS secrets if configured.
   await loadSecrets();
   const app = await NestFactory.create(RiderAPIModule.register());
 

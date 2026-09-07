@@ -571,6 +571,13 @@ type VerifyEmailDto {
   requiresPhoneVerification: Boolean!
 }
 
+type RazorpayRideOrderDTO {
+  orderId: String!
+  amount: Float!
+  currency: String!
+  keyId: String!
+}
+
 type Media {
   id: ID!
   address: String!
@@ -993,6 +1000,8 @@ type Mutation {
   ): UpdateOrderWaitTimeResponse!
   applyCoupon(orderId: ID!, couponCode: String!): ApplyCouponResponse!
   payForRide(orderId: ID!, paymentMethod: PaymentMethodInput!): TopUpWalletResponse!
+  createRazorpayRideOrder(orderId: ID!): RazorpayRideOrderDTO!
+  verifyRazorpayRidePayment(orderId: ID!, razorpayOrderId: String!, razorpayPaymentId: String!, razorpaySignature: String!): Boolean!
   deleteFavoriteDriver(driverId: ID!): Boolean!
   createFavoriteLocation(input: CreateRiderAddressInput!): FavoriteLocation!
   deleteFavoriteLocation(id: ID!): Boolean!

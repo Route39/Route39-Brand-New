@@ -48,9 +48,20 @@ export default function EditServicePage() {
           cancellationTotalFee: String(s.cancellationTotalFee),
           cancellationDriverShare: String(s.cancellationDriverShare),
           providerSharePercent: String(s.providerSharePercent),
-          paymentMethod: s.paymentMethod as "Both" | "OnlyCash" | "OnlyOnline",
+          providerShareFlat: String(s.providerShareFlat),
+          gstPercent: s.gstPercent != null ? String(s.gstPercent) : "",
+          platformFee: s.platformFee != null ? String(s.platformFee) : "",
+          paymentGatewayFee: s.paymentGatewayFee != null ? String(s.paymentGatewayFee) : "",
+          paymentMethod:
+            s.paymentMethod === "CashCredit"
+              ? "Both"
+              : s.paymentMethod === "OnlyCredit"
+                ? "OnlyOnline"
+                : "OnlyCash",
           orderTypes: s.orderTypes as string[],
+          mediaId: s.mediaId != null ? String(s.mediaId) : "",
         }}
+        initialImageUrl={s.media?.address ?? undefined}
       />
       <ServiceBindings serviceId={s.id} />
     </div>

@@ -11,6 +11,8 @@ query DispatcherCalculateFare($points: [PointInput!]!, $riderId: ID!) {
         id
         name
         cost
+        gstPercent
+        platformFee
       }
     }
   }

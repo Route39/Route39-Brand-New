@@ -17,6 +17,7 @@ class DesktopLayoutDelegate extends MultiChildLayoutDelegate {
       bottomSheetLayoutId,
       BoxConstraints(
         maxWidth: size.width,
+        maxHeight: size.height * 0.5,
       ),
     );
     positionChild(
@@ -24,7 +25,7 @@ class DesktopLayoutDelegate extends MultiChildLayoutDelegate {
     final searchRadiusButtonSize =
         layoutChild(searchRadiusButtonId, const BoxConstraints());
 
-    const navbarTopOffset = 80.0;
+    const navbarTopOffset = 20.0;
     Size navbarSize;
 
     if (bottomSheetSize.height < 50) {

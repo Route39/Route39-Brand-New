@@ -3,6 +3,7 @@ import 'package:ridy/core/graphql/documents/calculate_fare.graphql.dart';
 import 'package:ridy/core/graphql/fragments/active_order.fragment.graphql.dart';
 import 'package:ridy/core/graphql/fragments/ephemeral_message.fragment.graphql.dart';
 import 'package:ridy/core/graphql/schema.gql.dart';
+import 'package:ridy/core/graphql/documents/get_route_distance.graphql.dart';
 
 abstract class OrderRepository {
   Stream<ApiResponse<List<Fragment$ActiveOrder>>> get activeOrdersStream;
@@ -15,6 +16,7 @@ abstract class OrderRepository {
   void stopListeningToActiveOrders();
 
   Future<ApiResponse<Query$CalculateFare>> calculateFare({required Input$CalculateFareInput args});
+  Future<ApiResponse<Query$GetRouteDistance>> getRouteDistance({required Input$GetRouteDistanceInput args});
 
   Future<ApiResponse<List<Fragment$ActiveOrder>>> createOrder({required Input$CreateOrderInput args});
 

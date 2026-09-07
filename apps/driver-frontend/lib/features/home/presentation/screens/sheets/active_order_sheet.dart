@@ -229,12 +229,21 @@ class ActiveOrderSheet extends StatelessWidget {
                               ? SliderButton(
                                   text: context.translate.slideToConfirmPickup,
                                   onSlided: () {
-                                    showDialog(
-                                      context: context,
-                                      useSafeArea: false,
-                                      builder: (context) =>
-                                          PickupOtpDialog(orderId: order.id),
-                                    );
+                                    if (!order.pickupOtpRequired) {
+                                      // Dispatcher-assigned ride — no OTP needed.
+                                      locator<HomeBloc>().add(
+                                        HomeEvent.onStripStarted(
+                                          orderId: order.id,
+                                        ),
+                                      );
+                                    } else {
+                                      showDialog(
+                                        context: context,
+                                        useSafeArea: false,
+                                        builder: (context) =>
+                                            PickupOtpDialog(orderId: order.id),
+                                      );
+                                    }
                                   },
                                 )
                               : order.status.toEntity == OrderStatus.started

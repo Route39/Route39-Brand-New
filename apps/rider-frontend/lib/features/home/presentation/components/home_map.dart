@@ -63,9 +63,21 @@ class _HomeMapState extends State<HomeMap> {
 
           case HomeMode.rideInProgress:
             if (state.markers.nonNulls.toList().length < 2) return;
-            state.mapViewController?.fitBounds(
-              state.markers.nonNulls.toList().map((e) => e.position).followedBy(state.directions.toLatLngs).toList(),
-            );
+
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!context.mounted) return;
+
+              final controller = state.mapViewController;
+              if (controller == null) return;
+
+              controller.fitBounds(
+                state.markers.nonNulls
+                    .toList()
+                    .map((e) => e.position)
+                    .followedBy(state.directions.toLatLngs)
+                    .toList(),
+              );
+            });
             break;
 
           default:
@@ -74,24 +86,43 @@ class _HomeMapState extends State<HomeMap> {
       },
       builder: (context, state) {
         return BlocBuilder<SettingsCubit, SettingsState>(
-          buildWhen: (previous, current) => previous.mapProvider != current.mapProvider,
+          buildWhen: (previous, current) =>
+              previous.mapProvider != current.mapProvider,
           builder: (context, settingsState) {
             return AppGenericMap(
-              padding: const EdgeInsets.only(left: 120, right: 120, top: 150, bottom: 60),
-              buttonPadding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+              padding: const EdgeInsets.only(
+                left: 120,
+                right: 120,
+                top: 150,
+                bottom: 60,
+              ),
+              buttonPadding: const EdgeInsets.symmetric(
+                vertical: 32,
+                horizontal: 16,
+              ),
               mode: state.mapViewMode,
               interactive: state.isInteractive,
               polylines: state.polylines(context),
-              onControllerReady: (controller) => locator<HomeBloc>().add(HomeEvent.onMapReady(controller: controller)),
+              onControllerReady: (controller) => locator<HomeBloc>().add(
+                HomeEvent.onMapReady(controller: controller),
+              ),
               centerMarkerBuilder: switch (state.orderSubmissionPage) {
                 OrderSubmissionPage.confirmLocation => (context, key, address) {
                   if (state.selectedWaypointIndex == 0) {
-                    return AppMarkerPickup(address: "Drag to adjust", key: key).centerMarker;
+                    return AppMarkerPickup(
+                      address: "Drag to adjust",
+                      key: key,
+                    ).centerMarker;
                   } else {
-                    return AppMarkerDropoff(address: "Drag to adjust", key: key).centerMarker;
+                    return AppMarkerDropoff(
+                      address: "Drag to adjust",
+                      key: key,
+                    ).centerMarker;
                   }
                 },
-                OrderSubmissionPage.welcome => (context, key, address) => CurrentLocationMarker(key: key).marker,
+                OrderSubmissionPage.welcome =>
+                  (context, key, address) =>
+                      CurrentLocationMarker(key: key).marker,
                 _ => null,
               },
               enableAddressResolve: state.mapViewMode == MapViewMode.picker,
@@ -99,11 +130,12 @@ class _HomeMapState extends State<HomeMap> {
                   ? null
                   : (provider, location) async {
                       final settingsState = locator<SettingsCubit>().state;
-                      final result = await locator<GeoDatasource>().getAddressForLocation(
-                        latLng: location,
-                        language: settingsState.locale,
-                        mapProvider: settingsState.mapProvider,
-                      );
+                      final result = await locator<GeoDatasource>()
+                          .getAddressForLocation(
+                            latLng: location,
+                            language: settingsState.locale,
+                            mapProvider: settingsState.mapProvider,
+                          );
                       if (result is ApiResponseError) {
                         return Place(location, "", "");
                       } else {
@@ -114,11 +146,16 @@ class _HomeMapState extends State<HomeMap> {
               onMapMoved: (event) {
                 if (event.type == MapMoveEventType.start) return;
                 if (state.mapViewMode == MapViewMode.picker) {
-                  locator<HomeBloc>().add(HomeEvent.onMapMoved(selectedLocation: ApiResponseLoaded(event.place)));
+                  locator<HomeBloc>().add(
+                    HomeEvent.onMapMoved(
+                      selectedLocation: ApiResponseLoaded(event.place),
+                    ),
+                  );
                 }
               },
               markers: state.markers,
-              initialLocation: state.waypoints.firstOrNull ?? Constants.defaultLocation,
+              initialLocation:
+                  state.waypoints.firstOrNull ?? Constants.defaultLocation,
             );
           },
         );

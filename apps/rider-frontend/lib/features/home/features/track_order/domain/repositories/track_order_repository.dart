@@ -11,4 +11,15 @@ abstract class TrackOrderRepository {
   });
 
   Future<ApiResponse<Query$PaymentMethods>> getPaymentMethods();
+
+  Future<ApiResponse<Mutation$CreateRazorpayRideOrder>> createRazorpayRideOrder({
+    required String orderId,
+  });
+
+  Future<ApiResponse<Mutation$VerifyRazorpayRidePayment>> verifyRazorpayRidePayment({
+    required String orderId,
+    required String razorpayOrderId,
+    required String razorpayPaymentId,
+    required String razorpaySignature,
+  });
 }

@@ -30,6 +30,9 @@ import { CommonGiftCardService } from '@ridy/database';
 import { CustomerEntity } from '@ridy/database';
 import { RiderWalletDTO } from './dto/rider-wallet.dto';
 import { RiderTransactionDTO } from './dto/rider-transaction.dto';
+import { RazorpayService } from '@ridy/database';
+import { SharedOrderService } from '@ridy/database';
+import { RazorpayOrderDTO } from './dto/razorpay-order.dto';
 
 @UseGuards(GqlAuthGuard)
 @Resolver()
@@ -43,6 +46,8 @@ export class WalletResolver {
     @Inject(CONTEXT) private context: UserContext,
     private httpService: HttpService,
     private walletService: WalletService,
+    private razorpayService: RazorpayService,
+    private sharedOrderService: SharedOrderService,
   ) {}
 
   @Mutation(() => TopUpWalletResponse)
@@ -92,6 +97,50 @@ export class WalletResolver {
       status: IntentResultToTopUpWalletStatus(paymentLink.status),
       url: paymentLink.url,
     };
+  }
+
+  @Mutation(() => RazorpayOrderDTO)
+  async createRazorpayRideOrder(
+    @Args('orderId', { type: () => ID }) orderId: number,
+  ): Promise<RazorpayOrderDTO> {
+    const activeOrder = await this.orderRedisService.getActiveOrder(
+      orderId.toString(),
+    );
+    const amount = activeOrder?.costEstimateForRider ?? 0;
+    const order = await this.razorpayService.createOrder(
+      amount,
+      'INR',
+      `ride_${orderId}_${Date.now()}`,
+    );
+    return {
+      orderId: order.id,
+      amount: amount,
+      currency: 'INR',
+      keyId: process.env.RAZORPAY_KEY_ID!,
+    };
+  }
+
+  @Mutation(() => Boolean)
+  async verifyRazorpayRidePayment(
+    @Args('orderId', { type: () => ID }) orderId: number,
+    @Args('razorpayOrderId', { type: () => String }) razorpayOrderId: string,
+    @Args('razorpayPaymentId', { type: () => String }) razorpayPaymentId: string,
+    @Args('razorpaySignature', { type: () => String }) razorpaySignature: string,
+  ): Promise<boolean> {
+    const isValid = this.razorpayService.verifySignature(
+      razorpayOrderId,
+      razorpayPaymentId,
+      razorpaySignature,
+    );
+    if (!isValid) {
+      throw new Error('INVALID_PAYMENT_SIGNATURE');
+    }
+    const activeOrder = await this.orderRedisService.getActiveOrder(
+      orderId.toString(),
+    );
+    const amount = activeOrder?.costEstimateForRider ?? 0;
+    await this.sharedOrderService.finish(orderId, amount, false);
+    return true;
   }
 
   @Query(() => [PaymentMethodBase])

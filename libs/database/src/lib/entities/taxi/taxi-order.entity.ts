@@ -193,6 +193,26 @@ export class TaxiOrderEntity {
     scale: 2,
   })
   providerShare?: number;
+    @Column('float', {
+    precision: 10,
+    default: 0,
+    scale: 2,
+  })
+  gstAmount!: number;
+
+  @Column('float', {
+    precision: 10,
+    default: 0,
+    scale: 2,
+  })
+  platformFeeAmount!: number;
+
+  @Column('float', {
+    precision: 10,
+    default: 0,
+    scale: 2,
+  })
+  paymentGatewayFeeAmount!: number;
 
   @Column('float', {
     nullable: true,
@@ -211,6 +231,9 @@ export class TaxiOrderEntity {
 
   @Column({ nullable: true })
   pickupOtpVerifiedAt?: Date;
+
+  @Column({ type: 'boolean', default: true })
+  pickupOtpRequired!: boolean;
 
   @Column({ nullable: true })
   waitSeconds?: number;

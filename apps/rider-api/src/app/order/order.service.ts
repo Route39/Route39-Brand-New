@@ -62,6 +62,7 @@ import {
   TopUpWalletStatus,
 } from '../wallet/dto/top-up-wallet.input';
 import { WalletService } from '../wallet/wallet.service';
+import { RazorpayService } from '@ridy/database';
 
 @Injectable()
 export class RiderOrderService {
@@ -95,6 +96,7 @@ export class RiderOrderService {
     private httpService: HttpService,
     private readonly customerWalletService: SharedCustomerWalletService,
     private walletService: WalletService,
+    private razorpayService: RazorpayService,
   ) {}
 
   async initiateCall(input: {
@@ -921,6 +923,170 @@ export class RiderOrderService {
         };
       }
     }
+  }
+
+
+  async createRazorpayRideOrder(input: {
+    orderId: number;
+    riderId: number;
+  }): Promise<{
+    orderId: string;
+    amount: number;
+    currency: string;
+    keyId: string;
+  }> {
+    const activeOrder = await this.activeOrderRedisService.getActiveOrder(
+      input.orderId.toString(),
+    );
+
+    if (activeOrder == null) {
+      throw new ForbiddenError('ACTIVE_ORDER_NOT_FOUND');
+    }
+
+    if (parseInt(activeOrder.riderId) !== input.riderId) {
+      throw new ForbiddenError('ORDER_NOT_BELONG_TO_RIDER');
+    }
+
+    const amount =
+      activeOrder.costEstimateForRider - activeOrder.totalPaid;
+
+    if (amount <= 0) {
+      throw new BadRequestException('NO_PAYMENT_REQUIRED');
+    }
+
+    const existingPayment = await this.paymentRepo.findOne({
+      where: {
+        userType: 'rider',
+        userId: input.riderId.toString(),
+        orderNumber: activeOrder.id.toString(),
+        status: PaymentStatus.Processing,
+      },
+      order: {
+        id: 'DESC',
+      },
+    });
+
+    if (existingPayment?.transactionNumber) {
+      return {
+        orderId: existingPayment.transactionNumber,
+        amount: existingPayment.amount,
+        currency: existingPayment.currency,
+        keyId: process.env.RAZORPAY_KEY_ID!,
+      };
+    }
+
+    const razorpayOrder = await this.razorpayService.createOrder(
+      amount,
+      activeOrder.currency,
+      `ride_${activeOrder.id}`,
+    );
+
+    await this.paymentRepo.save({
+      status: PaymentStatus.Processing,
+      amount,
+      currency: activeOrder.currency,
+      transactionNumber: razorpayOrder.id,
+      externalReferenceNumber: null,
+      orderNumber: activeOrder.id.toString(),
+      userType: 'rider',
+      userId: input.riderId.toString(),
+      gatewayId: null,
+      savedPaymentMethodId: null,
+      returnUrl: process.env.RIDER_SERVER_URL
+        ? `${process.env.RIDER_SERVER_URL}/payment_result`
+        : '',
+    });
+
+    return {
+      orderId: razorpayOrder.id,
+      amount,
+      currency: activeOrder.currency,
+      keyId: process.env.RAZORPAY_KEY_ID!,
+    };
+  }
+
+  async verifyRazorpayRidePayment(input: {
+    orderId: number;
+    riderId: number;
+    razorpayOrderId: string;
+    razorpayPaymentId: string;
+    razorpaySignature: string;
+  }): Promise<TopUpWalletStatus> {
+    const activeOrder = await this.activeOrderRedisService.getActiveOrder(
+      input.orderId.toString(),
+    );
+
+    if (activeOrder == null) {
+      throw new ForbiddenError('ACTIVE_ORDER_NOT_FOUND');
+    }
+
+    if (parseInt(activeOrder.riderId) !== input.riderId) {
+      throw new ForbiddenError('ORDER_NOT_BELONG_TO_RIDER');
+    }
+
+    const payment = await this.paymentRepo.findOne({
+      where: {
+        userType: 'rider',
+        userId: input.riderId.toString(),
+        orderNumber: activeOrder.id.toString(),
+        transactionNumber: input.razorpayOrderId,
+      },
+    });
+
+    if (!payment) {
+      throw new ForbiddenError('RAZORPAY_ORDER_NOT_FOUND');
+    }
+
+    if (payment.status === PaymentStatus.Success) {
+      return TopUpWalletStatus.OK;
+    }
+
+    if (payment.status !== PaymentStatus.Processing) {
+      throw new ForbiddenError('PAYMENT_NOT_PROCESSING');
+    }
+
+    const valid = this.razorpayService.verifySignature(
+      input.razorpayOrderId,
+      input.razorpayPaymentId,
+      input.razorpaySignature,
+    );
+
+    if (!valid) {
+      await this.paymentRepo.update(payment.id, {
+        status: PaymentStatus.Failed,
+      });
+      throw new ForbiddenError('INVALID_RAZORPAY_SIGNATURE');
+    }
+
+    const expectedAmount =
+      activeOrder.costEstimateForRider - activeOrder.totalPaid;
+
+    if (Math.abs(payment.amount - expectedAmount) > 0.01) {
+      await this.paymentRepo.update(payment.id, {
+        status: PaymentStatus.Failed,
+      });
+      throw new ForbiddenError('PAYMENT_AMOUNT_MISMATCH');
+    }
+
+    await this.paymentRepo.update(payment.id, {
+      status: PaymentStatus.Success,
+      transactionNumber: input.razorpayPaymentId,
+      externalReferenceNumber: input.razorpayOrderId,
+    });
+
+    await this.driverService.rechargeWallet({
+      action: TransactionAction.Recharge,
+      rechargeType: DriverRechargeTransactionType.OrderFee,
+      amount: activeOrder.costEstimateForDriver,
+      requestId: parseInt(activeOrder.id),
+      status: TransactionStatus.Done,
+      currency: activeOrder.currency,
+      driverId: parseInt(activeOrder.driverId),
+    });
+
+    await this.finishOrderWithReview(activeOrder);
+
+    return TopUpWalletStatus.OK;
   }
 
   private async finishOrderWithReview(

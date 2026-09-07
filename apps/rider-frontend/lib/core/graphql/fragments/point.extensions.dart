@@ -35,6 +35,24 @@ extension CoordinateListX on List<Fragment$Coordinate> {
     width: 3,
     gradientColors: [ColorPalette.primary40, ColorPalette.tertiary60],
   );
+
+  /// Returns the remaining part of this route starting from the point
+  /// closest to [from]. Used to "trim" a driver's route line as they move,
+  /// without re-fetching directions from the server on every location update.
+  List<Fragment$Coordinate> trimToNearest(LatLng from) {
+    if (isEmpty) return this;
+    const distanceCalculator = Distance();
+    var nearestIndex = 0;
+    var nearestDistance = double.infinity;
+    for (var i = 0; i < length; i++) {
+      final d = distanceCalculator.distance(from, this[i].toLatLng);
+      if (d < nearestDistance) {
+        nearestDistance = d;
+        nearestIndex = i;
+      }
+    }
+    return sublist(nearestIndex);
+  }
 }
 
 extension PointX on Fragment$Coordinate {

@@ -37,8 +37,17 @@ fragment ActiveOrder on ActiveOrder {
     ...customer
   }
   status
+  pickupOtpRequired
   totalCost
   couponDiscount
+  costBest
+  providerShare
+  gstPercent
+  gstAmount
+  platformFee
+  platformFeeAmount
+  paymentGatewayFeePercent
+  paymentGatewayFeeAmount
   paymentMethod {
     ...PaymentMethod
   }

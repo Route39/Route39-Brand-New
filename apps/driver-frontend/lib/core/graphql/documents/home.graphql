@@ -105,3 +105,16 @@ query EphemeralMessages {
 mutation MarkEphemeralMessageAsRead($messageId: ID!) {
   markEphemeralMessagesAsRead(messageId: $messageId)
 }
+
+mutation CreateRazorpayTopUpOrder($amount: Float!) {
+  createRazorpayTopUpOrder(amount: $amount) {
+    orderId
+    amount
+    currency
+    keyId
+  }
+}
+
+mutation VerifyRazorpayTopUp($razorpayOrderId: String!, $razorpayPaymentId: String!, $razorpaySignature: String!, $amount: Float!) {
+  verifyRazorpayTopUp(razorpayOrderId: $razorpayOrderId, razorpayPaymentId: $razorpayPaymentId, razorpaySignature: $razorpaySignature, amount: $amount)
+}
