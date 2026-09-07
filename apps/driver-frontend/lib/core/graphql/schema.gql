@@ -719,6 +719,8 @@ type Mutation {
   riderPaidInCash(orderId: ID!): UpdateStatus!
   submitOrderFee(orderId: ID!, fee: Float!): UpdateStatus!
   topUpWallet(input: TopUpWalletInput!): TopUpWalletResponse!
+  createRazorpayTopUpOrder(amount: Float!): RazorpayOrderDTO!
+  verifyRazorpayTopUp(razorpayOrderId: String!, razorpayPaymentId: String!, razorpaySignature: String!, amount: Float!): Boolean!
   setupPaymentMethod(gatewayId: ID!): SetupPaymentMethod!
   redeemGiftCard(code: String!): GiftCard!
   markPaymentMethodAsDefault(id: ID!): [PaymentMethodBase!]!
@@ -1186,6 +1188,13 @@ enum RangePolicy {
   ENFORCE
   SOFT
   OPEN
+}
+
+type RazorpayOrderDTO {
+  orderId: ID!
+  amount: Float!
+  currency: String!
+  keyId: String!
 }
 
 type Review {

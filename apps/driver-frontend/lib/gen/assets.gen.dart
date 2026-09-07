@@ -2083,9 +2083,6 @@ class $AssetsImagesGen {
   /// File path: assets/images/drawer-top-background.png
   AssetGenImage get drawerTopBackground =>
       const AssetGenImage('assets/images/drawer-top-background.png');
-      /// File path: assets/images/ev_auto_icon.png
-  AssetGenImage get evAutoIcon =>
-      const AssetGenImage('assets/images/ev_auto_icon.png');
 
   /// File path: assets/images/ev_auto_icon.png
   AssetGenImage get evAutoIcon =>
@@ -2149,7 +2146,7 @@ class $AssetsImagesGen {
   AssetGenImage get rideHistoryEmptyState =>
       const AssetGenImage('assets/images/ride-history-empty-state.png');
 
-      /// File path: assets/images/route39_auto_photo.png
+  /// File path: assets/images/route39_auto_photo.png
   AssetGenImage get route39AutoPhoto =>
       const AssetGenImage('assets/images/route39_auto_photo.png');
 
@@ -2214,7 +2211,6 @@ class $AssetsImagesGen {
     cardBackground4,
     cardHexagon,
     drawerTopBackground,
-    evAutoIcon,
     evAutoIcon,
     googlemapPreview,
     gradientTotal,

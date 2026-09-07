@@ -66,7 +66,7 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
-      drawer: AppDrawer(scaffoldKey: scaffoldKey),
+      drawer: AppDrawer(showHeader: false, scaffoldKey: scaffoldKey),
       extendBody: true,
       bottomNavigationBar: SafeArea(
         child: Container(

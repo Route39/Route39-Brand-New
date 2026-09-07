@@ -83,6 +83,13 @@ class AppDrawer extends StatelessWidget {
                         builder: (context, stateRoute) {
                           return Column(
                             children: [
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 24, top: 8),
+                                child: Assets.images.logoHeader.image(
+                                  filterQuality: FilterQuality.high,
+                                  height: 28,
+                                ),
+                              ),
                               context.responsive(
                                 const SizedBox(),
                                 xl: AppDrawerItem(

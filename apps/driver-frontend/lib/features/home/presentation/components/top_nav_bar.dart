@@ -35,7 +35,7 @@ class TopNavBar extends StatelessWidget {
     return SafeArea(
       bottom: false,
       child: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
         decoration: BoxDecoration(
           color: ColorPalette.neutralVariant99,
           borderRadius: borderRadius,

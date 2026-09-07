@@ -52,7 +52,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onStateChanged(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        locator<HomeBloc>().onStarted();
+        final homeBloc = locator<HomeBloc>();
+        if (homeBloc.state.profile == null) {
+          homeBloc.onStarted();
+        }
 
         locator<AuthBloc>().requestUserInfo();
 
