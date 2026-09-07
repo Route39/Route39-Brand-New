@@ -288,9 +288,11 @@ export class RideOfferRedisService {
     riderEmail: string | null;
     riderGender: Gender | null;
     riderFcmTokens: string[];
+    pickupOtpRequired?: boolean;
   }): Promise<void> {
     const metadata: RideOfferRedisSnapshot = {
       ...input,
+      pickupOtpRequired: input.pickupOtpRequired ?? true,
       id: input.orderId,
       pickupLocation:
         `${input.pickupLocation.lng}, ${input.pickupLocation.lat}` as unknown as Point,
@@ -343,6 +345,7 @@ export class RideOfferRedisService {
     dropoffEta: Date;
     driverDirections: Point[];
     pickupOtp?: string;
+    pickupOtpRequired?: boolean;
   }): Promise<void> {
     Logger.debug(
       `Driver ${input.driverId} accepting offer for order ${input.orderId}`,
@@ -390,6 +393,7 @@ export class RideOfferRedisService {
       riderAvatarUrl: input.riderAvatarUrl ?? null,
       driverDirections: input.driverDirections,
       pickupOtp: input.pickupOtp,
+      pickupOtpRequired: input.pickupOtpRequired,
     });
 
     Logger.debug(

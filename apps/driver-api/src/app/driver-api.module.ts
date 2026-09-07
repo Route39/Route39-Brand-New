@@ -99,8 +99,8 @@ export class DriverAPIModule implements OnModuleInit {
             },
             autoSchemaFile: join(
               process.cwd(),
-              'apps/taxi-driver-frontend/lib/core/graphql/schema.gql',
-              // 'apps/driver-frontend/lib/core/graphql/schema.gql',
+              'apps/driver-frontend/lib/core/graphql/schema.gql',
+              // 'apps/taxi-driver-frontend/lib/core/graphql/schema.gql',
             ),
           }),
           TypeOrmModule.forFeature(entities),

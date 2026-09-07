@@ -95,4 +95,6 @@ export class ActiveOrderDTO {
   unreadMessagesCount!: number;
   @Field(() => WaypointBase, { nullable: true })
   nextDestination?: WaypointBase;
+  @Field(() => Boolean, { defaultValue: true })
+  pickupOtpRequired!: boolean;
 }

@@ -15,6 +15,10 @@ import 'package:ridy/core/blocs/location.bloc.dart';
 import 'package:ridy/core/blocs/place_lookup.bloc.dart';
 import 'package:ridy/core/blocs/settings.bloc.dart';
 import 'package:ridy/core/extensions/extensions.dart';
+//import 'package:ridy/core/graphql/documents/get_route_distance.graphql.dart';
+import 'package:ridy/core/graphql/schema.gql.dart';
+import 'package:ridy/core/repositories/order_repository.dart';
+import 'package:ridy/core/graphql/fragments/point.extensions.dart';
 import 'package:flutter_common/core/presentation/buttons/app_primary_button.dart';
 import 'package:ridy/core/presentation/place_lookup_state_view.dart';
 import 'package:ridy/core/presentation/place_result_item.dart';
@@ -37,6 +41,48 @@ class WaypointsInputSheet extends StatefulWidget {
 class _WaypointsInputSheetState extends State<WaypointsInputSheet> {
   final placeLookupBloc = locator<PlaceLookupBloc>();
   final homeBloc = locator<HomeBloc>();
+
+  final Map<String, Future<String?>> _routeDistanceCache = {};
+
+  Future<String?> _getRouteDistance(
+    Place destination,
+    BuildContext context,
+  ) {
+    final pickup = homeBloc.state.waypoints.firstOrNull;
+
+    if (pickup == null) {
+      return Future.value(null);
+    }
+
+    final key =
+        '${pickup.latLng.latitude.toStringAsFixed(6)},'
+        '${pickup.latLng.longitude.toStringAsFixed(6)}-'
+        '${destination.latLng.latitude.toStringAsFixed(6)},'
+        '${destination.latLng.longitude.toStringAsFixed(6)}';
+
+    return _routeDistanceCache.putIfAbsent(
+      key,
+      () async {
+        final response = await locator<OrderRepository>().getRouteDistance(
+          args: Input$GetRouteDistanceInput(
+            points: [
+              pickup.latLng.toPointInput,
+              destination.latLng.toPointInput,
+            ],
+          ),
+        );
+
+        if (!response.isLoaded || response.data == null) {
+          return null;
+        }
+
+        final distanceMeters =
+            response.data!.getRouteDistance.distance.toInt();
+
+        return distanceMeters.toFormattedDistance(context);
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -182,20 +228,26 @@ class _WaypointsInputSheetState extends State<WaypointsInputSheet> {
                           ),
                           BlocBuilder<PlaceLookupBloc, PlaceLookupState>(
                             builder: (context, state) => PlaceLookupStateView(
-                              state: state,
-                              initialStateView: BlocBuilder<DestinationSuggestionsCubit, DestinationSuggestionsState>(
+  state: state,
+  routeOrigin: homeBloc.state.waypoints.firstOrNull,
+  initialStateView: BlocBuilder<DestinationSuggestionsCubit, DestinationSuggestionsState>(
                                 builder: (context, state) => switch (state.destinationSuggesionsState) {
                                   ApiResponseLoaded() => Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       for (var place in state.destinationSuggestions!.$2)
-                                        PlaceResultItem(
-                                          onPressed: () => showConfirmLocation(place),
-                                          title: place.title,
-                                          trailing: locator<LocationCubit>().state.distanceTo(place.latLng, context),
-                                          subtitle: place.address,
-                                          isRecent: true,
-                                        ),
+                                        FutureBuilder<String?>(
+  future: _getRouteDistance(place, context),
+  builder: (context, distanceSnapshot) {
+    return PlaceResultItem(
+      onPressed: () => showConfirmLocation(place),
+      title: place.title,
+      trailing: distanceSnapshot.data,
+      subtitle: place.address,
+      isRecent: true,
+    );
+  },
+),
                                     ].separated(const Divider(thickness: 0.3, indent: 48, height: 16)),
                                   ),
                                   _ => const SizedBox(),

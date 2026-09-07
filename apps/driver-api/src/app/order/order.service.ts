@@ -200,12 +200,14 @@ export class OrderService {
       );
 
       // Generate 4-digit pickup OTP
+      const otpRequired = orderMetadata.pickupOtpRequired !== false;
       const existingOrderForOtp = await this.orderRepository.findOne({
         where: { id: input.orderId },
       });
-      const pickupOtp =
-        existingOrderForOtp?.pickupOtp ??
-        Math.floor(1000 + Math.random() * 9000).toString();
+      const pickupOtp = otpRequired
+        ? (existingOrderForOtp?.pickupOtp ??
+            Math.floor(1000 + Math.random() * 9000).toString())
+        : undefined;
       
       // Send pickup OTP via SMS only on first generation
       if (!existingOrderForOtp?.pickupOtp && rider?.mobileNumber) {
@@ -231,6 +233,7 @@ export class OrderService {
         dropoffEta,
         driverDirections: driverTravelMetrics.directions,
         pickupOtp,
+        pickupOtpRequired: otpRequired,
       });
 
       // CRITICAL FIX: Await the database update
@@ -238,6 +241,7 @@ export class OrderService {
         status: OrderStatus.DriverAccepted,
         driverId: input.driverId,
         pickupOtp: pickupOtp,
+        pickupOtpRequired: otpRequired,
       });
 
       // Notify all drivers that the offer is revoked
@@ -356,6 +360,22 @@ export class OrderService {
     orderId: number;
     driverId: number;
   }): Promise<UpdateStatusDTO> {
+        // Guard: this mutation is callable directly by the driver app (no OTP arg),
+    // so it must only proceed when OTP isn't required for this order, or the
+    // OTP has already been verified via verifyPickupOtp().
+    const orderEntityForGuard = await this.orderRepository.findOne({
+      where: { id: input.orderId },
+    });
+    if (!orderEntityForGuard) {
+      throw new ForbiddenError('ORDER_NOT_FOUND');
+    }
+    if (orderEntityForGuard.driverId !== input.driverId) {
+      throw new ForbiddenError('ORDER_NOT_ASSIGNED_TO_DRIVER');
+    }
+    const otpRequiredForGuard = orderEntityForGuard.pickupOtpRequired !== false;
+    if (otpRequiredForGuard && !orderEntityForGuard.pickupOtpVerifiedAt) {
+      throw new ForbiddenError('OTP_VERIFICATION_REQUIRED');
+    }
     const order = await this.activeOrderRedisService.getActiveOrder(
       input.orderId.toString(),
     );
@@ -429,7 +449,8 @@ export class OrderService {
       throw new ForbiddenError('ORDER_NOT_ASSIGNED_TO_DRIVER');
     }
 
-    if (!orderEntity.pickupOtp || orderEntity.pickupOtp !== input.otp) {
+    const otpRequired = orderEntity.pickupOtpRequired !== false;
+    if (otpRequired && (!orderEntity.pickupOtp || orderEntity.pickupOtp !== input.otp)) {
       throw new ForbiddenError('INVALID_OTP');
     }
 
@@ -827,6 +848,8 @@ export class OrderService {
       pickupEta: order.pickupEta,
       dropoffEta: order.dropoffEta,
       status: order.status,
+      pickupOtpRequired: order.pickupOtpRequired ?? true,
+      
       serviceName: order.serviceName,
       serviceImageAddress: order.serviceImageAddress,
       chatMessages: chatMessages.map((msg: ChatMessageRedisSnapshot) => ({

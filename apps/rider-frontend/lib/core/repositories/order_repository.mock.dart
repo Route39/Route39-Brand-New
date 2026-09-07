@@ -10,6 +10,7 @@ import 'package:ridy/core/graphql/fragments/wallet.mock.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'package:ridy/core/graphql/documents/calculate_fare.graphql.dart';
+import 'package:ridy/core/graphql/documents/get_route_distance.graphql.dart';
 import 'package:ridy/core/graphql/fragments/active_order.fragment.graphql.dart';
 import 'package:ridy/core/graphql/schema.gql.dart';
 import 'package:ridy/core/repositories/order_repository.dart';
@@ -47,6 +48,22 @@ class OrderRepositoryMock implements OrderRepository {
         ),
         paymentMethods: [mockPaymentMethod],
         riderWallets: [mockWallet1],
+      ),
+    );
+  }
+
+  @override
+  Future<ApiResponse<Query$GetRouteDistance>> getRouteDistance({
+    required Input$GetRouteDistanceInput args,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    return ApiResponse.loaded(
+      Query$GetRouteDistance(
+        getRouteDistance: Query$GetRouteDistance$getRouteDistance(
+          distance: 430,
+          duration: 311,
+        ),
       ),
     );
   }

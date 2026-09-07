@@ -52,30 +52,30 @@ const _announcementmodule = __webpack_require__(25);
 const _authmodule = __webpack_require__(30);
 const _jwtstrategy = __webpack_require__(51);
 const _chatmodule = __webpack_require__(54);
-const _complaintmodule = __webpack_require__(103);
-const _couponmodule = __webpack_require__(90);
-const _driver_tendencymodule = __webpack_require__(108);
+const _complaintmodule = __webpack_require__(105);
+const _couponmodule = __webpack_require__(92);
+const _driver_tendencymodule = __webpack_require__(110);
 const _ordermodule = __webpack_require__(55);
-const _riderapisetupnotfoundcontroller = __webpack_require__(111);
-const _riderapicontroller = __webpack_require__(112);
+const _riderapisetupnotfoundcontroller = __webpack_require__(113);
+const _riderapicontroller = __webpack_require__(114);
 const _ridermodule = __webpack_require__(33);
 const _servicemodule = __webpack_require__(56);
-const _sosmodule = __webpack_require__(116);
+const _sosmodule = __webpack_require__(118);
 const _uploadmodule = __webpack_require__(57);
-const _walletmodule = __webpack_require__(95);
-const _setup = __webpack_require__(120);
+const _walletmodule = __webpack_require__(97);
+const _setup = __webpack_require__(122);
 const _core = __webpack_require__(3);
-const _nestjsprometheus = __webpack_require__(121);
+const _nestjsprometheus = __webpack_require__(123);
 const _bullmq = __webpack_require__(20);
 const _licenseverify = __webpack_require__(15);
-const _express = __webpack_require__(122);
-const _nestjs = __webpack_require__(79);
-const _notificationmodule = __webpack_require__(123);
-const _dispatcher = __webpack_require__(69);
-const _ephemeralmessagesmodule = __webpack_require__(126);
-const _feedbackmodule = __webpack_require__(130);
-const _favoritelocationmodule = __webpack_require__(134);
-const _supportmodule = __webpack_require__(139);
+const _express = __webpack_require__(124);
+const _nestjs = __webpack_require__(81);
+const _notificationmodule = __webpack_require__(125);
+const _dispatcher = __webpack_require__(71);
+const _ephemeralmessagesmodule = __webpack_require__(128);
+const _feedbackmodule = __webpack_require__(132);
+const _favoritelocationmodule = __webpack_require__(136);
+const _supportmodule = __webpack_require__(141);
 let RiderAPIModule = class RiderAPIModule {
     constructor(licenseService){
         this.licenseService = licenseService;
@@ -17089,6 +17089,13 @@ taxi_order_entity_ts_decorate([
 ], TaxiOrderEntity.prototype, "pickupOtpVerifiedAt", void 0);
 taxi_order_entity_ts_decorate([
     (0,external_typeorm_.Column)({
+        type: 'boolean',
+        default: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", Boolean)
+], TaxiOrderEntity.prototype, "pickupOtpRequired", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
         nullable: true
     }),
     taxi_order_entity_ts_metadata("design:type", Number)
@@ -23679,11 +23686,12 @@ var ActiveOrderCommonRedisService = /*#__PURE__*/ function() {
     };
     _proto.createActiveOrder = function createActiveOrder(input) {
         return active_order_common_redis_service_async_to_generator(function() {
-            var activeOrder;
+            var _input_pickupOtpRequired, activeOrder;
             return active_order_common_redis_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
                         activeOrder = active_order_common_redis_service_extends({}, input, {
+                            pickupOtpRequired: (_input_pickupOtpRequired = input.pickupOtpRequired) != null ? _input_pickupOtpRequired : true,
                             currentLegIndex: 0,
                             chatMessages: [],
                             commissionDeducted: false,
@@ -24431,11 +24439,12 @@ var RideOfferRedisService = /*#__PURE__*/ function() {
     };
     _proto.createRideOffer = function createRideOffer(input) {
         return ride_offer_redis_service_async_to_generator(function() {
-            var _input_scheduledAt, metadata, onlineRider;
+            var _input_scheduledAt, _input_pickupOtpRequired, metadata, onlineRider;
             return ride_offer_redis_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
                         metadata = ride_offer_redis_service_extends({}, input, {
+                            pickupOtpRequired: (_input_pickupOtpRequired = input.pickupOtpRequired) != null ? _input_pickupOtpRequired : true,
                             id: input.orderId,
                             pickupLocation: input.pickupLocation.lng + ", " + input.pickupLocation.lat,
                             createdAt: input.createdAt.getTime(),
@@ -24551,7 +24560,8 @@ var RideOfferRedisService = /*#__PURE__*/ function() {
                                 riderFirstName: (_input_riderFirstName = input.riderFirstName) != null ? _input_riderFirstName : null,
                                 riderAvatarUrl: (_input_riderAvatarUrl = input.riderAvatarUrl) != null ? _input_riderAvatarUrl : null,
                                 driverDirections: input.driverDirections,
-                                pickupOtp: input.pickupOtp
+                                pickupOtp: input.pickupOtp,
+                                pickupOtpRequired: input.pickupOtpRequired
                             }))
                         ];
                     case 4:
@@ -32039,9 +32049,35 @@ var SharedOrderService = /*#__PURE__*/ function() {
             });
         }).call(this);
     };
+    _proto.getRouteDistance = function getRouteDistance(points) {
+        return shared_order_service_async_to_generator(function() {
+            var metrics;
+            return shared_order_service_ts_generator(this, function(_state) {
+                switch(_state.label){
+                    case 0:
+                        if (points.length < 2) {
+                            throw new apollo_.ForbiddenError('At least two points are required to calculate route distance.');
+                        }
+                        return [
+                            4,
+                            this.googleServices.getSumDistanceAndDuration(points)
+                        ];
+                    case 1:
+                        metrics = _state.sent();
+                        return [
+                            2,
+                            {
+                                distance: metrics.distance,
+                                duration: metrics.duration
+                            }
+                        ];
+                }
+            });
+        }).call(this);
+    };
     _proto.calculateFare = function calculateFare(input) {
         return shared_order_service_async_to_generator(function() {
-            var _this, distances, totalDistance, zonePricings, regions, servicesInRegion, _input_twoWay, metrics, _tmp, cats, feeMultiplier, optionFee, options, paidOptions, _cats;
+            var _this, distances, totalDistance, zonePricings, regions, servicesInRegion, _input_twoWay, metrics, cats, feeMultiplier, optionFee, options, paidOptions, _cats;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32092,31 +32128,12 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         if (((_input_twoWay = input.twoWay) != null ? _input_twoWay : false) && input.points.length > 1) {
                             input.points.push(input.points[0]);
                         }
-                        if (!(servicesInRegion.findIndex(function(x) {
-                            return x.perHundredMeters > 0;
-                        }) > -1)) return [
-                            3,
-                            6
-                        ];
                         return [
                             4,
                             this.googleServices.getSumDistanceAndDuration(input.points)
                         ];
                     case 5:
-                        _tmp = _state.sent();
-                        return [
-                            3,
-                            7
-                        ];
-                    case 6:
-                        _tmp = {
-                            distance: 0,
-                            duration: 0,
-                            directions: []
-                        };
-                        _state.label = 7;
-                    case 7:
-                        metrics = _tmp;
+                        metrics = _state.sent();
                         common_.Logger.log({
                             pointsCount: input.points.length,
                             points: input.points,
@@ -32146,19 +32163,19 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 }
                             })
                         ];
-                    case 8:
+                    case 6:
                         cats = _state.sent();
                         return [
                             4,
                             this.sharedFleetService.getFleetMultiplierInPoint(input.points[0])
                         ];
-                    case 9:
+                    case 7:
                         feeMultiplier = _state.sent();
                         // Calculate option fees from selected options
                         optionFee = 0;
                         if (!(input.selectedOptionIds && input.selectedOptionIds.length > 0)) return [
                             3,
-                            11
+                            9
                         ];
                         return [
                             4,
@@ -32170,7 +32187,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 }
                             })
                         ];
-                    case 10:
+                    case 8:
                         options = _state.sent();
                         paidOptions = options.filter(function(option) {
                             return option.type == ServiceOptionType.Paid;
@@ -32182,8 +32199,8 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             return current += previous;
                         });
                         common_.Logger.log("Calculated option fee: " + optionFee + " from " + paidOptions.length + " paid options", 'SharedOrderService.calculateFare');
-                        _state.label = 11;
-                    case 11:
+                        _state.label = 9;
+                    case 9:
                         _cats = cats.map(function(cat) {
                             var services = cat.services, _cat = _object_without_properties_loose(cat, [
                                 "services"
@@ -32197,44 +32214,29 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             }).map(function(service) {
                                 var cost = 0;
                                 var costResult = null;
-                                var zonePricesWithService = zonePricings.filter(function(zone) {
-                                    return zone.services.find(function(_service) {
-                                        return _service.id == service.id;
-                                    });
-                                });
-                                if (zonePricesWithService.length > 0) {
-                                    cost = zonePricesWithService[0].cost;
-                                    var eta = new Date();
-                                    for(var _iterator = shared_order_service_create_for_of_iterator_helper_loose(zonePricesWithService[0].timeMultipliers), _step; !(_step = _iterator()).done;){
-                                        var _multiplier = _step.value;
-                                        var startMinutes = parseInt(_multiplier.startTime.split(':')[0]) * 60 + parseInt(_multiplier.startTime.split(':')[1]);
-                                        var nowMinutes = eta.getHours() * 60 + eta.getMinutes();
-                                        var endMinutes = parseInt(_multiplier.endTime.split(':')[0]) * 60 + parseInt(_multiplier.endTime.split(':')[1]);
-                                        if (nowMinutes >= startMinutes && nowMinutes <= endMinutes) {
-                                            cost *= _multiplier.multiply;
-                                        }
-                                    }
-                                } else {
-                                    var timestamp = new Date();
-                                    var _input_waitTime;
-                                    costResult = _this.servicesService.calculateCost(service, metrics.distance, metrics.duration, timestamp, feeMultiplier, (_input_waitTime = input.waitTime) != null ? _input_waitTime : 0, optionFee);
-                                    cost = costResult.cost;
-                                    var _input_waitTime1;
-                                    common_.Logger.log({
-                                        serviceId: service.id,
-                                        serviceName: service.name,
-                                        distance: metrics.distance,
-                                        duration: metrics.duration,
-                                        timestamp: timestamp.toISOString(),
-                                        feeMultiplier: feeMultiplier,
-                                        waitTime: (_input_waitTime1 = input.waitTime) != null ? _input_waitTime1 : 0,
-                                        optionFee: optionFee,
-                                        cost: cost,
-                                        min: costResult.min,
-                                        max: costResult.max,
-                                        pricingMode: service.pricingMode
-                                    }, 'SharedOrderService.calculateFare.costCalculation');
-                                }
+                                var timestamp = new Date();
+                                var _input_waitTime;
+                                costResult = _this.servicesService.calculateCost(service, metrics.distance, metrics.duration, timestamp, feeMultiplier, (_input_waitTime = input.waitTime) != null ? _input_waitTime : 0, optionFee);
+                                cost = costResult.cost;
+                                var _input_waitTime1;
+                                common_.Logger.log({
+                                    serviceId: service.id,
+                                    serviceName: service.name,
+                                    distance: metrics.distance,
+                                    distanceKm: metrics.distance / 1000,
+                                    roundedDistanceKm: Math.round(metrics.distance / 1000),
+                                    duration: metrics.duration,
+                                    timestamp: timestamp.toISOString(),
+                                    baseFare: service.baseFare,
+                                    minimumFee: service.minimumFee,
+                                    feeMultiplier: feeMultiplier,
+                                    waitTime: (_input_waitTime1 = input.waitTime) != null ? _input_waitTime1 : 0,
+                                    optionFee: optionFee,
+                                    cost: cost,
+                                    min: costResult.min,
+                                    max: costResult.max,
+                                    pricingMode: service.pricingMode
+                                }, 'SharedOrderService.calculateFare.costCalculation');
                                 // Build CostResult union based on pricing mode
                                 // NOTE: Provider share is NOT added to rider cost - it's deducted from driver earnings
                                 var costResultDTO;
@@ -32324,7 +32326,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.createOrder = function createOrder(input) {
         return shared_order_service_async_to_generator(function() {
-            var _this, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, zonePricing, eta, _iterator, _step, _multiplier, startMinutes, nowMinutes, endMinutes, regions, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, isOnlinePayment, _service_gstPercent, gstAmount, _service_platformFee, platformFeeAmount, _service_paymentGatewayFee, paymentGatewayFeeAmount, _input_waitMinutes2, _input_waitMinutes3, orderObject, order, couponResult, activityType;
+            var _this, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, regions, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, isOnlinePayment, _service_gstPercent, gstAmount, _service_platformFee, platformFeeAmount, _service_paymentGatewayFee, paymentGatewayFeeAmount, _input_waitMinutes2, _input_waitMinutes3, orderObject, order, couponResult, activityType;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32452,25 +32454,16 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             max: costCalculation.max,
                             pricingMode: service.pricingMode
                         }, 'SharedOrderService.createOrder.costCalculation');
-                        zonePricing = zonePricings.filter(function(price) {
-                            return price.services.filter(function(service) {
-                                return service.id == input.serviceId;
-                            }).length > 0;
-                        });
-                        common_.Logger.log(zonePricing, 'SharedOrderService.createOrder.zonePricing');
-                        if (zonePricing.length > 0) {
-                            cost = zonePricing[0].cost;
-                            eta = new Date();
-                            for(_iterator = shared_order_service_create_for_of_iterator_helper_loose(zonePricings[0].timeMultipliers); !(_step = _iterator()).done;){
-                                _multiplier = _step.value;
-                                startMinutes = parseInt(_multiplier.startTime.split(':')[0]) * 60 + parseInt(_multiplier.startTime.split(':')[1]);
-                                nowMinutes = eta.getHours() * 60 + eta.getMinutes();
-                                endMinutes = parseInt(_multiplier.endTime.split(':')[0]) * 60 + parseInt(_multiplier.endTime.split(':')[1]);
-                                if (nowMinutes >= startMinutes && nowMinutes <= endMinutes) {
-                                    cost *= _multiplier.multiply;
-                                }
-                            }
-                        }
+                        common_.Logger.log({
+                            serviceId: service.id,
+                            serviceName: service.name,
+                            cost: cost,
+                            distance: metrics.distance,
+                            distanceKm: metrics.distance / 1000,
+                            roundedDistanceKm: Math.round(metrics.distance / 1000),
+                            baseFare: service.baseFare,
+                            minimumFee: service.minimumFee
+                        }, 'SharedOrderService.createOrder.finalCost');
                         return [
                             4,
                             this.regionService.getRegionWithPoint(input.waypoints[0].point)
@@ -32672,6 +32665,9 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 status: order.status,
                                 currency: order.currency,
                                 type: order.type,
+                                // Booked by a dispatcher/operator (admin panel) — driver app should
+                                // not ask for pickup OTP once a driver accepts this ride.
+                                pickupOtpRequired: order.operatorId == null,
                                 estimatedDistance: order.distanceBest,
                                 estimatedDuration: order.durationBest,
                                 orderId: order.id.toString(),
@@ -33462,7 +33458,9 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 driverId: driverId.toString(),
                                 pickupEta: etaPickup,
                                 dropoffEta: etaDropoff,
-                                driverDirections: driverTravel.directions
+                                driverDirections: driverTravel.directions,
+                                // Manual dispatcher assignment — the driver app should not ask for pickup OTP.
+                                pickupOtpRequired: false
                             })
                         ];
                     case 4:
@@ -33476,7 +33474,9 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         return [
                             4,
                             this.activeOrderRedisService.updateOrderStatus(orderId.toString(), {
-                                driverId: driverId.toString()
+                                driverId: driverId.toString(),
+                                // Manual dispatcher assignment — the driver app should not ask for pickup OTP.
+                                pickupOtpRequired: false
                             })
                         ];
                     case 6:
@@ -33543,7 +33543,9 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 status: OrderStatus.DriverAccepted,
                                 pickupEta: etaPickup,
                                 dropOffEta: etaDropoff,
-                                driverId: driverId
+                                driverId: driverId,
+                                // Manual dispatcher assignment — the driver app should not ask for pickup OTP.
+                                pickupOtpRequired: false
                             })
                         ];
                     case 9:
@@ -46557,8 +46559,8 @@ const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
 const _ordermodule = __webpack_require__(55);
-const _chatservice = __webpack_require__(101);
-const _chatresolver = __webpack_require__(102);
+const _chatservice = __webpack_require__(103);
+const _chatresolver = __webpack_require__(104);
 let ChatModule = class ChatModule {
 };
 ChatModule = _ts_decorate._([
@@ -46598,12 +46600,12 @@ const _database = __webpack_require__(12);
 const _ridermodule = __webpack_require__(33);
 const _servicemodule = __webpack_require__(56);
 const _orderresolver = __webpack_require__(58);
-const _orderservice = __webpack_require__(68);
-const _ordersubscriptionservice = __webpack_require__(89);
-const _couponmodule = __webpack_require__(90);
+const _orderservice = __webpack_require__(70);
+const _ordersubscriptionservice = __webpack_require__(91);
+const _couponmodule = __webpack_require__(92);
 const _axios = __webpack_require__(16);
-const _dispatcher = __webpack_require__(69);
-const _walletmodule = __webpack_require__(95);
+const _dispatcher = __webpack_require__(71);
+const _walletmodule = __webpack_require__(97);
 let OrderModule = class OrderModule {
 };
 OrderModule = _ts_decorate._([
@@ -46742,15 +46744,17 @@ const _authenticateduser = __webpack_require__(37);
 const _accesstokenguard = __webpack_require__(41);
 const _calculatefaredto = __webpack_require__(60);
 const _calculatefareinput = __webpack_require__(65);
-const _createorderinput = __webpack_require__(66);
-const _submitfeedbackinput = __webpack_require__(67);
-const _orderservice = __webpack_require__(68);
-const _activeorderdto = __webpack_require__(83);
-const _applycoupondto = __webpack_require__(84);
-const _updateorderwaittimeresponsedto = __webpack_require__(85);
-const _pastorderdto = __webpack_require__(86);
-const _cancelreasondto = __webpack_require__(88);
-const _topupwalletinput = __webpack_require__(81);
+const _getroutedistanceinput = __webpack_require__(66);
+const _routedistancedto = __webpack_require__(67);
+const _createorderinput = __webpack_require__(68);
+const _submitfeedbackinput = __webpack_require__(69);
+const _orderservice = __webpack_require__(70);
+const _activeorderdto = __webpack_require__(85);
+const _applycoupondto = __webpack_require__(86);
+const _updateorderwaittimeresponsedto = __webpack_require__(87);
+const _pastorderdto = __webpack_require__(88);
+const _cancelreasondto = __webpack_require__(90);
+const _topupwalletinput = __webpack_require__(83);
 let OrderResolver = class OrderResolver {
     constructor(context, orderService, riderOrderService, driverRedisService, commonCouponService){
         this.context = context;
@@ -46776,6 +46780,9 @@ let OrderResolver = class OrderResolver {
             selectedOptionIds: input.selectedOptionIds,
             orderType: input.orderType
         });
+    }
+    async getRouteDistance(input) {
+        return this.orderService.getRouteDistance(input.points);
     }
     async createOrder(input) {
         await this.orderService.createOrder({
@@ -46904,6 +46911,17 @@ _ts_decorate._([
     ]),
     _ts_metadata._("design:returntype", Promise)
 ], OrderResolver.prototype, "getFares", null);
+_ts_decorate._([
+    (0, _graphql.Query)(()=>_routedistancedto.RouteDistanceDTO),
+    _ts_param._(0, (0, _graphql.Args)('input', {
+        type: ()=>_getroutedistanceinput.GetRouteDistanceInput
+    })),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        typeof _getroutedistanceinput.GetRouteDistanceInput === "undefined" ? Object : _getroutedistanceinput.GetRouteDistanceInput
+    ]),
+    _ts_metadata._("design:returntype", Promise)
+], OrderResolver.prototype, "getRouteDistance", null);
 _ts_decorate._([
     (0, _graphql.Mutation)(()=>[
             _activeorderdto.ActiveOrderDTO
@@ -47628,6 +47646,69 @@ CalculateFareInput = _ts_decorate._([
 Object.defineProperty(exports, "__esModule", ({
     value: true
 }));
+Object.defineProperty(exports, "GetRouteDistanceInput", ({
+    enumerable: true,
+    get: function() {
+        return GetRouteDistanceInput;
+    }
+}));
+const _ts_decorate = __webpack_require__(6);
+const _ts_metadata = __webpack_require__(7);
+const _graphql = __webpack_require__(10);
+const _database = __webpack_require__(12);
+let GetRouteDistanceInput = class GetRouteDistanceInput {
+};
+_ts_decorate._([
+    (0, _graphql.Field)(()=>[
+            _database.Point
+        ]),
+    _ts_metadata._("design:type", Array)
+], GetRouteDistanceInput.prototype, "points", void 0);
+GetRouteDistanceInput = _ts_decorate._([
+    (0, _graphql.InputType)()
+], GetRouteDistanceInput);
+
+
+/***/ }),
+/* 67 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({
+    value: true
+}));
+Object.defineProperty(exports, "RouteDistanceDTO", ({
+    enumerable: true,
+    get: function() {
+        return RouteDistanceDTO;
+    }
+}));
+const _ts_decorate = __webpack_require__(6);
+const _ts_metadata = __webpack_require__(7);
+const _graphql = __webpack_require__(10);
+let RouteDistanceDTO = class RouteDistanceDTO {
+};
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float),
+    _ts_metadata._("design:type", Number)
+], RouteDistanceDTO.prototype, "distance", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Int),
+    _ts_metadata._("design:type", Number)
+], RouteDistanceDTO.prototype, "duration", void 0);
+RouteDistanceDTO = _ts_decorate._([
+    (0, _graphql.ObjectType)()
+], RouteDistanceDTO);
+
+
+/***/ }),
+/* 68 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({
+    value: true
+}));
 function _export(target, all) {
     for(var name in all)Object.defineProperty(target, name, {
         enumerable: true,
@@ -47742,7 +47823,7 @@ CreateOrderInput = _ts_decorate._([
 
 
 /***/ }),
-/* 67 */
+/* 69 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -47796,7 +47877,7 @@ SubmitFeedbackInput = _ts_decorate._([
 
 
 /***/ }),
-/* 68 */
+/* 70 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -47819,9 +47900,9 @@ const _database = __webpack_require__(12);
 const _apollo = __webpack_require__(8);
 const _rxjs = __webpack_require__(18);
 const _typeorm1 = __webpack_require__(13);
-const _dispatcher = __webpack_require__(69);
-const _topupwalletinput = __webpack_require__(81);
-const _walletservice = __webpack_require__(82);
+const _dispatcher = __webpack_require__(71);
+const _topupwalletinput = __webpack_require__(83);
+const _walletservice = __webpack_require__(84);
 let RiderOrderService = class RiderOrderService {
     constructor(orderRepository, activityRepository, feedbackRepository, cancelReasonRepository, paymentRepo, fleetRepo, riderService, driverService, rideOfferRedisService, activeOrderRedisService, driverRedisService, riderRedisService, providerService, sharedOrderService, serviceRedisService, driverNotificationService, pubsub, dispatchService, httpService, customerWalletService, walletService, razorpayService){
         this.orderRepository = orderRepository;
@@ -48711,26 +48792,26 @@ RiderOrderService = _ts_decorate._([
 
 
 /***/ }),
-/* 69 */
+/* 71 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({
     value: true
 }));
-const _export_star = __webpack_require__(70);
-_export_star._(__webpack_require__(71), exports);
+const _export_star = __webpack_require__(72);
 _export_star._(__webpack_require__(73), exports);
+_export_star._(__webpack_require__(75), exports);
 
 
 /***/ }),
-/* 70 */
+/* 72 */
 /***/ ((module) => {
 
 module.exports = require("@swc/helpers/_/_export_star");
 
 /***/ }),
-/* 71 */
+/* 73 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48745,17 +48826,17 @@ Object.defineProperty(exports, "DispatchModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _dispatchpubsubservice = __webpack_require__(72);
+const _dispatchpubsubservice = __webpack_require__(74);
 const _bullmq = __webpack_require__(20);
-const _dispatchservice = __webpack_require__(73);
-const _mainprocessor = __webpack_require__(74);
+const _dispatchservice = __webpack_require__(75);
+const _mainprocessor = __webpack_require__(76);
 const _database = __webpack_require__(12);
-const _sequentialprocessor = __webpack_require__(75);
-const _broadcastprocessor = __webpack_require__(78);
-const _driverselectionservice = __webpack_require__(76);
+const _sequentialprocessor = __webpack_require__(77);
+const _broadcastprocessor = __webpack_require__(80);
+const _driverselectionservice = __webpack_require__(78);
 const _typeorm = __webpack_require__(11);
-const _nestjs = __webpack_require__(79);
-const _bullMQAdapter = __webpack_require__(80);
+const _nestjs = __webpack_require__(81);
+const _bullMQAdapter = __webpack_require__(82);
 let DispatchModule = class DispatchModule {
 };
 DispatchModule = _ts_decorate._([
@@ -48826,7 +48907,7 @@ DispatchModule = _ts_decorate._([
 
 
 /***/ }),
-/* 72 */
+/* 74 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48972,7 +49053,7 @@ DispatchPubSubService = _ts_decorate._([
 
 
 /***/ }),
-/* 73 */
+/* 75 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49026,7 +49107,7 @@ DispatchService = _ts_decorate._([
 
 
 /***/ }),
-/* 74 */
+/* 76 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49187,7 +49268,7 @@ MainConsumer = _ts_decorate._([
 
 
 /***/ }),
-/* 75 */
+/* 77 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49206,8 +49287,8 @@ const _ts_param = __webpack_require__(27);
 const _bullmq = __webpack_require__(20);
 const _bullmq1 = __webpack_require__(21);
 const _database = __webpack_require__(12);
-const _dispatchpubsubservice = __webpack_require__(72);
-const _driverselectionservice = __webpack_require__(76);
+const _dispatchpubsubservice = __webpack_require__(74);
+const _driverselectionservice = __webpack_require__(78);
 const _common = __webpack_require__(2);
 let SequentialConsumer = class SequentialConsumer extends _bullmq.WorkerHost {
     constructor(pubsub, sequentialDispatchQueue, driverSelectionService, driverRedisService){
@@ -49266,7 +49347,7 @@ SequentialConsumer = _ts_decorate._([
 
 
 /***/ }),
-/* 76 */
+/* 78 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49283,7 +49364,7 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
-const _driverprofileservice = __webpack_require__(77);
+const _driverprofileservice = __webpack_require__(79);
 let DriverSelectionService = class DriverSelectionService {
     constructor(rideOfferRedisService, orderRedisService, driverRedisService){
         this.rideOfferRedisService = rideOfferRedisService;
@@ -49374,7 +49455,7 @@ DriverSelectionService = _ts_decorate._([
 
 
 /***/ }),
-/* 77 */
+/* 79 */
 /***/ ((__unused_webpack_module, exports) => {
 
 
@@ -49401,7 +49482,7 @@ function calculateHaversineDistance(location, pickupLocation) {
 
 
 /***/ }),
-/* 78 */
+/* 80 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49427,8 +49508,8 @@ const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(27);
 const _bullmq = __webpack_require__(20);
 const _bullmq1 = __webpack_require__(21);
-const _dispatchpubsubservice = __webpack_require__(72);
-const _driverselectionservice = __webpack_require__(76);
+const _dispatchpubsubservice = __webpack_require__(74);
+const _driverselectionservice = __webpack_require__(78);
 const _common = __webpack_require__(2);
 let BroadcastConsumer = class BroadcastConsumer extends _bullmq.WorkerHost {
     constructor(pubsub, attemptQueue, driverSelectionService){
@@ -49497,19 +49578,19 @@ let BroadcastDispatchJobData = class BroadcastDispatchJobData {
 
 
 /***/ }),
-/* 79 */
+/* 81 */
 /***/ ((module) => {
 
 module.exports = require("@bull-board/nestjs");
 
 /***/ }),
-/* 80 */
+/* 82 */
 /***/ ((module) => {
 
 module.exports = require("@bull-board/api/bullMQAdapter");
 
 /***/ }),
-/* 81 */
+/* 83 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49673,7 +49754,7 @@ const IntentResultToTopUpWalletStatus = (status)=>{
 
 
 /***/ }),
-/* 82 */
+/* 84 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49855,7 +49936,7 @@ WalletService = _ts_decorate._([
 
 
 /***/ }),
-/* 83 */
+/* 85 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50024,7 +50105,7 @@ ActiveOrderDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 84 */
+/* 86 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50056,7 +50137,7 @@ ApplyCouponResponseDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 85 */
+/* 87 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50090,7 +50171,7 @@ UpdateOrderWaitTimeResponseDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 86 */
+/* 88 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50107,7 +50188,7 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _graphql = __webpack_require__(10);
 const _database = __webpack_require__(12);
-const _pastorderdriverdto = __webpack_require__(87);
+const _pastorderdriverdto = __webpack_require__(89);
 let PastOrderDTO = class PastOrderDTO {
 };
 _ts_decorate._([
@@ -50230,7 +50311,7 @@ PastOrderDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 87 */
+/* 89 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50301,7 +50382,7 @@ PastOrderDriverDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 88 */
+/* 90 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50333,7 +50414,7 @@ OrderCancelReasonDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 89 */
+/* 91 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50393,7 +50474,7 @@ OrderSubscriptionService = _ts_decorate._([
 
 
 /***/ }),
-/* 90 */
+/* 92 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50411,8 +50492,8 @@ const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 const _ordermodule = __webpack_require__(55);
-const _couponresolver = __webpack_require__(91);
-const _couponservice = __webpack_require__(94);
+const _couponresolver = __webpack_require__(93);
+const _couponservice = __webpack_require__(96);
 let CouponModule = class CouponModule {
 };
 CouponModule = _ts_decorate._([
@@ -50439,7 +50520,7 @@ CouponModule = _ts_decorate._([
 
 
 /***/ }),
-/* 91 */
+/* 93 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50460,8 +50541,8 @@ const _graphql = __webpack_require__(10);
 const _database = __webpack_require__(12);
 const _authenticateduser = __webpack_require__(37);
 const _accesstokenguard = __webpack_require__(41);
-const _coupondto = __webpack_require__(92);
-const _giftcarddto = __webpack_require__(93);
+const _coupondto = __webpack_require__(94);
+const _giftcarddto = __webpack_require__(95);
 let CouponResolver = class CouponResolver {
     constructor(commonCouponService, commonGiftCardService, context){
         this.commonCouponService = commonCouponService;
@@ -50521,7 +50602,7 @@ CouponResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 92 */
+/* 94 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50573,7 +50654,7 @@ CouponDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 93 */
+/* 95 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50613,7 +50694,7 @@ GiftCardDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 94 */
+/* 96 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50636,7 +50717,7 @@ CouponService = _ts_decorate._([
 
 
 /***/ }),
-/* 95 */
+/* 97 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50651,10 +50732,10 @@ Object.defineProperty(exports, "WalletModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _walletresolver = __webpack_require__(96);
+const _walletresolver = __webpack_require__(98);
 const _database = __webpack_require__(12);
 const _axios = __webpack_require__(16);
-const _walletservice = __webpack_require__(82);
+const _walletservice = __webpack_require__(84);
 const _typeorm = __webpack_require__(11);
 let WalletModule = class WalletModule {
 };
@@ -50688,7 +50769,7 @@ WalletModule = _ts_decorate._([
 
 
 /***/ }),
-/* 96 */
+/* 98 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50710,16 +50791,16 @@ const _typeorm = __webpack_require__(11);
 const _typeorm1 = __webpack_require__(13);
 const _authenticateduser = __webpack_require__(37);
 const _accesstokenguard = __webpack_require__(41);
-const _topupwalletinput = __webpack_require__(81);
+const _topupwalletinput = __webpack_require__(83);
 const _database = __webpack_require__(12);
 const _axios = __webpack_require__(16);
 const _rxjs = __webpack_require__(18);
-const _walletservice = __webpack_require__(82);
-const _setup_payment_methoddto = __webpack_require__(97);
-const _giftcarddto = __webpack_require__(93);
-const _riderwalletdto = __webpack_require__(98);
-const _ridertransactiondto = __webpack_require__(99);
-const _razorpayorderdto = __webpack_require__(100);
+const _walletservice = __webpack_require__(84);
+const _setup_payment_methoddto = __webpack_require__(99);
+const _giftcarddto = __webpack_require__(95);
+const _riderwalletdto = __webpack_require__(100);
+const _ridertransactiondto = __webpack_require__(101);
+const _razorpayorderdto = __webpack_require__(102);
 let WalletResolver = class WalletResolver {
     constructor(customerRepo, orderRedisService, cryptoService, commongGiftCardService, context, httpService, walletService, razorpayService, sharedOrderService){
         this.customerRepo = customerRepo;
@@ -50992,7 +51073,7 @@ WalletResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 97 */
+/* 99 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51022,7 +51103,7 @@ SetupPaymentMethodDto = _ts_decorate._([
 
 
 /***/ }),
-/* 98 */
+/* 100 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51058,7 +51139,7 @@ RiderWalletDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 99 */
+/* 101 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51127,7 +51208,7 @@ RiderTransactionDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 100 */
+/* 102 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51167,7 +51248,7 @@ RazorpayOrderDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 101 */
+/* 103 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51242,7 +51323,7 @@ ChatService = _ts_decorate._([
 
 
 /***/ }),
-/* 102 */
+/* 104 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51259,7 +51340,7 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(27);
 const _graphql = __webpack_require__(10);
-const _chatservice = __webpack_require__(101);
+const _chatservice = __webpack_require__(103);
 const _database = __webpack_require__(12);
 let ChatResolver = class ChatResolver {
     constructor(chatService){
@@ -51309,7 +51390,7 @@ ChatResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 103 */
+/* 105 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51324,8 +51405,8 @@ Object.defineProperty(exports, "ComplaintModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _complaintresolver = __webpack_require__(104);
-const _complaintservice = __webpack_require__(105);
+const _complaintresolver = __webpack_require__(106);
+const _complaintservice = __webpack_require__(107);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 let ComplaintModule = class ComplaintModule {
@@ -51349,7 +51430,7 @@ ComplaintModule = _ts_decorate._([
 
 
 /***/ }),
-/* 104 */
+/* 106 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51366,9 +51447,9 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(27);
 const _graphql = __webpack_require__(10);
-const _complaintservice = __webpack_require__(105);
-const _complaintdto = __webpack_require__(106);
-const _complaintinput = __webpack_require__(107);
+const _complaintservice = __webpack_require__(107);
+const _complaintdto = __webpack_require__(108);
+const _complaintinput = __webpack_require__(109);
 const _authenticateduser = __webpack_require__(37);
 const _common = __webpack_require__(2);
 const _accesstokenguard = __webpack_require__(41);
@@ -51416,7 +51497,7 @@ ComplaintResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 105 */
+/* 107 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51518,7 +51599,7 @@ ComplaintService = _ts_decorate._([
 
 
 /***/ }),
-/* 106 */
+/* 108 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51565,7 +51646,7 @@ ComplaintDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 107 */
+/* 109 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51611,7 +51692,7 @@ ComplaintInput = _ts_decorate._([
 
 
 /***/ }),
-/* 108 */
+/* 110 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51628,8 +51709,8 @@ const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
-const _driver_tendenyservice = __webpack_require__(109);
-const _driver_tendencyresolver = __webpack_require__(110);
+const _driver_tendenyservice = __webpack_require__(111);
+const _driver_tendencyresolver = __webpack_require__(112);
 let DriverTendencyModule = class DriverTendencyModule {
 };
 DriverTendencyModule = _ts_decorate._([
@@ -51648,7 +51729,7 @@ DriverTendencyModule = _ts_decorate._([
 
 
 /***/ }),
-/* 109 */
+/* 111 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51716,7 +51797,7 @@ DriverTendencyService = _ts_decorate._([
 
 
 /***/ }),
-/* 110 */
+/* 112 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51733,11 +51814,11 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(27);
 const _graphql = __webpack_require__(10);
-const _driver_tendenyservice = __webpack_require__(109);
+const _driver_tendenyservice = __webpack_require__(111);
 const _common = __webpack_require__(2);
 const _authenticateduser = __webpack_require__(37);
 const _accesstokenguard = __webpack_require__(41);
-const _pastorderdriverdto = __webpack_require__(87);
+const _pastorderdriverdto = __webpack_require__(89);
 let DriverTendencyResolver = class DriverTendencyResolver {
     constructor(driverTendencyService, context){
         this.driverTendencyService = driverTendencyService;
@@ -51783,7 +51864,7 @@ DriverTendencyResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 111 */
+/* 113 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51834,7 +51915,7 @@ RiderApiSetupNotFoundController = _ts_decorate._([
 
 
 /***/ }),
-/* 112 */
+/* 114 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51847,18 +51928,18 @@ Object.defineProperty(exports, "RiderAPIController", ({
         return RiderAPIController;
     }
 }));
-const _interop_require_default = __webpack_require__(113);
+const _interop_require_default = __webpack_require__(115);
 const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(27);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
 const _express = __webpack_require__(4);
-const _restjwtauthguard = __webpack_require__(114);
+const _restjwtauthguard = __webpack_require__(116);
 const _typeorm = __webpack_require__(11);
 const _typeorm1 = __webpack_require__(13);
 const _properurljoin = /*#__PURE__*/ _interop_require_default._(__webpack_require__(14));
-const _packagejson = __webpack_require__(115);
+const _packagejson = __webpack_require__(117);
 let RiderAPIController = class RiderAPIController {
     constructor(sharedCustomerWalletService, sharedOrderService, activeOrderRedisService, cryptoService, pubsub, driverRedisService, riderRedisService, riderRepository, paymentRepository, mediaRepository){
         this.sharedCustomerWalletService = sharedCustomerWalletService;
@@ -52228,13 +52309,13 @@ RiderAPIController = _ts_decorate._([
 
 
 /***/ }),
-/* 113 */
+/* 115 */
 /***/ ((module) => {
 
 module.exports = require("@swc/helpers/_/_interop_require_default");
 
 /***/ }),
-/* 114 */
+/* 116 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52267,13 +52348,13 @@ RestJwtAuthGuard = _ts_decorate._([
 
 
 /***/ }),
-/* 115 */
+/* 117 */
 /***/ ((module) => {
 
 module.exports = /*#__PURE__*/JSON.parse('{"name":"bettersuite","version":"5.3.2","license":"MIT","scripts":{"ng":"nx","nx":"nx","start":"ts-node src/index.ts","build":"ng build","test":"ng test","lint":"nx workspace-lint && ng lint","e2e":"ng e2e","affected:apps":"nx affected:apps","affected:libs":"nx affected:libs","affected:build":"nx affected:build","affected:e2e":"nx affected:e2e","affected:test":"nx affected:test","affected:lint":"nx affected:lint","affected:dep-graph":"nx affected:dep-graph","affected":"nx affected","format":"nx format:write","format:write":"nx format:write","format:check":"nx format:check","update":"nx migrate latest","workspace-generator":"nx workspace-generator","dep-graph":"nx dep-graph","help":"nx help","lint:fix":"eslint \'./**/*.{ts,tsx}\' --fix","i18n:extract":"ngx-translate-extract --input ./apps/admin-panel/src --output ./apps/admin-panel/src/assets/i18n/{en,es,bn,de,hi,ko,id,ja,pt,ru,ur,zh,fr,ar,hy}.json --clean --format namespaced-json","typeorm":"node --require ts-node/register ./node_modules/typeorm/cli.js","semantic-release":"semantic-release","publish-frontend":"bash scripts/docker-frontend-publish.sh","publish-backend":"bash scripts/docker-backend-publish.sh","inject-google-maps-key":"bash scripts/inject-google-maps-key.sh","client-setup":"bash scripts/client_setup/client-setup.sh","build-apks":"bash scripts/build-apks.sh","smoke-test":"bash scripts/backend-smoke-test.sh","gql-stats":"bash scripts/gql-stats.sh","load-test:seed":"node tools/load-tests/scripts/seed-database.js","load-test:seed:clean":"node tools/load-tests/scripts/seed-database.js --clean","load-test":"bash tools/load-tests/scripts/run-load-test.sh","load-test:rider":"bash tools/load-tests/scripts/run-load-test.sh rider","load-test:driver":"bash tools/load-tests/scripts/run-load-test.sh driver"},"private":true,"dependencies":{"@angular/animations":"20.1.4","@angular/cdk":"20.1.4","@angular/common":"20.1.4","@angular/compiler":"20.1.4","@angular/core":"20.1.4","@angular/forms":"20.1.4","@angular/google-maps":"20.1.4","@angular/platform-browser":"20.1.4","@angular/platform-browser-dynamic":"20.1.4","@angular/router":"20.1.4","@angular/service-worker":"20.1.4","@ant-design/icons-angular":"^20.0.0","@antv/g2":"^4.2.10","@apollo/client":"^3.13.8","@apollo/server":"^4.12.2","@aws-sdk/client-s3":"^3.886.0","@aws-sdk/client-secrets-manager":"^3.974.0","@bull-board/api":"^6.12.0","@bull-board/express":"^6.12.0","@bull-board/nestjs":"^6.12.0","@ctrl/tinycolor":"^4.1.0","@googlemaps/google-maps-services-js":"^3.4.2","@googlemaps/places":"^2.0.1","@googlemaps/routing":"^2.0.1","@ingameltd/payu":"^1.0.5","@nestjs/apollo":"^13.1.0","@nestjs/axios":"^4.0.1","@nestjs/bullmq":"^11.0.3","@nestjs/common":"11.1.5","@nestjs/config":"^4.0.2","@nestjs/core":"11.1.5","@nestjs/graphql":"^13.1.0","@nestjs/jwt":"^11.0.0","@nestjs/passport":"^11.0.5","@nestjs/platform-express":"^11.1.5","@nestjs/schedule":"^6.0.0","@nestjs/serve-static":"^5.0.3","@nestjs/typeorm":"11.0.0","@nestjs/websockets":"^11.1.3","@nx/angular":"21.3.10","@nx/web":"21.3.10","@paypal/checkout-server-sdk":"^1.0.3","@ptc-org/nestjs-query-core":"^9.1.0","@ptc-org/nestjs-query-graphql":"^9.1.0","@ptc-org/nestjs-query-typeorm":"^9.1.0","@redis/client":"^6.2.1","@redis/json":"^6.2.1","@redis/search":"^6.2.1","@sentry/cli":"^2.50.2","@sentry/nestjs":"^10.0.0","@sentry/profiling-node":"10.0.0","@simplewebauthn/server":"^13.0.0","@simplewebauthn/types":"^12.0.0","@willsoto/nestjs-prometheus":"^6.0.2","apollo-angular":"^11.0.0","autoprefixer":"^10.4.21","bullmq":"^5.56.9","class-transformer":"0.5.1","class-validator":"0.14.2","core-js":"^3.42.0","dataloader":"^2.2.3","dotenv":"16.5.0","firebase-admin":"^13.4.0","google-libphonenumber":"^3.2.43","graphql":"^16.11.0","graphql-redis-subscriptions":"^2.7.0","graphql-relay":"^0.10.2","graphql-subscriptions":"^3.0.0","graphql-tools":"^9.0.20","graphql-ws":"^6.0.6","h3-js":"^4.2.1","instamojo-payment-nodejs":"^3.0.0","ioredis":"^5.7.0","json-2-csv":"^4.0.0","jwt-decode":"^4.0.0","license-verify":"0.1.5","mercadopago":"^1.5.17","multer":"^2.0.0","mysql2":"^3.14.3","ng-zorro-antd":"^20.1.0","ngx-timeago":"^3.0.0","node-rsa":"^1.1.1","overshom-wayforpay":"^1.1.0","passport":"^0.7.0","passport-jwt":"^4.0.1","passport-local":"^1.0.0","paystack-node":"^0.3.0","paytmchecksum":"^1.5.1","pdfkit":"^0.17.1","pdfkit-table":"^0.1.99","plivo":"^4.70.0","prom-client":"^15.1.3","proper-url-join":"^2.1.2","razorpay":"^2.9.8","redis":"^6.2.1","reflect-metadata":"^0.2.2","rxjs":"7.8.2","sberbank-acquiring":"^1.2.2","sharp":"^0.34.3","stripe":"^18.4.0","tslib":"^2.6.1","twilio":"^5.6.1","typeorm":"0.3.26","uuid":"^11.1.0","zone.js":"0.15.1"},"devDependencies":{"@angular-devkit/build-angular":"20.1.4","@angular-devkit/core":"20.1.4","@angular-devkit/schematics":"20.1.4","@angular-eslint/eslint-plugin":"20.1.0","@angular-eslint/eslint-plugin-template":"20.1.0","@angular-eslint/template-parser":"20.1.0","@angular/cli":"~20.1.0","@angular/compiler-cli":"20.1.4","@angular/language-service":"20.1.4","@bartholomej/ngx-translate-extract":"^8.0.2","@graphql-codegen/cli":"^5.0.7","@graphql-codegen/introspection":"^4.0.3","@graphql-codegen/typescript":"^4.1.6","@graphql-codegen/typescript-apollo-angular":"^4.0.1","@graphql-codegen/typescript-operations":"^4.6.1","@monodon/rust":"^2.3.0","@nestjs/cli":"^11.0.10","@nestjs/schematics":"11.0.5","@nestjs/testing":"11.1.3","@ngx-translate/core":"^17.0.0","@ngx-translate/http-loader":"^17.0.0","@nx/eslint":"21.3.10","@nx/eslint-plugin":"21.3.10","@nx/jest":"21.3.10","@nx/js":"21.3.10","@nx/node":"21.3.10","@nx/webpack":"21.3.10","@nxrocks/nx-flutter":"^10.0.1","@schematics/angular":"20.1.4","@semantic-release/changelog":"^6.0.3","@semantic-release/commit-analyzer":"^13.0.1","@semantic-release/git":"^10.0.1","@semantic-release/npm":"^12.0.1","@semantic-release/release-notes-generator":"^14.0.3","@swc-node/register":"1.10.10","@swc/cli":"^0.7.8","@swc/core":"1.13.3","@swc/helpers":"0.5.17","@swc/jest":"0.2.39","@tailwindcss/forms":"^0.5.4","@tailwindcss/typography":"^0.5.9","@testcontainers/mysql":"^11.5.1","@testcontainers/redis":"^11.5.1","@types/busboy":"^1.5.0","@types/cron":"^2.0.1","@types/estree":"1.0.1","@types/google-libphonenumber":"^7.4.30","@types/jest":"^29.5.0","@types/multer":"^1.4.12","@types/node":"^24.0.10","@types/passport-jwt":"^4.0.1","@types/paypal__checkout-server-sdk":"^1.0.5","@types/pdfkit":"^0.17.0","@types/proper-url-join":"^2.1.5","@types/supertest":"^6.0.3","conventional-changelog-conventionalcommits":"^9.0.0","eslint":"^9.28.0","eslint-config-prettier":"10.1.5","eslint-plugin-unused-imports":"^4.1.4","jest":"^29.7.0","jest-environment-jsdom":"^29.7.0","jest-util":"^29.7.0","jsonc-eslint-parser":"^2.1.0","ng-packagr":"20.1.0","nx":"21.3.10","postcss":"^8.4.27","postcss-import":"15.1.0","postcss-preset-env":"9.1.0","postcss-url":"10.1.3","prettier":"^3.5.3","supertest":"^7.1.4","swc-loader":"^0.2.6","tailwindcss":"^3.3.3","testcontainers":"^11.5.1","ts-jest":"29.4.0","ts-node":"10.9.2","tslib":"^2.3.0","typescript":"5.8.3","typescript-eslint":"^8.33.0","webpack-cli":"^5.1.4"},"workspaces":["libs/*","apps/*"],"overrides":{"typescript":"5.8.3","eslint":"^9.28.0","rxjs":"7.8.2","typeorm":{"redis":"^5.8.2"}},"repository":{"type":"git","url":"https://github.com/ridyio/ridy-monorepo.git"},"publishConfig":{"access":"restricted"},"allowScripts":{"cpu-features@0.0.10":true,"core-js@3.43.0":true,"lmdb@3.4.1":true,"msgpackr-extract@3.0.3":true,"nx@21.3.10":true,"protobufjs@7.5.3":true,"sharp@0.34.3":true,"ssh2@1.16.0":true,"unrs-resolver@1.11.1":true,"@apollo/protobufjs@1.2.7":true,"@firebase/util@1.12.1":true,"@nestjs/core@11.1.5":true,"@parcel/watcher@2.6.0":true,"@sentry/cli@2.50.2":true,"@sentry-internal/node-cpu-profiler@2.2.0":true,"@swc/core@1.13.3":true,"fsevents@2.3.3":true,"esbuild@0.25.5":true}}');
 
 /***/ }),
-/* 116 */
+/* 118 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52290,8 +52371,8 @@ const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
-const _sosresolver = __webpack_require__(117);
-const _sosservice = __webpack_require__(119);
+const _sosresolver = __webpack_require__(119);
+const _sosservice = __webpack_require__(121);
 let SOSModule = class SOSModule {
 };
 SOSModule = _ts_decorate._([
@@ -52312,7 +52393,7 @@ SOSModule = _ts_decorate._([
 
 
 /***/ }),
-/* 117 */
+/* 119 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52332,8 +52413,8 @@ const _common = __webpack_require__(2);
 const _graphql = __webpack_require__(10);
 const _database = __webpack_require__(12);
 const _accesstokenguard = __webpack_require__(41);
-const _sosdto = __webpack_require__(118);
-const _sosservice = __webpack_require__(119);
+const _sosdto = __webpack_require__(120);
+const _sosservice = __webpack_require__(121);
 let SOSResolver = class SOSResolver {
     constructor(sosService){
         this.sosService = sosService;
@@ -52372,7 +52453,7 @@ SOSResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 118 */
+/* 120 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52400,7 +52481,7 @@ SOSDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 119 */
+/* 121 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52469,25 +52550,25 @@ SOSService = _ts_decorate._([
 
 
 /***/ }),
-/* 120 */
+/* 122 */
 /***/ ((module) => {
 
 module.exports = require("@sentry/nestjs/setup");
 
 /***/ }),
-/* 121 */
+/* 123 */
 /***/ ((module) => {
 
 module.exports = require("@willsoto/nestjs-prometheus");
 
 /***/ }),
-/* 122 */
+/* 124 */
 /***/ ((module) => {
 
 module.exports = require("@bull-board/express");
 
 /***/ }),
-/* 123 */
+/* 125 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52502,8 +52583,8 @@ Object.defineProperty(exports, "NotificationModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _notificationservice = __webpack_require__(124);
-const _notificationresolver = __webpack_require__(125);
+const _notificationservice = __webpack_require__(126);
+const _notificationresolver = __webpack_require__(127);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 let NotificationModule = class NotificationModule {
@@ -52527,7 +52608,7 @@ NotificationModule = _ts_decorate._([
 
 
 /***/ }),
-/* 124 */
+/* 126 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52580,7 +52661,7 @@ NotificationService = _ts_decorate._([
 
 
 /***/ }),
-/* 125 */
+/* 127 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52599,7 +52680,7 @@ const _ts_param = __webpack_require__(27);
 const _common = __webpack_require__(2);
 const _graphql = __webpack_require__(10);
 const _accesstokenguard = __webpack_require__(41);
-const _notificationservice = __webpack_require__(124);
+const _notificationservice = __webpack_require__(126);
 const _authenticateduser = __webpack_require__(37);
 let NotificationResolver = class NotificationResolver {
     constructor(context, notificationService){
@@ -52636,7 +52717,7 @@ NotificationResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 126 */
+/* 128 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52652,8 +52733,8 @@ Object.defineProperty(exports, "EphemeralMessagesModule", ({
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
-const _ephemeralmessagesservice = __webpack_require__(127);
-const _ephemeralmessagesresolver = __webpack_require__(128);
+const _ephemeralmessagesservice = __webpack_require__(129);
+const _ephemeralmessagesresolver = __webpack_require__(130);
 const _ordermodule = __webpack_require__(55);
 let EphemeralMessagesModule = class EphemeralMessagesModule {
 };
@@ -52672,7 +52753,7 @@ EphemeralMessagesModule = _ts_decorate._([
 
 
 /***/ }),
-/* 127 */
+/* 129 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52725,7 +52806,7 @@ EphemeralMessagesService = _ts_decorate._([
 
 
 /***/ }),
-/* 128 */
+/* 130 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52742,8 +52823,8 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(27);
 const _graphql = __webpack_require__(10);
-const _ephemeralmessagesservice = __webpack_require__(127);
-const _ephemeralmessagedto = __webpack_require__(129);
+const _ephemeralmessagesservice = __webpack_require__(129);
+const _ephemeralmessagedto = __webpack_require__(131);
 const _common = __webpack_require__(2);
 const _accesstokenguard = __webpack_require__(41);
 const _authenticateduser = __webpack_require__(37);
@@ -52791,7 +52872,7 @@ EphemeralMessagesResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 129 */
+/* 131 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52869,7 +52950,7 @@ EphemeralMessageDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 130 */
+/* 132 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52886,8 +52967,8 @@ const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
-const _feedbackservice = __webpack_require__(131);
-const _feedbackresolver = __webpack_require__(132);
+const _feedbackservice = __webpack_require__(133);
+const _feedbackresolver = __webpack_require__(134);
 let FeedbackModule = class FeedbackModule {
 };
 FeedbackModule = _ts_decorate._([
@@ -52906,7 +52987,7 @@ FeedbackModule = _ts_decorate._([
 
 
 /***/ }),
-/* 131 */
+/* 133 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52946,7 +53027,7 @@ FeedbackService = _ts_decorate._([
 
 
 /***/ }),
-/* 132 */
+/* 134 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52962,8 +53043,8 @@ Object.defineProperty(exports, "FeedbackResolver", ({
 const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _graphql = __webpack_require__(10);
-const _feedbackparameterdto = __webpack_require__(133);
-const _feedbackservice = __webpack_require__(131);
+const _feedbackparameterdto = __webpack_require__(135);
+const _feedbackservice = __webpack_require__(133);
 let FeedbackResolver = class FeedbackResolver {
     constructor(feedbackService){
         this.feedbackService = feedbackService;
@@ -52990,7 +53071,7 @@ FeedbackResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 133 */
+/* 135 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53030,7 +53111,7 @@ FeedbackParameterDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 134 */
+/* 136 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53045,8 +53126,8 @@ Object.defineProperty(exports, "FavoriteLocationModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _favoritelocationresolver = __webpack_require__(135);
-const _favoritelocationservice = __webpack_require__(138);
+const _favoritelocationresolver = __webpack_require__(137);
+const _favoritelocationservice = __webpack_require__(140);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 let FavoriteLocationModule = class FavoriteLocationModule {
@@ -53067,7 +53148,7 @@ FavoriteLocationModule = _ts_decorate._([
 
 
 /***/ }),
-/* 135 */
+/* 137 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53086,9 +53167,9 @@ const _ts_param = __webpack_require__(27);
 const _common = __webpack_require__(2);
 const _graphql = __webpack_require__(10);
 const _authenticateduser = __webpack_require__(37);
-const _favoritelocationdto = __webpack_require__(136);
-const _createfavoritelocationinput = __webpack_require__(137);
-const _favoritelocationservice = __webpack_require__(138);
+const _favoritelocationdto = __webpack_require__(138);
+const _createfavoritelocationinput = __webpack_require__(139);
+const _favoritelocationservice = __webpack_require__(140);
 const _accesstokenguard = __webpack_require__(41);
 let FavoriteLocationResolver = class FavoriteLocationResolver {
     constructor(favoriteLocationService, context){
@@ -53165,7 +53246,7 @@ FavoriteLocationResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 136 */
+/* 138 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53224,7 +53305,7 @@ FavoriteLocationDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 137 */
+/* 139 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53279,7 +53360,7 @@ CreateRiderAddressInput = _ts_decorate._([
 
 
 /***/ }),
-/* 138 */
+/* 140 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53359,7 +53440,7 @@ FavoriteLocationService = _ts_decorate._([
 
 
 /***/ }),
-/* 139 */
+/* 141 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53374,8 +53455,8 @@ Object.defineProperty(exports, "SupportModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _supportservice = __webpack_require__(140);
-const _supportresolver = __webpack_require__(141);
+const _supportservice = __webpack_require__(142);
+const _supportresolver = __webpack_require__(143);
 let SupportModule = class SupportModule {
 };
 SupportModule = _ts_decorate._([
@@ -53392,7 +53473,7 @@ SupportModule = _ts_decorate._([
 
 
 /***/ }),
-/* 140 */
+/* 142 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53424,7 +53505,7 @@ SupportService = _ts_decorate._([
 
 
 /***/ }),
-/* 141 */
+/* 143 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53444,7 +53525,7 @@ const _graphql = __webpack_require__(10);
 const _common = __webpack_require__(2);
 const _accesstokenguard = __webpack_require__(41);
 const _authenticateduser = __webpack_require__(37);
-const _supportservice = __webpack_require__(140);
+const _supportservice = __webpack_require__(142);
 let SupportResolver = class SupportResolver {
     constructor(context, supportService){
         this.context = context;
@@ -53476,19 +53557,19 @@ SupportResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 142 */
+/* 144 */
 /***/ ((module) => {
 
 module.exports = require("firebase-admin/app");
 
 /***/ }),
-/* 143 */
+/* 145 */
 /***/ ((module) => {
 
 module.exports = require("dotenv");
 
 /***/ }),
-/* 144 */
+/* 146 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 // Import with `const Sentry = require("@sentry/nestjs");` if you are using CJS
@@ -53498,9 +53579,9 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 const _interop_require_wildcard = __webpack_require__(1);
 const _apollo = __webpack_require__(8);
-const _nestjs = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(145));
-const _profilingnode = __webpack_require__(146);
-const _dotenv = __webpack_require__(143);
+const _nestjs = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(147));
+const _profilingnode = __webpack_require__(148);
+const _dotenv = __webpack_require__(145);
 (0, _dotenv.config)({
     path: __dirname + '/.env'
 });
@@ -53523,13 +53604,13 @@ _nestjs.init({
 
 
 /***/ }),
-/* 145 */
+/* 147 */
 /***/ ((module) => {
 
 module.exports = require("@sentry/nestjs");
 
 /***/ }),
-/* 146 */
+/* 148 */
 /***/ ((module) => {
 
 module.exports = require("@sentry/profiling-node");
@@ -53617,10 +53698,10 @@ const _core = __webpack_require__(3);
 const _express = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(4));
 const _riderapimodule = __webpack_require__(5);
 const _firebaseadmin = __webpack_require__(19);
-const _app = __webpack_require__(142);
+const _app = __webpack_require__(144);
 const _database = __webpack_require__(12);
-const _dotenv = __webpack_require__(143);
-__webpack_require__(144);
+const _dotenv = __webpack_require__(145);
+__webpack_require__(146);
 const _licenseverify = __webpack_require__(15);
 process.on('unhandledRejection', (reason)=>{
     _common.Logger.error('Unhandled promise rejection (process kept alive)', reason, 'Rider API');

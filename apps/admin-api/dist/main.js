@@ -17193,6 +17193,13 @@ taxi_order_entity_ts_decorate([
 ], TaxiOrderEntity.prototype, "pickupOtpVerifiedAt", void 0);
 taxi_order_entity_ts_decorate([
     (0,external_typeorm_.Column)({
+        type: 'boolean',
+        default: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", Boolean)
+], TaxiOrderEntity.prototype, "pickupOtpRequired", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
         nullable: true
     }),
     taxi_order_entity_ts_metadata("design:type", Number)
@@ -23783,11 +23790,12 @@ var ActiveOrderCommonRedisService = /*#__PURE__*/ function() {
     };
     _proto.createActiveOrder = function createActiveOrder(input) {
         return active_order_common_redis_service_async_to_generator(function() {
-            var activeOrder;
+            var _input_pickupOtpRequired, activeOrder;
             return active_order_common_redis_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
                         activeOrder = active_order_common_redis_service_extends({}, input, {
+                            pickupOtpRequired: (_input_pickupOtpRequired = input.pickupOtpRequired) != null ? _input_pickupOtpRequired : true,
                             currentLegIndex: 0,
                             chatMessages: [],
                             commissionDeducted: false,
@@ -24535,11 +24543,12 @@ var RideOfferRedisService = /*#__PURE__*/ function() {
     };
     _proto.createRideOffer = function createRideOffer(input) {
         return ride_offer_redis_service_async_to_generator(function() {
-            var _input_scheduledAt, metadata, onlineRider;
+            var _input_scheduledAt, _input_pickupOtpRequired, metadata, onlineRider;
             return ride_offer_redis_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
                         metadata = ride_offer_redis_service_extends({}, input, {
+                            pickupOtpRequired: (_input_pickupOtpRequired = input.pickupOtpRequired) != null ? _input_pickupOtpRequired : true,
                             id: input.orderId,
                             pickupLocation: input.pickupLocation.lng + ", " + input.pickupLocation.lat,
                             createdAt: input.createdAt.getTime(),
@@ -24655,7 +24664,8 @@ var RideOfferRedisService = /*#__PURE__*/ function() {
                                 riderFirstName: (_input_riderFirstName = input.riderFirstName) != null ? _input_riderFirstName : null,
                                 riderAvatarUrl: (_input_riderAvatarUrl = input.riderAvatarUrl) != null ? _input_riderAvatarUrl : null,
                                 driverDirections: input.driverDirections,
-                                pickupOtp: input.pickupOtp
+                                pickupOtp: input.pickupOtp,
+                                pickupOtpRequired: input.pickupOtpRequired
                             }))
                         ];
                     case 4:
@@ -32143,9 +32153,35 @@ var SharedOrderService = /*#__PURE__*/ function() {
             });
         }).call(this);
     };
+    _proto.getRouteDistance = function getRouteDistance(points) {
+        return shared_order_service_async_to_generator(function() {
+            var metrics;
+            return shared_order_service_ts_generator(this, function(_state) {
+                switch(_state.label){
+                    case 0:
+                        if (points.length < 2) {
+                            throw new apollo_.ForbiddenError('At least two points are required to calculate route distance.');
+                        }
+                        return [
+                            4,
+                            this.googleServices.getSumDistanceAndDuration(points)
+                        ];
+                    case 1:
+                        metrics = _state.sent();
+                        return [
+                            2,
+                            {
+                                distance: metrics.distance,
+                                duration: metrics.duration
+                            }
+                        ];
+                }
+            });
+        }).call(this);
+    };
     _proto.calculateFare = function calculateFare(input) {
         return shared_order_service_async_to_generator(function() {
-            var _this, distances, totalDistance, zonePricings, regions, servicesInRegion, _input_twoWay, metrics, _tmp, cats, feeMultiplier, optionFee, options, paidOptions, _cats;
+            var _this, distances, totalDistance, zonePricings, regions, servicesInRegion, _input_twoWay, metrics, cats, feeMultiplier, optionFee, options, paidOptions, _cats;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32196,31 +32232,12 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         if (((_input_twoWay = input.twoWay) != null ? _input_twoWay : false) && input.points.length > 1) {
                             input.points.push(input.points[0]);
                         }
-                        if (!(servicesInRegion.findIndex(function(x) {
-                            return x.perHundredMeters > 0;
-                        }) > -1)) return [
-                            3,
-                            6
-                        ];
                         return [
                             4,
                             this.googleServices.getSumDistanceAndDuration(input.points)
                         ];
                     case 5:
-                        _tmp = _state.sent();
-                        return [
-                            3,
-                            7
-                        ];
-                    case 6:
-                        _tmp = {
-                            distance: 0,
-                            duration: 0,
-                            directions: []
-                        };
-                        _state.label = 7;
-                    case 7:
-                        metrics = _tmp;
+                        metrics = _state.sent();
                         common_.Logger.log({
                             pointsCount: input.points.length,
                             points: input.points,
@@ -32250,19 +32267,19 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 }
                             })
                         ];
-                    case 8:
+                    case 6:
                         cats = _state.sent();
                         return [
                             4,
                             this.sharedFleetService.getFleetMultiplierInPoint(input.points[0])
                         ];
-                    case 9:
+                    case 7:
                         feeMultiplier = _state.sent();
                         // Calculate option fees from selected options
                         optionFee = 0;
                         if (!(input.selectedOptionIds && input.selectedOptionIds.length > 0)) return [
                             3,
-                            11
+                            9
                         ];
                         return [
                             4,
@@ -32274,7 +32291,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 }
                             })
                         ];
-                    case 10:
+                    case 8:
                         options = _state.sent();
                         paidOptions = options.filter(function(option) {
                             return option.type == ServiceOptionType.Paid;
@@ -32286,8 +32303,8 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             return current += previous;
                         });
                         common_.Logger.log("Calculated option fee: " + optionFee + " from " + paidOptions.length + " paid options", 'SharedOrderService.calculateFare');
-                        _state.label = 11;
-                    case 11:
+                        _state.label = 9;
+                    case 9:
                         _cats = cats.map(function(cat) {
                             var services = cat.services, _cat = _object_without_properties_loose(cat, [
                                 "services"
@@ -32301,44 +32318,29 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             }).map(function(service) {
                                 var cost = 0;
                                 var costResult = null;
-                                var zonePricesWithService = zonePricings.filter(function(zone) {
-                                    return zone.services.find(function(_service) {
-                                        return _service.id == service.id;
-                                    });
-                                });
-                                if (zonePricesWithService.length > 0) {
-                                    cost = zonePricesWithService[0].cost;
-                                    var eta = new Date();
-                                    for(var _iterator = shared_order_service_create_for_of_iterator_helper_loose(zonePricesWithService[0].timeMultipliers), _step; !(_step = _iterator()).done;){
-                                        var _multiplier = _step.value;
-                                        var startMinutes = parseInt(_multiplier.startTime.split(':')[0]) * 60 + parseInt(_multiplier.startTime.split(':')[1]);
-                                        var nowMinutes = eta.getHours() * 60 + eta.getMinutes();
-                                        var endMinutes = parseInt(_multiplier.endTime.split(':')[0]) * 60 + parseInt(_multiplier.endTime.split(':')[1]);
-                                        if (nowMinutes >= startMinutes && nowMinutes <= endMinutes) {
-                                            cost *= _multiplier.multiply;
-                                        }
-                                    }
-                                } else {
-                                    var timestamp = new Date();
-                                    var _input_waitTime;
-                                    costResult = _this.servicesService.calculateCost(service, metrics.distance, metrics.duration, timestamp, feeMultiplier, (_input_waitTime = input.waitTime) != null ? _input_waitTime : 0, optionFee);
-                                    cost = costResult.cost;
-                                    var _input_waitTime1;
-                                    common_.Logger.log({
-                                        serviceId: service.id,
-                                        serviceName: service.name,
-                                        distance: metrics.distance,
-                                        duration: metrics.duration,
-                                        timestamp: timestamp.toISOString(),
-                                        feeMultiplier: feeMultiplier,
-                                        waitTime: (_input_waitTime1 = input.waitTime) != null ? _input_waitTime1 : 0,
-                                        optionFee: optionFee,
-                                        cost: cost,
-                                        min: costResult.min,
-                                        max: costResult.max,
-                                        pricingMode: service.pricingMode
-                                    }, 'SharedOrderService.calculateFare.costCalculation');
-                                }
+                                var timestamp = new Date();
+                                var _input_waitTime;
+                                costResult = _this.servicesService.calculateCost(service, metrics.distance, metrics.duration, timestamp, feeMultiplier, (_input_waitTime = input.waitTime) != null ? _input_waitTime : 0, optionFee);
+                                cost = costResult.cost;
+                                var _input_waitTime1;
+                                common_.Logger.log({
+                                    serviceId: service.id,
+                                    serviceName: service.name,
+                                    distance: metrics.distance,
+                                    distanceKm: metrics.distance / 1000,
+                                    roundedDistanceKm: Math.round(metrics.distance / 1000),
+                                    duration: metrics.duration,
+                                    timestamp: timestamp.toISOString(),
+                                    baseFare: service.baseFare,
+                                    minimumFee: service.minimumFee,
+                                    feeMultiplier: feeMultiplier,
+                                    waitTime: (_input_waitTime1 = input.waitTime) != null ? _input_waitTime1 : 0,
+                                    optionFee: optionFee,
+                                    cost: cost,
+                                    min: costResult.min,
+                                    max: costResult.max,
+                                    pricingMode: service.pricingMode
+                                }, 'SharedOrderService.calculateFare.costCalculation');
                                 // Build CostResult union based on pricing mode
                                 // NOTE: Provider share is NOT added to rider cost - it's deducted from driver earnings
                                 var costResultDTO;
@@ -32428,7 +32430,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.createOrder = function createOrder(input) {
         return shared_order_service_async_to_generator(function() {
-            var _this, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, zonePricing, eta, _iterator, _step, _multiplier, startMinutes, nowMinutes, endMinutes, regions, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, isOnlinePayment, _service_gstPercent, gstAmount, _service_platformFee, platformFeeAmount, _service_paymentGatewayFee, paymentGatewayFeeAmount, _input_waitMinutes2, _input_waitMinutes3, orderObject, order, couponResult, activityType;
+            var _this, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, regions, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, isOnlinePayment, _service_gstPercent, gstAmount, _service_platformFee, platformFeeAmount, _service_paymentGatewayFee, paymentGatewayFeeAmount, _input_waitMinutes2, _input_waitMinutes3, orderObject, order, couponResult, activityType;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32556,25 +32558,16 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             max: costCalculation.max,
                             pricingMode: service.pricingMode
                         }, 'SharedOrderService.createOrder.costCalculation');
-                        zonePricing = zonePricings.filter(function(price) {
-                            return price.services.filter(function(service) {
-                                return service.id == input.serviceId;
-                            }).length > 0;
-                        });
-                        common_.Logger.log(zonePricing, 'SharedOrderService.createOrder.zonePricing');
-                        if (zonePricing.length > 0) {
-                            cost = zonePricing[0].cost;
-                            eta = new Date();
-                            for(_iterator = shared_order_service_create_for_of_iterator_helper_loose(zonePricings[0].timeMultipliers); !(_step = _iterator()).done;){
-                                _multiplier = _step.value;
-                                startMinutes = parseInt(_multiplier.startTime.split(':')[0]) * 60 + parseInt(_multiplier.startTime.split(':')[1]);
-                                nowMinutes = eta.getHours() * 60 + eta.getMinutes();
-                                endMinutes = parseInt(_multiplier.endTime.split(':')[0]) * 60 + parseInt(_multiplier.endTime.split(':')[1]);
-                                if (nowMinutes >= startMinutes && nowMinutes <= endMinutes) {
-                                    cost *= _multiplier.multiply;
-                                }
-                            }
-                        }
+                        common_.Logger.log({
+                            serviceId: service.id,
+                            serviceName: service.name,
+                            cost: cost,
+                            distance: metrics.distance,
+                            distanceKm: metrics.distance / 1000,
+                            roundedDistanceKm: Math.round(metrics.distance / 1000),
+                            baseFare: service.baseFare,
+                            minimumFee: service.minimumFee
+                        }, 'SharedOrderService.createOrder.finalCost');
                         return [
                             4,
                             this.regionService.getRegionWithPoint(input.waypoints[0].point)
@@ -32776,6 +32769,9 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 status: order.status,
                                 currency: order.currency,
                                 type: order.type,
+                                // Booked by a dispatcher/operator (admin panel) — driver app should
+                                // not ask for pickup OTP once a driver accepts this ride.
+                                pickupOtpRequired: order.operatorId == null,
                                 estimatedDistance: order.distanceBest,
                                 estimatedDuration: order.durationBest,
                                 orderId: order.id.toString(),
@@ -33566,7 +33562,9 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 driverId: driverId.toString(),
                                 pickupEta: etaPickup,
                                 dropoffEta: etaDropoff,
-                                driverDirections: driverTravel.directions
+                                driverDirections: driverTravel.directions,
+                                // Manual dispatcher assignment — the driver app should not ask for pickup OTP.
+                                pickupOtpRequired: false
                             })
                         ];
                     case 4:
@@ -33580,7 +33578,9 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         return [
                             4,
                             this.activeOrderRedisService.updateOrderStatus(orderId.toString(), {
-                                driverId: driverId.toString()
+                                driverId: driverId.toString(),
+                                // Manual dispatcher assignment — the driver app should not ask for pickup OTP.
+                                pickupOtpRequired: false
                             })
                         ];
                     case 6:
@@ -33647,7 +33647,9 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 status: OrderStatus.DriverAccepted,
                                 pickupEta: etaPickup,
                                 dropOffEta: etaDropoff,
-                                driverId: driverId
+                                driverId: driverId,
+                                // Manual dispatcher assignment — the driver app should not ask for pickup OTP.
+                                pickupOtpRequired: false
                             })
                         ];
                     case 9:
@@ -57415,6 +57417,18 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", Object)
 ], ServiceWithCostDTO.prototype, "costResult", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceWithCostDTO.prototype, "gstPercent", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceWithCostDTO.prototype, "platformFee", void 0);
 _ts_decorate._([
     (0, _graphql.Field)(()=>_mediadto.MediaDTO, {
         nullable: false

@@ -18,6 +18,11 @@ export class DispatcherServiceSelectComponent implements OnInit {
   query?: Observable<ApolloQueryResult<DispatcherCalculateFareQuery>>;
   time: Date = new Date();
 
+  totalCost(service: { cost: number; gstPercent?: number | null; platformFee?: number | null }): number {
+    const gstAmount = service.cost * ((service.gstPercent ?? 0) / 100);
+    return service.cost + gstAmount + (service.platformFee ?? 0);
+  }
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,

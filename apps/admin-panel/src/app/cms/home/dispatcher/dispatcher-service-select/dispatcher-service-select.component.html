@@ -14,7 +14,7 @@
                   <a (click)="selectService(service)">{{ 'profile.select' | translate }}</a>
                 </nz-list-item-action>
               </ul>
-              {{service.name}} ({{service.cost | currency: fare.currency}})
+              {{service.name}} ({{totalCost(service) | currency: fare.currency}})
             </li>
           }
         </div>

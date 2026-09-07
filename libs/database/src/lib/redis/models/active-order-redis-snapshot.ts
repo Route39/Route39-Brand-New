@@ -9,6 +9,7 @@ export class ActiveOrderRedisSnapshot {
   id: string;
   status: OrderStatus;
   pickupOtp?: string;
+  pickupOtpRequired?: boolean;
   type: TaxiOrderType;
   currency: string;
   waypoints: WaypointBase[];

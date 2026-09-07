@@ -11,6 +11,7 @@ import 'package:ridy/core/graphql/fragments/active_order.fragment.graphql.dart';
 import 'package:ridy/core/graphql/fragments/driver.fragment.graphql.dart';
 import 'package:ridy/core/graphql/fragments/ephemeral_message.fragment.graphql.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:ridy/core/graphql/documents/get_route_distance.graphql.dart';
 
 import 'package:ridy/core/datasources/graphql_datasource.dart';
 import 'package:ridy/core/graphql/documents/calculate_fare.graphql.dart';
@@ -48,6 +49,18 @@ class OrderRepositoryImpl implements OrderRepository {
   Future<ApiResponse<Query$CalculateFare>> calculateFare({required Input$CalculateFareInput args}) async {
     final result = await graphqlDatasource.query(
       Options$Query$CalculateFare(variables: Variables$Query$CalculateFare(input: args)),
+    );
+    return result.mapData((r) => r);
+  }
+
+    @override
+  Future<ApiResponse<Query$GetRouteDistance>> getRouteDistance({
+    required Input$GetRouteDistanceInput args,
+  }) async {
+    final result = await graphqlDatasource.query(
+      Options$Query$GetRouteDistance(
+        variables: Variables$Query$GetRouteDistance(input: args),
+      ),
     );
     return result.mapData((r) => r);
   }

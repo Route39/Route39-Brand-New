@@ -4964,6 +4964,8 @@ type ServiceWithCost {
   personCapacity: Int
   cost: Float! @deprecated(reason: "Use costResult instead for range pricing support")
   costResult: CostResult!
+  gstPercent: Float
+  platformFee: Float
   media: Media!
   options: [ServiceOption!]!
 }

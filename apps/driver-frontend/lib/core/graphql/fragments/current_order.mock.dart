@@ -9,6 +9,7 @@ import 'package:time/time.dart';
 
 final mockCurrentOrder1 = Fragment$ActiveOrder(
   id: "1",
+  pickupOtpRequired: true,
   type: Enum$TaxiOrderType.Ride,
   estimatedDistance: 5400,
   estimatedDuration: 1200,

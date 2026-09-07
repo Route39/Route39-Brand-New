@@ -232,6 +232,9 @@ export class TaxiOrderEntity {
   @Column({ nullable: true })
   pickupOtpVerifiedAt?: Date;
 
+  @Column({ type: 'boolean', default: true })
+  pickupOtpRequired!: boolean;
+
   @Column({ nullable: true })
   waitSeconds?: number;
 

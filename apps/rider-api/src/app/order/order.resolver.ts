@@ -21,6 +21,8 @@ import { UserContextOptional } from '../auth/authenticated-user';
 import { GqlAuthGuard } from '../auth/access-token.guard';
 import { CalculateFareDTO } from './dto/calculate-fare.dto';
 import { CalculateFareInput } from './dto/calculate-fare.input';
+import { GetRouteDistanceInput } from './dto/get-route-distance.input';
+import { RouteDistanceDTO } from './dto/route-distance.dto';
 import { CreateOrderInput } from './dto/create-order.input';
 import { SubmitFeedbackInput } from './dto/submit-feedback.input';
 import { RiderOrderService } from './order.service';
@@ -69,6 +71,14 @@ export class OrderResolver {
       selectedOptionIds: input.selectedOptionIds,
       orderType: input.orderType,
     });
+  }
+
+    @Query(() => RouteDistanceDTO)
+  async getRouteDistance(
+    @Args('input', { type: () => GetRouteDistanceInput })
+    input: GetRouteDistanceInput,
+  ): Promise<RouteDistanceDTO> {
+    return this.orderService.getRouteDistance(input.points);
   }
 
   @Mutation(() => [ActiveOrderDTO])

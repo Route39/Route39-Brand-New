@@ -37,6 +37,7 @@ fragment ActiveOrder on ActiveOrder {
     ...customer
   }
   status
+  pickupOtpRequired
   totalCost
   couponDiscount
   costBest

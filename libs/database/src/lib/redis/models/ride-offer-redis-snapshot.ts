@@ -8,6 +8,7 @@ import { RangePolicy } from '../../entities/taxi/enums/range-policy.enum';
 export class RideOfferRedisSnapshot {
   id: string;
   status: OrderStatus;
+  pickupOtpRequired?: boolean;
   type: TaxiOrderType;
   estimatedDistance: number;
   estimatedDuration: number;

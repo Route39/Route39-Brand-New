@@ -113,9 +113,11 @@ export class ActiveOrderCommonRedisService {
     waypoints: WaypointBase[];
     options: RideOptionDTO[];
     pickupOtp?: string;
+    pickupOtpRequired?: boolean;
   }): Promise<void> {
     const activeOrder: ActiveOrderRedisSnapshot = {
       ...input,
+      pickupOtpRequired: input.pickupOtpRequired ?? true,
       currentLegIndex: 0,
       chatMessages: [],
       commissionDeducted: false,
