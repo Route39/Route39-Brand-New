@@ -68,8 +68,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         BlocBuilder<AuthBloc, AuthState>(
                           builder: (context, stateAuth) {
+                            final profile = stateAuth.profile;
+                            if (profile == null) {
+                              return const SizedBox();
+                            }
                             return ProfileHeader(
-                              profile: stateAuth.profile!,
+                              profile: profile,
                               aggregationsInfo: data.driverPerformance,
                             );
                           },

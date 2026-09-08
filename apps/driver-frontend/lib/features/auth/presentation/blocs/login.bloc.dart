@@ -33,9 +33,9 @@ class LoginBloc extends HydratedCubit<LoginState> {
           LoginPage.enterOtp => LoginPage.enterNumber,
           LoginPage.enterPassword => LoginPage.enterNumber,
           LoginPage.setPassword => LoginPage.enterNumber,
-          LoginPage.contactDetails => LoginPage.enterPassword,
+          LoginPage.contactDetails => LoginPage.enterOtp,
           LoginPage.vehicleDetails => LoginPage.contactDetails,
-          LoginPage.documents => LoginPage.vehicleDetails,
+          LoginPage.documents => LoginPage.contactDetails,
           _ => state.loginPage,
         },
       ),
@@ -51,13 +51,17 @@ class LoginBloc extends HydratedCubit<LoginState> {
     emit(state.copyWith(otp: newOtp));
   }
 
-  void onCurrentPasswordChanged(String password) => emit(state.copyWith(currentPassword: password));
+  void onCurrentPasswordChanged(String password) =>
+      emit(state.copyWith(currentPassword: password));
 
-  void onNewPasswordChanged(String password) => emit(state.copyWith(newPassword: password));
+  void onNewPasswordChanged(String password) =>
+      emit(state.copyWith(newPassword: password));
 
   void onNewPasswordSubmitted() async {
     emit(state.copyWith(enterPasswordResponse: ApiResponse.loading()));
-    final setPasswordResponse = await repository.setPassword(state.newPassword!);
+    final setPasswordResponse = await repository.setPassword(
+      state.newPassword!,
+    );
     if (setPasswordResponse.isLoaded) {
       _processVerifiedUser(setPasswordResponse.data!.setPassword);
     } else {
@@ -68,7 +72,9 @@ class LoginBloc extends HydratedCubit<LoginState> {
 
   void sendOtp() async {
     emit(state.copyWith(enterNumberResponse: ApiResponse.loading()));
-    final resendOtpResponse = await repository.resendOtp(state.countryCode!.e164CountryCode + state.mobileNumber!);
+    final resendOtpResponse = await repository.resendOtp(
+      state.countryCode!.e164CountryCode + state.mobileNumber!,
+    );
     if (resendOtpResponse.isLoaded) {
       emit(
         state.copyWith(
@@ -91,8 +97,14 @@ class LoginBloc extends HydratedCubit<LoginState> {
       countryIsoCode: state.countryCode!.iso2CountryCode,
     );
     if (verifyNumberResponse.isLoaded) {
-      if (verifyNumberResponse.data!.verifyNumber.isExistingUser) {
-        emit(state.copyWith(loginPage: LoginPage.enterPassword, verificationHash: null));
+      if (false) {
+        // forced to always go to OTP
+        emit(
+          state.copyWith(
+            loginPage: LoginPage.enterPassword,
+            verificationHash: null,
+          ),
+        );
       } else {
         emit(
           state.copyWith(
@@ -111,7 +123,10 @@ class LoginBloc extends HydratedCubit<LoginState> {
 
   void onConfirmOtpPressed() async {
     emit(state.copyWith(enterOtpResponse: ApiResponse.loading()));
-    final verifyOtpResponse = await repository.verifyOtp(state.verificationHash!, state.otp!);
+    final verifyOtpResponse = await repository.verifyOtp(
+      state.verificationHash!,
+      state.otp!,
+    );
     if (verifyOtpResponse.isLoaded) {
       _processVerifiedUser(verifyOtpResponse.data!.verifyOtp);
     } else {
@@ -169,7 +184,13 @@ class LoginBloc extends HydratedCubit<LoginState> {
       case Enum$DriverStatus.Online:
       case Enum$DriverStatus.Offline:
       case Enum$DriverStatus.InService:
-        emit(state.copyWith(loginPage: LoginPage.success, jwtToken: response.jwtToken, profile: response.user));
+        emit(
+          state.copyWith(
+            loginPage: LoginPage.success,
+            jwtToken: response.jwtToken,
+            profile: response.user,
+          ),
+        );
         break;
       case Enum$DriverStatus.$unknown:
     }
@@ -177,50 +198,75 @@ class LoginBloc extends HydratedCubit<LoginState> {
 
   // START: Contact Details
 
-  void onGenderChanged(Gender? gender) => emit(state.copyWith(gender: gender!.toGql));
+  void onGenderChanged(Gender? gender) =>
+      emit(state.copyWith(gender: gender!.toGql));
 
-  void onFirstNameChanged(String? firstName) => emit(state.copyWith(firstName: firstName));
+  void onFirstNameChanged(String? firstName) =>
+      emit(state.copyWith(firstName: firstName));
 
-  void onLastNameChanged(String? lastName) => emit(state.copyWith(lastName: lastName));
+  void onLastNameChanged(String? lastName) =>
+      emit(state.copyWith(lastName: lastName));
 
-  void onAddressChanged(String? address) => emit(state.copyWith(address: address));
+  void onAddressChanged(String? address) =>
+      emit(state.copyWith(address: address));
 
   void onEmailChanged(String? email) => emit(state.copyWith(email: email));
 
   void onCertificateNumberChanged(String? certificateNumber) =>
       emit(state.copyWith(certificateNumber: certificateNumber?.trim()));
 
-  void onConfirmContactDetailsPressed() => emit(state.copyWith(loginPage: LoginPage.vehicleDetails));
+  void onConfirmContactDetailsPressed() =>
+      emit(state.copyWith(loginPage: LoginPage.documents));
 
   // END: Contact Details
 
   // START: Vehicle Details
 
-  void onPlateNumberChanged(String? newValue) => emit(state.copyWith(vehiclePlateNumber: newValue?.trim()));
+  void onPlateNumberChanged(String? newValue) =>
+      emit(state.copyWith(vehiclePlateNumber: newValue?.trim()));
 
-  void onVehicleModelIdChanged(String? newValue) => emit(state.copyWith(vehicleModelId: newValue));
+  void onVehicleModelIdChanged(String? newValue) =>
+      emit(state.copyWith(vehicleModelId: newValue));
 
-  void onVehicleColorIdChanged(String? newValue) => emit(state.copyWith(vehicleColorId: newValue));
+  void onVehicleColorIdChanged(String? newValue) =>
+      emit(state.copyWith(vehicleColorId: newValue));
 
-  void onVehicleProductionYearChanged(int? newValue) => emit(state.copyWith(vehicleYear: newValue ?? 0));
+  void onVehicleProductionYearChanged(int? newValue) =>
+      emit(state.copyWith(vehicleYear: newValue ?? 0));
 
-  void onConfirmVehicleDetailsPressed() => emit(state.copyWith(loginPage: LoginPage.documents));
+  void onConfirmVehicleDetailsPressed() =>
+      emit(state.copyWith(loginPage: LoginPage.documents));
 
   // END: Vehicle Details
 
   // START: Upload Documents
 
-  void onProfilePhotoChanged(Fragment$Media? newValue) => emit(state.copyWith(profilePicture: newValue));
+  void onProfilePhotoChanged(Fragment$Media? newValue) =>
+      emit(state.copyWith(profilePicture: newValue));
 
   void setDocuments(List<Fragment$Media> newValue) {
     emit(state.copyWith(documents: newValue));
   }
 
   void onConfirmDocumentsPressed() async {
+    print('=== DOCUMENT CONFIRM DEBUG ===');
+    print('firstName: ${state.firstName}');
+    print('profilePicture: ${state.profilePicture}');
+    print('profilePictureId: ${state.profilePicture?.id}');
+    print('documents count: ${state.documents.length}');
+    print('document IDs: ${state.documents.map((e) => e.id).toList()}');
+
     emit(state.copyWith(completeRegistrationResponse: ApiResponse.loading()));
-    final registerResponse = await repository.register(input: state.toProfileInput);
+    final registerResponse = await repository.register(
+      input: state.toProfileInput,
+    );
     if (registerResponse.isLoaded) {
-      emit(state.copyWith(loginPage: LoginPage.success, profile: registerResponse.data!.completeRegistration));
+      emit(
+        state.copyWith(
+          loginPage: LoginPage.success,
+          profile: registerResponse.data!.completeRegistration,
+        ),
+      );
     } else {
       emit(state.copyWith(completeRegistrationResponse: registerResponse));
     }

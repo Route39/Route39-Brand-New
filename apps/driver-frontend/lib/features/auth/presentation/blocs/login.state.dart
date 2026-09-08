@@ -31,7 +31,8 @@ sealed class LoginState with _$LoginState {
     @Default(ApiResponseInitial()) ApiResponse<dynamic> enterOtpResponse,
     @Default(ApiResponseInitial()) ApiResponse<dynamic> enterPasswordResponse,
     @Default(ApiResponseInitial()) ApiResponse<dynamic> setPasswordResponse,
-    @Default(ApiResponseInitial()) ApiResponse<dynamic> completeRegistrationResponse,
+    @Default(ApiResponseInitial())
+    ApiResponse<dynamic> completeRegistrationResponse,
   }) = _LoginState;
 
   const LoginState._();
@@ -54,15 +55,22 @@ sealed class LoginState with _$LoginState {
     return 60 - difference.inSeconds;
   }
 
-  factory LoginState.fromJson(Map<String, dynamic> json) => _$LoginStateFromJson(json);
+  factory LoginState.fromJson(Map<String, dynamic> json) =>
+      _$LoginStateFromJson(json);
 
-  bool get codeLengthIsSafe => newPassword != null && newPassword!.length >= 9 && newPassword!.length <= 64;
+  bool get codeLengthIsSafe =>
+      newPassword != null &&
+      newPassword!.length >= 9 &&
+      newPassword!.length <= 64;
 
-  bool get hasUppercase => newPassword != null && newPassword!.contains(RegExp(r'[A-Z]'));
+  bool get hasUppercase =>
+      newPassword != null && newPassword!.contains(RegExp(r'[A-Z]'));
 
-  bool get hasDigits => newPassword != null && newPassword!.contains(RegExp(r'[0-9]'));
+  bool get hasDigits =>
+      newPassword != null && newPassword!.contains(RegExp(r'[0-9]'));
 
-  bool get hasLowercase => newPassword != null && newPassword!.contains(RegExp(r'[a-z]'));
+  bool get hasLowercase =>
+      newPassword != null && newPassword!.contains(RegExp(r'[a-z]'));
 
   double get desktopHeight => switch (loginPage) {
     LoginPage.enterNumber => 200,
@@ -76,23 +84,32 @@ sealed class LoginState with _$LoginState {
     LoginPage.success => 100,
   };
 
-  Input$CompleteRegistrationInput get toProfileInput => Input$CompleteRegistrationInput(
-    firstName: firstName!,
-    lastName: lastName!,
-    gender: gender!,
-    carPlate: vehiclePlateNumber,
-    carProductionYear: vehicleYear,
-    certificateNumber: certificateNumber,
-    address: address,
-    profilePictureId: profilePicture!.id,
-    carId: vehicleModelId!,
-    carColorId: vehicleColorId!,
-    legacyDocumentIds: documents.map((e) => e.id).toList(),
-    documentPairs: [],
-  );
+  Input$CompleteRegistrationInput get toProfileInput =>
+      Input$CompleteRegistrationInput(
+        firstName: firstName!,
+        lastName: lastName ?? '',
+        gender: gender ?? Enum$Gender.Unknown,
+        carPlate: vehiclePlateNumber,
+        carProductionYear: vehicleYear,
+        certificateNumber: certificateNumber,
+        address: address,
+        profilePictureId: profilePicture!.id,
+        carId: vehicleModelId,
+        carColorId: vehicleColorId,
+        legacyDocumentIds: documents.map((e) => e.id).toList(),
+        documentPairs: [],
+      );
 
-  bool get hasSpecialCharacters => newPassword != null && newPassword!.contains(RegExp(r'[!@#$%^&*,.?":{}|<>]'));
+  bool get hasSpecialCharacters =>
+      newPassword != null &&
+      newPassword!.contains(RegExp(r'[!@#$%^&*,.?":{}|<>]'));
 
   bool get hasAtLeastTwoChecks =>
-      [hasUppercase, hasDigits, hasLowercase, hasSpecialCharacters].where((element) => element).length >= 2;
+      [
+        hasUppercase,
+        hasDigits,
+        hasLowercase,
+        hasSpecialCharacters,
+      ].where((element) => element).length >=
+      2;
 }

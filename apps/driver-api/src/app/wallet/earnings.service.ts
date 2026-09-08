@@ -33,20 +33,20 @@ export class EarningsService {
     switch (timeFrame) {
       case TimeQuery.Daily:
         dataset = await this.requestRepository.query(
-          `SELECT ANY_VALUE(DATE_FORMAT(requestTimestamp, '%W')) as name, CONCAT(ANY_VALUE(MONTH(CURRENT_TIMESTAMP)),'/',ANY_VALUE(DAY(CURRENT_TIMESTAMP))) AS current, ${fields} from request WHERE DATEDIFF(NOW(),requestTimestamp) < 7 AND driverId = ? AND currency = ? GROUP BY DATE(requestTimestamp)`,
+          `SELECT ANY_VALUE(DATE_FORMAT(requestTimestamp, '%W')) as name, CONCAT(ANY_VALUE(MONTH(CURRENT_TIMESTAMP)),'/',ANY_VALUE(DAY(CURRENT_TIMESTAMP))) AS current, ${fields} from request WHERE DATEDIFF(NOW(),requestTimestamp) < 7 AND driverId = ? AND currency = ? AND status = 'Finished' GROUP BY DATE(requestTimestamp)`,
           [driverId, mostUsedCurrency],
         );
         break;
       case TimeQuery.Weekly:
         dataset = await this.requestRepository.query(
-          `SELECT CONCAT(ANY_VALUE(YEAR(requestTimestamp)),',W',ANY_VALUE(WEEK(requestTimestamp))) AS name, CONCAT(ANY_VALUE(YEAR(CURRENT_TIMESTAMP)),',W',ANY_VALUE(WEEK(CURRENT_TIMESTAMP))) AS current, ${fields} FROM request WHERE driverId = ? AND currency = ? GROUP BY YEAR(requestTimestamp), WEEK(requestTimestamp)`,
+          `SELECT CONCAT(ANY_VALUE(YEAR(requestTimestamp)),',W',ANY_VALUE(WEEK(requestTimestamp))) AS name, CONCAT(ANY_VALUE(YEAR(CURRENT_TIMESTAMP)),',W',ANY_VALUE(WEEK(CURRENT_TIMESTAMP))) AS current, ${fields} FROM request WHERE driverId = ? AND currency = ? AND status = 'Finished' GROUP BY YEAR(requestTimestamp), WEEK(requestTimestamp)`,
           [driverId, mostUsedCurrency],
         );
         break;
 
       case TimeQuery.Monthly:
         dataset = await this.requestRepository.query(
-          `SELECT CONCAT(ANY_VALUE(YEAR(requestTimestamp)),'/',ANY_VALUE(MONTH(requestTimestamp))) AS name, CONCAT(ANY_VALUE(YEAR(CURRENT_TIMESTAMP)),'/',ANY_VALUE(MONTH(CURRENT_TIMESTAMP))) AS current, ${fields} FROM request WHERE DATE(requestTimestamp) > DATE(MAKEDATE(year(now()),1)) AND driverId = ? AND currency = ? GROUP BY YEAR(requestTimestamp), MONTH(requestTimestamp)`,
+          `SELECT CONCAT(ANY_VALUE(YEAR(requestTimestamp)),'/',ANY_VALUE(MONTH(requestTimestamp))) AS name, CONCAT(ANY_VALUE(YEAR(CURRENT_TIMESTAMP)),'/',ANY_VALUE(MONTH(CURRENT_TIMESTAMP))) AS current, ${fields} FROM request WHERE DATE(requestTimestamp) > DATE(MAKEDATE(year(now()),1)) AND driverId = ? AND currency = ? AND status = 'Finished' GROUP BY YEAR(requestTimestamp), MONTH(requestTimestamp)`,
           [driverId, mostUsedCurrency],
         );
         break;
@@ -81,7 +81,7 @@ export class EarningsService {
     // Convert requestTimestamp to IST (+5:30) before comparing dates, since dates from
     // the client are in IST but requestTimestamp is stored in UTC.
     const sumQuery: Array<any> = await this.requestRepository.query(
-      "SELECT SUM(costBest - providerShare) AS totalEarning FROM request WHERE DATE(CONVERT_TZ(requestTimestamp, '+00:00', '+05:30')) >= DATE(CONVERT_TZ(?, '+00:00', '+05:30')) AND DATE(CONVERT_TZ(requestTimestamp, '+00:00', '+05:30')) <= DATE(CONVERT_TZ(?, '+00:00', '+05:30')) AND driverId = ? AND currency = ?",
+      "SELECT SUM(costBest - providerShare) AS totalEarning FROM request WHERE DATE(CONVERT_TZ(requestTimestamp, '+00:00', '+05:30')) >= DATE(CONVERT_TZ(?, '+00:00', '+05:30')) AND DATE(CONVERT_TZ(requestTimestamp, '+00:00', '+05:30')) <= DATE(CONVERT_TZ(?, '+00:00', '+05:30')) AND driverId = ? AND currency = ? AND status = 'Finished'",
       [input.startDate, input.endDate, input.driverId, mostUsedCurrency],
     );
     const sumOfCurrentPeriod = sumQuery[0]?.totalEarning || 0;
@@ -194,7 +194,7 @@ export class EarningsService {
 
     // Fetch the earnings from the driver's most recent completed order
     const lastOrderQuery: Array<any> = await this.requestRepository.query(
-      'SELECT (costBest - providerShare) AS lastOrderEarning FROM request WHERE driverId = ? AND currency = ? ORDER BY requestTimestamp DESC LIMIT 1',
+      "SELECT (costBest - providerShare) AS lastOrderEarning FROM request WHERE driverId = ? AND currency = ? AND status = 'Finished' ORDER BY requestTimestamp DESC LIMIT 1",
       [input.driverId, mostUsedCurrency],
     );
     const lastOrderEarnings = lastOrderQuery[0]?.lastOrderEarning ?? null;

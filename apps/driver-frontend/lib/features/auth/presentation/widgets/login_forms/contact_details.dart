@@ -30,111 +30,135 @@ class ContactDetails extends StatelessWidget {
               key: formKey,
               child: Column(
                 children: [
-                  FormField<Gender>(
-                    initialValue: state.gender?.toEntity,
-                    onSaved: (newValue) {
-                      if (newValue == null) {
-                        context.showSnackBar(message: "Please select a gender");
-                        return;
-                      }
-                      loginBloc.onGenderChanged(newValue);
-                    },
-                    builder: (state) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            context.translate.gender,
-                            style: context.titleSmall,
-                          ),
-                          const SizedBox(
-                            height: 4,
-                          ),
-                          Row(
-                            children: Gender.values
-                                .map(
-                                  (e) => CupertinoButton(
-                                    onPressed: () => state.didChange(e),
-                                    padding: const EdgeInsets.all(0),
-                                    minimumSize: Size(0, 0),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        RoundedCheckbox(
-                                          isSelected: state.value == e,
-                                        ),
-                                        const SizedBox(
-                                          width: 4,
-                                        ),
-                                        Text(
-                                          e.title(context),
-                                          style: context.bodyLarge,
-                                        ),
-                                        const SizedBox(
-                                          width: 8,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                          )
-                        ],
-                      );
-                    },
-                  ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  TextFormField(
-                    initialValue: state.firstName,
-                    validator: (value) => value?.isEmpty == true ? context.translate.fieldIsRequired : null,
-                    onSaved: loginBloc.onFirstNameChanged,
-                    decoration: InputDecoration(
-                      hintText: context.translate.firstName,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  TextFormField(
-                    initialValue: state.lastName,
-                    validator: (value) => value?.isEmpty == true ? context.translate.fieldIsRequired : null,
-                    onSaved: loginBloc.onLastNameChanged,
-                    decoration: InputDecoration(
-                      hintText: context.translate.lastName,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  TextFormField(
-                    initialValue: state.certificateNumber,
-                    onSaved: loginBloc.onCertificateNumberChanged,
-                    decoration: InputDecoration(
-                      hintText: context.translate.driverLicenseNumber,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  TextFormField(
-                    initialValue: state.email,
-                    onSaved: loginBloc.onEmailChanged,
-                    decoration: InputDecoration(
-                      hintText: context.translate.email,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  TextFormField(
-                    initialValue: state.address,
-                    onSaved: loginBloc.onAddressChanged,
-                    decoration: InputDecoration(
-                      hintText: context.translate.address,
-                    ),
+                  // ---- Gender selection (commented out) ----
+                  // FormField<Gender>(
+                  //   initialValue: state.gender?.toEntity,
+                  //   onSaved: (newValue) {
+                  //     if (newValue == null) {
+                  //       context.showSnackBar(message: "Please select a gender");
+                  //       return;
+                  //     }
+                  //     loginBloc.onGenderChanged(newValue);
+                  //   },
+                  //   builder: (state) {
+                  //     return Column(
+                  //       crossAxisAlignment: CrossAxisAlignment.start,
+                  //       mainAxisSize: MainAxisSize.min,
+                  //       children: [
+                  //         Text(
+                  //           context.translate.gender,
+                  //           style: context.titleSmall,
+                  //         ),
+                  //         const SizedBox(
+                  //           height: 4,
+                  //         ),
+                  //         Row(
+                  //           children: Gender.values
+                  //               .map(
+                  //                 (e) => CupertinoButton(
+                  //                   onPressed: () => state.didChange(e),
+                  //                   padding: const EdgeInsets.all(0),
+                  //                   minimumSize: Size(0, 0),
+                  //                   child: Row(
+                  //                     mainAxisSize: MainAxisSize.min,
+                  //                     children: [
+                  //                       RoundedCheckbox(
+                  //                         isSelected: state.value == e,
+                  //                       ),
+                  //                       const SizedBox(
+                  //                         width: 4,
+                  //                       ),
+                  //                       Text(
+                  //                         e.title(context),
+                  //                         style: context.bodyLarge,
+                  //                       ),
+                  //                       const SizedBox(
+                  //                         width: 8,
+                  //                       ),
+                  //                     ],
+                  //                   ),
+                  //                 ),
+                  //               )
+                  //               .toList(),
+                  //         )
+                  //       ],
+                  //     );
+                  //   },
+                  // ),
+                  // const SizedBox(
+                  //   height: 16,
+                  // ),
+
+                  // ---- Last Name field (commented out) ----
+                  // TextFormField(
+                  //   initialValue: state.lastName,
+                  //   validator: (value) => value?.isEmpty == true ? context.translate.fieldIsRequired : null,
+                  //   onSaved: loginBloc.onLastNameChanged,
+                  //   decoration: InputDecoration(
+                  //     hintText: context.translate.lastName,
+                  //   ),
+                  // ),
+                  // const SizedBox(
+                  //   height: 16,
+                  // ),
+
+                  // ---- Remaining fields: side-by-side layout ----
+                  // Left column: First Name, Driver License Number
+                  // Right column: E-mail, Address
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              initialValue: state.firstName,
+                              validator: (value) => value?.isEmpty == true ? context.translate.fieldIsRequired : null,
+                              onSaved: loginBloc.onFirstNameChanged,
+                              decoration: InputDecoration(
+                                hintText: context.translate.firstName,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 16,
+                            ),
+                            TextFormField(
+                              initialValue: state.certificateNumber,
+                              onSaved: loginBloc.onCertificateNumberChanged,
+                              decoration: InputDecoration(
+                                hintText: context.translate.driverLicenseNumber,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 16,
+                      ),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              initialValue: state.email,
+                              onSaved: loginBloc.onEmailChanged,
+                              decoration: InputDecoration(
+                                hintText: context.translate.email,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 16,
+                            ),
+                            TextFormField(
+                              initialValue: state.address,
+                              onSaved: loginBloc.onAddressChanged,
+                              decoration: InputDecoration(
+                                hintText: context.translate.address,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(
                     height: 16,
@@ -148,9 +172,12 @@ class ContactDetails extends StatelessWidget {
           onPressed: () {
             if (formKey.currentState?.validate() == true) {
               formKey.currentState?.save();
-              if (state.gender == null) {
-                return;
-              }
+              // Gender selection UI is commented out above, so this check is
+              // disabled too — otherwise Confirm would never work since
+              // state.gender would always be null.
+              // if (state.gender == null) {
+              //   return;
+              // }
               loginBloc.onConfirmContactDetailsPressed();
             }
           },
