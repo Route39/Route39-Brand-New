@@ -6,7 +6,6 @@ import 'package:ridy/config/env.dart';
 import 'package:ridy/core/graphql/fragments/login.fragment.graphql.dart';
 import 'package:ridy/core/graphql/fragments/profile.fragment.graphql.dart';
 import 'package:ridy/features/auth/domain/repositories/auth_repository.dart';
-import 'package:flutter_common/core/enums/gender.dart';
 
 part 'login.event.dart';
 part 'login.state.dart';
@@ -18,37 +17,57 @@ class LoginBloc extends Cubit<LoginState> {
 
   LoginBloc(this.repository) : super(LoginState.initial());
 
-  void _onSuccessVerifyResponse(Fragment$VerifyOtpOrPassword response) {
-    emit(
-      state.copyWith(
-        loginPage: response.hasPassword == false
-            ? const LoginPage.setPassword()
-            : (response.hasName == false ? const LoginPage.enterName() : const LoginPage.success()),
-        jwtToken: response.jwtToken,
-        profile: response.user,
-      ),
+  Future<void> _completeLoginWithName({required String? jwtToken, required Fragment$Profile? profile}) async {
+    emit(state.copyWith(jwtToken: jwtToken, profile: profile));
+    emit(state.copyWith.loginPage.call(state: const PageState.loading()));
+
+    final trimmedName = state.name.trim();
+    String firstName = trimmedName;
+    String lastName = '';
+
+    final spaceIndex = trimmedName.indexOf(' ');
+    if (spaceIndex != -1) {
+      firstName = trimmedName.substring(0, spaceIndex);
+      lastName = trimmedName.substring(spaceIndex + 1).trim();
+    }
+
+    final updateProfileResponse = await repository.updateProfile(
+      firstName: firstName,
+      lastName: lastName,
+      email: null,
+      gender: null,
     );
+
+    switch (updateProfileResponse) {
+      case ApiResponseLoaded(:final data):
+        emit(state.copyWith(profile: data.updateProfile, loginPage: const LoginPage.success()));
+      case ApiResponseError(:final message):
+        emit(state.copyWith.loginPage.call(state: PageState.error(errorMessage: message)));
+
+      case _:
+    }
   }
 
-  void onNumberVerificationRequested({required String mobileNumber, required String countryCode}) async {
+  void onNumberVerificationRequested({
+    required String mobileNumber,
+    required String countryCode,
+    required String name,
+  }) async {
     emit(state.copyWith.loginPage.call(state: const PageState.loading()));
     final verifyNumberResponse = await repository.verifyNumber(mobileNumber: mobileNumber, countryCode: countryCode);
 
     switch (verifyNumberResponse) {
       case ApiResponseLoaded(:final data):
-        if (data.verifyNumber.isExistingUser) {
-          emit(state.copyWith(loginPage: const LoginPage.enterPassword(), mobileNumber: (countryCode, mobileNumber)));
-        } else {
-          emit(
-            state.copyWith(
-              loginPage: const LoginPage.enterOtp(),
-              mobileNumber: (countryCode, mobileNumber),
-              hash: data.verifyNumber.hash,
-              devOtp: data.verifyNumber.devOtp,
-              lastOtpSentAt: DateTime.now(),
-            ),
-          );
-        }
+        emit(
+          state.copyWith(
+            loginPage: const LoginPage.enterOtp(),
+            mobileNumber: (countryCode, mobileNumber),
+            name: name,
+            hash: data.verifyNumber.hash,
+            devOtp: data.verifyNumber.devOtp,
+            lastOtpSentAt: DateTime.now(),
+          ),
+        );
       case ApiResponseError(:final message):
         emit(state.copyWith.loginPage.call(state: PageState.error(errorMessage: message)));
 
@@ -65,7 +84,7 @@ class LoginBloc extends Cubit<LoginState> {
 
     switch (verifyOtpResponse) {
       case ApiResponseLoaded(:final data):
-        _onSuccessVerifyResponse(data.verifyOtp);
+        await _completeLoginWithName(jwtToken: data.verifyOtp.jwtToken, profile: data.verifyOtp.user);
       case ApiResponseError(:final message):
         final newState = state.copyWith.loginPage.call(state: PageState.error(errorMessage: message));
         emit(newState);
@@ -93,84 +112,6 @@ class LoginBloc extends Cubit<LoginState> {
         );
       case ApiResponseError(:final message):
         emit(state.copyWith.loginPage(state: PageState.error(errorMessage: message)));
-
-      case _:
-    }
-  }
-
-  void onPasswordSubmitted(String password) async {
-    emit(state.copyWith.loginPage.call(state: const PageState.loading()));
-    final verifyPasswordResponse = await repository.verifyPassword(state.mobileNumber.$2!, password);
-
-    switch (verifyPasswordResponse) {
-      case ApiResponseLoaded(:final data):
-        _onSuccessVerifyResponse(data.verifyPassword);
-      case ApiResponseError(:final message):
-        final newState = state.copyWith.loginPage.call(state: PageState.error(errorMessage: message));
-        emit(newState);
-
-      case _:
-    }
-  }
-
-  void onNewPasswordChanged(String password) {
-    switch (state.loginPage) {
-      case LoginPage$SetPassword():
-        emit(state.copyWith(loginPage: LoginPage$SetPassword().copyWith(newPassword: password)));
-        break;
-      default:
-        throw Exception("Invalid state");
-    }
-  }
-
-  void onNewPasswordSubmitted() async {
-    final page = state.loginPage;
-
-    switch (page) {
-      case LoginPage$SetPassword():
-        emit(state.copyWith.loginPage.call(state: const PageState.loading()));
-
-        final setPasswordResponse = await repository.setPassword(page.newPassword);
-
-        switch (setPasswordResponse) {
-          case ApiResponseLoaded(:final data):
-            _onSuccessVerifyResponse(data.setPassword);
-            break;
-
-          case ApiResponseError(:final message):
-            emit(state.copyWith.loginPage.call(state: PageState.error(errorMessage: message)));
-            break;
-
-          case _:
-            break;
-        }
-        break;
-
-      default:
-        throw Exception('Invalid state');
-    }
-  }
-
-  void onProfileDataSubmitted({
-    required String firstName,
-    required String lastName,
-    required Gender gender,
-    required String? email,
-  }) async {
-    emit(state.copyWith.loginPage.call(state: const PageState.loading()));
-    final updateProfileResponse = await repository.updateProfile(
-      firstName: firstName,
-      lastName: lastName,
-      email: email,
-      gender: gender,
-    );
-    switch (updateProfileResponse) {
-      case ApiResponseLoaded(:final data):
-        emit(
-          state.copyWith(jwtToken: state.jwtToken, profile: data.updateProfile, loginPage: const LoginPage.success()),
-        );
-      case ApiResponseError(:final message):
-        emit(state.copyWith.loginPage.call(state: PageState.error(errorMessage: message)));
 
       case _:
     }

@@ -31,9 +31,13 @@ void main() async {
   // await HydratedBloc.storage.clear();
   configureDependencies();
   await Hive.initFlutter();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } on FirebaseException catch (e) {
+    if (e.code != 'duplicate-app') rethrow;
+  }
   if (dotenv.maybeGet('SENTRY_DSN') != null) {
     await SentryFlutter.init(
       (options) {

@@ -5,6 +5,7 @@ sealed class LoginState with _$LoginState {
   const factory LoginState({
     @Default(LoginPage.enterNumber()) LoginPage loginPage,
     required (String, String?) mobileNumber,
+    @Default('') String name,
     String? hash,
     String? devOtp,
     String? jwtToken,
@@ -44,13 +45,6 @@ sealed class LoginPage with _$LoginPage {
 
   const factory LoginPage.enterOtp({@Default(PageState.idle()) PageState state}) = LoginPage$EnterOtp;
 
-  const factory LoginPage.enterPassword({@Default(PageState.idle()) PageState state}) = LoginPage$EnterPassword;
-
-  const factory LoginPage.enterName({@Default(PageState.idle()) PageState state}) = LoginPage$EnterName;
-
-  const factory LoginPage.setPassword({@Default(PageState.idle()) PageState state, @Default("") String newPassword}) =
-      LoginPage$SetPassword;
-
   const factory LoginPage.success({@Default(PageState.idle()) PageState state}) = LoginPage$Success;
 }
 
@@ -66,19 +60,4 @@ sealed class PageState with _$PageState {
     PageState$Loading() => true,
     _ => false,
   };
-}
-
-extension SetPasswordX on LoginPage$SetPassword {
-  bool get codeLengthIsSafe => newPassword.length >= 9 && newPassword.length <= 64;
-
-  bool get hasUppercase => newPassword.contains(RegExp(r'[A-Z]'));
-
-  bool get hasDigits => newPassword.contains(RegExp(r'[0-9]'));
-
-  bool get hasLowercase => newPassword.contains(RegExp(r'[a-z]'));
-
-  bool get hasSpecialCharacters => newPassword.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
-
-  bool get hasAtLeastTwoChecks =>
-      [hasUppercase, hasDigits, hasLowercase, hasSpecialCharacters].where((element) => element).length >= 2;
 }

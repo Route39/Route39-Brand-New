@@ -86,7 +86,7 @@ class LoginRepositoryImpl implements AuthRepository {
           firstName: firstName,
           lastName: lastName,
           email: email,
-          gender: gender!.toGql,
+          gender: gender?.toGql,
         ),
       ),
     );

@@ -120,9 +120,11 @@ class _WaypointsInputSheetState extends State<WaypointsInputSheet> {
               const SizedBox(height: 12),
               BlocBuilder<HomeBloc, HomeState>(
                 builder: (context, state) {
+                  final availableHeight = MediaQuery.of(context).size.height -
+                      MediaQuery.of(context).viewInsets.bottom;
                   return ConstrainedBox(
                     constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height * 0.55,
+                      maxHeight: availableHeight * 0.55,
                     ),
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
