@@ -252,15 +252,43 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           break;
 
         case HomeEvent$SubmitOrder(:final selectedDateTime):
-          firebaseRepository.retrieveAndUpdateFcmToken();
-          emit(state.copyWith(createOrderResponse: ApiResponse.loading(), selectedDateTime: selectedDateTime));
-          final result = await orderRepository.createOrder(
+  firebaseRepository.retrieveAndUpdateFcmToken();
+
+  final selectedService = state.selectedService;
+
+  if (selectedService == null) {
+    emit(state.copyWith(
+      createOrderResponse: ApiResponse.error('Please select a service'),
+    ));
+    return;
+  }
+
+  final serviceId = int.tryParse(selectedService.id);
+
+  if (serviceId == null) {
+    emit(state.copyWith(
+      createOrderResponse: ApiResponse.error('Invalid service selected'),
+    ));
+    return;
+  }
+
+  debugPrint(
+    '[Rider HomeBloc] Submitting order with serviceId=$serviceId, '
+    'serviceName=${selectedService.name}',
+  );
+
+  emit(state.copyWith(
+    createOrderResponse: ApiResponse.loading(),
+    selectedDateTime: selectedDateTime,
+  ));
+
+  final result = await orderRepository.createOrder(
             args: Input$CreateOrderInput(
               waypoints: state.waypoints.nonNulls.toList().toWaypointInputGql,
               orderType: state.orderType,
               paymentMode: state.selectedPaymentMethod?.toEntity,
               paymentMethodId: state.selectedPaymentMethod?.id,
-              serviceId: int.parse(state.selectedService!.id),
+              serviceId: serviceId,
               couponCode: state.couponCode,
               twoWay: state.isTwoWayRide,
               waitTime: state.waitTime,

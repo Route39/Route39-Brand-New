@@ -28,6 +28,7 @@ fragment ActiveOrder on ActiveOrder {
   }
   status
   totalCost
+  paymentGatewayFeePercent
   couponDiscount
   paymentMethod {
     ...PaymentMethod

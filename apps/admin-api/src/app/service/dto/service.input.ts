@@ -74,6 +74,6 @@ export class ServiceInput {
   weekdayMultipliers!: WeekdayMultiplier[];
   @Field(() => [DateRangeMultiplier], { nullable: false })
   dateRangeMultipliers!: DateRangeMultiplier[];
-  @Field(() => ID, { nullable: false })
-  mediaId!: number;
+  @Field(() => ID, { nullable: true })
+  mediaId?: number;
 }

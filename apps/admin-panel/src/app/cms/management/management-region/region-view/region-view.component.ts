@@ -4,6 +4,7 @@ import { GoogleMap } from '@angular/google-maps';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   CreateRegionGQL,
+  DeleteRegionGQL,
   PointInput,
   RegionViewQuery,
   UpdateRegionGQL,
@@ -31,6 +32,7 @@ export class RegionViewComponent implements AfterViewInit {
     private fb: UntypedFormBuilder,
     private createGQL: CreateRegionGQL,
     private updateGQL: UpdateRegionGQL,
+    private deleteGQL: DeleteRegionGQL,
     private msg: NzMessageService,
   ) {
     this.form = this.fb.group({
@@ -135,6 +137,22 @@ export class RegionViewComponent implements AfterViewInit {
           }),
         );
       }
+      this.router.navigate(['management/regions'], {
+        relativeTo: this.route.root,
+      });
+    } catch (error: any) {
+      this.msg.error(error.message);
+    }
+  }
+
+  async deleteRegion() {
+    const id = this.form.value.id;
+    if (id == null) {
+      return;
+    }
+    try {
+      await firstValueFrom(this.deleteGQL.mutate({ id }));
+      this.msg.success('Deleted!');
       this.router.navigate(['management/regions'], {
         relativeTo: this.route.root,
       });

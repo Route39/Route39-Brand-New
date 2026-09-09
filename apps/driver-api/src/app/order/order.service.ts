@@ -980,8 +980,7 @@ export class OrderService {
         dropoffEta: order.dropOffEta,
         status: order.status,
         serviceName: order.service?.name ?? '-',
-        serviceImageAddress: order.service?.media.address ?? '',
-        options: order.options ?? [],
+        serviceImageAddress: order.service?.media?.address ?? '',        options: order.options ?? [],
         waypoints:
           order.points.map((point) => ({
             point: point,

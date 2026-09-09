@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { IsNull } from 'typeorm';
 import { ServiceEntity } from '../entities/taxi/service.entity';
 import { Repository } from 'typeorm';
 import { PricingMode } from '../entities/taxi/enums/pricing-mode.enum';
@@ -153,7 +154,12 @@ export class ServiceService {
     return { cost };
   }
 
-  getWithId(id: number): Promise<ServiceEntity | null> {
-    return this.service.findOneBy({ id });
-  }
+  async getWithId(id: number): Promise<ServiceEntity | null> {
+  return this.service.findOne({
+    where: {
+      id,
+      deletedAt: IsNull(),
+    },
+  });
+}
 }

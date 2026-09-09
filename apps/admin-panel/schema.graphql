@@ -237,7 +237,7 @@ type RideOffer {
   expiresAt: DateTime
   fareEstimate: Float!
   serviceName: String!
-  serviceImageAddress: String!
+  serviceImageAddress: String
   options: [RideOption!]!
   passenger: PassengerInformation
 }
@@ -3438,8 +3438,8 @@ type Service {
   distanceMultipliers: [DistanceMultiplier!]!
   weekdayMultipliers: [WeekdayMultiplier!]!
   dateRangeMultipliers: [DateRangeMultiplier!]!
-  mediaId: ID!
-  media: Media!
+  mediaId: ID
+  media: Media
   regions(
     """Specify to filter the records returned."""
     filter: RegionFilter! = {}
@@ -17587,7 +17587,7 @@ input ServiceInput {
   distanceMultipliers: [DistanceMultiplierInput!]!
   weekdayMultipliers: [WeekdayMultiplierInput!]!
   dateRangeMultipliers: [DateRangeMultiplierInput!]!
-  mediaId: ID!
+  mediaId: ID
 }
 
 input UpdateOneServiceInput {

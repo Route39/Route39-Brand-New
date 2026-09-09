@@ -170,7 +170,7 @@ type RideOffer {
   expiresAt: DateTime
   fareEstimate: Float!
   serviceName: String!
-  serviceImageAddress: String!
+  serviceImageAddress: String
   options: [RideOption!]!
   passenger: PassengerInformation
 }
@@ -571,7 +571,7 @@ type ActiveOrder {
   dropoffEta: DateTime
   status: OrderStatus!
   serviceName: String!
-  serviceImageAddress: String!
+  serviceImageAddress: String
   chatMessages: [ChatMessage!]!
   options: [RideOption!]!
   waypoints: [WaypointBase!]!

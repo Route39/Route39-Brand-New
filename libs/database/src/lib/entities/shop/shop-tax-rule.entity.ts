@@ -45,7 +45,7 @@ export class ShopTaxRuleEntity {
   @JoinTable()
   shopCategories?: ShopCategoryEntity;
 
-  @ManyToMany(() => RegionEntity, { nullable: true })
+  @ManyToMany(() => RegionEntity, { nullable: true, onDelete: 'CASCADE' })
   @JoinTable()
   regions?: RegionEntity[];
 

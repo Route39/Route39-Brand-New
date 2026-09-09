@@ -24,7 +24,7 @@ void main() async {
   try {
     SentryWidgetsFlutterBinding.ensureInitialized();
     await dotenv.load(
-        fileName: '.env.${kReleaseMode ? 'prod' : 'dev'}', isOptional: true);
+        fileName: '${kReleaseMode ? 'prod' : 'dev'}.env', isOptional: true);
     HydratedBloc.storage = await HydratedStorage.build(
       storageDirectory: kIsWeb
           ? HydratedStorageDirectory.web

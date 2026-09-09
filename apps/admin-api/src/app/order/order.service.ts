@@ -349,7 +349,7 @@ export class OrderService {
       service: {
         id: orderEntity.service.id,
         name: orderEntity.service.name,
-        imageUrl: orderEntity.service.media.address,
+        imageUrl: orderEntity.service.media?.address,
       },
       chatMessages: [],
       directions: orderEntity.directions || [],

@@ -2009,9 +2009,11 @@ abstract final class Assets {
   static const $AssetsImagesGen images = $AssetsImagesGen();
   static const $AssetsLottieGen lottie = $AssetsLottieGen();
   static const String notification = 'assets/notification.mp3';
+  static const String dev = 'dev.env';
+  static const String prod = 'prod.env';
 
   /// List of all assets
-  static List<String> get values => [notification];
+  static List<String> get values => [notification, dev, prod];
 }
 
 class AssetGenImage {

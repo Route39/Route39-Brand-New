@@ -9,6 +9,7 @@ import { PaymentStatus } from '../entities/enums/payment-status.enum';
 import { ProviderRechargeTransactionType } from '../entities/enums/provider-recharge-transaction-type.enum';
 import { RequestActivityType } from '../entities/enums/request-activity-type.enum';
 import { RiderDeductTransactionType } from '../entities/enums/rider-deduct-transaction-type.enum';
+import { ServiceEntity } from '../entities/taxi/service.entity';
 import { ServiceOptionType } from '../entities/enums/service-option-type.enum';
 import { TransactionAction } from '../entities/enums/transaction-action.enum';
 import { TransactionStatus } from '../entities/enums/transaction-status.enum';
@@ -195,14 +196,25 @@ export class SharedOrderService {
     const regions = await this.regionService.getRegionWithPoint(
       input.points[0],
     );
+    let servicesInRegion: ServiceEntity[] = [];
+    let unrestrictedServices = false;
+    let fareCurrency = 'INR';
     if (regions.length < 1) {
-      throw new ForbiddenError(CalculateFareError.RegionUnsupported);
-    }
-    const servicesInRegion = await this.regionService.getRegionServices(
-      regions[0].id,
-    );
-    if (servicesInRegion.length < 1) {
-      throw new ForbiddenError(CalculateFareError.NoServiceInRegion);
+      // No Region configured in the Admin Panel covers this pickup point.
+      // Allow the booking anywhere inside India instead of hard-blocking,
+      // and offer every service since there is no per-region list to filter by.
+      if (!this.regionService.isPointInIndia(input.points[0])) {
+        throw new ForbiddenError('Service not available');
+      }
+      unrestrictedServices = true;
+    } else {
+      servicesInRegion = await this.regionService.getRegionServices(
+        regions[0].id,
+      );
+      if (servicesInRegion.length < 1) {
+        throw new ForbiddenError(CalculateFareError.NoServiceInRegion);
+      }
+      fareCurrency = regions[0].currency;
     }
     if ((input.twoWay ?? false) && input.points.length > 1) {
       input.points.push(input.points[0]);
@@ -275,10 +287,13 @@ export class SharedOrderService {
         const { services, ..._cat } = cat;
 
         const _services = services
-          .filter(
-            (x) => servicesInRegion.filter((y) => y.id == x.id).length > 0,
-          )
-          .filter((x) => x.orderTypes.includes(input.orderType))
+  .filter((x) => x.deletedAt == null)
+  .filter(
+    (x) =>
+      unrestrictedServices ||
+      servicesInRegion.filter((y) => y.id == x.id).length > 0,
+  )
+  .filter((x) => x.orderTypes.includes(input.orderType))
           .map((service) => {
             let cost = 0;
 let costResult: {
@@ -412,7 +427,7 @@ Logger.log(
 
     return {
       ...metrics,
-      currency: regions[0].currency,
+      currency: fareCurrency,
       services: _cats,
     };
   }
@@ -558,9 +573,15 @@ Logger.log(
     );
     Logger.log(regions, 'SharedOrderService.createOrder.regions');
 
-    if (regions.length === 0) {
-      throw new ForbiddenError('REGION_UNSUPPORTED');
+    if (
+      regions.length === 0 &&
+      !this.regionService.isPointInIndia(input.waypoints[0].point)
+    ) {
+      throw new ForbiddenError('Service not available');
     }
+    // No Region configured/matching in the Admin Panel — default to INR
+    // for any pickup point inside India.
+    const orderCurrency = regions[0]?.currency ?? 'INR';
 
     // Only enforce distance limit if explicitly set AND within a practical range.
     // maximumDestinationDistance=0 means unlimited (default from Admin Panel form).
@@ -577,7 +598,7 @@ Logger.log(
       const balance =
         await this.sharedRiderWalletService.getRiderCreditInCurrency(
           input.riderId,
-          regions[0].currency,
+          orderCurrency,
         );
       const amountNeedsToBePrePaid = (cost * service.prepayPercent) / 100;
       switch (input.paymentMode) {
@@ -617,7 +638,7 @@ Logger.log(
       contacts: input.waypoints
         .map((w) => w.deliveryContact ?? null)
         .filter((c) => c !== null),
-      currency: regions[0].currency,
+      currency: orderCurrency,
       riderId: input.riderId,
       points: input.waypoints.map((w) => w.point),
       addresses: input.waypoints.map((w) => w.address.replace(', ', '-')),
@@ -787,7 +808,7 @@ Logger.log(
         order.rider.notificationPlayerId != null
           ? [order.rider.notificationPlayerId]
           : [],
-      serviceImageAddress: order.service!.media.address,
+      serviceImageAddress: order.service!.media?.address ?? null,
       options: order.options ?? [],
       waypoints: order.waypoints(),
       createdAt: order.createdOn,

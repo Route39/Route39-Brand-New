@@ -31,17 +31,26 @@ class AppSocketLink extends Link {
       /// server must support that
       uri = uri.replace(queryParameters: {"access_token": token});
     }
-    _connection = _Connection(
-      client: SocketClient(
+    if (kDebugMode) {
+  print('[WS-DEBUG] Connecting WebSocket');
+  print('[WS-DEBUG] URL: ${uri.toString()}');
+  print('[WS-DEBUG] Has token: ${token != null && token.isNotEmpty}');
+}
+
+_connection = _Connection(
+  client: SocketClient(
         uri.toString(),
         protocol: GraphQLProtocol.graphqlTransportWs,
         config: SocketClientConfig(
           onConnectionLost: (code, reason) async {
-            if (kDebugMode) {
-              print("WebSocket connection lost: $code, $reason");
-            }
-            return Duration(seconds: 5);
-          },
+  if (kDebugMode) {
+    print('[WS-DEBUG] WebSocket connection lost');
+    print('[WS-DEBUG] Code: $code');
+    print('[WS-DEBUG] Reason: $reason');
+    print('[WS-DEBUG] URL: ${uri.toString()}');
+  }
+  return const Duration(seconds: 5);
+},
           autoReconnect: true,
           initialPayload: {"authToken": token},
           inactivityTimeout: const Duration(minutes: 30),

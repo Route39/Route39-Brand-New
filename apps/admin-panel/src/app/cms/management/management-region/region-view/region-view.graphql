@@ -22,3 +22,9 @@ mutation CreateRegion($input: CreateRegionInput!) {
     id
   }
 }
+
+mutation DeleteRegion($id: ID!) {
+  deleteOneRegion(input: { id: $id }) {
+    id
+  }
+}

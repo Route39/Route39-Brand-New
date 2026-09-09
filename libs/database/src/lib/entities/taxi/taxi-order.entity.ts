@@ -238,7 +238,9 @@ export class TaxiOrderEntity {
   @Column({ nullable: true })
   waitSeconds?: number;
 
-  @ManyToOne(() => RegionEntity, (region) => region.taxiOrders)
+  @ManyToOne(() => RegionEntity, (region) => region.taxiOrders, {
+    onDelete: 'SET NULL',
+  })
   region?: RegionEntity;
 
   @Column({ nullable: true })

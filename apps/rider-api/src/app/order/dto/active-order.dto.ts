@@ -72,4 +72,6 @@ export class ActiveOrderDTO {
   nextDestination?: WaypointBase;
   @Field(() => String, { nullable: true })
   pickupOtp?: string;
+  @Field(() => Float, { defaultValue: 0 })
+  paymentGatewayFeePercent!: number;
 }

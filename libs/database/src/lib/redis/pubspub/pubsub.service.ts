@@ -8,12 +8,19 @@ export class PubSubService {
   constructor(@Inject(PUBSUB) private readonly inner: PubSubPort) {}
 
   publish<K extends keyof EventMap>(
-    key: K,
-    params: EventMap[K]['params'],
-    payload: EventMap[K]['payload'],
-  ): Promise<void> {
-    return this.inner.publish(buildTopic(key, params), payload) as any;
-  }
+  key: K,
+  params: EventMap[K]['params'],
+  payload: EventMap[K]['payload'],
+): Promise<void> {
+  const topic = buildTopic(key, params);
+
+  console.log(
+    `[PubSub PUBLISH] topic=${topic}`,
+    JSON.stringify(payload),
+  );
+
+  return this.inner.publish(topic, payload) as any;
+}
 
   asyncIterator<K extends keyof EventMap>(
     key: K,

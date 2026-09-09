@@ -54,6 +54,14 @@
       </nz-form-item>
 
     </form>
+
+    @if (form.value.id !== null) {
+      <div class="mt-8">
+        <p class="text-lg leading-6 font-medium text-gray-900">{{ 'profile.delete' | translate }}</p>
+        <p class="mt-2 max-w-xl text-sm text-gray-500">{{ 'profile.deleteNotice' | translate }}</p>
+        <button nz-button nzDanger class="mt-2" (click)="deleteRegion()">{{ 'profile.delete' | translate }}</button>
+      </div>
+    }
   </nz-page-header-content>
 
 </nz-page-header>

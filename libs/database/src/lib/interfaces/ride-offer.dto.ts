@@ -69,8 +69,8 @@ export class RideOfferDTO {
   @Field(() => String)
   serviceName: string;
 
-  @Field(() => String)
-  serviceImageAddress: string;
+  @Field(() => String, { nullable: true })
+  serviceImageAddress?: string | null;
 
   @Field(() => [RideOptionDTO])
   options!: RideOptionDTO[];

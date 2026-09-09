@@ -19,7 +19,6 @@ import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { ORDER_TYPE_OPTIONS } from "@/lib/panel/enum-options";
 import { SERVICES_LIST_QUERY } from "@/lib/graphql/documents/management";
-import { getAccessToken } from "@/lib/auth/storage";
 import { useConfirm } from "@/providers/ConfirmProvider";
 import {
   CREATE_SERVICE_MUTATION,
@@ -28,7 +27,6 @@ import {
   UPDATE_SERVICE_MUTATION,
 } from "@/lib/graphql/documents/management-detail-2";
 
-const UPLOAD_URL = `${new URL((import.meta.env.VITE_API_URL as string) || "http://localhost:3004/graphql").origin}/upload`;
 const numericString = (msg: string) =>
   z.string().refine((v) => v.length > 0 && !Number.isNaN(Number(v)), msg);
 
@@ -60,7 +58,7 @@ const schema = z.object({
   paymentGatewayFee: optionalNumericString("Must be a number"),
   paymentMethod: z.enum(["Both", "OnlyCash", "OnlyOnline"]),
   orderTypes: z.array(z.string()).min(1, "Pick at least one order type"),
-  mediaId: z.string().min(1, "Image is required"),
+  mediaId: z.string().optional(),
 });
 
 type Values = z.infer<typeof schema>;
@@ -72,12 +70,10 @@ interface Props {
   initialImageUrl?: string;
 }
 
-export function ServiceForm({ mode, id, initialValues, initialImageUrl }: Props) {
+export function ServiceForm({ mode, id, initialValues }: Props) {
   const confirm = useConfirm();
   const navigate = useNavigate();
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | undefined>(initialImageUrl);
-  const [uploading, setUploading] = useState(false);
   const refetchQueries = [
     { query: SERVICES_LIST_QUERY, variables: { sorting: [], filter: {} } as never },
   ];
@@ -89,7 +85,6 @@ export function ServiceForm({ mode, id, initialValues, initialImageUrl }: Props)
     register,
     handleSubmit,
     control,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm<Values>({
     resolver: zodResolver(schema),
@@ -123,42 +118,6 @@ export function ServiceForm({ mode, id, initialValues, initialImageUrl }: Props)
   const [updateOne] = useMutation(UPDATE_SERVICE_MUTATION, { refetchQueries });
   const [deleteOne, { loading: deleting }] = useMutation(DELETE_SERVICE_MUTATION, { refetchQueries });
 
-  async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.type !== "image/jpeg" && file.type !== "image/png") {
-      toast.error("You can only upload a JPG or PNG file.");
-      e.target.value = "";
-      return;
-    }
-    if (file.size / 1024 / 1024 >= 2) {
-      toast.error("Image must be smaller than 2MB.");
-      e.target.value = "";
-      return;
-    }
-
-    setUploading(true);
-    try {
-      const body = new FormData();
-      body.append("file", file);
-      const res = await fetch(UPLOAD_URL, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${getAccessToken() ?? ""}` },
-        body,
-      });
-      if (!res.ok) throw new Error("Upload failed");
-      const media: { id: string; address: string } = await res.json();
-      setValue("mediaId", media.id, { shouldValidate: true, shouldDirty: true });
-      setImagePreview(media.address);
-    } catch {
-      toast.error("Failed to upload image");
-    } finally {
-      setUploading(false);
-      e.target.value = "";
-    }
-  }
-
   const onSubmit = handleSubmit(async (values) => {
     setSubmitError(null);
     const input = {
@@ -189,7 +148,7 @@ export function ServiceForm({ mode, id, initialValues, initialImageUrl }: Props)
       distanceMultipliers: [],
       weekdayMultipliers: [],
       dateRangeMultipliers: [],
-      mediaId: Number(values.mediaId),
+      mediaId: values.mediaId ? Number(values.mediaId) : null,
     };
     try {
       if (mode === "create") {
@@ -252,19 +211,6 @@ export function ServiceForm({ mode, id, initialValues, initialImageUrl }: Props)
         </FormGrid>
         <Field label="Description" htmlFor="description">
           <Textarea id="description" rows={2} {...register("description")} />
-        </Field>
-        <Field label="Image" htmlFor="image" error={errors.mediaId?.message} required>
-          <div className="flex items-center gap-3">
-            {imagePreview ? (
-              <img
-                src={imagePreview}
-                alt=""
-                className="size-14 rounded-md border border-border object-cover"
-              />
-            ) : null}
-            <Input id="image" type="file" accept="image/png,image/jpeg" onChange={handleImageChange} />
-            {uploading ? <Spinner size="sm" /> : null}
-          </div>
         </Field>
         <Field label="Order types" error={errors.orderTypes?.message as string | undefined}>
           <Controller

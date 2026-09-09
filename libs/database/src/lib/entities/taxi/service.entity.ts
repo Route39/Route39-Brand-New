@@ -229,12 +229,12 @@ export class ServiceEntity {
   })
   paymentGatewayFee?: number;
 
-  @OneToOne(() => MediaEntity, { eager: true })
+  @OneToOne(() => MediaEntity, { eager: true, nullable: true })
   @JoinColumn()
-  media!: MediaEntity;
+  media?: MediaEntity;
 
-  @Column()
-  mediaId!: number;
+  @Column({ nullable: true })
+  mediaId?: number;
 
   @Column('simple-array', {
     nullable: true,
@@ -272,7 +272,9 @@ export class ServiceEntity {
   @ManyToMany(() => CouponEntity, (coupon) => coupon.allowedServices)
   allowedCoupons!: CouponEntity[];
 
-  @ManyToMany(() => RegionEntity, (region) => region.services)
+  @ManyToMany(() => RegionEntity, (region) => region.services, {
+    onDelete: 'CASCADE',
+  })
   @JoinTable()
   regions!: RegionEntity[];
 

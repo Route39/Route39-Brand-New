@@ -32,8 +32,20 @@ export class OrderSubscriptionService {
     },
   })
   driverEvents(@Context() context: any): AsyncIterator<DriverEventPayload> {
-    return this.pubsub.asyncIterator('driver.event', {
-      driverId: context.req.extra.user.id,
-    });
-  }
+  const driverId = context.req.extra.user.id;
+
+  // console.log(
+  //   `[Driver Subscription] Creating Redis subscription for driver=${driverId}`,
+  // );
+
+  const iterator = this.pubsub.asyncIterator('driver.event', {
+    driverId,
+  });
+
+  // console.log(
+  //   `[Driver Subscription] Redis topic=driver:${driverId}:event`,
+  // );
+
+  return iterator;
+}
 }
