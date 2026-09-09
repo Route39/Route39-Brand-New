@@ -2,8 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:ridy_driver/core/extensions/extensions.dart';
+import 'package:ridy_driver/core/graphql/fragments/coordinate.extensions.dart';
 import 'package:ridy_driver/core/graphql/fragments/ride_offer.fragment.graphql.dart';
-import 'package:ridy_driver/core/presentation/waypoints_view/waypoints_view.dart';
+import 'package:flutter_common/core/presentation/waypoints_view/waypoints_view.dart';
 import 'package:ridy_driver/config/locator/locator.dart';
 import 'package:ridy_driver/features/home/presentation/blocs/home.bloc.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
@@ -12,10 +13,7 @@ import 'package:ionicons/ionicons.dart';
 class IncomingOrderScreen extends StatefulWidget {
   final Fragment$RideOffer request;
 
-  const IncomingOrderScreen({
-    super.key,
-    required this.request,
-  });
+  const IncomingOrderScreen({super.key, required this.request});
 
   @override
   State<IncomingOrderScreen> createState() => _IncomingOrderScreenState();
@@ -86,9 +84,7 @@ class _IncomingOrderScreenState extends State<IncomingOrderScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-              decoration: const BoxDecoration(
-                color: Color(0xFFB30000),
-              ),
+              decoration: const BoxDecoration(color: Color(0xFFB30000)),
               child: Row(
                 children: [
                   const Icon(
@@ -179,18 +175,20 @@ class _IncomingOrderScreenState extends State<IncomingOrderScreen> {
                             children: [
                               Expanded(
                                 child: _InfoItem(
-                                  icon: Ionicons.cash_outline,
+                                  icon: Ionicons.cashOutline,
                                   title: 'ESTIMATED FARE',
-                                  value: request.fareEstimate
-                                      .formatCurrency(request.currency),
+                                  value: request.fareEstimate.formatCurrency(
+                                    request.currency,
+                                  ),
                                 ),
                               ),
                               Expanded(
                                 child: _InfoItem(
-                                  icon: Ionicons.map_outline,
+                                  icon: Ionicons.mapOutline,
                                   title: 'DISTANCE',
-                                  value: request.distance
-                                      .toFormattedDistance(context),
+                                  value: request.distance.toFormattedDistance(
+                                    context,
+                                  ),
                                 ),
                               ),
                             ],
@@ -202,7 +200,7 @@ class _IncomingOrderScreenState extends State<IncomingOrderScreen> {
                             children: [
                               Expanded(
                                 child: _InfoItem(
-                                  icon: Ionicons.time_outline,
+                                  icon: Ionicons.timeOutline,
                                   title: 'DURATION',
                                   value: context.translate.durationInMinutes(
                                     request.duration ~/ 60,
@@ -211,7 +209,7 @@ class _IncomingOrderScreenState extends State<IncomingOrderScreen> {
                               ),
                               Expanded(
                                 child: _InfoItem(
-                                  icon: Ionicons.car_outline,
+                                  icon: Ionicons.carOutline,
                                   title: 'RIDE',
                                   value: request.serviceName,
                                 ),
@@ -305,10 +303,7 @@ class _IncomingOrderScreenState extends State<IncomingOrderScreen> {
 class MissedOrderScreen extends StatelessWidget {
   final Fragment$RideOffer request;
 
-  const MissedOrderScreen({
-    super.key,
-    required this.request,
-  });
+  const MissedOrderScreen({super.key, required this.request});
 
   @override
   Widget build(BuildContext context) {
@@ -327,8 +322,8 @@ class MissedOrderScreen extends StatelessWidget {
                     color: Color(0xFFFFE5E5),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Ionicons.close_circle,
+                  child: Icon(
+                    Ionicons.closeCircle,
                     color: Color(0xFFB30000),
                     size: 58,
                   ),
@@ -339,10 +334,7 @@ class MissedOrderScreen extends StatelessWidget {
                 const Text(
                   'YOU MISSED THE ORDER',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.w900),
                 ),
 
                 const SizedBox(height: 8),
@@ -350,10 +342,7 @@ class MissedOrderScreen extends StatelessWidget {
                 const Text(
                   'The booking was not accepted in time.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(fontSize: 15, color: Colors.grey),
                 ),
 
                 const SizedBox(height: 28),
@@ -369,14 +358,14 @@ class MissedOrderScreen extends StatelessWidget {
                     children: [
                       _MissedInfo(
                         title: 'Estimated fare',
-                        value: request.fareEstimate
-                            .formatCurrency(request.currency),
+                        value: request.fareEstimate.formatCurrency(
+                          request.currency,
+                        ),
                       ),
                       const Divider(height: 24),
                       _MissedInfo(
                         title: 'Distance',
-                        value: request.distance
-                            .toFormattedDistance(context),
+                        value: request.distance.toFormattedDistance(context),
                       ),
                       const Divider(height: 24),
                       _MissedInfo(
@@ -406,9 +395,7 @@ class MissedOrderScreen extends StatelessWidget {
                     ),
                     child: const Text(
                       'BACK TO HOME',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.w800),
                     ),
                   ),
                 ),
@@ -436,11 +423,7 @@ class _InfoItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Icon(
-          icon,
-          color: const Color(0xFFB30000),
-          size: 26,
-        ),
+        Icon(icon, color: const Color(0xFFB30000), size: 26),
         const SizedBox(height: 7),
         Text(
           title,
@@ -454,10 +437,7 @@ class _InfoItem extends StatelessWidget {
         Text(
           value,
           textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w800,
-          ),
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
         ),
       ],
     );
@@ -468,10 +448,7 @@ class _MissedInfo extends StatelessWidget {
   final String title;
   final String value;
 
-  const _MissedInfo({
-    required this.title,
-    required this.value,
-  });
+  const _MissedInfo({required this.title, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -485,12 +462,7 @@ class _MissedInfo extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontWeight: FontWeight.w800,
-          ),
-        ),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.w800)),
       ],
     );
   }

@@ -104,7 +104,9 @@ class _RateYourRideSheetState extends State<RateYourRideSheet> {
                       itemSize: rating == null ? 46 : 32,
                       unratedColor: ColorPalette.neutral90,
                       glow: false,
-                      allowHalfRating: true,
+                      allowHalfRating: false,
+                      updateOnDrag: true,
+                      tapOnlyMode: false,
                       itemBuilder: (context, index) {
                         return AnimatedContainer(
                           duration: const Duration(milliseconds: 300),

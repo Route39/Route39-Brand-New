@@ -17,7 +17,8 @@ import 'package:flutter_common/core/presentation/app_segmented_amount_field.dart
 import 'package:flutter_common/core/presentation/payment_method_list_view.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:ridy_driver/core/datasources/graphql_datasource.dart';
-import '../../data/razorpay_js_interop.dart';
+import '../../data/razorpay_stub.dart'
+    if (dart.library.js_interop) '../../data/razorpay_js_interop.dart';
 
 import '../blocs/top_up_wallet.bloc.dart';
 import '../blocs/wallet.bloc.dart';

@@ -36,12 +36,13 @@ class AuthScreenDesktop extends StatelessWidget {
                       children: [
                         Text(state.loginPage.title(context), style: context.titleLarge),
                         const SizedBox(height: 16),
-                        if (state.loginPage.wizardStep != null) ...[
-                          SizedBox(
-                            width: 300,
-                            child: WizardSteps(count: 5, selectedStep: state.loginPage.wizardStep!),
-                          ),
-                        ],
+                        // ---- Step indicator (commented out) ----
+                        // if (state.loginPage.wizardStep != null) ...[
+                        //   SizedBox(
+                        //     width: 300,
+                        //     child: WizardSteps(count: 5, selectedStep: state.loginPage.wizardStep!),
+                        //   ),
+                        // ],
                         if (state.loginPage.wizardStep == null || state.loginPage.wizardStep == 1) ...[
                           Expanded(
                             child: Container(

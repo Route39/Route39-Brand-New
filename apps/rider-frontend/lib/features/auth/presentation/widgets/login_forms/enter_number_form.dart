@@ -10,7 +10,6 @@ import 'package:ridy/core/extensions/extensions.dart';
 import 'package:flutter_common/core/presentation/buttons/app_primary_button.dart';
 import 'package:flutter_common/core/presentation/buttons/app_text_button.dart';
 import 'package:ridy/features/auth/presentation/blocs/login.bloc.dart';
-import 'package:ridy/features/auth/presentation/blocs/onboarding_cubit.dart';
 import 'package:flutter/services.dart';
 
 
@@ -24,6 +23,7 @@ class EnterNumberForm extends StatefulWidget {
 class _EnterNumberFormState extends State<EnterNumberForm> {
   static final CountryCode _indiaCountryCode = CountryCode.parseByIso('IN')!;
   (CountryCode, String) phoneNumber = (_indiaCountryCode, "");
+  String name = "";
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<LoginBloc, LoginState>(
@@ -134,6 +134,16 @@ class _EnterNumberFormState extends State<EnterNumberForm> {
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 16),
+                        TextFormField(
+                          textCapitalization: TextCapitalization.words,
+                          decoration: const InputDecoration(hintText: "Enter your name"),
+                          onChanged: (value) {
+                            setState(() {
+                              name = value;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 12),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -168,12 +178,12 @@ class _EnterNumberFormState extends State<EnterNumberForm> {
                                 keyboardType: TextInputType.phone,
                                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                 decoration: const InputDecoration(hintText: "Enter phone number"),
-                          onChanged: (value) {
-                            setState(() {
-                              phoneNumber = (_indiaCountryCode, value);
-                            });
-                          },
-                          ),
+                                onChanged: (value) {
+                                  setState(() {
+                                    phoneNumber = (_indiaCountryCode, value);
+                                  });
+                                },
+                              ),
                             ),
                           ],
                         ),
@@ -182,11 +192,12 @@ class _EnterNumberFormState extends State<EnterNumberForm> {
                   ),
                 ),
                 AppPrimaryButton(
-                  isDisabled: state.isLoading || phoneNumber.$2.length < 6,
+                  isDisabled: state.isLoading || phoneNumber.$2.length < 6 || name.trim().isEmpty,
                   onPressed: () {
                     locator<LoginBloc>().onNumberVerificationRequested(
                       mobileNumber: phoneNumber.$2,
                       countryCode: phoneNumber.$1.iso2CountryCode,
+                      name: name.trim(),
                     );
                   },
                   child: Text(context.translate.getOtp),

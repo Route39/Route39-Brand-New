@@ -61,6 +61,11 @@ class _EnterOtpFormState extends State<EnterOtpForm> {
                         code = p0;
                       });
                     },
+                      onCompleted: (p0) {
+                        setState(() {
+                          code = p0;
+                        });
+                      },
                   ),
                 ),
                 if (loginstate.devOtp != null) ...[
@@ -96,7 +101,7 @@ class _EnterOtpFormState extends State<EnterOtpForm> {
                 ),
                 const Spacer(),
                 AppPrimaryButton(
-                  isDisabled: state.isLoading || code.length < 6,
+                  isDisabled: (() { print('DEBUG code="' + code + '" length=' + code.length.toString() + ' isLoading=' + state.isLoading.toString()); return state.isLoading || code.length < 6; })(),
                   color: PrimaryButtonColor.error,
                   onPressed: () {
                     locator<LoginBloc>().onOtpVerificationRequested(code);

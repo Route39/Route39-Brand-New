@@ -21,34 +21,63 @@ import 'core/presentation/route39_splash.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 void main() async {
-  SentryWidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env.${kReleaseMode ? 'prod' : 'dev'}', isOptional: true);
-  HydratedBloc.storage = await HydratedStorage.build(
-    storageDirectory:
-        kIsWeb ? HydratedStorageDirectory.web : HydratedStorageDirectory((await getTemporaryDirectory()).path),
-  );
-
-  // await HydratedBloc.storage.clear();
-  configureDependencies();
-  await Hive.initFlutter();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  if (dotenv.maybeGet('SENTRY_DSN') != null) {
-    await SentryFlutter.init(
-      (options) {
-        options.dsn = dotenv.maybeGet('SENTRY_DSN');
-        // Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing.
-        // We recommend adjusting this value in production.
-        options.tracesSampleRate = 1.0;
-        // The sampling rate for profiling is relative to tracesSampleRate
-        // Setting to 1.0 will profile 100% of sampled transactions:
-        options.profilesSampleRate = 1.0;
-      },
-      appRunner: () => runApp(SentryWidget(child: const MyApp())),
+  try {
+    SentryWidgetsFlutterBinding.ensureInitialized();
+    await dotenv.load(
+        fileName: '.env.${kReleaseMode ? 'prod' : 'dev'}', isOptional: true);
+    HydratedBloc.storage = await HydratedStorage.build(
+      storageDirectory: kIsWeb
+          ? HydratedStorageDirectory.web
+          : HydratedStorageDirectory((await getTemporaryDirectory()).path),
     );
-  } else {
-    runApp(const MyApp());
+
+    // await HydratedBloc.storage.clear();
+    configureDependencies();
+    await Hive.initFlutter();
+    try {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    } catch (e) {
+      if (!e.toString().contains('duplicate-app')) {
+        rethrow;
+      }
+    }
+    if (dotenv.maybeGet('SENTRY_DSN') != null) {
+      await SentryFlutter.init(
+        (options) {
+          options.dsn = dotenv.maybeGet('SENTRY_DSN');
+          // Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing.
+          // We recommend adjusting this value in production.
+          options.tracesSampleRate = 1.0;
+          // The sampling rate for profiling is relative to tracesSampleRate
+          // Setting to 1.0 will profile 100% of sampled transactions:
+          options.profilesSampleRate = 1.0;
+        },
+        appRunner: () => runApp(SentryWidget(child: const MyApp())),
+      );
+    } else {
+      runApp(const MyApp());
+    }
+  } catch (e, stackTrace) {
+    runApp(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'Initialization Error:\n$e\n\n$stackTrace',
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                  textDirection: TextDirection.ltr,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

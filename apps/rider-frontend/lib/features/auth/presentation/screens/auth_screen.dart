@@ -11,7 +11,6 @@ import 'package:ridy/features/auth/presentation/screens/auth_screen.desktop.dart
 import 'package:ridy/features/auth/presentation/screens/auth_screen.mobile.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
 
-import 'onboarding_screen.mobile.dart';
 
 @RoutePage()
 class AuthScreen extends StatelessWidget {
@@ -19,7 +18,6 @@ class AuthScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final onboardingCubit = locator<OnboardingCubit>();
     return PopScope(
       canPop: false,
       child: MultiBlocProvider(
@@ -60,12 +58,7 @@ class AuthScreen extends StatelessWidget {
             }
           },
           child: context.responsive(
-            BlocBuilder<OnboardingCubit, int>(
-                builder: (context, stateOnboarding) {
-              return onboardingCubit.isDone
-                  ? const AuthScreenMobile()
-                  : const OnboardingScreen();
-            }),
+            const AuthScreenMobile(),
             xl: const AuthScreenDesktop(),
           ),
         ),

@@ -60,13 +60,13 @@ class AuthScreenMobile extends StatelessWidget {
             builder: (context, state) {
               return Column(
                 children: [
-
-                  if (state.loginPage.wizardStep != null)
-                    Container(
-                      width: 300,
-                      padding: const EdgeInsets.all(8),
-                      child: WizardSteps(count: 5, selectedStep: state.loginPage.wizardStep ?? 0),
-                    ),
+                  // ---- Step indicator (commented out) ----
+                  // if (state.loginPage.wizardStep != null)
+                  //   Container(
+                  //     width: 300,
+                  //     padding: const EdgeInsets.all(8),
+                  //     child: WizardSteps(count: 5, selectedStep: state.loginPage.wizardStep ?? 0),
+                  //   ),
                   Text(state.loginPage.title(context), style: context.titleLarge),
                   const SizedBox(height: 8),
                 ],
