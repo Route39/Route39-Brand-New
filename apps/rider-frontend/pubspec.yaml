@@ -150,9 +150,6 @@ flutter_gen:
   integrations:
     lottie: true
   assets:
-    exclude:
-      - .env.dev
-      - .env.prod
 
 sentry:
   upload_debug_symbols: true

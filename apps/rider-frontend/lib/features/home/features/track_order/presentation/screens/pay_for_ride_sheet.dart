@@ -14,7 +14,8 @@ import 'package:ridy/core/graphql/fragments/active_order.extensions.dart';
 import 'package:ridy/features/home/features/track_order/presentation/dialogs/pay_in_cash_dialog.dart';
 
 import 'package:ridy/gen/assets.gen.dart' as rider_assets;
-import 'package:ridy/core/razorpay_js_interop.dart';
+import 'package:ridy/core/razorpay_stub.dart'
+    if (dart.library.js_interop) 'package:ridy/core/razorpay_js_interop.dart';
 import 'package:ridy/core/datasources/graphql_datasource.dart';
 import 'package:ridy/core/graphql/documents/home.graphql.dart';
 

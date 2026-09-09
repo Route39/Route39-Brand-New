@@ -77,7 +77,7 @@ dependencies:
   collection: any
   dotted_line: any
   gauge_indicator: ^0.4.0
-  map_launcher: ^2.5.0
+  map_launcher: ^3.4.0
   share_plus: any
   location: any
   package_info_plus: any
@@ -163,9 +163,6 @@ flutter_gen:
   integrations:
     lottie: true
   assets:
-    exclude:
-      - .env.dev
-      - .env.prod
 
 sentry:
   upload_debug_symbols: true
