@@ -852,7 +852,7 @@
     },
     {
       "name": "map_launcher",
-      "version": "2.5.0+1",
+      "version": "3.5.0",
       "dependencies": [
         "flutter"
       ]
