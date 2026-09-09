@@ -24,7 +24,7 @@ dependencies:
   # Localization
   flutter_localizations:
     sdk: flutter
-  intl: ^0.20.3
+  intl: any
 
   # State management
   flutter_bloc: any
@@ -81,7 +81,7 @@ dependencies:
   image_faker: any
   moment_dart: any
   web: ^1.1.1
-  razorpay_flutter: ^1.4.6
+
 dev_dependencies:
   sentry_dart_plugin: any
   auto_route_generator: any
@@ -96,13 +96,6 @@ dev_dependencies:
   json_serializable: any
   flutter_launcher_icons: any
   flutter_native_splash: any
-
-flutter_launcher_icons:
-  adaptive_icon_background: "#FFFFFF"
-  android: true
-  ios: true
-  image_path: "assets/images/route39_icon_full.png"
-  min_sdk_android: 21
 
 flutter:
   uses-material-design: true
@@ -161,15 +154,10 @@ flutter_gen:
       - .env.dev
       - .env.prod
 
+
 sentry:
   upload_debug_symbols: true
   upload_source_maps: true
   project: taxi-rider
   org: lumeagency
   logger: any
-  flutter_native_splash:
-  color: "#FFFFFF"
-  image: assets/images/route39_logo_full.png
-  android_12:
-    image: assets/images/route39_logo_full.png
-    color: "#FFFFFF"
