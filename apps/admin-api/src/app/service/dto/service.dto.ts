@@ -25,7 +25,7 @@ import { TaxiOrderType } from '@ridy/database';
   pagingStrategy: PagingStrategies.NONE,
   update: { enabled: true },
 })
-@Relation('media', () => MediaDTO)
+@Relation('media', () => MediaDTO, { nullable: true })
 @UnPagedRelation('options', () => ServiceOptionDTO, {
   update: { enabled: true },
 })
@@ -97,6 +97,6 @@ export class ServiceDTO {
   weekdayMultipliers!: WeekdayMultiplier[];
   @Field(() => [DateRangeMultiplier], { nullable: false })
   dateRangeMultipliers!: DateRangeMultiplier[];
-  @Field(() => ID, { nullable: false })
-  mediaId!: number;
+  @Field(() => ID, { nullable: true })
+  mediaId?: number;
 }

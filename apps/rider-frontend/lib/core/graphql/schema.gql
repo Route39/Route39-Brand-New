@@ -170,7 +170,7 @@ type RideOffer {
   expiresAt: DateTime
   fareEstimate: Float!
   serviceName: String!
-  serviceImageAddress: String!
+  serviceImageAddress: String
   options: [RideOption!]!
   passenger: PassengerInformation
 }
@@ -528,6 +528,7 @@ type VerifyNumberDto {
 
 type VerifcationResult {
   jwtToken: String!
+  refreshToken: String!
   user: Rider!
   hasPassword: Boolean!
   hasName: Boolean!
@@ -615,7 +616,7 @@ type Service {
   paymentGatewayFee: Float
   prepayPercent: Int!
   twoWayAvailable: Boolean!
-  media: Media!
+  media: Media
   options: [ServiceOption!]!
   pricingMode: PricingMode!
   rangePolicy: RangePolicy!
@@ -709,6 +710,7 @@ type ActiveOrder {
   unreadMessagesCount: Int!
   nextDestination: WaypointBase
   pickupOtp: String
+  paymentGatewayFeePercent: Float!
 }
 
 type ApplyCouponResponse {
@@ -1036,6 +1038,7 @@ type Mutation {
   sendChatMessage(orderId: ID!, message: String!): ChatMessage!
   updateLastSeenMessagesAt(orderId: ID!): Boolean!
   login(input: LoginInput!): Login!
+  refreshToken(refreshToken: String!): Login!
   deleteUser: Rider!
 
   """

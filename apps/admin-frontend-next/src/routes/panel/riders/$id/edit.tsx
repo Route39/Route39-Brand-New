@@ -27,14 +27,8 @@ export default function EditRiderPage() {
         id={r.id}
         initialValues={{
           firstName: r.firstName ?? "",
-          lastName: r.lastName ?? "",
           mobileNumber: r.mobileNumber,
-          email: r.email ?? "",
           status: r.status,
-          countryIso: r.countryIso ?? "",
-          gender: r.gender ?? "",
-          isResident: r.isResident ?? false,
-          idNumber: r.idNumber ?? "",
         }}
       />
     </div>

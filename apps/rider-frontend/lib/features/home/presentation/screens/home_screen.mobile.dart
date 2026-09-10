@@ -57,10 +57,13 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> with SingleTickerPr
                 final needsBack = state.mode == HomeMode.ridePreview ||
                     state.mode == HomeMode.rideInProgress ||
                     (state.mode == HomeMode.preSubmission &&
-                        (state.orderSubmissionPage == OrderSubmissionPage.confirmLocation ||
-                            state.orderSubmissionPage == OrderSubmissionPage.welcome));
+                        state.orderSubmissionPage == OrderSubmissionPage.confirmLocation);
                 final activeOrder = state.activeOrder;
+                final hideLeadingIcon = state.mode == HomeMode.preSubmission &&
+                    (state.orderSubmissionPage == OrderSubmissionPage.welcome ||
+                        state.orderSubmissionPage == OrderSubmissionPage.rideWaypointsInput);
                 return Route39Header(
+                  showLeading: hideLeadingIcon ? false : true,
                   onBackPressed: needsBack
                       ? (state.mode == HomeMode.rideInProgress ? () {} : backButtonAction)
                       : null,
@@ -94,8 +97,7 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> with SingleTickerPr
                         builder: (context, state) {
                           final needsBack = popularSearch != null ||
                               (state.mode == HomeMode.preSubmission &&
-                                  (state.orderSubmissionPage == OrderSubmissionPage.confirmLocation ||
-                                      state.orderSubmissionPage == OrderSubmissionPage.rideWaypointsInput));
+                                  state.orderSubmissionPage == OrderSubmissionPage.confirmLocation);
                           if (!needsBack) return const SizedBox.shrink();
                           return backButton;
                         },

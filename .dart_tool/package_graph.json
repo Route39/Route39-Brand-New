@@ -148,7 +148,6 @@
         "flutter_launcher_icons",
         "flutter_lints",
         "flutter_native_splash",
-        "flutter_test",
         "freezed",
         "graphql_codegen",
         "injectable_generator",

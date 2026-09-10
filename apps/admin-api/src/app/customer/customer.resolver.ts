@@ -11,7 +11,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RiderTransactionInput } from './dto/rider-transaction.input';
 import { RiderWalletDTO } from './dto/rider-wallet.dto';
 import { CustomerDTO } from './dto/customer.dto';
-import { DataSource } from 'typeorm';
+import { DataSource, QueryFailedError } from 'typeorm';
 import { CustomerService } from './customer.service';
 import { SharedCustomerWalletService } from '@ridy/database';
 
@@ -56,7 +56,19 @@ export class RiderResolver {
     if (!operator.role.permissions.includes(OperatorPermission.Riders_Edit)) {
       throw new ForbiddenError('PERMISSION_NOT_GRANTED');
     }
-    await this.sharedRiderService.repo.delete({ id });
+    try {
+      await this.sharedRiderService.repo.delete({ id });
+    } catch (err) {
+      if (
+        err instanceof QueryFailedError &&
+        err.message.includes('foreign key constraint fails')
+      ) {
+        throw new ForbiddenError(
+          'This rider has existing ride requests and cannot be deleted. Set their status to Disabled instead, or delete them once their ride history is no longer needed.',
+        );
+      }
+      throw err;
+    }
   }
 
   @Mutation(() => Boolean)

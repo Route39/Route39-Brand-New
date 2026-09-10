@@ -39,67 +39,74 @@ class _EnterOtpFormState extends State<EnterOtpForm> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  context.translate.enterCode,
-                  style: context.titleLarge,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  context.translate.sendOtpDescription,
-                  style: context.bodyMedium?.copyWith(
-                    color: context.theme.colorScheme.onSurfaceVariant,
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        context.translate.enterCode,
+                        style: context.titleLarge,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        context.translate.sendOtpDescription,
+                        style: context.bodyMedium?.copyWith(
+                          color: context.theme.colorScheme.onSurfaceVariant,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      Center(
+                        child: OtpTextField(
+                          length: 6,
+                          onChanged: (p0) {
+                            setState(() {
+                              code = p0;
+                            });
+                          },
+                            onCompleted: (p0) {
+                              setState(() {
+                                code = p0;
+                              });
+                            },
+                        ),
+                      ),
+                      if (loginstate.devOtp != null) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          "DevOTP: ${loginstate.devOtp}",
+                          style: context.bodyMedium?.copyWith(
+                            color: context.theme.colorScheme.onSurfaceVariant,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                      const SizedBox(height: 32),
+                      StreamBuilder(
+                        stream: Stream.periodic(const Duration(seconds: 1)),
+                        builder: (context, snapShot) {
+                          return loginstate.canResendOtp
+                              ? AppTextButton(
+                                  isDisabled: state.isLoading,
+                                  text: context.translate.resendOtp,
+                                  onPressed: () =>
+                                      locator<LoginBloc>().onCodeResendRequested(),
+                                )
+                              : Text(
+                                  context.translate
+                                      .resendCodeInSeconds(loginstate.resendOtpIn),
+                                  style: context.bodyMedium?.copyWith(
+                                    color: context.theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                );
+                        },
+                      ),
+                    ],
                   ),
-                  textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 16),
-                Center(
-                  child: OtpTextField(
-                    length: 6,
-                    onChanged: (p0) {
-                      setState(() {
-                        code = p0;
-                      });
-                    },
-                      onCompleted: (p0) {
-                        setState(() {
-                          code = p0;
-                        });
-                      },
-                  ),
-                ),
-                if (loginstate.devOtp != null) ...[
-                  const SizedBox(height: 16),
-                  Text(
-                    "DevOTP: ${loginstate.devOtp}",
-                    style: context.bodyMedium?.copyWith(
-                      color: context.theme.colorScheme.onSurfaceVariant,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-                const SizedBox(height: 32),
-                StreamBuilder(
-                  stream: Stream.periodic(const Duration(seconds: 1)),
-                  builder: (context, snapShot) {
-                    return loginstate.canResendOtp
-                        ? AppTextButton(
-                            isDisabled: state.isLoading,
-                            text: context.translate.resendOtp,
-                            onPressed: () =>
-                                locator<LoginBloc>().onCodeResendRequested(),
-                          )
-                        : Text(
-                            context.translate
-                                .resendCodeInSeconds(loginstate.resendOtpIn),
-                            style: context.bodyMedium?.copyWith(
-                              color: context.theme.colorScheme.onSurfaceVariant,
-                            ),
-                            textAlign: TextAlign.center,
-                          );
-                  },
-                ),
-                const Spacer(),
                 AppPrimaryButton(
                   isDisabled: (() { print('DEBUG code="' + code + '" length=' + code.length.toString() + ' isLoading=' + state.isLoading.toString()); return state.isLoading || code.length < 6; })(),
                   color: PrimaryButtonColor.error,

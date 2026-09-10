@@ -62,15 +62,20 @@ class GraphqlDatasourceImpl implements GraphqlDatasource {
   }
 
   @override
-  Stream<TParsed> subscribe<TParsed>(SubscriptionOptions<TParsed> options) {
-    final result = client.subscribe(options);
-    return result.map((event) {
-      if (event.hasException) {
-        throw Stream.error(_parseOperationException(event.exception!));
-      }
-      return event.parsedData as TParsed;
-    });
-  }
+Stream<TParsed> subscribe<TParsed>(SubscriptionOptions<TParsed> options) {
+  final result = client.subscribe(options);
+  return result.map((event) {
+    if (event.hasException) {
+      throw _parseOperationException(event.exception!);
+    }
+
+    if (event.parsedData == null) {
+      throw const Failure(errorMessage: 'Subscription returned no data');
+    }
+
+    return event.parsedData as TParsed;
+  });
+}
 
   @override
   Stream<ApiResponse<TParsed>> queryStream<TParsed>(QueryOptions<TParsed> options) async* {

@@ -17,8 +17,8 @@ class LoginBloc extends Cubit<LoginState> {
 
   LoginBloc(this.repository) : super(LoginState.initial());
 
-  Future<void> _completeLoginWithName({required String? jwtToken, required Fragment$Profile? profile}) async {
-    emit(state.copyWith(jwtToken: jwtToken, profile: profile));
+  Future<void> _completeLoginWithName({required String? jwtToken, required String? refreshToken, required Fragment$Profile? profile}) async {
+    emit(state.copyWith(jwtToken: jwtToken, refreshToken: refreshToken, profile: profile));
     emit(state.copyWith.loginPage.call(state: const PageState.loading()));
 
     final trimmedName = state.name.trim();
@@ -84,7 +84,7 @@ class LoginBloc extends Cubit<LoginState> {
 
     switch (verifyOtpResponse) {
       case ApiResponseLoaded(:final data):
-        await _completeLoginWithName(jwtToken: data.verifyOtp.jwtToken, profile: data.verifyOtp.user);
+        await _completeLoginWithName(jwtToken: data.verifyOtp.jwtToken, refreshToken: data.verifyOtp.refreshToken, profile: data.verifyOtp.user);
       case ApiResponseError(:final message):
         final newState = state.copyWith.loginPage.call(state: PageState.error(errorMessage: message));
         emit(newState);

@@ -16,6 +16,10 @@ export const ORDERS_LIST_QUERY = graphql(`
         type
         status
         costBest
+        costAfterCoupon
+        gstAmount
+        platformFeeAmount
+        paymentGatewayFeeAmount
         currency
         addresses
         riderId

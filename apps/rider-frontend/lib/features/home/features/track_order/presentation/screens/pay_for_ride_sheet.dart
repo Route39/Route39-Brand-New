@@ -179,6 +179,10 @@ class _SelectPaymentMethodSheetState extends State<PayForRideSheet> {
               return const SizedBox.shrink();
             }
             final total = activeOrder.totalCost + tip;
+            final gatewayFeePercent = activeOrder.paymentGatewayFeePercent;
+            final gatewayFeeAmount = activeOrder.totalCost * gatewayFeePercent / 100;
+            final upiTotal = activeOrder.totalCost + gatewayFeeAmount + tip;
+            
             return Container(
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -380,14 +384,14 @@ class _SelectPaymentMethodSheetState extends State<PayForRideSheet> {
                                       ),
                                     ),
                                     onPressed: () {
-                                      _startRazorpayRidePayment(context, activeOrder.id, total, activeOrder.currency);
+                                      _startRazorpayRidePayment(context, activeOrder.id, upiTotal, activeOrder.currency);
                                     },
                                     icon: const Icon(
                                       Icons.credit_card,
                                       size: 18,
                                     ),
                                     label: Text(
-                                      'UPI (${total.formatCurrency(activeOrder.currency)})',
+                                      'UPI (${upiTotal.formatCurrency(activeOrder.currency)})',
                                     ),
                                   ),
                                 ),
@@ -397,10 +401,11 @@ class _SelectPaymentMethodSheetState extends State<PayForRideSheet> {
                         },
                       ),
                     ),
+                    if (gatewayFeePercent > 0)
                     Padding(
                       padding: const EdgeInsets.only(top: 8, bottom: 16),
                       child: Text(
-                        '* 2% GATEWAY FEE APPLIES TO ONLINE/UPI PAYMENTS',
+                        '* ${gatewayFeePercent % 1 == 0 ? gatewayFeePercent.toStringAsFixed(0) : gatewayFeePercent.toStringAsFixed(1)}% GATEWAY FEE APPLIES TO ONLINE/UPI PAYMENTS',
                         textAlign: TextAlign.center,
                         style: context.bodySmall?.copyWith(
                           color: ColorPalette.neutralVariant50,

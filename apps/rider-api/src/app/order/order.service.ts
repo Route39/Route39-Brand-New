@@ -534,6 +534,7 @@ export class RiderOrderService {
         ? { ...order.paymentMethod, name: order.paymentMethod.name ?? 'Unknown' }
         : order?.paymentMethod,
       totalCost: order?.costEstimateForRider ?? 0,
+      paymentGatewayFeePercent: order?.paymentGatewayFeePercent ?? 0,
       costResult:
         order?.pricingMode === PricingMode.RANGE &&
         order?.costMin != null &&
@@ -585,6 +586,7 @@ export class RiderOrderService {
         ? { ...offer.paymentMethod, name: offer.paymentMethod.name ?? 'Unknown' }
         : offer?.paymentMethod,
       totalCost: offer?.costEstimateForRider ?? 0,
+      paymentGatewayFeePercent: offer?.paymentGatewayFeePercent ?? 0,
       costResult:
         offer?.pricingMode === PricingMode.RANGE &&
         offer?.costMin != null &&
@@ -721,8 +723,7 @@ export class RiderOrderService {
         status: order.status,
         waitMinutes: order.waitMinutes,
         serviceName: order.service?.name ?? '-',
-        serviceImageAddress: order.service?.media.address ?? '-',
-        type: order.type,
+        serviceImageAddress: order.service?.media?.address ?? '-',        type: order.type,
         currency: order.currency,
         createdAt: order.createdOn,
         estimatedDistance: order.distanceBest,

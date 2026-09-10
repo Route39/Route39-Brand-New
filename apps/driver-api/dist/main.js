@@ -5830,13 +5830,16 @@ service_entity_ts_decorate([
     (0,external_typeorm_.OneToOne)(function() {
         return MediaEntity;
     }, {
-        eager: true
+        eager: true,
+        nullable: true
     }),
     (0,external_typeorm_.JoinColumn)(),
     service_entity_ts_metadata("design:type", typeof MediaEntity === "undefined" ? Object : MediaEntity)
 ], ServiceEntity.prototype, "media", void 0);
 service_entity_ts_decorate([
-    (0,external_typeorm_.Column)(),
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
     service_entity_ts_metadata("design:type", Number)
 ], ServiceEntity.prototype, "mediaId", void 0);
 service_entity_ts_decorate([
@@ -5898,6 +5901,8 @@ service_entity_ts_decorate([
         return RegionEntity;
     }, function(region) {
         return region.services;
+    }, {
+        onDelete: 'CASCADE'
     }),
     (0,external_typeorm_.JoinTable)(),
     service_entity_ts_metadata("design:type", Array)
@@ -6136,7 +6141,8 @@ shop_tax_rule_entity_ts_decorate([
     (0,external_typeorm_.ManyToMany)(function() {
         return RegionEntity;
     }, {
-        nullable: true
+        nullable: true,
+        onDelete: 'CASCADE'
     }),
     (0,external_typeorm_.JoinTable)(),
     shop_tax_rule_entity_ts_metadata("design:type", Array)
@@ -15991,8 +15997,10 @@ ride_offer_dto_ts_decorate([
 ride_offer_dto_ts_decorate([
     (0,graphql_.Field)(function() {
         return String;
+    }, {
+        nullable: true
     }),
-    ride_offer_dto_ts_metadata("design:type", String)
+    ride_offer_dto_ts_metadata("design:type", Object)
 ], RideOfferDTO.prototype, "serviceImageAddress", void 0);
 ride_offer_dto_ts_decorate([
     (0,graphql_.Field)(function() {
@@ -16718,6 +16726,10 @@ var TaxiOrderEntity = /*#__PURE__*/ function() {
     "use strict";
     function TaxiOrderEntity() {}
     var _proto = TaxiOrderEntity.prototype;
+    _proto.computeTotalCost = function computeTotalCost() {
+        var _this_costAfterCoupon, _ref, _this_gstAmount, _this_platformFeeAmount, _this_paymentGatewayFeeAmount;
+        this.totalCost = ((_ref = (_this_costAfterCoupon = this.costAfterCoupon) != null ? _this_costAfterCoupon : this.costBest) != null ? _ref : 0) + ((_this_gstAmount = this.gstAmount) != null ? _this_gstAmount : 0) + ((_this_platformFeeAmount = this.platformFeeAmount) != null ? _this_platformFeeAmount : 0) + ((_this_paymentGatewayFeeAmount = this.paymentGatewayFeeAmount) != null ? _this_paymentGatewayFeeAmount : 0);
+    };
     _proto.waypoints = function waypoints() {
         var _this = this;
         switch(this.type){
@@ -17035,6 +17047,12 @@ taxi_order_entity_ts_decorate([
     taxi_order_entity_ts_metadata("design:type", Number)
 ], TaxiOrderEntity.prototype, "paymentGatewayFeeAmount", void 0);
 taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.AfterLoad)(),
+    taxi_order_entity_ts_metadata("design:type", Function),
+    taxi_order_entity_ts_metadata("design:paramtypes", []),
+    taxi_order_entity_ts_metadata("design:returntype", void 0)
+], TaxiOrderEntity.prototype, "computeTotalCost", null);
+taxi_order_entity_ts_decorate([
     (0,external_typeorm_.Column)('float', {
         nullable: true,
         precision: 10,
@@ -17079,6 +17097,8 @@ taxi_order_entity_ts_decorate([
         return RegionEntity;
     }, function(region) {
         return region.taxiOrders;
+    }, {
+        onDelete: 'SET NULL'
     }),
     taxi_order_entity_ts_metadata("design:type", typeof RegionEntity === "undefined" ? Object : RegionEntity)
 ], TaxiOrderEntity.prototype, "region", void 0);
@@ -25602,7 +25622,9 @@ var PubSubService = /*#__PURE__*/ function() {
     }
     var _proto = PubSubService.prototype;
     _proto.publish = function publish(key, params, payload) {
-        return this.inner.publish(buildTopic(key, params), payload);
+        var topic = buildTopic(key, params);
+        console.log("[PubSub PUBLISH] topic=" + topic, JSON.stringify(payload));
+        return this.inner.publish(topic, payload);
     };
     _proto.asyncIterator = function asyncIterator(key, params) {
         return this.inner.asyncIterator(buildTopic(key, params));
@@ -29588,6 +29610,22 @@ var RegionService = /*#__PURE__*/ function() {
             });
         }).call(this);
     };
+    /**
+   * Fallback check used when no Admin Panel Region covers a point: is the
+   * point at least inside India? This is a simple bounding-box test (no
+   * external geocoding call), so it can include thin border strips of
+   * neighbouring countries (Pakistan, Nepal, Bangladesh, Myanmar, Sri
+   * Lanka, China). Swap for a precise polygon or a reverse-geocoding call
+   * if stricter accuracy is required later.
+   */ _proto.isPointInIndia = function isPointInIndia(point) {
+        var INDIA_BOUNDS = {
+            minLat: 6.0,
+            maxLat: 37.6,
+            minLng: 68.0,
+            maxLng: 97.5
+        };
+        return point.lat >= INDIA_BOUNDS.minLat && point.lat <= INDIA_BOUNDS.maxLat && point.lng >= INDIA_BOUNDS.minLng && point.lng <= INDIA_BOUNDS.maxLng;
+    };
     return RegionService;
 }();
 RegionService = region_service_ts_decorate([
@@ -29635,6 +29673,35 @@ function service_service_array_like_to_array(arr, len) {
     for(var i = 0, arr2 = new Array(len); i < len; i++)arr2[i] = arr[i];
     return arr2;
 }
+function service_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+    try {
+        var info = gen[key](arg);
+        var value = info.value;
+    } catch (error) {
+        reject(error);
+        return;
+    }
+    if (info.done) {
+        resolve(value);
+    } else {
+        Promise.resolve(value).then(_next, _throw);
+    }
+}
+function service_service_async_to_generator(fn) {
+    return function() {
+        var self = this, args = arguments;
+        return new Promise(function(resolve, reject) {
+            var gen = fn.apply(self, args);
+            function _next(value) {
+                service_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+            }
+            function _throw(err) {
+                service_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+            }
+            _next(undefined);
+        });
+    };
+}
 function service_service_unsupported_iterable_to_array(o, minLen) {
     if (!o) return;
     if (typeof o === "string") return service_service_array_like_to_array(o, minLen);
@@ -29669,6 +29736,97 @@ function service_service_ts_decorate(decorators, target, key, desc) {
     else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 }
+function service_service_ts_generator(thisArg, body) {
+    var f, y, t, _ = {
+        label: 0,
+        sent: function() {
+            if (t[0] & 1) throw t[1];
+            return t[1];
+        },
+        trys: [],
+        ops: []
+    }, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() {
+        return this;
+    }), g;
+    function verb(n) {
+        return function(v) {
+            return step([
+                n,
+                v
+            ]);
+        };
+    }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while(g && (g = 0, op[0] && (_ = 0)), _)try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [
+                op[0] & 2,
+                t.value
+            ];
+            switch(op[0]){
+                case 0:
+                case 1:
+                    t = op;
+                    break;
+                case 4:
+                    _.label++;
+                    return {
+                        value: op[1],
+                        done: false
+                    };
+                case 5:
+                    _.label++;
+                    y = op[1];
+                    op = [
+                        0
+                    ];
+                    continue;
+                case 7:
+                    op = _.ops.pop();
+                    _.trys.pop();
+                    continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+                        _ = 0;
+                        continue;
+                    }
+                    if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+                        _.label = op[1];
+                        break;
+                    }
+                    if (op[0] === 6 && _.label < t[1]) {
+                        _.label = t[1];
+                        t = op;
+                        break;
+                    }
+                    if (t && _.label < t[2]) {
+                        _.label = t[2];
+                        _.ops.push(op);
+                        break;
+                    }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop();
+                    continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) {
+            op = [
+                6,
+                e
+            ];
+            y = 0;
+        } finally{
+            f = t = 0;
+        }
+        if (op[0] & 5) throw op[1];
+        return {
+            value: op[0] ? op[1] : void 0,
+            done: true
+        };
+    }
+}
 function service_service_ts_metadata(k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 }
@@ -29677,6 +29835,7 @@ function service_service_ts_param(paramIndex, decorator) {
         decorator(target, key, paramIndex);
     };
 }
+
 
 
 
@@ -29804,9 +29963,19 @@ var ServiceService = /*#__PURE__*/ function() {
         };
     };
     _proto.getWithId = function getWithId(id) {
-        return this.service.findOneBy({
-            id: id
-        });
+        return service_service_async_to_generator(function() {
+            return service_service_ts_generator(this, function(_state) {
+                return [
+                    2,
+                    this.service.findOne({
+                        where: {
+                            id: id,
+                            deletedAt: (0,external_typeorm_.IsNull)()
+                        }
+                    })
+                ];
+            });
+        }).call(this);
     };
     return ServiceService;
 }();
@@ -32051,7 +32220,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.calculateFare = function calculateFare(input) {
         return shared_order_service_async_to_generator(function() {
-            var _this, distances, totalDistance, zonePricings, regions, servicesInRegion, _input_twoWay, metrics, cats, feeMultiplier, optionFee, options, paidOptions, _cats;
+            var _this, distances, totalDistance, zonePricings, regions, servicesInRegion, unrestrictedServices, fareCurrency, _input_twoWay, metrics, cats, feeMultiplier, optionFee, options, paidOptions, _cats;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32087,18 +32256,37 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         ];
                     case 3:
                         regions = _state.sent();
-                        if (regions.length < 1) {
-                            throw new apollo_.ForbiddenError("REGION_UNSUPPORTED");
+                        servicesInRegion = [];
+                        unrestrictedServices = false;
+                        fareCurrency = 'INR';
+                        if (!(regions.length < 1)) return [
+                            3,
+                            4
+                        ];
+                        // No Region configured in the Admin Panel covers this pickup point.
+                        // Allow the booking anywhere inside India instead of hard-blocking,
+                        // and offer every service since there is no per-region list to filter by.
+                        if (!this.regionService.isPointInIndia(input.points[0])) {
+                            throw new apollo_.ForbiddenError('Service not available');
                         }
+                        unrestrictedServices = true;
+                        return [
+                            3,
+                            6
+                        ];
+                    case 4:
                         return [
                             4,
                             this.regionService.getRegionServices(regions[0].id)
                         ];
-                    case 4:
+                    case 5:
                         servicesInRegion = _state.sent();
                         if (servicesInRegion.length < 1) {
                             throw new apollo_.ForbiddenError("NO_SERVICE_IN_REGION");
                         }
+                        fareCurrency = regions[0].currency;
+                        _state.label = 6;
+                    case 6:
                         if (((_input_twoWay = input.twoWay) != null ? _input_twoWay : false) && input.points.length > 1) {
                             input.points.push(input.points[0]);
                         }
@@ -32106,7 +32294,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             4,
                             this.googleServices.getSumDistanceAndDuration(input.points)
                         ];
-                    case 5:
+                    case 7:
                         metrics = _state.sent();
                         common_.Logger.log({
                             pointsCount: input.points.length,
@@ -32137,19 +32325,19 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 }
                             })
                         ];
-                    case 6:
+                    case 8:
                         cats = _state.sent();
                         return [
                             4,
                             this.sharedFleetService.getFleetMultiplierInPoint(input.points[0])
                         ];
-                    case 7:
+                    case 9:
                         feeMultiplier = _state.sent();
                         // Calculate option fees from selected options
                         optionFee = 0;
                         if (!(input.selectedOptionIds && input.selectedOptionIds.length > 0)) return [
                             3,
-                            9
+                            11
                         ];
                         return [
                             4,
@@ -32161,7 +32349,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 }
                             })
                         ];
-                    case 8:
+                    case 10:
                         options = _state.sent();
                         paidOptions = options.filter(function(option) {
                             return option.type == ServiceOptionType.Paid;
@@ -32173,14 +32361,16 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             return current += previous;
                         });
                         common_.Logger.log("Calculated option fee: " + optionFee + " from " + paidOptions.length + " paid options", 'SharedOrderService.calculateFare');
-                        _state.label = 9;
-                    case 9:
+                        _state.label = 11;
+                    case 11:
                         _cats = cats.map(function(cat) {
                             var services = cat.services, _cat = _object_without_properties_loose(cat, [
                                 "services"
                             ]);
                             var _services = services.filter(function(x) {
-                                return servicesInRegion.filter(function(y) {
+                                return x.deletedAt == null;
+                            }).filter(function(x) {
+                                return unrestrictedServices || servicesInRegion.filter(function(y) {
                                     return y.id == x.id;
                                 }).length > 0;
                             }).filter(function(x) {
@@ -32280,7 +32470,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         return [
                             2,
                             shared_order_service_extends({}, metrics, {
-                                currency: regions[0].currency,
+                                currency: fareCurrency,
                                 services: _cats
                             })
                         ];
@@ -32300,7 +32490,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.createOrder = function createOrder(input) {
         return shared_order_service_async_to_generator(function() {
-            var _this, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, regions, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, isOnlinePayment, _service_gstPercent, gstAmount, _service_platformFee, platformFeeAmount, _service_paymentGatewayFee, paymentGatewayFeeAmount, _input_waitMinutes2, _input_waitMinutes3, orderObject, order, couponResult, activityType;
+            var _this, _regions_, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, regions, _regions__currency, orderCurrency, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, isOnlinePayment, _service_gstPercent, gstAmount, _service_platformFee, platformFeeAmount, _service_paymentGatewayFee, paymentGatewayFeeAmount, _input_waitMinutes2, _input_waitMinutes3, orderObject, order, couponResult, activityType;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32445,9 +32635,12 @@ var SharedOrderService = /*#__PURE__*/ function() {
                     case 12:
                         regions = _state.sent();
                         common_.Logger.log(regions, 'SharedOrderService.createOrder.regions');
-                        if (regions.length === 0) {
-                            throw new apollo_.ForbiddenError('REGION_UNSUPPORTED');
+                        if (regions.length === 0 && !this.regionService.isPointInIndia(input.waypoints[0].point)) {
+                            throw new apollo_.ForbiddenError('Service not available');
                         }
+                        // No Region configured/matching in the Admin Panel — default to INR
+                        // for any pickup point inside India.
+                        orderCurrency = (_regions__currency = (_regions_ = regions[0]) == null ? void 0 : _regions_.currency) != null ? _regions__currency : 'INR';
                         // Only enforce distance limit if explicitly set AND within a practical range.
                         // maximumDestinationDistance=0 means unlimited (default from Admin Panel form).
                         effectiveMaxDistance = service.maximumDestinationDistance && service.maximumDestinationDistance > 0 ? service.maximumDestinationDistance : 500000; // 500 km default cap if not configured
@@ -32462,7 +32655,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         ];
                         return [
                             4,
-                            this.sharedRiderWalletService.getRiderCreditInCurrency(input.riderId, regions[0].currency)
+                            this.sharedRiderWalletService.getRiderCreditInCurrency(input.riderId, orderCurrency)
                         ];
                     case 13:
                         balance = _state.sent();
@@ -32507,7 +32700,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             }).filter(function(c) {
                                 return c !== null;
                             }),
-                            currency: regions[0].currency,
+                            currency: orderCurrency,
                             riderId: input.riderId,
                             points: input.waypoints.map(function(w) {
                                 return w.point;
@@ -32618,7 +32811,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.dispatchRide = function dispatchRide(order) {
         return shared_order_service_async_to_generator(function() {
-            var _order_driverId, _order_rider_media, _order_rider_wallets_filter_, _order_rider_wallets, now, config, _config_preDispatchBufferMinutes, preDispatchBufferMinutes, timeUntilScheduled, intervalMinutes, _order_service_gstPercent, _order_service_platformFee, _order_service_paymentGatewayFee, _order_rider_wallets_filter__balance, _order_options;
+            var _order_driverId, _order_rider_media, _order_rider_wallets_filter_, _order_rider_wallets, _order_service_media, now, config, _config_preDispatchBufferMinutes, preDispatchBufferMinutes, timeUntilScheduled, intervalMinutes, _order_service_gstPercent, _order_service_platformFee, _order_service_paymentGatewayFee, _order_rider_wallets_filter__balance, _order_service_media_address, _order_options;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32691,7 +32884,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 riderFcmTokens: order.rider.notificationPlayerId != null ? [
                                     order.rider.notificationPlayerId
                                 ] : [],
-                                serviceImageAddress: order.service.media.address,
+                                serviceImageAddress: (_order_service_media_address = (_order_service_media = order.service.media) == null ? void 0 : _order_service_media.address) != null ? _order_service_media_address : null,
                                 options: (_order_options = order.options) != null ? _order_options : [],
                                 waypoints: order.waypoints(),
                                 createdAt: order.createdOn,
@@ -33377,6 +33570,18 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         if (!driver) return [
                             2
                         ]; // driver went offline
+                        // Once a driver has accepted, the ride offer is gone and the order
+                        // becomes "active". Block reassigning to a *different* driver from
+                        // here — the previous driver would otherwise be silently bumped.
+                        if (!rideOffer && activeOrder) {
+                            if (activeOrder.driverId === driverId.toString()) {
+                                // Re-assigning the same driver that's already on the order — no-op.
+                                return [
+                                    2
+                                ];
+                            }
+                            throw new apollo_.ForbiddenError('This order already has a driver assigned and in progress. Cancel the trip before reassigning to a different driver.');
+                        }
                         if (rideOffer) {
                             riderId = rideOffer.riderId;
                             waypoints = rideOffer.waypoints;
@@ -47112,7 +47317,7 @@ let OrderService = class OrderService {
                 dropoffEta: order.dropOffEta,
                 status: order.status,
                 serviceName: order.service?.name ?? '-',
-                serviceImageAddress: order.service?.media.address ?? '',
+                serviceImageAddress: order.service?.media?.address ?? '',
                 options: order.options ?? [],
                 waypoints: order.points.map((point)=>({
                         point: point,
@@ -47610,9 +47815,9 @@ _ts_decorate._([
 ], ActiveOrderDTO.prototype, "serviceName", void 0);
 _ts_decorate._([
     (0, _graphql.Field)(()=>String, {
-        nullable: false
+        nullable: true
     }),
-    _ts_metadata._("design:type", String)
+    _ts_metadata._("design:type", Object)
 ], ActiveOrderDTO.prototype, "serviceImageAddress", void 0);
 _ts_decorate._([
     (0, _graphql.Field)(()=>[
@@ -47947,9 +48152,17 @@ let OrderSubscriptionService = class OrderSubscriptionService {
         this.pubsub = pubsub;
     }
     driverEvents(context) {
-        return this.pubsub.asyncIterator('driver.event', {
-            driverId: context.req.extra.user.id
+        const driverId = context.req.extra.user.id;
+        // console.log(
+        //   `[Driver Subscription] Creating Redis subscription for driver=${driverId}`,
+        // );
+        const iterator = this.pubsub.asyncIterator('driver.event', {
+            driverId
         });
+        // console.log(
+        //   `[Driver Subscription] Redis topic=driver:${driverId}:event`,
+        // );
+        return iterator;
     }
 };
 _ts_decorate._([

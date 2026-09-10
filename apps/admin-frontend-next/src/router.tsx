@@ -16,14 +16,14 @@ const DriverReviewsTab = lazy(() => import("@/routes/panel/drivers/$id/reviews")
 const DriverDocumentsTab = lazy(() => import("@/routes/panel/drivers/$id/documents"));
 const DriverReviewPage = lazy(() => import("@/routes/panel/drivers/$id/review"));
 
-const RidersListPage = lazy(() => import("@/routes/panel/riders"));
-const NewRiderPage = lazy(() => import("@/routes/panel/riders/new"));
-const EditRiderPage = lazy(() => import("@/routes/panel/riders/$id/edit"));
-const RiderDetailLayout = lazy(() => import("@/routes/panel/riders/$id/layout"));
-const RiderInfoTab = lazy(() => import("@/routes/panel/riders/$id/info"));
-const RiderAddressesTab = lazy(() => import("@/routes/panel/riders/$id/addresses"));
-const RiderFinancialsTab = lazy(() => import("@/routes/panel/riders/$id/financials"));
-const RiderOrdersTab = lazy(() => import("@/routes/panel/riders/$id/orders"));
+// const RidersListPage = lazy(() => import("@/routes/panel/riders"));
+// const NewRiderPage = lazy(() => import("@/routes/panel/riders/new"));
+// const EditRiderPage = lazy(() => import("@/routes/panel/riders/$id/edit"));
+// const RiderDetailLayout = lazy(() => import("@/routes/panel/riders/$id/layout"));
+// const RiderInfoTab = lazy(() => import("@/routes/panel/riders/$id/info"));
+// const RiderAddressesTab = lazy(() => import("@/routes/panel/riders/$id/addresses"));
+// const RiderFinancialsTab = lazy(() => import("@/routes/panel/riders/$id/financials"));
+// const RiderOrdersTab = lazy(() => import("@/routes/panel/riders/$id/orders"));
 
 const RequestsListPage = lazy(() => import("@/routes/panel/requests"));
 const OrderDetailLayout = lazy(() => import("@/routes/panel/requests/$id/layout"));
@@ -149,20 +149,20 @@ export const router = createBrowserRouter(
         ],
       },
 
-      { path: "riders", Component: RidersListPage },
-      { path: "riders/new", Component: NewRiderPage },
-      { path: "riders/:id/edit", Component: EditRiderPage },
-      {
-        path: "riders/:id",
-        Component: RiderDetailLayout,
-        children: [
-          { index: true, element: <Navigate to="info" replace /> },
-          { path: "info", Component: RiderInfoTab },
-          { path: "addresses", Component: RiderAddressesTab },
-          { path: "financials", Component: RiderFinancialsTab },
-          { path: "orders", Component: RiderOrdersTab },
-        ],
-      },
+      // { path: "riders", Component: RidersListPage },
+      // { path: "riders/new", Component: NewRiderPage },
+      // { path: "riders/:id/edit", Component: EditRiderPage },
+      // {
+      //   path: "riders/:id",
+      //   Component: RiderDetailLayout,
+      //   children: [
+      //     { index: true, element: <Navigate to="info" replace /> },
+      //     { path: "info", Component: RiderInfoTab },
+      //     { path: "addresses", Component: RiderAddressesTab },
+      //     { path: "financials", Component: RiderFinancialsTab },
+      //     { path: "orders", Component: RiderOrdersTab },
+      //   ],
+      // },
 
       { path: "requests", Component: RequestsListPage },
       {

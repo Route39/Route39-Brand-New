@@ -9,6 +9,7 @@ sealed class LoginState with _$LoginState {
     String? hash,
     String? devOtp,
     String? jwtToken,
+    String? refreshToken,
     Fragment$Profile? profile,
     DateTime? lastOtpSentAt,
   }) = _LoginState;

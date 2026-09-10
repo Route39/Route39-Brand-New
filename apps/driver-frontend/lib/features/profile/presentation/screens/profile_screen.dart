@@ -13,6 +13,7 @@ import 'package:ridy_driver/features/profile/presentation/components/profile_hea
 import 'package:ridy_driver/gen/assets.gen.dart';
 
 import '../blocs/profile.bloc.dart';
+import 'package:ridy_driver/core/router/nav_item.dart';
 
 @RoutePage()
 class ProfileScreen extends StatefulWidget {
@@ -127,6 +128,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 onPressed: () {
                                   context.router.push(const SettingsParentRoute());
                                 },
+                              ),
+                              const SizedBox(height: 16),
+                              AppMenuItem(
+                                icon: Icons.logout,
+                                title: context.translate.logout,
+                                onPressed: () => NavItem.logout.onPressed(context),
                               ),
                             ],
                           ),

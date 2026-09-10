@@ -1,4 +1,5 @@
 import {
+  AfterLoad,
   Column,
   CreateDateColumn,
   Entity,
@@ -214,6 +215,22 @@ export class TaxiOrderEntity {
   })
   paymentGatewayFeeAmount!: number;
 
+  /**
+   * Not persisted — computed on load so exports/list views can show the
+   * rider-facing total (base fare + GST + platform fee + gateway fee)
+   * without duplicating this formula in every consumer.
+   */
+  totalCost?: number;
+
+  @AfterLoad()
+  computeTotalCost() {
+    this.totalCost =
+      (this.costAfterCoupon ?? this.costBest ?? 0) +
+      (this.gstAmount ?? 0) +
+      (this.platformFeeAmount ?? 0) +
+      (this.paymentGatewayFeeAmount ?? 0);
+  }
+
   @Column('float', {
     nullable: true,
     precision: 10,
@@ -238,7 +255,9 @@ export class TaxiOrderEntity {
   @Column({ nullable: true })
   waitSeconds?: number;
 
-  @ManyToOne(() => RegionEntity, (region) => region.taxiOrders)
+  @ManyToOne(() => RegionEntity, (region) => region.taxiOrders, {
+    onDelete: 'SET NULL',
+  })
   region?: RegionEntity;
 
   @Column({ nullable: true })

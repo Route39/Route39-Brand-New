@@ -182,8 +182,7 @@ export class ManagementServicesViewComponent implements OnInit {
         (region: { id: string }) => region.id,
       ) as unknown as any;
       this.form.patchValue(service);
-      this.avatarUrl = service.media.address;
-    });
+      this.avatarUrl = service.media?.address;    });
   }
 
   async onSubmit() {

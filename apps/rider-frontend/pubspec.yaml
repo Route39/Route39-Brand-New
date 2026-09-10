@@ -97,13 +97,20 @@ dev_dependencies:
   flutter_launcher_icons: any
   flutter_native_splash: any
 
+flutter_launcher_icons:
+  adaptive_icon_background: "#FFFFFF"
+  android: true
+  ios: true
+  image_path: "assets/images/app_icon.png"
+  min_sdk_android: 21
+
 flutter:
   uses-material-design: true
   generate: true
 
   assets:
-    - .env.dev
-    - .env.prod
+    - dev.env
+    - prod.env
     - assets/images/
     - assets/lottie/
     - assets/notification.mp3
@@ -154,10 +161,15 @@ flutter_gen:
       - .env.dev
       - .env.prod
 
-
 sentry:
   upload_debug_symbols: true
   upload_source_maps: true
   project: taxi-rider
   org: lumeagency
   logger: any
+  flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/images/route39_logo_full.png
+  android_12:
+    image: assets/images/route39_logo_full.png
+    color: "#FFFFFF"

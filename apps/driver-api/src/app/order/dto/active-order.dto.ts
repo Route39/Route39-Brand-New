@@ -57,8 +57,8 @@ export class ActiveOrderDTO {
   status!: OrderStatus;
   @Field(() => String, { nullable: false })
   serviceName!: string;
-  @Field(() => String, { nullable: false })
-  serviceImageAddress!: string;
+  @Field(() => String, { nullable: true })
+  serviceImageAddress?: string | null;
   @Field(() => [ChatMessageDTO])
   chatMessages!: ChatMessageDTO[];
   @Field(() => [RideOptionDTO])

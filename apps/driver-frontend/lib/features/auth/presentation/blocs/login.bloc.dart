@@ -153,10 +153,6 @@ class LoginBloc extends HydratedCubit<LoginState> {
   void _processVerifiedUser(Fragment$VerifyOtpOrPassword response) async {
     final profile = response.user;
     emit(state.copyWith(jwtToken: response.jwtToken, profile: response.user));
-    if (response.hasPassword == false) {
-      emit(state.copyWith(loginPage: LoginPage.setPassword));
-      return;
-    }
     switch (profile.status) {
       case Enum$DriverStatus.Blocked:
       case Enum$DriverStatus.HardReject:

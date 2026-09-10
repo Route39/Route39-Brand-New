@@ -132,7 +132,23 @@ class _WaypointsInputSheetState extends State<WaypointsInputSheet> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text('Your route', style: context.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () => homeBloc.add(
+                                  HomeEvent.changeOrderSubmissionPage(orderSubmissionPage: OrderSubmissionPage.welcome),
+                                ),
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 4),
+                                  child: Icon(Icons.arrow_back, size: 22),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text('Your route', style: context.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                            ],
+                          ),
                           const SizedBox(height: 16),
                           Stack(
                             children: [

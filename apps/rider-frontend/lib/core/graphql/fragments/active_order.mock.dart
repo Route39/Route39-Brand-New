@@ -38,5 +38,6 @@ final mockActiveOrder1 = Fragment$ActiveOrder(
   dropoffEta: 20.minutes.fromNow,
   createdAt: 12.minutes.ago,
   totalCost: 25.0,
+  paymentGatewayFeePercent: 2.0,
   unreadMessagesCount: 10,
 );

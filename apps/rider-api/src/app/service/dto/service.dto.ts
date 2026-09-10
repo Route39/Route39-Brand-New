@@ -45,8 +45,8 @@ export class ServiceDTO {
   prepayPercent!: number;
   @Field(() => Boolean, { nullable: false })
   twoWayAvailable!: boolean;
-  @Field(() => MediaDTO, { nullable: false })
-  media!: MediaDTO;
+  @Field(() => MediaDTO, { nullable: true })
+  media?: MediaDTO;
   @Field(() => [ServiceOptionDTO], { nullable: false })
   options!: ServiceOptionDTO[];
   @Field(() => PricingMode, { nullable: false })

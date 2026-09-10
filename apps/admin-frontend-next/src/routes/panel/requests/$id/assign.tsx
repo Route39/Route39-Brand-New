@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { toast } from "sonner";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -67,6 +68,19 @@ export default function OrderAssignTab() {
     order.status,
   );
 
+  // Once a driver has accepted (or the trip has progressed), the order is
+  // already committed — block reassigning to a different driver from here.
+  const DRIVER_ALREADY_ASSIGNED_STATUSES = [
+    "DriverAccepted",
+    "Arrived",
+    "WaitingForPrePay",
+    "Started",
+    "WaitingForDriverFee",
+    "WaitingForPostPay",
+    "WaitingForReview",
+  ];
+  const driverAlreadyAssigned = DRIVER_ALREADY_ASSIGNED_STATUSES.includes(order.status);
+
   if (loading && !data) return <LoadingBlock />;
 
   if (cannotAssign) {
@@ -88,6 +102,10 @@ export default function OrderAssignTab() {
   }
 
   async function handleAssign(driverId: string) {
+    if (driverAlreadyAssigned) {
+      toast.error("This order already has a driver assigned. Reassigning isn't allowed here.");
+      return;
+    }
     setActiveId(driverId);
     try {
       await assign({ variables: { orderId: order.id, driverId } });
@@ -100,7 +118,16 @@ export default function OrderAssignTab() {
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
+    <div className="space-y-4">
+      {driverAlreadyAssigned ? (
+        <Alert>
+          <AlertDescription>
+            This order already has a driver assigned and is in progress. Reassigning to a
+            different driver is disabled to avoid conflicting with the accepted trip.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      <div className="grid gap-4 lg:grid-cols-[3fr_2fr]">
       <AssignMap
         pickup={pickup ? { lat: pickup.lat, lng: pickup.lng } : undefined}
         drivers={driverLocations}
@@ -135,27 +162,35 @@ export default function OrderAssignTab() {
                     </span>
                   ) : null}
                 </div>
-                <ConfirmAction
-                  title={`Assign ${formatName(d)}?`}
-                  description={`Order #${order.id} will be re-routed to this driver.`}
-                  actionLabel="Assign"
-                  onConfirm={() => handleAssign(d.id)}
-                  trigger={
-                    <Button
-                      type="button"
-                      size="sm"
-                      className="w-full"
-                      disabled={assigning && activeId === d.id}
-                    >
-                      <UserCheck className="size-3.5" />
-                      Assign
-                    </Button>
-                  }
-                />
+                {driverAlreadyAssigned ? (
+                  <Button type="button" size="sm" className="w-full" disabled>
+                    <UserCheck className="size-3.5" />
+                    {d.id === order.driverId ? "Assigned" : "Unavailable"}
+                  </Button>
+                ) : (
+                  <ConfirmAction
+                    title={`Assign ${formatName(d)}?`}
+                    description={`Order #${order.id} will be re-routed to this driver.`}
+                    actionLabel="Assign"
+                    onConfirm={() => handleAssign(d.id)}
+                    trigger={
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="w-full"
+                        disabled={assigning && activeId === d.id}
+                      >
+                        <UserCheck className="size-3.5" />
+                        Assign
+                      </Button>
+                    }
+                  />
+                )}
               </CardContent>
             </Card>
           );
         })}
+      </div>
       </div>
     </div>
   );

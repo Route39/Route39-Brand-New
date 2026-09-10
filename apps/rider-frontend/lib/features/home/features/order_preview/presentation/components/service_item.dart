@@ -35,12 +35,15 @@ class ServiceItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            CachedNetworkImage(
-              imageUrl: entity.media.address,
-              width: 48,
-              height: 48,
-              errorWidget: (context, url, error) => const Icon(Ionicons.car, color: ColorPalette.primary50, size: 32),
-            ),
+            (entity.media?.address == null || entity.media!.address.isEmpty)
+                ? const Icon(Ionicons.car, color: ColorPalette.primary50, size: 32)
+                : CachedNetworkImage(
+                    imageUrl: entity.media!.address,
+                    width: 48,
+                    height: 48,
+                    errorWidget: (context, url, error) =>
+                        const Icon(Ionicons.car, color: ColorPalette.primary50, size: 32),
+                  ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

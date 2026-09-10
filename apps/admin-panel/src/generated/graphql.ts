@@ -22373,6 +22373,13 @@ export type CreateRegionMutationVariables = Exact<{
 
 export type CreateRegionMutation = { __typename?: 'Mutation', createOneRegion: { __typename?: 'Region', id: string } };
 
+export type DeleteRegionMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type DeleteRegionMutation = { __typename?: 'Mutation', deleteOneRegion: { __typename?: 'RegionDeleteResponse', id?: string | null } };
+
 export type ReviewParameterViewQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
@@ -24566,6 +24573,24 @@ export const CreateRegionDocument = gql`
   })
   export class CreateRegionGQL extends Apollo.Mutation<CreateRegionMutation, CreateRegionMutationVariables> {
     document = CreateRegionDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const DeleteRegionDocument = gql`
+    mutation DeleteRegion($id: ID!) {
+  deleteOneRegion(input: {id: $id}) {
+    id
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class DeleteRegionGQL extends Apollo.Mutation<DeleteRegionMutation, DeleteRegionMutationVariables> {
+    document = DeleteRegionDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

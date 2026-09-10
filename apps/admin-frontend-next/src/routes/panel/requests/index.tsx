@@ -1,5 +1,6 @@
 import { useQuery } from "@apollo/client";
-import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { CsvExportButton } from "@/components/tables/CsvExportButton";
@@ -30,6 +31,10 @@ type OrderRow = {
   type: string;
   status: string;
   costBest: number;
+  costAfterCoupon: number;
+  gstAmount: number;
+  platformFeeAmount: number;
+  paymentGatewayFeeAmount: number;
   currency: string;
   addresses: string[];
   riderId: string;
@@ -37,7 +42,15 @@ type OrderRow = {
   fleetId?: string | null;
 };
 
-export default function RequestsListPage() {
+export default function RequestsListPage({
+  disableRowNavigation = false,
+  showBackLink = true,
+  showExportButton = true,
+}: {
+  disableRowNavigation?: boolean;
+  showBackLink?: boolean;
+  showExportButton?: boolean;
+} = {}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { page, pageSize, sort, filters } = usePageState();
@@ -100,7 +113,13 @@ export default function RequestsListPage() {
       header: t("order.cost", { defaultValue: "Cost" }),
       sortField: "costBest",
       align: "right",
-      cell: (r) => formatCurrency(r.costBest, r.currency),
+      // Matches the driver app's "Total" — costAfterCoupon already has the
+      // discount applied, so we only need to add the fees on top.
+      cell: (r) =>
+        formatCurrency(
+          r.costAfterCoupon + r.gstAmount + r.platformFeeAmount + r.paymentGatewayFeeAmount,
+          r.currency,
+        ),
     },
     {
       key: "createdOn",
@@ -112,29 +131,44 @@ export default function RequestsListPage() {
 
   return (
     <div className="space-y-6">
+      {showBackLink ? (
+        <Link
+          to="/dispatcher"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="size-3.5" />
+          Back to Dispatcher
+        </Link>
+      ) : null}
       <PageHeader
         title={t("menu.requests", { defaultValue: "Requests" })}
         description={t("requests.list.description", {
           defaultValue: "All ride requests across the platform.",
         })}
         actions={
-          <CsvExportButton
-            query={EXPORT_ORDERS_QUERY}
-            resultField="exportOrders"
-            fields={[
-              { field: "id", label: "ID" },
-              { field: "createdOn", label: "Created" },
-              { field: "status", label: "Status" },
-              { field: "type", label: "Type" },
-              { field: "costBest", label: "Cost" },
-              { field: "currency", label: "Currency" },
-              { field: "riderId", label: "Rider" },
-              { field: "driverId", label: "Driver" },
-            ]}
-            filter={buildFilterInput(filters)}
-            sorting={buildSortInput(sort)}
-            entityLabel="orders"
-          />
+          showExportButton ? (
+            <CsvExportButton
+              query={EXPORT_ORDERS_QUERY}
+              resultField="exportOrders"
+              fields={[
+                { field: "id", label: "ID" },
+                { field: "createdOn", label: "Created" },
+                { field: "status", label: "Status" },
+                { field: "type", label: "Type" },
+                { field: "costBest", label: "Base Cost" },
+                { field: "gstAmount", label: "GST Amount" },
+                { field: "platformFeeAmount", label: "Platform Fee" },
+                { field: "paymentGatewayFeeAmount", label: "Payment Gateway Fee" },
+                { field: "totalCost", label: "Total (incl. GST & fees)" },
+                { field: "currency", label: "Currency" },
+                { field: "riderId", label: "Rider" },
+                { field: "driverId", label: "Driver" },
+              ]}
+              filter={buildFilterInput(filters)}
+              sorting={buildSortInput(sort)}
+              entityLabel="orders"
+            />
+          ) : null
         }
       />
       <TableToolbar>
@@ -148,7 +182,8 @@ export default function RequestsListPage() {
         loading={loading}
         error={error?.message ?? null}
         rowKey={(r) => r.id}
-        onRowClick={(r) => navigate(`/requests/${r.id}`)}
+        // Row click navigation — disabled when embedded inside Dispatcher
+        onRowClick={disableRowNavigation ? undefined : (r) => navigate(`/requests/${r.id}`)}
       />
     </div>
   );

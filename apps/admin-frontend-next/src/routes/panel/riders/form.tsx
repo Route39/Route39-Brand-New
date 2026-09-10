@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { SwitchField } from "@/components/forms/SwitchField";
+//import { SwitchField } from "@/components/forms/SwitchField";
 import { RIDERS_LIST_QUERY } from "@/lib/graphql/documents/riders";
 import {
   CREATE_RIDER_MUTATION,
@@ -32,14 +32,8 @@ import { useConfirm } from "@/providers/ConfirmProvider";
 
 const baseShape = {
   firstName: z.string().optional(),
-  lastName: z.string().optional(),
   mobileNumber: z.string().min(1, "Phone is required"),
-  email: z.string().email().optional().or(z.literal("")),
   status: z.string().optional(),
-  countryIso: z.string().optional(),
-  gender: z.string().optional(),
-  isResident: z.boolean(),
-  idNumber: z.string().optional(),
 };
 
 const createSchema = z.object({
@@ -80,14 +74,8 @@ export function RiderForm({ mode, id, initialValues }: Props) {
     resolver: zodResolver(mode === "create" ? createSchema : editSchema) as never,
     defaultValues: {
       firstName: "",
-      lastName: "",
       mobileNumber: "",
-      email: "",
       status: "Enabled",
-      countryIso: "",
-      gender: "",
-      isResident: false,
-      idNumber: "",
       password: "",
       ...initialValues,
     },
@@ -101,14 +89,8 @@ export function RiderForm({ mode, id, initialValues }: Props) {
     setSubmitError(null);
     const input: Record<string, unknown> = {
       firstName: values.firstName || null,
-      lastName: values.lastName || null,
       mobileNumber: values.mobileNumber,
-      email: values.email || null,
       status: values.status || null,
-      countryIso: values.countryIso || null,
-      gender: values.gender || null,
-      isResident: values.isResident,
-      idNumber: values.idNumber || null,
     };
     if (values.password) input.password = values.password;
     try {
@@ -149,44 +131,14 @@ export function RiderForm({ mode, id, initialValues }: Props) {
       ) : null}
 
       <FormSection title="Profile">
-        <FormGrid>
+        <FormGrid cols={1}>
           <Field label="First name" htmlFor="firstName">
             <Input id="firstName" {...register("firstName")} />
           </Field>
-          <Field label="Last name" htmlFor="lastName">
-            <Input id="lastName" {...register("lastName")} />
-          </Field>
         </FormGrid>
-        <FormGrid>
+        <FormGrid cols={1}>
           <Field label="Mobile number" htmlFor="mobileNumber" error={errors.mobileNumber?.message} required>
             <Input id="mobileNumber" {...register("mobileNumber")} />
-          </Field>
-          <Field label="Email" htmlFor="email" error={errors.email?.message}>
-            <Input id="email" type="email" {...register("email")} />
-          </Field>
-        </FormGrid>
-        <FormGrid>
-          <Field label="Country (ISO2)" htmlFor="countryIso">
-            <Input id="countryIso" {...register("countryIso")} placeholder="US" />
-          </Field>
-          <Field label="Gender" htmlFor="gender">
-            <Controller
-              control={control}
-              name="gender"
-              render={({ field }) => (
-                <Select value={field.value || "__none__"} onValueChange={(v) => field.onChange(v === "__none__" ? "" : v)}>
-                  <SelectTrigger id="gender">
-                    <SelectValue placeholder="Not specified" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">Not specified</SelectItem>
-                    <SelectItem value="Male">Male</SelectItem>
-                    <SelectItem value="Female">Female</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            />
           </Field>
         </FormGrid>
       </FormSection>
@@ -212,29 +164,16 @@ export function RiderForm({ mode, id, initialValues }: Props) {
             )}
           />
         </Field>
-        <Field
-          label={mode === "create" ? "Password" : "New password (leave blank to keep current)"}
-          htmlFor="password"
-          error={(errors as { password?: { message?: string } }).password?.message}
-          required={mode === "create"}
-        >
-          <Input id="password" type="password" autoComplete="new-password" {...register("password")} />
-        </Field>
-        <Controller
-          control={control}
-          name="isResident"
-          render={({ field }) => (
-            <SwitchField
-              label="Resident"
-              description="Marks the rider as a local resident for tax/regulation purposes."
-              checked={field.value}
-              onChange={field.onChange}
-            />
-          )}
-        />
-        <Field label="ID number" htmlFor="idNumber">
-          <Input id="idNumber" {...register("idNumber")} />
-        </Field>
+        {mode === "create" ? (
+          <Field
+            label="Password"
+            htmlFor="password"
+            error={(errors as { password?: { message?: string } }).password?.message}
+            required
+          >
+            <Input id="password" type="password" autoComplete="new-password" {...register("password")} />
+          </Field>
+        ) : null}
       </FormSection>
 
       <FormActions>

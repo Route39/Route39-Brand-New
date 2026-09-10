@@ -1,4 +1,4 @@
-import { Inject, Logger, UseGuards } from '@nestjs/common';
+import { Inject, Logger, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { Args, CONTEXT, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 import {
@@ -56,8 +56,24 @@ export class AuthResolver {
     const payload = { id: user.id };
     return {
       accessToken: this.jwtService.sign(payload, { expiresIn: '15m' }),
-      refreshToken: this.jwtService.sign(payload),
+      refreshToken: this.jwtService.sign(payload, { expiresIn: '30d' }),
     };
+  }
+
+  @Mutation(() => LoginDTO)
+  async refreshToken(
+    @Args('refreshToken') refreshToken: string,
+  ): Promise<LoginDTO> {
+    try {
+      const payload = this.jwtService.verify(refreshToken);
+      const newPayload = { id: payload.id };
+      return {
+        accessToken: this.jwtService.sign(newPayload, { expiresIn: '15m' }),
+        refreshToken: this.jwtService.sign(newPayload, { expiresIn: '30d' }),
+      };
+    } catch {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
   }
 
   @Query(() => VersionStatus)
@@ -174,6 +190,7 @@ return {
     const payload = { id: user.id };
     return {
       jwtToken: this.jwtService.sign(payload),
+      refreshToken: this.jwtService.sign(payload, { expiresIn: '30d' }),
       user: parsedUser,
       hasName: user.firstName != null && user.lastName != null,
       hasPassword:
@@ -204,6 +221,7 @@ return {
     const payload = { id: user!.id };
     return {
       jwtToken: this.jwtService.sign(payload),
+      refreshToken: this.jwtService.sign(payload, { expiresIn: '30d' }),
       user: parsedUser,
       hasName: parsedUser.firstName != null && parsedUser.lastName != null,
       hasPassword: user!.password != null,

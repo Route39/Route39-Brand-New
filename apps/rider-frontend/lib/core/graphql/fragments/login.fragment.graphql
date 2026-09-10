@@ -11,4 +11,5 @@ fragment VerifyOtpOrPassword on VerifcationResult {
   }
   hasName
   jwtToken
+  refreshToken
 }

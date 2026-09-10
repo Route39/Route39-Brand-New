@@ -16,7 +16,6 @@ class AuthScreenMobile extends StatelessWidget {
       body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Expanded(
           child: SafeArea(
-            top: false,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: AnimatedSwitcher(
