@@ -39,6 +39,17 @@ class EnterOtpForm extends StatelessWidget {
                   style: context.bodyMedium?.copyWith(color: context.theme.colorScheme.onSurfaceVariant),
                   textAlign: TextAlign.center,
                 ),
+
+                const SizedBox(height: 4),
+
+                Text(
+                  "${state.countryCode?.e164CountryCode ?? ''} ${state.mobileNumber ?? ''}",
+                  style: context.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: context.theme.colorScheme.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 16),
                 Center(child: OtpTextField(length: 6, onChanged: loginBloc.onOtpChanged)),
                 if (Env.isDemoMode) ...[

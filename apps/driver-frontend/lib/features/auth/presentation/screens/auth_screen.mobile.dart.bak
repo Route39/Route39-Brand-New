@@ -31,17 +31,18 @@ class AuthScreenMobile extends StatelessWidget {
                 children: [
                   BlocBuilder<LoginBloc, LoginState>(
                     builder: (context, state) {
-                      if (state.loginPage == LoginPage.enterNumber) {
-
-                        return const SizedBox.shrink();
-
-                      }
-
                       return Padding(
                         padding: const EdgeInsets.only(top: 16, left: 16),
                         child: AppBackButton(
                           onPressed: () {
-                            locator<LoginBloc>().onBackPressed();
+                            switch (state.loginPage) {
+                              case LoginPage.enterNumber:
+                                locator<OnboardingCubit>().previousPage();
+                                break;
+
+                              default:
+                                locator<LoginBloc>().onBackPressed();
+                            }
                           },
                         ),
                       );
