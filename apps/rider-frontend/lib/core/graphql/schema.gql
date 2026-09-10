@@ -528,6 +528,7 @@ type VerifyNumberDto {
 
 type VerifcationResult {
   jwtToken: String!
+  refreshToken: String!
   user: Rider!
   hasPassword: Boolean!
   hasName: Boolean!
@@ -1037,6 +1038,7 @@ type Mutation {
   sendChatMessage(orderId: ID!, message: String!): ChatMessage!
   updateLastSeenMessagesAt(orderId: ID!): Boolean!
   login(input: LoginInput!): Login!
+  refreshToken(refreshToken: String!): Login!
   deleteUser: Rider!
 
   """

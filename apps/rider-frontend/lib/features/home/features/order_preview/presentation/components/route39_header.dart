@@ -5,8 +5,9 @@ import 'package:ridy/config/router/app_router.dart';
 class Route39Header extends StatelessWidget {
   final VoidCallback? onBackPressed;
   final Widget? trailingAction;
+  final bool showLeading;
 
-  const Route39Header({super.key, this.onBackPressed, this.trailingAction});
+  const Route39Header({super.key, this.onBackPressed, this.trailingAction, this.showLeading = true});
 
   @override
   Widget build(BuildContext context) {
@@ -15,13 +16,15 @@ class Route39Header extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            icon: Icon(onBackPressed != null ? Icons.arrow_back : Icons.menu, color: Colors.black),
-            onPressed: onBackPressed ?? () => Scaffold.of(context).openDrawer(),
-          ),
+          showLeading
+              ? IconButton(
+                  icon: Icon(onBackPressed != null ? Icons.arrow_back : Icons.menu, color: Colors.black),
+                  onPressed: onBackPressed ?? () => Scaffold.of(context).openDrawer(),
+                )
+              : const SizedBox(width: 48),
           Image.asset(
             'assets/images/route39_logo.png',
-            height: 20,
+            height: 32,
             fit: BoxFit.contain,
           ),
           Row(

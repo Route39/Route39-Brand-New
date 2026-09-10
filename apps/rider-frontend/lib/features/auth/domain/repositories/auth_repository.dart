@@ -7,6 +7,8 @@ abstract class AuthRepository {
 
   Future<ApiResponse<Mutation$VerifyOtp>> verifyOtp(String hash, String otp);
 
+  Future<ApiResponse<Mutation$RefreshToken>> refreshToken(String refreshToken);
+
   Future<ApiResponse<Mutation$VerifyPassword>> verifyPassword(String mobileNumber, String password);
 
   Future<ApiResponse<Mutation$SetPassword>> setPassword(String password);

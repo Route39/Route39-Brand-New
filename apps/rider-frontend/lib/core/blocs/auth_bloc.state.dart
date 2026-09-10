@@ -4,6 +4,7 @@ part of 'auth_bloc.dart';
 sealed class AuthState with _$AuthState {
   const factory AuthState.authenticated({
     required String jwtToken,
+    required String refreshToken,
     required Fragment$Profile profile,
   }) = AuthState$Authenticated;
 

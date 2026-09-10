@@ -48,6 +48,19 @@ class AuthRepositoryMock implements AuthRepository {
   }
 
   @override
+  Future<ApiResponse<Mutation$RefreshToken>> refreshToken(String refreshToken) async {
+    await Future.delayed(Duration(seconds: 1));
+    return ApiResponse.loaded(
+      Mutation$RefreshToken(
+        refreshToken: Mutation$RefreshToken$refreshToken(
+          accessToken: 'mockAccessToken',
+          refreshToken: 'mockRefreshToken',
+        ),
+      ),
+    );
+  }
+
+  @override
   Future<ApiResponse<Mutation$VerifyPassword>> verifyPassword(String mobileNumber, String password) async {
     await Future.delayed(Duration(seconds: 1));
     return ApiResponse.loaded(Mutation$VerifyPassword(verifyPassword: mockVerifyOtpOrPasswordSuccess));

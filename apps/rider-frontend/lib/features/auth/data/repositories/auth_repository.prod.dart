@@ -40,6 +40,17 @@ class LoginRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<ApiResponse<Mutation$RefreshToken>> refreshToken(String refreshToken) async {
+    final refreshTokenResponse = await graphqlDatasource.mutate(
+      Options$Mutation$RefreshToken(
+        fetchPolicy: FetchPolicy.noCache,
+        variables: Variables$Mutation$RefreshToken(refreshToken: refreshToken),
+      ),
+    );
+    return refreshTokenResponse;
+  }
+
+  @override
   Future<ApiResponse<Mutation$VerifyPassword>> verifyPassword(String mobileNumber, String password) async {
     final verifyPasswordResponse = await graphqlDatasource.mutate(
       Options$Mutation$VerifyPassword(

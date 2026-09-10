@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_common/core/presentation/snackbar/snackbar.dart';
 
 class DoubleTapToExit extends StatefulWidget {
@@ -38,7 +39,7 @@ class _DoubleTapToExitState extends State<DoubleTapToExit> {
       context.showSnackBar(message: 'Press back again to exit');
     } else {
       // Exit app explicitly
-      Navigator.of(context).maybePop(result);
+      SystemNavigator.pop();
     }
   }
 

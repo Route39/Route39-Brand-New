@@ -89,14 +89,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                   BlocBuilder<AuthBloc, AuthState>(
                                       builder: (context, stateAuth) {
-                                    return ProfileHeader(
-                                      profile: switch (stateAuth) {
-                                        AuthState$Authenticated(:final profile) =>
-                                          profile,
-                                        _ => throw Exception(),
-                                      },
-                                      aggregationsInfo: data,
-                                    );
+                                    return switch (stateAuth) {
+                                      AuthState$Authenticated(:final profile) =>
+                                        ProfileHeader(
+                                          profile: profile,
+                                          aggregationsInfo: data,
+                                        ),
+                                      _ => const SizedBox(),
+                                    };
                                   }),
                                   const SizedBox(
                                     height: 24,

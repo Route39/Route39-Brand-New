@@ -45714,8 +45714,28 @@ let AuthResolver = class AuthResolver {
             accessToken: this.jwtService.sign(payload, {
                 expiresIn: '15m'
             }),
-            refreshToken: this.jwtService.sign(payload)
+            refreshToken: this.jwtService.sign(payload, {
+                expiresIn: '30d'
+            })
         };
+    }
+    async refreshToken(refreshToken) {
+        try {
+            const payload = this.jwtService.verify(refreshToken);
+            const newPayload = {
+                id: payload.id
+            };
+            return {
+                accessToken: this.jwtService.sign(newPayload, {
+                    expiresIn: '15m'
+                }),
+                refreshToken: this.jwtService.sign(newPayload, {
+                    expiresIn: '30d'
+                })
+            };
+        } catch  {
+            throw new _common.UnauthorizedException('Invalid refresh token');
+        }
     }
     async requireUpdate(versionCode) {
         if (process.env.MANDATORY_VERSION_CODE != null && versionCode < parseInt(process.env.MANDATORY_VERSION_CODE)) {
@@ -45779,6 +45799,9 @@ let AuthResolver = class AuthResolver {
         };
         return {
             jwtToken: this.jwtService.sign(payload),
+            refreshToken: this.jwtService.sign(payload, {
+                expiresIn: '30d'
+            }),
             user: parsedUser,
             hasName: user.firstName != null && user.lastName != null,
             hasPassword: process.env.PASSWORD_REQUIRED?.toLowerCase() === 'false' ? true : user.password != null
@@ -45803,6 +45826,9 @@ let AuthResolver = class AuthResolver {
         };
         return {
             jwtToken: this.jwtService.sign(payload),
+            refreshToken: this.jwtService.sign(payload, {
+                expiresIn: '30d'
+            }),
             user: parsedUser,
             hasName: parsedUser.firstName != null && parsedUser.lastName != null,
             hasPassword: user.password != null
@@ -45969,6 +45995,15 @@ _ts_decorate._([
     ]),
     _ts_metadata._("design:returntype", Promise)
 ], AuthResolver.prototype, "login", null);
+_ts_decorate._([
+    (0, _graphql.Mutation)(()=>_logindto.LoginDTO),
+    _ts_param._(0, (0, _graphql.Args)('refreshToken')),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        String
+    ]),
+    _ts_metadata._("design:returntype", Promise)
+], AuthResolver.prototype, "refreshToken", null);
 _ts_decorate._([
     (0, _graphql.Query)(()=>_database.VersionStatus),
     _ts_param._(0, (0, _graphql.Args)('versionCode', {
@@ -46519,6 +46554,12 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", String)
 ], VerificationDto.prototype, "jwtToken", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", String)
+], VerificationDto.prototype, "refreshToken", void 0);
 _ts_decorate._([
     (0, _graphql.Field)(()=>_riderdto.RiderDTO, {
         nullable: false

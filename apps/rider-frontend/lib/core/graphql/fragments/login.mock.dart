@@ -6,6 +6,7 @@ final mockVerifyOtpOrPasswordSuccess = Fragment$VerifyOtpOrPassword(
   user: mockProfile1,
   hasName: true,
   jwtToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mockTokenExample',
+  refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mockRefreshTokenExample',
 );
 
 final mockVerifyOtpOrPasswordFailed = Fragment$VerifyOtpOrPassword(
@@ -13,6 +14,7 @@ final mockVerifyOtpOrPasswordFailed = Fragment$VerifyOtpOrPassword(
   user: mockProfile2,
   hasName: false,
   jwtToken: '',
+  refreshToken: '',
 );
 
 final mockVerifyNumberSuccess = Fragment$VerifyNumber(

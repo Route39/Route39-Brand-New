@@ -54,9 +54,11 @@ class AppRouter extends RootStackRouter {
                 OnboardingGuard(),
               ],
             ),
-            AutoRoute(
+            CustomRoute(
               page: ProfileParentRoute.page,
               path: 'profile',
+              transitionsBuilder: TransitionsBuilders.noTransition,
+              durationInMilliseconds: 0,
               children: [
                 AutoRoute(
                   page: ProfileRoute.page,
@@ -110,17 +112,21 @@ class AppRouter extends RootStackRouter {
                 AutoRoute(page: LocateFavoriteLocationRoute.page, path: 'locate'),
               ],
             ),
-            AutoRoute(
+            CustomRoute(
               page: ScheduledRidesRoute.page,
               path: 'scheduled-rides',
+              transitionsBuilder: TransitionsBuilders.noTransition,
+              durationInMilliseconds: 0,
             ),
             AutoRoute(
               page: ScheduledRideDetailsRoute.page,
               path: 'scheduled-rides/details',
             ),
-            AutoRoute(
+            CustomRoute(
               page: RideHistoryRoute.page,
               path: 'ride-history',
+              transitionsBuilder: TransitionsBuilders.noTransition,
+              durationInMilliseconds: 0,
             ),
             AutoRoute(
               page: RideHistoryDetailsRoute.page,

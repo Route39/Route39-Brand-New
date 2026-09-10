@@ -6,6 +6,7 @@ import 'package:ridy/config/locator/locator.dart';
 import 'package:ridy/core/blocs/notification_history.cubit.dart';
 import 'package:ridy/core/extensions/extensions.dart';
 import 'package:flutter_common/core/presentation/responsive_dialog/app_top_bar.dart';
+import 'package:ridy/features/home/presentation/components/route39_nav_bar.dart';
 
 @RoutePage()
 class NotificationHistoryScreen extends StatelessWidget {
@@ -14,6 +15,7 @@ class NotificationHistoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: const Route39NavBar(currentIndex: 0),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),

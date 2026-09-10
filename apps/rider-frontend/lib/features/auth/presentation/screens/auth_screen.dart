@@ -34,6 +34,7 @@ class AuthScreen extends StatelessWidget {
             if (state.jwtToken != null) {
               locator<AuthBloc>().onLoggedIn(
                 jwtToken: state.jwtToken!,
+                refreshToken: state.refreshToken!,
                 profile: state.profile!,
               );
             }

@@ -10,7 +10,7 @@
         android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher">
         <meta-data android:name="com.google.android.geo.API_KEY"
-               android:value="AIzaSyCfFU3rDAmKn7OilPL3kFSj2_GlTZ5ArWc"/>
+               android:value="AIzaSyBP78zsF1LbtnZ8KX6IV0OxbIH4C8VHJs4"/>
         <meta-data
                 android:name="io.flutter.embedding.android.EnableImpeller"
                 android:value="false" />

@@ -5,6 +5,8 @@ import { RiderDTO } from '../../rider/dto/rider.dto';
 export class VerificationDto {
   @Field(() => String, { nullable: false })
   jwtToken!: string;
+  @Field(() => String, { nullable: false })
+  refreshToken!: string;
   @Field(() => RiderDTO, { nullable: false })
   user!: RiderDTO;
   @Field(() => Boolean, { nullable: false })
