@@ -16856,6 +16856,10 @@ var TaxiOrderEntity = /*#__PURE__*/ function() {
     "use strict";
     function TaxiOrderEntity() {}
     var _proto = TaxiOrderEntity.prototype;
+    _proto.computeTotalCost = function computeTotalCost() {
+        var _this_costAfterCoupon, _ref, _this_gstAmount, _this_platformFeeAmount, _this_paymentGatewayFeeAmount;
+        this.totalCost = ((_ref = (_this_costAfterCoupon = this.costAfterCoupon) != null ? _this_costAfterCoupon : this.costBest) != null ? _ref : 0) + ((_this_gstAmount = this.gstAmount) != null ? _this_gstAmount : 0) + ((_this_platformFeeAmount = this.platformFeeAmount) != null ? _this_platformFeeAmount : 0) + ((_this_paymentGatewayFeeAmount = this.paymentGatewayFeeAmount) != null ? _this_paymentGatewayFeeAmount : 0);
+    };
     _proto.waypoints = function waypoints() {
         var _this = this;
         switch(this.type){
@@ -17172,6 +17176,12 @@ taxi_order_entity_ts_decorate([
     }),
     taxi_order_entity_ts_metadata("design:type", Number)
 ], TaxiOrderEntity.prototype, "paymentGatewayFeeAmount", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.AfterLoad)(),
+    taxi_order_entity_ts_metadata("design:type", Function),
+    taxi_order_entity_ts_metadata("design:paramtypes", []),
+    taxi_order_entity_ts_metadata("design:returntype", void 0)
+], TaxiOrderEntity.prototype, "computeTotalCost", null);
 taxi_order_entity_ts_decorate([
     (0,external_typeorm_.Column)('float', {
         nullable: true,
@@ -33690,6 +33700,18 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         if (!driver) return [
                             2
                         ]; // driver went offline
+                        // Once a driver has accepted, the ride offer is gone and the order
+                        // becomes "active". Block reassigning to a *different* driver from
+                        // here — the previous driver would otherwise be silently bumped.
+                        if (!rideOffer && activeOrder) {
+                            if (activeOrder.driverId === driverId.toString()) {
+                                // Re-assigning the same driver that's already on the order — no-op.
+                                return [
+                                    2
+                                ];
+                            }
+                            throw new apollo_.ForbiddenError('This order already has a driver assigned and in progress. Cancel the trip before reassigning to a different driver.');
+                        }
                         if (rideOffer) {
                             riderId = rideOffer.riderId;
                             waypoints = rideOffer.waypoints;
@@ -50925,6 +50947,30 @@ _ts_decorate._([
         nullable: false
     }),
     _ts_metadata._("design:type", Number)
+], TaxiOrderDTO.prototype, "gstAmount", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", Number)
+], TaxiOrderDTO.prototype, "platformFeeAmount", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", Number)
+], TaxiOrderDTO.prototype, "paymentGatewayFeeAmount", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], TaxiOrderDTO.prototype, "totalCost", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", Number)
 ], TaxiOrderDTO.prototype, "serviceCost", void 0);
 _ts_decorate._([
     (0, _nestjsquerygraphql.FilterableField)(),
@@ -63932,9 +63978,16 @@ let RiderResolver = class RiderResolver {
         if (!operator.role.permissions.includes(_database.OperatorPermission.Riders_Edit)) {
             throw new _apollo.ForbiddenError('PERMISSION_NOT_GRANTED');
         }
-        await this.sharedRiderService.repo.delete({
-            id
-        });
+        try {
+            await this.sharedRiderService.repo.delete({
+                id
+            });
+        } catch (err) {
+            if (err instanceof _typeorm.QueryFailedError && err.message.includes('foreign key constraint fails')) {
+                throw new _apollo.ForbiddenError('This rider has existing ride requests and cannot be deleted. Set their status to Disabled instead, or delete them once their ride history is no longer needed.');
+            }
+            throw err;
+        }
     }
     async terminateCustomerLoginSession(sessionId) {
         if (process.env.DEMO_MODE?.toLowerCase() == 'true') {

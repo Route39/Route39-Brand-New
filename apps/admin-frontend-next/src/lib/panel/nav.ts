@@ -4,17 +4,14 @@ import {
   Building2,
   Car,
   Compass,
-  Container,
   Gauge,
   Headphones,
   LifeBuoy,
   MapPin,
-  Megaphone,
   Settings,
   ShieldAlert,
   Tag,
   Ticket,
-  User,
   UserCog,
   Users,
   Wallet,
@@ -66,13 +63,14 @@ export const NAV: NavEntry[] = [
       { label: "menu.driver.all", to: "/drivers", search: "?sort=id%7CDESC" },
     ],
   },
-  {
-    label: "menu.riders",
-    icon: User,
-    to: "/riders",
-    search: "?sort=id%7CDESC",
-    perm: ["Riders_View"],
-  },
+  // {
+  //   label: "menu.riders",
+  //   icon: User,
+  //   to: "/riders",
+  //   search: "?sort=id%7CDESC",
+  //   perm: ["Riders_View"],
+  // },
+  /* Requests tab — temporarily disabled
   {
     label: "menu.requests",
     icon: Container,
@@ -80,6 +78,7 @@ export const NAV: NavEntry[] = [
     search: "?sort=id%7CDESC",
     perm: ["Requests_View"],
   },
+  */
   {
     label: "menu.sos",
     icon: ShieldAlert,
@@ -103,6 +102,7 @@ export const NAV: NavEntry[] = [
       { label: "menu.payoutMethods", to: "/payout-methods" },
     ],
   },
+  /* Marketing tab — temporarily disabled
   {
     label: "menu.marketing.header",
     icon: Megaphone,
@@ -114,6 +114,7 @@ export const NAV: NavEntry[] = [
       { label: "menu.marketing.rewards", to: "/marketing/rewards" },
     ],
   },
+  */
   {
     label: "menu.accounting.header",
     icon: Wallet,

@@ -28,14 +28,8 @@ export default function RiderInfoTab() {
         <CardContent>
           <KeyValueList
             items={[
-              { label: "First name", value: rider.firstName },
-              { label: "Last name", value: rider.lastName },
+              { label: "Name", value: rider.firstName },
               { label: "Mobile number", value: rider.mobileNumber },
-              { label: "Email", value: rider.email },
-              { label: "Country", value: rider.countryIso },
-              { label: "Gender", value: rider.gender },
-              { label: "Resident", value: rider.isResident ? "Yes" : "No" },
-              { label: "ID number", value: rider.idNumber },
             ]}
           />
         </CardContent>

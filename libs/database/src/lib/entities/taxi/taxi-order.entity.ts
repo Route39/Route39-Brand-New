@@ -1,4 +1,5 @@
 import {
+  AfterLoad,
   Column,
   CreateDateColumn,
   Entity,
@@ -213,6 +214,22 @@ export class TaxiOrderEntity {
     scale: 2,
   })
   paymentGatewayFeeAmount!: number;
+
+  /**
+   * Not persisted — computed on load so exports/list views can show the
+   * rider-facing total (base fare + GST + platform fee + gateway fee)
+   * without duplicating this formula in every consumer.
+   */
+  totalCost?: number;
+
+  @AfterLoad()
+  computeTotalCost() {
+    this.totalCost =
+      (this.costAfterCoupon ?? this.costBest ?? 0) +
+      (this.gstAmount ?? 0) +
+      (this.platformFeeAmount ?? 0) +
+      (this.paymentGatewayFeeAmount ?? 0);
+  }
 
   @Column('float', {
     nullable: true,

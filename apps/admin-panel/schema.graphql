@@ -2980,6 +2980,10 @@ type Order {
   waitCost: Float!
   rideOptionsCost: Float!
   taxCost: Float!
+  gstAmount: Float!
+  platformFeeAmount: Float!
+  paymentGatewayFeeAmount: Float!
+  totalCost: Float
   serviceCost: Float!
   currency: String!
   destinationArrivedTo: Int!

@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:ionicons/ionicons.dart';
+// import 'package:ionicons/ionicons.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
 import 'package:ridy/core/extensions/extensions.dart';
 
@@ -55,26 +55,9 @@ class Route39ServiceCard extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  (categoryName ?? selectedService.name).toString().toUpperCase(),
-                  style: context.bodySmall?.copyWith(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 10),
-                ),
-                const SizedBox(height: 6),
-                Text(selectedService.name, style: context.titleMedium?.copyWith(fontWeight: FontWeight.bold, fontSize: 14)),
-                if (selectedService.personCapacity != null) ...[
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Ionicons.people, size: 14, color: ColorPalette.neutralVariant50),
-                      const SizedBox(width: 4),
-                      Text('${selectedService.personCapacity} Seats', style: context.bodySmall?.copyWith(fontSize: 11)),
-                    ],
-                  ),
-                ],
-              ],
+            child: Text(
+              'Route39 EV',
+              style: context.titleMedium?.copyWith(fontWeight: FontWeight.bold, fontSize: 14),
             ),
           ),
         ],

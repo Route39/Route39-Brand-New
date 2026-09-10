@@ -157,7 +157,7 @@ flutter_gen:
   integrations:
     lottie: true
   assets:
-  exclude:
+    exclude:
       - .env.dev
       - .env.prod
 

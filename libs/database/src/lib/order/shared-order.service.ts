@@ -1356,6 +1356,19 @@ Logger.log(
 
     if (!driver) return; // driver went offline
 
+    // Once a driver has accepted, the ride offer is gone and the order
+    // becomes "active". Block reassigning to a *different* driver from
+    // here — the previous driver would otherwise be silently bumped.
+    if (!rideOffer && activeOrder) {
+      if (activeOrder.driverId === driverId.toString()) {
+        // Re-assigning the same driver that's already on the order — no-op.
+        return;
+      }
+      throw new ForbiddenError(
+        'This order already has a driver assigned and in progress. Cancel the trip before reassigning to a different driver.',
+      );
+    }
+
     // Determine source of truth for rider + waypoints
     let riderId: string | undefined;
     let waypoints: WaypointBase[] | undefined;

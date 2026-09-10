@@ -63,8 +63,8 @@ export default function OrderDetailLayout() {
   return (
     <div className="space-y-6">
       <DetailHeader
-        backTo="/requests"
-        backLabel="All requests"
+        backTo="/dispatcher"
+        backLabel="Back to Dispatcher"
         title={`Order #${order.id}`}
         subtitle={
           <div className="flex items-center gap-3">

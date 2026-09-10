@@ -24,6 +24,8 @@ import {
 } from "@/lib/graphql/documents/dispatcher";
 import { cn } from "@/lib/utils";
 import { formatCurrency, formatName } from "@/lib/format";
+import RequestsListPage from "@/routes/panel/requests";
+import { NewBookingDialog } from "./NewBookingDialog";
 
 interface LatLng {
   lat: number;
@@ -51,6 +53,12 @@ function waypointLabel(idx: number, total: number): string {
 function waypointMarker(idx: number): string {
   return String.fromCharCode(65 + idx);
 }
+
+// function totalWithFees(svc: { cost: number; gstPercent?: number | null; platformFee?: number | null }): number {
+//   const gstAmount = (svc.cost * (svc.gstPercent ?? 0)) / 100;
+//   const platformFeeAmount = svc.platformFee ?? 0;
+//   return svc.cost + gstAmount + platformFeeAmount;
+// }
 
 const STEPS = ["rider", "locations", "service", "confirm"] as const;
 type Step = (typeof STEPS)[number];
@@ -216,9 +224,15 @@ export default function DispatcherPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Dispatcher" description="Create an order on behalf of a rider." />
-      <Stepper active={step} />
+      <PageHeader
+        title="Dispatcher"
+        description="Create an order on behalf of a rider."
+        actions={<NewBookingDialog />}
+      />
+      { false && <Stepper active={step} />}
 
+      {/* Rider + Map panels — temporarily disabled, Requests list shown instead */}
+      {false && (
       <div className="grid gap-6 lg:grid-cols-[2fr_3fr]">
         <Card>
           <CardHeader>
@@ -323,36 +337,41 @@ export default function DispatcherPage() {
                 {fareLoading && !fareData ? (
                   <LoadingBlock />
                 ) : fareData?.calculateFare?.error ? (
-                  <p className="text-sm text-destructive">
-                    Fare error: {fareData.calculateFare.error}
-                  </p>
+  <p className="text-sm text-destructive">
+    Fare error: {fareData!.calculateFare!.error}
+  </p>
                 ) : !fareData?.calculateFare ? (
                   <p className="text-sm text-muted-foreground">Calculating fare…</p>
                 ) : (
                   <ul className="space-y-1.5">
-                    {fareData.calculateFare.services.flatMap((cat) =>
-                      cat.services.map((svc) => (
-                        <li key={svc.id}>
-                          <button
-                            type="button"
-                            onClick={() => setServiceId(svc.id)}
-                            className={cn(
-                              "flex w-full items-center justify-between rounded-md border border-border px-3 py-2 text-left transition-colors hover:bg-muted/40",
-                              serviceId === svc.id && "border-primary bg-muted/60",
-                            )}
-                          >
-                            <div>
-                              <div className="text-sm font-medium">{svc.name}</div>
-                              {svc.description ? (
-                                <div className="text-xs text-muted-foreground">{svc.description}</div>
-                              ) : null}
-                            </div>
-                            <Badge variant="default">
-                              {formatCurrency(svc.cost, fareData.calculateFare.currency)}
-                            </Badge>
-                          </button>
-                        </li>
-                      )),
+                    {fareData!.calculateFare!.services.flatMap((cat) =>
+  cat.services.map((svc) => {
+                        const gstAmount = (svc.cost * (svc.gstPercent ?? 0)) / 100;
+                        const platformFee = svc.platformFee ?? 0;
+                        const total = svc.cost + gstAmount + platformFee;
+                        return (
+                          <li key={svc.id}>
+                            <button
+                              type="button"
+                              onClick={() => setServiceId(svc.id)}
+                              className={cn(
+                                "flex w-full items-center justify-between rounded-md border border-border px-3 py-2 text-left transition-colors hover:bg-muted/40",
+                                serviceId === svc.id && "border-primary bg-muted/60",
+                              )}
+                            >
+                              <div>
+                                <div className="text-sm font-medium">{svc.name}</div>
+                                {svc.description ? (
+                                  <div className="text-xs text-muted-foreground">{svc.description}</div>
+                                ) : null}
+                              </div>
+                              <Badge variant="default">
+                                {formatCurrency(total, fareData!.calculateFare!.currency)}
+                              </Badge>
+                            </button>
+                          </li>
+                        );
+                      }),
                     )}
                   </ul>
                 )}
@@ -451,6 +470,9 @@ export default function DispatcherPage() {
           </div>
         </Card>
       </div>
+      )}
+
+      <RequestsListPage showBackLink={false} showExportButton={false} />
     </div>
   );
 }

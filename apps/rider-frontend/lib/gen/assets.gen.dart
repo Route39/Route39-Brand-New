@@ -1909,6 +1909,10 @@ class $AssetsCountriesGen {
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
+  /// File path: assets/images/app_icon.png
+  AssetGenImage get appIcon =>
+      const AssetGenImage('assets/images/app_icon.png');
+
   /// File path: assets/images/blue-arrow.png
   AssetGenImage get blueArrow =>
       const AssetGenImage('assets/images/blue-arrow.png');
@@ -1958,12 +1962,21 @@ class $AssetsImagesGen {
   AssetGenImage get route39Logo =>
       const AssetGenImage('assets/images/route39_logo.png');
 
+  /// File path: assets/images/route39_logo_full.png
+  AssetGenImage get route39LogoFull =>
+      const AssetGenImage('assets/images/route39_logo_full.png');
+
   /// File path: assets/images/route39_logo_white.png
   AssetGenImage get route39LogoWhite =>
       const AssetGenImage('assets/images/route39_logo_white.png');
 
+  /// File path: assets/images/route39_splash_padded.png
+  AssetGenImage get route39SplashPadded =>
+      const AssetGenImage('assets/images/route39_splash_padded.png');
+
   /// List of all assets
   List<AssetGenImage> get values => [
+    appIcon,
     blueArrow,
     car,
     cityBg,
@@ -1977,7 +1990,9 @@ class $AssetsImagesGen {
     popularRailwayStation,
     route39AutoPhoto,
     route39Logo,
+    route39LogoFull,
     route39LogoWhite,
+    route39SplashPadded,
   ];
 }
 

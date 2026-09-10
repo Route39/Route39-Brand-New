@@ -247,14 +247,14 @@ export function ServiceForm({ mode, id, initialValues }: Props) {
 
       <FormSection title="Pricing">
         <FormGrid>
-          <Field label="Base fare" htmlFor="baseFare" error={errors.baseFare?.message} required>
+          <Field label="Base fare for 2KM" htmlFor="baseFare" error={errors.baseFare?.message} required>
             <Input id="baseFare" type="number" step="0.01" {...register("baseFare")} />
           </Field>
-          <Field label="Minimum fee" htmlFor="minimumFee" error={errors.minimumFee?.message} required>
+          <Field label="Fare from 3rd KM" htmlFor="minimumFee" error={errors.minimumFee?.message} required>
             <Input id="minimumFee" type="number" step="0.01" {...register("minimumFee")} />
           </Field>
         </FormGrid>
-        <FormGrid>
+        {/* <FormGrid>
           <Field label="Per 100m" htmlFor="perHundredMeters" error={errors.perHundredMeters?.message} required>
             <Input id="perHundredMeters" type="number" step="0.01" {...register("perHundredMeters")} />
           </Field>
@@ -264,11 +264,11 @@ export function ServiceForm({ mode, id, initialValues }: Props) {
           <Field label="Per minute wait" htmlFor="perMinuteWait" error={errors.perMinuteWait?.message} required>
             <Input id="perMinuteWait" type="number" step="0.01" {...register("perMinuteWait")} />
           </Field>
-        </FormGrid>
+        </FormGrid> */}
         <FormGrid>
-          <Field label="Prepay %" htmlFor="prepayPercent" error={errors.prepayPercent?.message} required>
+          {/* <Field label="Prepay %" htmlFor="prepayPercent" error={errors.prepayPercent?.message} required>
             <Input id="prepayPercent" type="number" {...register("prepayPercent")} />
-          </Field>
+          </Field> */}
           <Field label="Provider share %" htmlFor="providerSharePercent" error={errors.providerSharePercent?.message} required>
             <Input id="providerSharePercent" type="number" {...register("providerSharePercent")} />
           </Field>
@@ -278,22 +278,25 @@ export function ServiceForm({ mode, id, initialValues }: Props) {
           <Field label="Search radius (m)" htmlFor="searchRadius" error={errors.searchRadius?.message} required>
             <Input id="searchRadius" type="number" {...register("searchRadius")} />
           </Field>
+          <Field label="Payment Gateway Fee %" htmlFor="paymentGatewayFee" error={errors.paymentGatewayFee?.message}>
+            <Input id="paymentGatewayFee" type="number" step="0.01" {...register("paymentGatewayFee")} />
+          </Field>
         </FormGrid>
-        <FormGrid>
+        {/* <FormGrid>
           <Field label="Cancellation total fee" htmlFor="cancellationTotalFee" error={errors.cancellationTotalFee?.message} required>
             <Input id="cancellationTotalFee" type="number" step="0.01" {...register("cancellationTotalFee")} />
           </Field>
           <Field label="Cancellation driver share" htmlFor="cancellationDriverShare" error={errors.cancellationDriverShare?.message} required>
             <Input id="cancellationDriverShare" type="number" step="0.01" {...register("cancellationDriverShare")} />
           </Field>
-        </FormGrid>
+        </FormGrid> */}
         <FormGrid>
           <Field label="Person capacity" htmlFor="personCapacity">
             <Input id="personCapacity" type="number" {...register("personCapacity")} />
           </Field>
-          <Field label="Display priority" htmlFor="displayPriority">
+          {/* <Field label="Display priority" htmlFor="displayPriority">
             <Input id="displayPriority" type="number" {...register("displayPriority")} />
-          </Field>
+          </Field> */}
           <Field label="Payment method" htmlFor="paymentMethod">
             <Controller
               control={control}
@@ -319,9 +322,6 @@ export function ServiceForm({ mode, id, initialValues }: Props) {
           </Field>
           <Field label="Platform fee" htmlFor="platformFee" error={errors.platformFee?.message}>
             <Input id="platformFee" type="number" step="0.01" {...register("platformFee")} />
-          </Field>
-          <Field label="Payment Gateway Fee %" htmlFor="paymentGatewayFee" error={errors.paymentGatewayFee?.message}>
-            <Input id="paymentGatewayFee" type="number" step="0.01" {...register("paymentGatewayFee")} />
           </Field>
         </FormGrid>
       </FormSection>
