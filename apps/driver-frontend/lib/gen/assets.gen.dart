@@ -2080,6 +2080,10 @@ class $AssetsImagesGen {
   AssetGenImage get cardHexagon =>
       const AssetGenImage('assets/images/card-hexagon.png');
 
+  /// File path: assets/images/cargo_auto.png
+  AssetGenImage get cargoAuto =>
+      const AssetGenImage('assets/images/cargo_auto.png');
+
   /// File path: assets/images/drawer-top-background.png
   AssetGenImage get drawerTopBackground =>
       const AssetGenImage('assets/images/drawer-top-background.png');
@@ -2134,6 +2138,10 @@ class $AssetsImagesGen {
   /// File path: assets/images/order-request-header.png
   AssetGenImage get orderRequestHeader =>
       const AssetGenImage('assets/images/order-request-header.png');
+
+  /// File path: assets/images/passenger_auto.png
+  AssetGenImage get passengerAuto =>
+      const AssetGenImage('assets/images/passenger_auto.png');
 
   /// File path: assets/images/paypal.png
   AssetGenImage get paypal => const AssetGenImage('assets/images/paypal.png');
@@ -2210,6 +2218,7 @@ class $AssetsImagesGen {
     cardBackground3,
     cardBackground4,
     cardHexagon,
+    cargoAuto,
     drawerTopBackground,
     evAutoIcon,
     googlemapPreview,
@@ -2224,6 +2233,7 @@ class $AssetsImagesGen {
     onboarding2,
     openstreetPreview,
     orderRequestHeader,
+    passengerAuto,
     paypal,
     profileHeaderBackground,
     rideHistoryEmptyState,
@@ -2267,6 +2277,8 @@ class $AssetsLottieGen {
 }
 
 abstract final class Assets {
+  static const String aEnvDev = '.env.dev';
+  static const String aEnvProd = '.env.prod';
   static const $AssetsAvatarsGen avatars = $AssetsAvatarsGen();
   static const $AssetsCountriesGen countries = $AssetsCountriesGen();
   static const $AssetsImagesGen images = $AssetsImagesGen();
@@ -2274,7 +2286,7 @@ abstract final class Assets {
   static const String notification = 'assets/notification.mp3';
 
   /// List of all assets
-  static List<String> get values => [notification];
+  static List<String> get values => [aEnvDev, aEnvProd, notification];
 }
 
 class AssetGenImage {

@@ -37,12 +37,33 @@ class AuthScreenMobile extends StatelessWidget {
 
                       }
 
+                      final showHelp = state.selectedCity == null ||
+                          state.selectedVehicleType == null ||
+                          !state.documentsChecklistDone;
+
                       return Padding(
-                        padding: const EdgeInsets.only(top: 16, left: 16),
-                        child: AppBackButton(
-                          onPressed: () {
-                            locator<LoginBloc>().onBackPressed();
-                          },
+                        padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+                        child: Row(
+                          children: [
+                            AppBackButton(
+                              onPressed: () {
+                                locator<LoginBloc>().onBackPressed();
+                              },
+                            ),
+                            const Spacer(),
+                            if (showHelp)
+                              OutlinedButton.icon(
+                                onPressed: () {},
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.black,
+                                  side: const BorderSide(color: Colors.black26),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                ),
+                                icon: const Icon(Icons.headset_mic_outlined, size: 18),
+                                label: const Text('Help'),
+                              ),
+                          ],
                         ),
                       );
                     },

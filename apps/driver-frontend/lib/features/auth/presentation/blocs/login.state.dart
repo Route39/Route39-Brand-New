@@ -33,6 +33,9 @@ sealed class LoginState with _$LoginState {
     @Default(ApiResponseInitial()) ApiResponse<dynamic> setPasswordResponse,
     @Default(ApiResponseInitial())
     ApiResponse<dynamic> completeRegistrationResponse,
+    String? selectedCity,
+    String? selectedVehicleType,
+    @Default(false) bool documentsChecklistDone,
   }) = _LoginState;
 
   const LoginState._();
@@ -77,11 +80,11 @@ sealed class LoginState with _$LoginState {
     LoginPage.enterOtp => 300,
     LoginPage.enterPassword => 400,
     LoginPage.setPassword => 400,
-    LoginPage.contactDetails => 700,
+    LoginPage.contactDetails => (selectedCity == null || selectedVehicleType == null) ? double.infinity : 700,
     LoginPage.vehicleDetails => double.infinity,
     LoginPage.documents => double.infinity,
     LoginPage.accessDenied => 100,
-    LoginPage.success => 100,
+    LoginPage.success => (selectedCity == null || selectedVehicleType == null) ? double.infinity : 100,
   };
 
   Input$CompleteRegistrationInput get toProfileInput =>

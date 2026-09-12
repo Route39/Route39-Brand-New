@@ -36,18 +36,20 @@ class AuthScreen extends StatelessWidget {
               },
             ),
             BlocListener<LoginBloc, LoginState>(
-              listenWhen: (previous, current) => previous.loginPage != current.loginPage,
+              listenWhen: (previous, current) =>
+                  previous.loginPage != current.loginPage ||
+                  previous.selectedCity != current.selectedCity ||
+                  previous.selectedVehicleType != current.selectedVehicleType ||
+                  previous.documentsChecklistDone != current.documentsChecklistDone,
               listener: (context, state) {
-                switch (state.loginPage) {
-                  case LoginPage.success:
-                    locator<OnboardingCubit>().skip();
-                    locator<LoginBloc>().clear();
-                    locator<LoginBloc>().reset();
-                    context.router.replaceAll([const HomeRoute()]);
-                    break;
-
-                  default:
-                    break;
+                final onboardingExtrasDone = state.selectedCity != null &&
+                    state.selectedVehicleType != null &&
+                    state.documentsChecklistDone;
+                if (state.loginPage == LoginPage.success && onboardingExtrasDone) {
+                  locator<OnboardingCubit>().skip();
+                  locator<LoginBloc>().clear();
+                  locator<LoginBloc>().reset();
+                  context.router.replaceAll([const HomeRoute()]);
                 }
               },
             ),

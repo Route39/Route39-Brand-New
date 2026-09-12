@@ -27,13 +27,28 @@ class LoginBloc extends HydratedCubit<LoginState> {
   LoginBloc(this.repository) : super(LoginState());
 
   void onBackPressed() {
+    if (state.loginPage == LoginPage.contactDetails || state.loginPage == LoginPage.success) {
+      if (state.documentsChecklistDone) {
+        emit(state.copyWith(documentsChecklistDone: false));
+        return;
+      }
+      if (state.selectedVehicleType != null) {
+        emit(state.copyWith(selectedVehicleType: null));
+        return;
+      }
+      if (state.selectedCity != null) {
+        emit(state.copyWith(selectedCity: null));
+        return;
+      }
+      emit(state.copyWith(loginPage: LoginPage.enterOtp));
+      return;
+    }
     emit(
       state.copyWith(
         loginPage: switch (state.loginPage) {
           LoginPage.enterOtp => LoginPage.enterNumber,
           LoginPage.enterPassword => LoginPage.enterNumber,
           LoginPage.setPassword => LoginPage.enterNumber,
-          LoginPage.contactDetails => LoginPage.enterOtp,
           LoginPage.vehicleDetails => LoginPage.contactDetails,
           LoginPage.documents => LoginPage.contactDetails,
           _ => state.loginPage,
@@ -41,6 +56,14 @@ class LoginBloc extends HydratedCubit<LoginState> {
       ),
     );
   }
+
+  void onCityConfirmed(String city) => emit(state.copyWith(selectedCity: city));
+
+  void onVehicleConfirmed(String vehicleType) =>
+      emit(state.copyWith(selectedVehicleType: vehicleType));
+
+  void onDocumentsChecklistConfirmed() =>
+      emit(state.copyWith(documentsChecklistDone: true));
 
   void reset() => emit(LoginState());
 

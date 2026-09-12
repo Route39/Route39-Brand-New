@@ -176,3 +176,10 @@ sentry:
   upload_source_maps: true
   project: taxi-driver
   org: lumeagency
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/images/route39_logo_full.png
+  android_12:
+    image: assets/images/route39_logo_full.png
+    color: "#FFFFFF"
