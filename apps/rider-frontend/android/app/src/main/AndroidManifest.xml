@@ -8,7 +8,8 @@
         android:label="Route39"
         android:name="${applicationName}"
         android:enableOnBackInvokedCallback="true"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
         <meta-data android:name="com.google.android.geo.API_KEY"
                android:value="AIzaSyBP78zsF1LbtnZ8KX6IV0OxbIH4C8VHJs4"/>
         <meta-data

@@ -5957,6 +5957,15 @@ service_entity_ts_decorate([
     service_entity_ts_metadata("design:type", Number)
 ], ServiceEntity.prototype, "paymentGatewayFee", void 0);
 service_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        nullable: true,
+        precision: 10,
+        scale: 2,
+        comment: 'Extra per-km charge applied after 45 minutes, used for Cargo services'
+    }),
+    service_entity_ts_metadata("design:type", Number)
+], ServiceEntity.prototype, "cargoExtraKmChargeAfter45Min", void 0);
+service_entity_ts_decorate([
     (0,external_typeorm_.OneToOne)(function() {
         return MediaEntity;
     }, {
@@ -50577,6 +50586,12 @@ _ts_decorate._([
 ], ServiceDTO.prototype, "paymentGatewayFee", void 0);
 _ts_decorate._([
     (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceDTO.prototype, "cargoExtraKmChargeAfter45Min", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
         nullable: false
     }),
     _ts_metadata._("design:type", Number)
@@ -64915,6 +64930,12 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", Number)
 ], ServiceInput.prototype, "paymentGatewayFee", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceInput.prototype, "cargoExtraKmChargeAfter45Min", void 0);
 _ts_decorate._([
     (0, _graphql.Field)(()=>_graphql.Float, {
         nullable: false

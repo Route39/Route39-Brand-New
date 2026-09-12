@@ -29,7 +29,7 @@ export class EarningsService {
     const mostUsedCurrency: string = q[0].currency;
     let dataset: Datapoint[];
     const fields =
-      'SUM(costBest - providerShare) AS earning, COUNT(id) AS count, SUM(distanceBest) AS distance, SUM(durationBest) AS time';
+      'SUM(costAfterCoupon + gstAmount + platformFeeAmount + paymentGatewayFeeAmount) AS earning, COUNT(id) AS count, SUM(distanceBest) AS distance, SUM(durationBest) AS time';
     switch (timeFrame) {
       case TimeQuery.Daily:
         dataset = await this.requestRepository.query(
@@ -81,7 +81,7 @@ export class EarningsService {
     // Convert requestTimestamp to IST (+5:30) before comparing dates, since dates from
     // the client are in IST but requestTimestamp is stored in UTC.
     const sumQuery: Array<any> = await this.requestRepository.query(
-      "SELECT SUM(costBest - providerShare) AS totalEarning FROM request WHERE DATE(CONVERT_TZ(requestTimestamp, '+00:00', '+05:30')) >= DATE(CONVERT_TZ(?, '+00:00', '+05:30')) AND DATE(CONVERT_TZ(requestTimestamp, '+00:00', '+05:30')) <= DATE(CONVERT_TZ(?, '+00:00', '+05:30')) AND driverId = ? AND currency = ? AND status = 'Finished'",
+      "SELECT SUM(costAfterCoupon + gstAmount + platformFeeAmount + paymentGatewayFeeAmount) AS totalEarning FROM request WHERE DATE(CONVERT_TZ(requestTimestamp, '+00:00', '+05:30')) >= DATE(CONVERT_TZ(?, '+00:00', '+05:30')) AND DATE(CONVERT_TZ(requestTimestamp, '+00:00', '+05:30')) <= DATE(CONVERT_TZ(?, '+00:00', '+05:30')) AND driverId = ? AND currency = ? AND status = 'Finished'",
       [input.startDate, input.endDate, input.driverId, mostUsedCurrency],
     );
     const sumOfCurrentPeriod = sumQuery[0]?.totalEarning || 0;
@@ -95,7 +95,7 @@ export class EarningsService {
           `SELECT 
             time_slots.name,
             DATE_FORMAT(CURRENT_TIMESTAMP, '%d %b %y') AS current,
-            COALESCE(SUM(r.costBest - r.providerShare), 0) AS earning,
+            COALESCE(SUM(r.costAfterCoupon + r.gstAmount + r.platformFeeAmount + r.paymentGatewayFeeAmount), 0) AS earning,
             COALESCE(COUNT(r.id), 0) AS count,
             COALESCE(SUM(r.distanceBest), 0) AS distance,
             COALESCE(SUM(r.durationBest), 0) AS time
@@ -133,7 +133,7 @@ export class EarningsService {
           `SELECT 
             DATE_FORMAT(all_dates.date, '%a') AS name,
             DATE_FORMAT(CURRENT_TIMESTAMP, '%d %b %y') AS current,
-            COALESCE(SUM(r.costBest - r.providerShare), 0) AS earning,
+            COALESCE(SUM(r.costAfterCoupon + r.gstAmount + r.platformFeeAmount + r.paymentGatewayFeeAmount), 0) AS earning,
             COALESCE(COUNT(r.id), 0) AS count,
             COALESCE(SUM(r.distanceBest), 0) AS distance,
             COALESCE(SUM(r.durationBest), 0) AS time
@@ -166,7 +166,7 @@ export class EarningsService {
           `SELECT 
             CONCAT('Week ', week_numbers.week_num) AS name,
             CONCAT(DATE_FORMAT(DATE(CONCAT(YEAR(CURRENT_TIMESTAMP), '-', MONTH(CURRENT_TIMESTAMP), '-01')), '%d %b %y'), ' - ', DATE_FORMAT(LAST_DAY(CURRENT_TIMESTAMP), '%d %b %y')) AS current,
-            COALESCE(SUM(r.costBest - r.providerShare), 0) AS earning,
+            COALESCE(SUM(r.costAfterCoupon + r.gstAmount + r.platformFeeAmount + r.paymentGatewayFeeAmount), 0) AS earning,
             COALESCE(COUNT(r.id), 0) AS count,
             COALESCE(SUM(r.distanceBest), 0) AS distance,
             COALESCE(SUM(r.durationBest), 0) AS time
@@ -194,7 +194,7 @@ export class EarningsService {
 
     // Fetch the earnings from the driver's most recent completed order
     const lastOrderQuery: Array<any> = await this.requestRepository.query(
-      "SELECT (costBest - providerShare) AS lastOrderEarning FROM request WHERE driverId = ? AND currency = ? AND status = 'Finished' ORDER BY requestTimestamp DESC LIMIT 1",
+      "SELECT (costAfterCoupon + gstAmount + platformFeeAmount + paymentGatewayFeeAmount) AS lastOrderEarning FROM request WHERE driverId = ? AND currency = ? AND status = 'Finished' ORDER BY requestTimestamp DESC LIMIT 1",
       [input.driverId, mostUsedCurrency],
     );
     const lastOrderEarnings = lastOrderQuery[0]?.lastOrderEarning ?? null;

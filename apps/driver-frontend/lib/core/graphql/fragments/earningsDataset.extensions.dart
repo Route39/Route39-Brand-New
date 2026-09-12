@@ -52,6 +52,7 @@ extension EarningsdatasetX on Query$Earnings {
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
+            reservedSize: 40,
             getTitlesWidget: (value, meta) {
               return Transform.rotate(
                 angle: -45 * 3.14 / 180,
@@ -84,15 +85,21 @@ extension EarningsdatasetX on Query$Earnings {
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            reservedSize: 40,
+            reservedSize: 56,
             getTitlesWidget: (value, meta) {
-              return Text(
-                value.formatCurrency(getStatsNew.currency),
-                style: const TextStyle(
-                  color: Color(0xFF73777F),
-                  fontSize: 10,
-                  fontFamily: Fonts.secondary,
-                  fontWeight: FontWeight.w400,
+              return Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: Text(
+                  value.formatCurrency(getStatsNew.currency),
+                  textAlign: TextAlign.right,
+                  softWrap: false,
+                  overflow: TextOverflow.visible,
+                  style: const TextStyle(
+                    color: Color(0xFF73777F),
+                    fontSize: 10,
+                    fontFamily: Fonts.secondary,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
               );
             },

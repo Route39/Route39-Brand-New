@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@apollo/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import { Textarea } from "@/components/ui/textarea";
+//import { Textarea } from "@/components/ui/textarea";
 import { ORDER_TYPE_OPTIONS } from "@/lib/panel/enum-options";
 import { SERVICES_LIST_QUERY } from "@/lib/graphql/documents/management";
 import { useConfirm } from "@/providers/ConfirmProvider";
@@ -56,6 +56,7 @@ const schema = z.object({
   gstPercent: optionalNumericString("Must be a number"),
   platformFee: optionalNumericString("Must be a number"),
   paymentGatewayFee: optionalNumericString("Must be a number"),
+  cargoExtraKmChargeAfter45Min: optionalNumericString("Must be a number"),
   paymentMethod: z.enum(["Both", "OnlyCash", "OnlyOnline"]),
   orderTypes: z.array(z.string()).min(1, "Pick at least one order type"),
   mediaId: z.string().optional(),
@@ -79,12 +80,35 @@ export function ServiceForm({ mode, id, initialValues }: Props) {
   ];
 
   const { data: catData } = useQuery(SERVICE_CATEGORIES_QUERY);
-  const categories = catData?.serviceCategories ?? [];
+  // Only "Passenger Auto" and "Cargo" are selectable — category management
+  // was disabled in favor of these two fixed options. Matching is
+  // case/whitespace-insensitive, and whatever category a service is
+  // *currently* assigned to is always kept in the list too (even if it's
+  // neither of the two), so editing an existing service never shows a
+  // blank dropdown just because its category name doesn't match exactly.
+  const ALLOWED_CATEGORY_NAMES = ["Passenger Auto", "Cargo"];
+  const categories = useMemo(() => {
+    const all = catData?.serviceCategories ?? [];
+    const allowed = all.filter((c) =>
+      ALLOWED_CATEGORY_NAMES.some(
+        (name) => name.toLowerCase() === c.name.trim().toLowerCase(),
+      ),
+    );
+    const currentId = initialValues?.categoryId;
+    if (currentId && !allowed.some((c) => c.id === currentId)) {
+      const current = all.find((c) => c.id === currentId);
+      if (current) return [...allowed, current];
+    }
+    return allowed;
+  }, [catData, initialValues?.categoryId]);
 
   const {
     register,
     handleSubmit,
     control,
+    setValue,
+    setError,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<Values>({
     resolver: zodResolver(schema),
@@ -108,18 +132,38 @@ export function ServiceForm({ mode, id, initialValues }: Props) {
       gstPercent: "",
       platformFee: "",
       paymentGatewayFee: "",
+      cargoExtraKmChargeAfter45Min: "",
       paymentMethod: "Both",
       orderTypes: ["Ride"],
       mediaId: "",
     },
   });
 
+  // Default new services to "Passenger Auto" once the categories load.
+  useEffect(() => {
+    if (mode !== "create") return;
+    const passengerAuto = categories.find((c) => c.name === "Passenger Auto");
+    if (passengerAuto) {
+      setValue("categoryId", passengerAuto.id, { shouldValidate: false });
+    }
+  }, [mode, categories, setValue]);
+
   const [createOne] = useMutation(CREATE_SERVICE_MUTATION, { refetchQueries });
   const [updateOne] = useMutation(UPDATE_SERVICE_MUTATION, { refetchQueries });
   const [deleteOne, { loading: deleting }] = useMutation(DELETE_SERVICE_MUTATION, { refetchQueries });
 
+  const selectedCategoryId = watch("categoryId");
+  const isCargoCategory =
+    categories.find((c) => c.id === selectedCategoryId)?.name.trim().toLowerCase() === "cargo";
+
   const onSubmit = handleSubmit(async (values) => {
     setSubmitError(null);
+    if (isCargoCategory && !values.cargoExtraKmChargeAfter45Min) {
+      setError("cargoExtraKmChargeAfter45Min", {
+        message: "Required for Cargo services",
+      });
+      return;
+    }
     const input = {
       name: values.name,
       description: values.description || null,
@@ -140,6 +184,9 @@ export function ServiceForm({ mode, id, initialValues }: Props) {
       gstPercent: values.gstPercent ? Number(values.gstPercent) : null,
       platformFee: values.platformFee ? Number(values.platformFee) : null,
       paymentGatewayFee: values.paymentGatewayFee ? Number(values.paymentGatewayFee) : null,
+      cargoExtraKmChargeAfter45Min: values.cargoExtraKmChargeAfter45Min
+        ? Number(values.cargoExtraKmChargeAfter45Min)
+        : null,
       paymentMethod: (values.paymentMethod === "Both" ? "CashCredit" : values.paymentMethod === "OnlyOnline" ? "OnlyCredit" : "OnlyCash") as never,
       orderTypes: values.orderTypes as never,
       twoWayAvailable: false,
@@ -209,9 +256,9 @@ export function ServiceForm({ mode, id, initialValues }: Props) {
             />
           </Field>
         </FormGrid>
-        <Field label="Description" htmlFor="description">
+        {/* <Field label="Description" htmlFor="description">
           <Textarea id="description" rows={2} {...register("description")} />
-        </Field>
+        </Field> */}
         <Field label="Order types" error={errors.orderTypes?.message as string | undefined}>
           <Controller
             control={control}
@@ -290,6 +337,14 @@ export function ServiceForm({ mode, id, initialValues }: Props) {
             <Input id="cancellationDriverShare" type="number" step="0.01" {...register("cancellationDriverShare")} />
           </Field>
         </FormGrid> */}
+         <FormGrid>
+          <Field label="GST %" htmlFor="gstPercent" error={errors.gstPercent?.message}>
+            <Input id="gstPercent" type="number" step="0.01" {...register("gstPercent")} />
+          </Field>
+          <Field label="Platform fee" htmlFor="platformFee" error={errors.platformFee?.message}>
+            <Input id="platformFee" type="number" step="0.01" {...register("platformFee")} />
+          </Field>
+        </FormGrid>
         <FormGrid>
           <Field label="Person capacity" htmlFor="personCapacity">
             <Input id="personCapacity" type="number" {...register("personCapacity")} />
@@ -297,7 +352,7 @@ export function ServiceForm({ mode, id, initialValues }: Props) {
           {/* <Field label="Display priority" htmlFor="displayPriority">
             <Input id="displayPriority" type="number" {...register("displayPriority")} />
           </Field> */}
-          <Field label="Payment method" htmlFor="paymentMethod">
+          {/* <Field label="Payment method" htmlFor="paymentMethod">
             <Controller
               control={control}
               name="paymentMethod"
@@ -314,15 +369,24 @@ export function ServiceForm({ mode, id, initialValues }: Props) {
                 </Select>
               )}
             />
-          </Field>
-        </FormGrid>
-        <FormGrid>
-          <Field label="GST %" htmlFor="gstPercent" error={errors.gstPercent?.message}>
-            <Input id="gstPercent" type="number" step="0.01" {...register("gstPercent")} />
-          </Field>
-          <Field label="Platform fee" htmlFor="platformFee" error={errors.platformFee?.message}>
-            <Input id="platformFee" type="number" step="0.01" {...register("platformFee")} />
-          </Field>
+          </Field> */}
+          {isCargoCategory ? (
+          <FormGrid>
+            <Field
+              label="Added KM charges after 45 min"
+              htmlFor="cargoExtraKmChargeAfter45Min"
+              error={errors.cargoExtraKmChargeAfter45Min?.message}
+              required
+            >
+              <Input
+                id="cargoExtraKmChargeAfter45Min"
+                type="number"
+                step="0.01"
+                {...register("cargoExtraKmChargeAfter45Min")}
+              />
+            </Field>
+          </FormGrid>
+        ) : null}
         </FormGrid>
       </FormSection>
 

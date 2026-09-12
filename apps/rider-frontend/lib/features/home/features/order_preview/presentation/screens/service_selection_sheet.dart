@@ -378,25 +378,7 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text((categoryName ?? selectedService.name).toString().toUpperCase(),
-                    style: context.bodySmall?.copyWith(color: Colors.red, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 2),
-                Text(selectedService.name, style: context.titleMedium),
-                if (selectedService.personCapacity != null) ...[
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Ionicons.people, size: 16, color: ColorPalette.neutralVariant50),
-                      const SizedBox(width: 4),
-                      Text('${selectedService.personCapacity} Seats', style: context.bodySmall),
-                    ],
-                  ),
-                ],
-              ],
-            ),
+            child: Text('Route39 EV', style: context.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

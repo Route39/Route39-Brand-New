@@ -5853,6 +5853,15 @@ service_entity_ts_decorate([
     service_entity_ts_metadata("design:type", Number)
 ], ServiceEntity.prototype, "paymentGatewayFee", void 0);
 service_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        nullable: true,
+        precision: 10,
+        scale: 2,
+        comment: 'Extra per-km charge applied after 45 minutes, used for Cargo services'
+    }),
+    service_entity_ts_metadata("design:type", Number)
+], ServiceEntity.prototype, "cargoExtraKmChargeAfter45Min", void 0);
+service_entity_ts_decorate([
     (0,external_typeorm_.OneToOne)(function() {
         return MediaEntity;
     }, {

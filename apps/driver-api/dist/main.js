@@ -5827,6 +5827,15 @@ service_entity_ts_decorate([
     service_entity_ts_metadata("design:type", Number)
 ], ServiceEntity.prototype, "paymentGatewayFee", void 0);
 service_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        nullable: true,
+        precision: 10,
+        scale: 2,
+        comment: 'Extra per-km charge applied after 45 minutes, used for Cargo services'
+    }),
+    service_entity_ts_metadata("design:type", Number)
+], ServiceEntity.prototype, "cargoExtraKmChargeAfter45Min", void 0);
+service_entity_ts_decorate([
     (0,external_typeorm_.OneToOne)(function() {
         return MediaEntity;
     }, {
@@ -51871,7 +51880,7 @@ let EarningsService = class EarningsService {
         }
         const mostUsedCurrency = q[0].currency;
         let dataset;
-        const fields = 'SUM(costBest - providerShare) AS earning, COUNT(id) AS count, SUM(distanceBest) AS distance, SUM(durationBest) AS time';
+        const fields = 'SUM(costAfterCoupon + gstAmount + platformFeeAmount + paymentGatewayFeeAmount) AS earning, COUNT(id) AS count, SUM(distanceBest) AS distance, SUM(durationBest) AS time';
         switch(timeFrame){
             case _earningsdto.TimeQuery.Daily:
                 dataset = await this.requestRepository.query(`SELECT ANY_VALUE(DATE_FORMAT(requestTimestamp, '%W')) as name, CONCAT(ANY_VALUE(MONTH(CURRENT_TIMESTAMP)),'/',ANY_VALUE(DAY(CURRENT_TIMESTAMP))) AS current, ${fields} from request WHERE DATEDIFF(NOW(),requestTimestamp) < 7 AND driverId = ? AND currency = ? AND status = 'Finished' GROUP BY DATE(requestTimestamp)`, [
@@ -51913,7 +51922,7 @@ let EarningsService = class EarningsService {
         // Calculate sum of current period
         // Convert requestTimestamp to IST (+5:30) before comparing dates, since dates from
         // the client are in IST but requestTimestamp is stored in UTC.
-        const sumQuery = await this.requestRepository.query("SELECT SUM(costBest - providerShare) AS totalEarning FROM request WHERE DATE(CONVERT_TZ(requestTimestamp, '+00:00', '+05:30')) >= DATE(CONVERT_TZ(?, '+00:00', '+05:30')) AND DATE(CONVERT_TZ(requestTimestamp, '+00:00', '+05:30')) <= DATE(CONVERT_TZ(?, '+00:00', '+05:30')) AND driverId = ? AND currency = ? AND status = 'Finished'", [
+        const sumQuery = await this.requestRepository.query("SELECT SUM(costAfterCoupon + gstAmount + platformFeeAmount + paymentGatewayFeeAmount) AS totalEarning FROM request WHERE DATE(CONVERT_TZ(requestTimestamp, '+00:00', '+05:30')) >= DATE(CONVERT_TZ(?, '+00:00', '+05:30')) AND DATE(CONVERT_TZ(requestTimestamp, '+00:00', '+05:30')) <= DATE(CONVERT_TZ(?, '+00:00', '+05:30')) AND driverId = ? AND currency = ? AND status = 'Finished'", [
             input.startDate,
             input.endDate,
             input.driverId,
@@ -51927,7 +51936,7 @@ let EarningsService = class EarningsService {
                 dataset = await this.requestRepository.query(`SELECT 
             time_slots.name,
             DATE_FORMAT(CURRENT_TIMESTAMP, '%d %b %y') AS current,
-            COALESCE(SUM(r.costBest - r.providerShare), 0) AS earning,
+            COALESCE(SUM(r.costAfterCoupon + r.gstAmount + r.platformFeeAmount + r.paymentGatewayFeeAmount), 0) AS earning,
             COALESCE(COUNT(r.id), 0) AS count,
             COALESCE(SUM(r.distanceBest), 0) AS distance,
             COALESCE(SUM(r.durationBest), 0) AS time
@@ -51966,7 +51975,7 @@ let EarningsService = class EarningsService {
                 dataset = await this.requestRepository.query(`SELECT 
             DATE_FORMAT(all_dates.date, '%a') AS name,
             DATE_FORMAT(CURRENT_TIMESTAMP, '%d %b %y') AS current,
-            COALESCE(SUM(r.costBest - r.providerShare), 0) AS earning,
+            COALESCE(SUM(r.costAfterCoupon + r.gstAmount + r.platformFeeAmount + r.paymentGatewayFeeAmount), 0) AS earning,
             COALESCE(COUNT(r.id), 0) AS count,
             COALESCE(SUM(r.distanceBest), 0) AS distance,
             COALESCE(SUM(r.durationBest), 0) AS time
@@ -51995,7 +52004,7 @@ let EarningsService = class EarningsService {
                 dataset = await this.requestRepository.query(`SELECT 
             CONCAT('Week ', week_numbers.week_num) AS name,
             CONCAT(DATE_FORMAT(DATE(CONCAT(YEAR(CURRENT_TIMESTAMP), '-', MONTH(CURRENT_TIMESTAMP), '-01')), '%d %b %y'), ' - ', DATE_FORMAT(LAST_DAY(CURRENT_TIMESTAMP), '%d %b %y')) AS current,
-            COALESCE(SUM(r.costBest - r.providerShare), 0) AS earning,
+            COALESCE(SUM(r.costAfterCoupon + r.gstAmount + r.platformFeeAmount + r.paymentGatewayFeeAmount), 0) AS earning,
             COALESCE(COUNT(r.id), 0) AS count,
             COALESCE(SUM(r.distanceBest), 0) AS distance,
             COALESCE(SUM(r.durationBest), 0) AS time
@@ -52024,7 +52033,7 @@ let EarningsService = class EarningsService {
                 break;
         }
         // Fetch the earnings from the driver's most recent completed order
-        const lastOrderQuery = await this.requestRepository.query("SELECT (costBest - providerShare) AS lastOrderEarning FROM request WHERE driverId = ? AND currency = ? AND status = 'Finished' ORDER BY requestTimestamp DESC LIMIT 1", [
+        const lastOrderQuery = await this.requestRepository.query("SELECT (costAfterCoupon + gstAmount + platformFeeAmount + paymentGatewayFeeAmount) AS lastOrderEarning FROM request WHERE driverId = ? AND currency = ? AND status = 'Finished' ORDER BY requestTimestamp DESC LIMIT 1", [
             input.driverId,
             mostUsedCurrency
         ]);

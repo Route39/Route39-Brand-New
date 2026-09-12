@@ -32,6 +32,8 @@ export class ServiceInput {
   platformFee?: number;
   @Field(() => Float, { nullable: true })
   paymentGatewayFee?: number;
+  @Field(() => Float, { nullable: true })
+  cargoExtraKmChargeAfter45Min?: number;
   @Field(() => Float, { nullable: false })
   perHundredMeters: number;
   @Field(() => Float, { nullable: false })

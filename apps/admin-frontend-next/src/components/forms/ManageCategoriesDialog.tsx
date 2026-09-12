@@ -32,6 +32,8 @@ export function ManageCategoriesDialog({ trigger }: Props) {
 
   const { data, refetch } = useQuery(SERVICE_CATEGORIES_QUERY, { skip: !open });
   const categories = data?.serviceCategories ?? [];
+  const MAX_CATEGORIES = 2;
+  const atCategoryLimit = categories.length >= MAX_CATEGORIES;
 
   const refetchQueries = [
     { query: SERVICE_CATEGORIES_QUERY },
@@ -57,6 +59,10 @@ export function ManageCategoriesDialog({ trigger }: Props) {
   }, [open]);
 
   async function handleCreate() {
+    if (atCategoryLimit) {
+      toast.error(`You can only have up to ${MAX_CATEGORIES} categories.`);
+      return;
+    }
     const name = newName.trim();
     if (!name) return;
     try {
@@ -179,6 +185,7 @@ export function ManageCategoriesDialog({ trigger }: Props) {
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="New category name"
+              disabled={atCategoryLimit}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -186,11 +193,20 @@ export function ManageCategoriesDialog({ trigger }: Props) {
                 }
               }}
             />
-            <Button type="button" onClick={handleCreate} disabled={creating || !newName.trim()}>
+            <Button
+              type="button"
+              onClick={handleCreate}
+              disabled={creating || !newName.trim() || atCategoryLimit}
+            >
               <Plus className="size-3.5" />
               Add
             </Button>
           </div>
+          {atCategoryLimit ? (
+            <p className="text-xs text-muted-foreground">
+              Maximum of {MAX_CATEGORIES} categories reached. Delete one to add another.
+            </p>
+          ) : null}
         </div>
       </DialogContent>
     </Dialog>

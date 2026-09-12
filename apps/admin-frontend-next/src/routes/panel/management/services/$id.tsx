@@ -52,6 +52,8 @@ export default function EditServicePage() {
           gstPercent: s.gstPercent != null ? String(s.gstPercent) : "",
           platformFee: s.platformFee != null ? String(s.platformFee) : "",
           paymentGatewayFee: s.paymentGatewayFee != null ? String(s.paymentGatewayFee) : "",
+          cargoExtraKmChargeAfter45Min:
+            s.cargoExtraKmChargeAfter45Min != null ? String(s.cargoExtraKmChargeAfter45Min) : "",
           paymentMethod:
             s.paymentMethod === "CashCredit"
               ? "Both"
