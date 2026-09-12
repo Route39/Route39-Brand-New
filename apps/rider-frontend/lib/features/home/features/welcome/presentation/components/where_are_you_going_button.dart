@@ -27,7 +27,7 @@ class WhereAreYouGoingButton extends StatelessWidget {
         child: Row(
           children: [
             Image.asset(
-              'assets/images/ev_auto_icon.png',
+              'assets/images/ev_auto_icon_small.png',
               width: 48,
               height: 48,
               fit: BoxFit.contain,

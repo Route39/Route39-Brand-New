@@ -36357,7 +36357,18 @@ var SMSService = /*#__PURE__*/ function() {
                                         return data += chunk;
                                     });
                                     res.on('end', function() {
-                                        console.log("Successfully sent SMS to " + phoneNumber + " via BulkSMSPlans: " + data);
+                                        console.log("BulkSMSPlans response for " + phoneNumber + " (status " + res.statusCode + "): " + data);
+                                        var parsed = null;
+                                        try {
+                                            parsed = JSON.parse(data);
+                                        } catch (parseErr) {
+                                            console.error("BulkSMSPlans returned non-JSON response for " + phoneNumber + ": " + data);
+                                        }
+                                        var isFailure = res.statusCode >= 400 || parsed && (parsed.status === 'error' || parsed.status === false || parsed.error != null || /error|fail|invalid|insufficient|reject/i.test(typeof parsed === 'string' ? parsed : JSON.stringify(parsed)));
+                                        if (isFailure) {
+                                            reject(new Error("BulkSMSPlans failed to send SMS to " + phoneNumber + ": " + data));
+                                            return;
+                                        }
                                         resolve(data);
                                     });
                                 });

@@ -65,8 +65,8 @@ extension DriverLocationX on Fragment$Coordinate {
   CustomMarker driverMarker(String driverId) => CustomMarker(
     id: driverId,
     position: LatLng(lat, lng),
-    widget: Image.asset('assets/images/ev_auto_icon.png'),
-    fallbackAssetPath: 'assets/images/ev_auto_icon.png',
+    widget: Image.asset('assets/images/ev_auto_icon_small.png'),
+    fallbackAssetPath: 'assets/images/ev_auto_icon_small.png',
     alignment: Alignment.center,
     rotation: heading ?? 0,
     width: 48,

@@ -57,7 +57,9 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> with SingleTickerPr
                 final needsBack = state.mode == HomeMode.ridePreview ||
                     state.mode == HomeMode.rideInProgress ||
                     (state.mode == HomeMode.preSubmission &&
-                        state.orderSubmissionPage == OrderSubmissionPage.confirmLocation);
+                        (state.orderSubmissionPage == OrderSubmissionPage.confirmLocation ||
+                            state.orderSubmissionPage == OrderSubmissionPage.deliverySearchPlaceInput ||
+                            state.orderSubmissionPage == OrderSubmissionPage.deliveryContactInfoInput));
                 final activeOrder = state.activeOrder;
                 final hideLeadingIcon = state.mode == HomeMode.preSubmission &&
                     (state.orderSubmissionPage == OrderSubmissionPage.welcome ||

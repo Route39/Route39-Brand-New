@@ -22,10 +22,12 @@ class Route39Header extends StatelessWidget {
                   onPressed: onBackPressed ?? () => Scaffold.of(context).openDrawer(),
                 )
               : const SizedBox(width: 48),
-          Image.asset(
+          Flexible(
+            child: Image.asset(
             'assets/images/route39_logo.png',
-            height: 32,
+            height: 28,
             fit: BoxFit.contain,
+            ),
           ),
           Row(
             children: [

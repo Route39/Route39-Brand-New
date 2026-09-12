@@ -101,7 +101,7 @@ flutter_launcher_icons:
   adaptive_icon_background: "#FFFFFF"
   android: true
   ios: true
-  image_path: "assets/images/app_icon.png"
+  image_path: "assets/images/route39_icon_full.png"
   min_sdk_android: 21
 
 flutter:

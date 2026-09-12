@@ -115,8 +115,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         case HomeEvent$OnRideOptionSelected():
           emit(
             state.copyWith(
-              orderSubmissionPage: OrderSubmissionPage.rideWaypointsInput,
-              selectedWaypointIndex: null,
               orderType: Enum$TaxiOrderType.Ride,
             ),
           );
@@ -125,8 +123,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         case HomeEvent$OnDeliveryOptionSelected():
           emit(
             state.copyWith(
-              orderSubmissionPage: OrderSubmissionPage.deliverySearchPlaceInput,
-              selectedWaypointIndex: 0,
               orderType: Enum$TaxiOrderType.ParcelDelivery,
             ),
           );
@@ -173,9 +169,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           emit(
             state.copyWith(
               waypoints: locations,
-              orderSubmissionPage: state.orderType == Enum$TaxiOrderType.Ride
-                  ? OrderSubmissionPage.rideWaypointsInput
-                  : OrderSubmissionPage.deliveryContactInfoInput,
+              orderSubmissionPage: OrderSubmissionPage.rideWaypointsInput,
             ),
           );
           break;
