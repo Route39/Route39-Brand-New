@@ -81,7 +81,7 @@ dependencies:
   image_faker: any
   moment_dart: any
   web: ^1.1.1
-
+  razorpay_flutter: ^1.4.6
 dev_dependencies:
   sentry_dart_plugin: any
   auto_route_generator: any
