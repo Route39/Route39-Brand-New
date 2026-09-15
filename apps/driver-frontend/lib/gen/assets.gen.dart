@@ -2277,8 +2277,6 @@ class $AssetsLottieGen {
 }
 
 abstract final class Assets {
-  static const String aEnvDev = '.env.dev';
-  static const String aEnvProd = '.env.prod';
   static const $AssetsAvatarsGen avatars = $AssetsAvatarsGen();
   static const $AssetsCountriesGen countries = $AssetsCountriesGen();
   static const $AssetsImagesGen images = $AssetsImagesGen();
@@ -2286,7 +2284,7 @@ abstract final class Assets {
   static const String notification = 'assets/notification.mp3';
 
   /// List of all assets
-  static List<String> get values => [aEnvDev, aEnvProd, notification];
+  static List<String> get values => [notification];
 }
 
 class AssetGenImage {
