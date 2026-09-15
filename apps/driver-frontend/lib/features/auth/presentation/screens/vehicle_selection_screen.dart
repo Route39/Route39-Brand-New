@@ -3,9 +3,17 @@ import 'package:flutter_common/core/color_palette/color_palette.dart';
 
 class VehicleSelectionScreen extends StatefulWidget {
   final void Function(String vehicleType) onConfirm;
+  final String? initialVehicle;
+  final void Function(String? vehicle)? onDraftChanged;
   final bool embedded;
 
-  const VehicleSelectionScreen({super.key, required this.onConfirm, this.embedded = false});
+  const VehicleSelectionScreen({
+    super.key,
+    required this.onConfirm,
+    this.initialVehicle,
+    this.onDraftChanged,
+    this.embedded = false,
+  });
 
   @override
   State<VehicleSelectionScreen> createState() => _VehicleSelectionScreenState();
@@ -41,7 +49,7 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
     ),
   ];
 
-  String? selectedVehicle;
+  late String? selectedVehicle = widget.initialVehicle;
 
   Widget _buildBody() {
     return Column(
@@ -68,7 +76,10 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
                     padding: const EdgeInsets.only(bottom: 14),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(14),
-                      onTap: () => setState(() => selectedVehicle = option.id),
+                      onTap: () {
+                        setState(() => selectedVehicle = option.id);
+                        widget.onDraftChanged?.call(option.id);
+                      },
                       child: Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
@@ -115,7 +126,10 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
                               value: option.id,
                               groupValue: selectedVehicle,
                               activeColor: ColorPalette.primary40,
-                              onChanged: (value) => setState(() => selectedVehicle = value),
+                              onChanged: (value) {
+                                setState(() => selectedVehicle = value);
+                                widget.onDraftChanged?.call(value);
+                              },
                             ),
                           ],
                         ),

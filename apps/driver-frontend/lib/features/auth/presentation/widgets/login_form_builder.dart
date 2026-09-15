@@ -24,24 +24,49 @@ class LoginFormBuilder {
     if (loginState.selectedCity == null) {
       return CitySelectionScreen(
         embedded: true,
+        initialCity: loginState.draftCity,
+        onDraftChanged: (city) => locator<LoginBloc>().onDraftCityChanged(city),
         onConfirm: (city) => locator<LoginBloc>().onCityConfirmed(city),
       );
     }
     if (loginState.selectedVehicleType == null) {
       return VehicleSelectionScreen(
         embedded: true,
-        onConfirm: (vehicle) => locator<LoginBloc>().onVehicleConfirmed(vehicle),
+        initialVehicle: loginState.draftVehicleType,
+        onDraftChanged: (vehicle) =>
+            locator<LoginBloc>().onDraftVehicleChanged(vehicle),
+        onConfirm: (vehicle) =>
+            locator<LoginBloc>().onVehicleConfirmed(vehicle),
       );
     }
     if (!loginState.documentsChecklistDone) {
       return DocumentChecklistScreen(
+        loginState: loginState,
         embedded: true,
         onConfirm: () => locator<LoginBloc>().onDocumentsChecklistConfirmed(),
       );
     }
     return switch (loginState.loginPage) {
       LoginPage.contactDetails => ContactDetails(state: loginState),
-      LoginPage.success => const SizedBox(),
+      LoginPage.success => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('✓', style: TextStyle(fontSize: 72)),
+            const SizedBox(height: 16),
+            Text(
+              'Registration Successful',
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Your driver registration has been completed successfully.',
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
       _ => const SizedBox(),
     };
   }

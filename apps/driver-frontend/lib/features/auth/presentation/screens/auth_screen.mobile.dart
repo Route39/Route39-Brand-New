@@ -32,17 +32,20 @@ class AuthScreenMobile extends StatelessWidget {
                   BlocBuilder<LoginBloc, LoginState>(
                     builder: (context, state) {
                       if (state.loginPage == LoginPage.enterNumber) {
-
                         return const SizedBox.shrink();
-
                       }
 
-                      final showHelp = state.selectedCity == null ||
+                      final showHelp =
+                          state.selectedCity == null ||
                           state.selectedVehicleType == null ||
                           !state.documentsChecklistDone;
 
                       return Padding(
-                        padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+                        padding: const EdgeInsets.only(
+                          top: 16,
+                          left: 16,
+                          right: 16,
+                        ),
                         child: Row(
                           children: [
                             AppBackButton(
@@ -57,10 +60,18 @@ class AuthScreenMobile extends StatelessWidget {
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: Colors.black,
                                   side: const BorderSide(color: Colors.black26),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 8,
+                                  ),
                                 ),
-                                icon: const Icon(Icons.headset_mic_outlined, size: 18),
+                                icon: const Icon(
+                                  Icons.headset_mic_outlined,
+                                  size: 18,
+                                ),
                                 label: const Text('Help'),
                               ),
                           ],
@@ -87,7 +98,10 @@ class AuthScreenMobile extends StatelessWidget {
                   //     padding: const EdgeInsets.all(8),
                   //     child: WizardSteps(count: 5, selectedStep: state.loginPage.wizardStep ?? 0),
                   //   ),
-                  Text(state.loginPage.title(context), style: context.titleLarge),
+                  Text(
+                    state.loginPage.title(context),
+                    style: context.titleLarge,
+                  ),
                   const SizedBox(height: 8),
                 ],
               );
@@ -97,12 +111,13 @@ class AuthScreenMobile extends StatelessWidget {
             child: SafeArea(
               top: false,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: BlocBuilder<LoginBloc, LoginState>(
-                    builder: (context, state) => LoginFormBuilder(loginState: state).footer,
-                  ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 24,
+                ),
+                child: BlocBuilder<LoginBloc, LoginState>(
+                  builder: (context, state) =>
+                      LoginFormBuilder(loginState: state).footer,
                 ),
               ),
             ),

@@ -27,7 +27,33 @@ class LoginBloc extends HydratedCubit<LoginState> {
   LoginBloc(this.repository) : super(LoginState());
 
   void onBackPressed() {
-    if (state.loginPage == LoginPage.contactDetails || state.loginPage == LoginPage.success) {
+    if (state.loginPage == LoginPage.success) {
+      emit(
+        state.copyWith(
+          loginPage: LoginPage.contactDetails,
+          documentsChecklistDone: false,
+        ),
+      );
+      return;
+    }
+
+    if (state.loginPage == LoginPage.contactDetails) {
+      if (state.showAadhaarPan) {
+        emit(state.copyWith(showAadhaarPan: false));
+        return;
+      }
+      if (state.showVehicleRC) {
+        emit(state.copyWith(showVehicleRC: false));
+        return;
+      }
+      if (state.showProfileInfo) {
+        emit(state.copyWith(showProfileInfo: false));
+        return;
+      }
+      if (state.showLicenseUpload) {
+        emit(state.copyWith(showLicenseUpload: false));
+        return;
+      }
       if (state.documentsChecklistDone) {
         emit(state.copyWith(documentsChecklistDone: false));
         return;
@@ -64,6 +90,104 @@ class LoginBloc extends HydratedCubit<LoginState> {
 
   void onDocumentsChecklistConfirmed() =>
       emit(state.copyWith(documentsChecklistDone: true));
+
+  void onDrivingLicenseAnswer(bool answer) => emit(
+    state.copyWith(hasDrivingLicense: answer, showLicenseUpload: answer),
+  );
+
+  void onOpenLicenseUpload() => emit(state.copyWith(showLicenseUpload: true));
+
+  void onCloseLicenseUpload() => emit(state.copyWith(showLicenseUpload: false));
+
+  void onLicenseSubmitted() =>
+      emit(state.copyWith(licenseSubmitted: true, showLicenseUpload: false));
+
+  void onOpenProfileInfo() => emit(state.copyWith(showProfileInfo: true));
+
+  void onCloseProfileInfo() => emit(state.copyWith(showProfileInfo: false));
+
+  void onProfileInfoSubmitted({
+    required String firstName,
+    required String lastName,
+    required String dob,
+    required String gender,
+  }) => emit(
+    state.copyWith(
+      profileFirstName: firstName,
+      profileLastName: lastName,
+      profileDob: dob,
+      profileGender: gender,
+      profileInfoSubmitted: true,
+      showProfileInfo: false,
+    ),
+  );
+
+  void onDraftCityChanged(String? city) =>
+      emit(state.copyWith(draftCity: city));
+
+  void onDraftVehicleChanged(String? vehicle) =>
+      emit(state.copyWith(draftVehicleType: vehicle));
+
+  void onDraftLicenseNumberChanged(String number) =>
+      emit(state.copyWith(draftLicenseNumber: number));
+
+  void onDraftProfileChanged({
+    String? firstName,
+    String? lastName,
+    String? dob,
+    String? gender,
+  }) => emit(
+    state.copyWith(
+      draftProfileFirstName: firstName ?? state.draftProfileFirstName,
+      draftProfileLastName: lastName ?? state.draftProfileLastName,
+      draftProfileDob: dob ?? state.draftProfileDob,
+      draftProfileGender: gender ?? state.draftProfileGender,
+    ),
+  );
+
+  void onOpenVehicleRC() => emit(state.copyWith(showVehicleRC: true));
+
+  void onCloseVehicleRC() => emit(state.copyWith(showVehicleRC: false));
+
+  void onVehicleRCSubmitted({
+    required String ownership,
+    required String? vehicleNumber,
+  }) => emit(
+    state.copyWith(
+      vehicleOwnership: ownership,
+      vehicleNumberValue: vehicleNumber,
+      vehicleRCSubmitted: true,
+      showVehicleRC: false,
+    ),
+  );
+
+  void onDraftVehicleOwnershipChanged(String? ownership) =>
+      emit(state.copyWith(draftVehicleOwnership: ownership));
+
+  void onDraftVehicleNumberChanged(String number) =>
+      emit(state.copyWith(draftVehicleNumber: number));
+
+  void onOpenAadhaarPan() => emit(state.copyWith(showAadhaarPan: true));
+
+  void onCloseAadhaarPan() => emit(state.copyWith(showAadhaarPan: false));
+
+  void onAadhaarPanSubmitted({
+    required String aadhaarNumber,
+    required String panNumber,
+  }) => emit(
+    state.copyWith(
+      aadhaarNumberValue: aadhaarNumber,
+      panNumberValue: panNumber,
+      aadhaarPanSubmitted: true,
+      showAadhaarPan: false,
+    ),
+  );
+
+  void onDraftAadhaarNumberChanged(String number) =>
+      emit(state.copyWith(draftAadhaarNumber: number));
+
+  void onDraftPanNumberChanged(String number) =>
+      emit(state.copyWith(draftPanNumber: number));
 
   void reset() => emit(LoginState());
 

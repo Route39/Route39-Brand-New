@@ -3,9 +3,17 @@ import 'package:flutter_common/core/color_palette/color_palette.dart';
 
 class CitySelectionScreen extends StatefulWidget {
   final void Function(String city) onConfirm;
+  final String? initialCity;
+  final void Function(String? city)? onDraftChanged;
   final bool embedded;
 
-  const CitySelectionScreen({super.key, required this.onConfirm, this.embedded = false});
+  const CitySelectionScreen({
+    super.key,
+    required this.onConfirm,
+    this.initialCity,
+    this.onDraftChanged,
+    this.embedded = false,
+  });
 
   @override
   State<CitySelectionScreen> createState() => _CitySelectionScreenState();
@@ -19,7 +27,7 @@ class _CitySelectionScreenState extends State<CitySelectionScreen> {
     'Chennai',
   ];
 
-  String? selectedCity;
+  late String? selectedCity = widget.initialCity;
 
   Widget _buildBody() {
     return Column(
@@ -83,7 +91,10 @@ class _CitySelectionScreenState extends State<CitySelectionScreen> {
                             child: Text(city),
                           ))
                       .toList(),
-                  onChanged: (value) => setState(() => selectedCity = value),
+                  onChanged: (value) {
+                    setState(() => selectedCity = value);
+                    widget.onDraftChanged?.call(value);
+                  },
                 ),
               ],
             ),
