@@ -37,6 +37,17 @@ class AuthBloc extends HydratedCubit<AuthState> {
     );
   }
 
+  Future<void> refreshProfileSilently() async {
+    if (!state.isAuthenticated) {
+      return;
+    }
+    final result = await profileRepository.getProfile();
+    result.fold(
+      (l, {failure}) {},
+      (r) => emit(state.authenticatedState!.copyWith(profile: r.me)),
+    );
+  }
+
   void changeSearchRadius(int? radius) async {
     if (state is! AuthState$Authenticated) {
       return;

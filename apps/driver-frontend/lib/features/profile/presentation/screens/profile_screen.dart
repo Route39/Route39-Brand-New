@@ -14,6 +14,7 @@ import 'package:ridy_driver/gen/assets.gen.dart';
 
 import '../blocs/profile.bloc.dart';
 import 'package:ridy_driver/core/router/nav_item.dart';
+import 'package:ridy_driver/features/auth/domain/repositories/auth_repository.dart';
 
 @RoutePage()
 class ProfileScreen extends StatefulWidget {
@@ -135,6 +136,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 title: context.translate.logout,
                                 onPressed: () => NavItem.logout.onPressed(context),
                               ),
+                              const SizedBox(height: 16),
+                              AppMenuItem(
+                                icon: Icons.delete_forever,
+                                title: 'Delete Account',
+                                onPressed: () => _confirmAndDeleteAccount(context),
+                              ),
                             ],
                           ),
                         ),
@@ -149,6 +156,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
           );
         },
       ),
+    );
+  }
+}
+
+Future<void> _confirmAndDeleteAccount(BuildContext context) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Delete Account'),
+      content: const Text(
+        'Are you sure you want to delete your account? This will deactivate your driver account and you will no longer be able to accept rides.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: const Text('Delete', style: TextStyle(color: Colors.red)),
+        ),
+      ],
+    ),
+  );
+
+  if (confirmed != true) return;
+
+  final response = await locator<AuthRepository>().deleteAccount();
+  if (!context.mounted) return;
+
+  if (response.isLoaded) {
+    locator<AuthBloc>().onLoggedOut();
+    context.router.replaceAll([const AuthRoute()]);
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Failed to delete account. Please try again.')),
     );
   }
 }

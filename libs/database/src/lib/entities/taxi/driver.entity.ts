@@ -206,6 +206,21 @@ export class DriverEntity {
   address?: string;
 
   @Column({ nullable: true })
+  city?: string;
+
+  @Column({ nullable: true })
+  vehicleOwnership?: string;
+
+  @Column({ nullable: true })
+  aadhaarNumber?: string;
+
+  @Column({ nullable: true })
+  panNumber?: string;
+
+  @Column({ nullable: true })
+  dob?: string;
+
+  @Column({ nullable: true })
   notificationPlayerId?: string;
 
   @Column({ nullable: true, name: 'documentsNote' })

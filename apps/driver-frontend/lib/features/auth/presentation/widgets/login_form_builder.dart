@@ -5,7 +5,8 @@ import 'package:ridy_driver/features/auth/presentation/widgets/login_forms/conta
 import 'package:ridy_driver/features/auth/presentation/widgets/login_forms/documents_form.dart';
 import 'package:ridy_driver/features/auth/presentation/widgets/login_forms/vehicle_details.dart';
 import 'package:ridy_driver/config/locator/locator.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import '../screens/under_review_screen.dart';
 
 import 'login_forms/enter_number_form.dart';
 import 'login_forms/enter_otp_form.dart';
@@ -46,29 +47,7 @@ class LoginFormBuilder {
         onConfirm: () => locator<LoginBloc>().onDocumentsChecklistConfirmed(),
       );
     }
-    return switch (loginState.loginPage) {
-      LoginPage.contactDetails => ContactDetails(state: loginState),
-      LoginPage.success => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('✓', style: TextStyle(fontSize: 72)),
-            const SizedBox(height: 16),
-            Text(
-              'Registration Successful',
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Your driver registration has been completed successfully.',
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-      _ => const SizedBox(),
-    };
+    return const UnderReviewScreen();
   }
 
   Widget get footer => switch (loginState.loginPage) {

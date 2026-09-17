@@ -31,4 +31,11 @@ abstract class AuthRepository {
   Future<ApiResponse<Mutation$Register>> register({
     required Input$CompleteRegistrationInput input,
   });
+
+  Future<ApiResponse<Mutation$AttachDriverDocument>> attachDriverDocument({
+    required int driverDocumentId,
+    required int mediaId,
+  });
+
+  Future<ApiResponse<Mutation$DeleteAccount>> deleteAccount();
 }

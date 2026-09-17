@@ -520,6 +520,15 @@ type Driver {
   currency: String!
   searchDistance: Int
   softRejectionNote: String
+  city: String
+  vehicleOwnership: String
+  carPlate: String
+  carId: Int
+  carColorId: Int
+  carProductionYear: Int
+  aadhaarNumber: String
+  panNumber: String
+  documentsUploadedCount: Int!
 }
 
 enum DriverStatus {
@@ -1264,6 +1273,8 @@ type Mutation {
   updateDriverLocation(point: PointInput!): Boolean!
   initiateCallMasking(orderId: ID!): InitiateCallResult!
   initiateLostPropertyCall(orderId: ID!): InitiateCallResult!
+  deleteAccount: Boolean!
+  attachDriverDocument(driverDocumentId: Int!, mediaId: Int!): Boolean!
   sendChatMessage(orderId: ID!, message: String!): ChatMessage!
   updateLastSeenMessagesAt(orderId: ID!): Boolean!
   acceptRideOffer(orderId: ID!): ActiveOrder!
@@ -1299,6 +1310,11 @@ type Mutation {
   verifyOtp(hash: String!, code: String!): VerifcationResult!
   verifyPassword(mobileNumber: String!, password: String!): VerifcationResult!
   setPassword(password: String!): VerifcationResult!
+
+  """
+  Saves partial registration progress (city, vehicle type, documents step data) so the driver can resume from where they left off on any device.
+  """
+  saveRegistrationProgress(input: SaveRegistrationProgressInput!): Driver!
   completeRegistration(input: CompleteRegistrationInput!): Driver!
 
   """
@@ -1386,6 +1402,18 @@ input LoginInput {
   firebaseToken: String!
 }
 
+input SaveRegistrationProgressInput {
+  city: String
+  vehicleOwnership: String
+  carId: ID
+  carColorId: ID
+  carProductionYear: Int
+  carPlate: String
+  aadhaarNumber: String
+  panNumber: String
+  dob: String
+}
+
 input CompleteRegistrationInput {
   firstName: String!
   lastName: String!
@@ -1396,6 +1424,11 @@ input CompleteRegistrationInput {
   profilePictureId: ID!
   gender: Gender!
   address: String
+  city: String
+  vehicleOwnership: String
+  aadhaarNumber: String
+  panNumber: String
+  dob: String
   carId: ID
   carColorId: ID
   documentPairs: [DocumentPairInput!]!

@@ -2,6 +2,11 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:ridy_driver/config/locator/locator.dart';
+import 'package:ridy_driver/core/datasources/upload_datasource.dart';
+import 'package:ridy_driver/core/graphql/fragments/media.fragment.graphql.dart';
+import '../blocs/login.bloc.dart';
+import 'package:ridy_driver/features/auth/domain/repositories/auth_repository.dart';
 
 class VehicleRCScreen extends StatefulWidget {
   final String? initialOwnership;
@@ -28,6 +33,11 @@ class _VehicleRCScreenState extends State<VehicleRCScreen> {
   late final TextEditingController vehicleNumberController;
   Uint8List? frontImageBytes;
   Uint8List? backImageBytes;
+  Fragment$Media? frontMedia;
+  Fragment$Media? backMedia;
+  bool uploadingFront = false;
+  bool uploadingBack = false;
+  bool submitting = false;
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -46,7 +56,9 @@ class _VehicleRCScreenState extends State<VehicleRCScreen> {
   bool get vehicleNumberRequired => ownership == 'Self Owned';
 
   bool get canSubmit =>
-      ownership != null && (!vehicleNumberRequired || vehicleNumberController.text.trim().isNotEmpty);
+      ownership != null &&
+      (!vehicleNumberRequired || vehicleNumberController.text.trim().isNotEmpty) &&
+      !submitting;
 
   Future<void> _pickImage({required bool isFront}) async {
     final source = await showModalBottomSheet<ImageSource>(
@@ -119,42 +131,107 @@ class _VehicleRCScreenState extends State<VehicleRCScreen> {
     setState(() {
       if (isFront) {
         frontImageBytes = bytes;
+        uploadingFront = true;
       } else {
         backImageBytes = bytes;
+        uploadingBack = true;
       }
     });
+
+    try {
+      final media = await locator<UploadDatasource>().uploadDocument(picked.name, bytes);
+      await locator<AuthRepository>().attachDriverDocument(
+        driverDocumentId: 4,
+        mediaId: int.parse(media.id),
+      );
+      if (!mounted) return;
+      setState(() {
+        if (isFront) {
+          frontMedia = media;
+          uploadingFront = false;
+        } else {
+          backMedia = media;
+          uploadingBack = false;
+        }
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        if (isFront) {
+          frontImageBytes = null;
+          uploadingFront = false;
+        } else {
+          backImageBytes = null;
+          uploadingBack = false;
+        }
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Upload failed. Please try again.')),
+        );
+      }
+    }
   }
 
-  Widget _rcUploadTile({required String label, required Uint8List? imageBytes, required VoidCallback onTap}) {
+  Widget _rcUploadTile({
+    required String label,
+    required Uint8List? imageBytes,
+    required bool uploading,
+    required VoidCallback onTap,
+  }) {
     final uploaded = imageBytes != null;
     return Expanded(
       child: InkWell(
-        onTap: onTap,
+        onTap: uploading ? null : onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
           height: 90,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.black26, style: BorderStyle.solid),
+            border: Border.all(color: Colors.black26),
           ),
-          child: uploaded
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.memory(imageBytes, fit: BoxFit.cover, width: double.infinity, height: double.infinity),
-                )
-              : Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.add_photo_alternate_outlined, color: ColorPalette.primary40),
-                      const SizedBox(height: 4),
-                      Text(label, style: TextStyle(color: ColorPalette.primary40, fontWeight: FontWeight.w600, fontSize: 13)),
-                    ],
-                  ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              uploaded
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.memory(imageBytes, fit: BoxFit.cover, width: double.infinity, height: double.infinity),
+                    )
+                  : Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.add_photo_alternate_outlined, color: ColorPalette.primary40),
+                          const SizedBox(height: 4),
+                          Text(label, style: TextStyle(color: ColorPalette.primary40, fontWeight: FontWeight.w600, fontSize: 13)),
+                        ],
+                      ),
+                    ),
+              if (uploading)
+                Container(
+                  decoration: BoxDecoration(color: Colors.black45, borderRadius: BorderRadius.circular(12)),
+                  child: const Center(child: CircularProgressIndicator(color: Colors.white)),
                 ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Future<void> _handleSubmit() async {
+    setState(() => submitting = true);
+    final loginBloc = locator<LoginBloc>();
+    final vehicleNumber = vehicleNumberController.text.trim().isEmpty ? null : vehicleNumberController.text.trim();
+    if (vehicleNumber != null) {
+      loginBloc.onPlateNumberChanged(vehicleNumber);
+    }
+    final newDocs = [if (frontMedia != null) frontMedia!, if (backMedia != null) backMedia!];
+    if (newDocs.isNotEmpty) {
+      loginBloc.setDocuments([...loginBloc.state.documents, ...newDocs]);
+    }
+    widget.onSubmit(ownership!, vehicleNumber);
   }
 
   Widget _buildBody(BuildContext context) {
@@ -236,9 +313,19 @@ class _VehicleRCScreenState extends State<VehicleRCScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    _rcUploadTile(label: 'Front', imageBytes: frontImageBytes, onTap: () => _pickImage(isFront: true)),
+                    _rcUploadTile(
+                      label: 'Front',
+                      imageBytes: frontImageBytes,
+                      uploading: uploadingFront,
+                      onTap: () => _pickImage(isFront: true),
+                    ),
                     const SizedBox(width: 12),
-                    _rcUploadTile(label: 'Back', imageBytes: backImageBytes, onTap: () => _pickImage(isFront: false)),
+                    _rcUploadTile(
+                      label: 'Back',
+                      imageBytes: backImageBytes,
+                      uploading: uploadingBack,
+                      onTap: () => _pickImage(isFront: false),
+                    ),
                   ],
                 ),
               ],
@@ -255,13 +342,10 @@ class _VehicleRCScreenState extends State<VehicleRCScreen> {
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            onPressed: canSubmit
-                ? () => widget.onSubmit(
-                      ownership!,
-                      vehicleNumberController.text.trim().isEmpty ? null : vehicleNumberController.text.trim(),
-                    )
-                : null,
-            child: const Text('Submit', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            onPressed: canSubmit ? _handleSubmit : null,
+            child: submitting
+                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                : const Text('Submit', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           ),
         ),
         const SizedBox(height: 8),

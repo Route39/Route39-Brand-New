@@ -26,4 +26,22 @@ export class DriverDTO {
   searchDistance!: number | null;
   @Field(() => String, { nullable: true })
   softRejectionNote!: string | null;
+  @Field(() => String, { nullable: true })
+  city!: string | null;
+  @Field(() => String, { nullable: true })
+  vehicleOwnership!: string | null;
+  @Field(() => String, { nullable: true })
+  carPlate!: string | null;
+  @Field(() => Int, { nullable: true })
+  carId!: number | null;
+  @Field(() => Int, { nullable: true })
+  carColorId!: number | null;
+  @Field(() => Int, { nullable: true })
+  carProductionYear!: number | null;
+  @Field(() => String, { nullable: true })
+  aadhaarNumber!: string | null;
+  @Field(() => String, { nullable: true })
+  panNumber!: string | null;
+  @Field(() => Int)
+  documentsUploadedCount!: number;
 }

@@ -6,6 +6,7 @@ import 'package:ridy/config/locator/locator.dart';
 import 'package:ridy/config/router/app_router.dart';
 import 'package:flutter_common/core/theme/animation_duration.dart';
 import 'package:ridy/core/blocs/home.bloc.dart';
+import 'package:ridy/core/blocs/auth_bloc.dart';
 import 'package:ridy/core/repositories/order_repository.dart';
 import 'package:ridy/core/extensions/extensions.dart';
 import 'package:ridy/features/home/presentation/components/route39_nav_bar.dart';
@@ -26,6 +27,16 @@ class _ScheduledRidesScreenState extends State<ScheduledRidesScreen> {
   @override
   void initState() {
     super.initState();
+    // Make sure HomeBloc's active-orders stream subscription is set up even
+    // if this screen is reached without visiting Home first in this session
+    // (otherwise currentOrdersResponse/scheduledRidesResponse stays stuck at
+    // ApiResponseInitial and this screen renders completely blank).
+    locator<HomeBloc>().add(
+      HomeEvent.onStarted(
+        authenticated: locator<AuthBloc>().state.isAuthenticated,
+        currentLocationPlace: null,
+      ),
+    );
     locator<OrderRepository>().refreshActiveOrders();
   }
 

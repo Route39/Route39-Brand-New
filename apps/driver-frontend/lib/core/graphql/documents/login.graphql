@@ -26,6 +26,13 @@ query RegistrationData {
   carColors {
     ...VehicleColor
   }
+  driverRequiredDocuments {
+    id
+    title
+    description
+    isEnabled
+    isRequired
+  }
 }
 
 mutation UpdatePassword($password: String!) {
@@ -44,4 +51,12 @@ mutation Register($updateDriverInput: CompleteRegistrationInput!) {
   completeRegistration(input: $updateDriverInput) {
     ...Profile
   }
+}
+
+mutation AttachDriverDocument($driverDocumentId: Int!, $mediaId: Int!) {
+  attachDriverDocument(driverDocumentId: $driverDocumentId, mediaId: $mediaId)
+}
+
+mutation DeleteAccount {
+  deleteAccount
 }
