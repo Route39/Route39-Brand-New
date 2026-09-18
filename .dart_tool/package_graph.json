@@ -85,6 +85,7 @@
       "name": "ridy_driver",
       "version": "4.0.0+312",
       "dependencies": [
+        "android_intent_plus",
         "api_response",
         "audioplayers",
         "auto_route",
@@ -105,6 +106,7 @@
         "flutter_common",
         "flutter_dotenv",
         "flutter_localizations",
+        "flutter_overlay_window",
         "flutter_rating_bar",
         "flutter_ringtone_player",
         "form_builder_validators",
@@ -915,6 +917,22 @@
     {
       "name": "flutter_rating_bar",
       "version": "4.0.1",
+      "dependencies": [
+        "flutter"
+      ]
+    },
+    {
+      "name": "android_intent_plus",
+      "version": "5.3.1",
+      "dependencies": [
+        "flutter",
+        "meta",
+        "platform"
+      ]
+    },
+    {
+      "name": "flutter_overlay_window",
+      "version": "0.4.5",
       "dependencies": [
         "flutter"
       ]
@@ -2182,6 +2200,11 @@
       ]
     },
     {
+      "name": "platform",
+      "version": "3.1.6",
+      "dependencies": []
+    },
+    {
       "name": "firebase_messaging_web",
       "version": "4.1.5",
       "dependencies": [
@@ -2896,11 +2919,6 @@
     {
       "name": "xxh3",
       "version": "1.2.0",
-      "dependencies": []
-    },
-    {
-      "name": "platform",
-      "version": "3.1.6",
       "dependencies": []
     },
     {

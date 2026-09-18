@@ -20,6 +20,12 @@
       "languageVersion": "3.9"
     },
     {
+      "name": "android_intent_plus",
+      "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/android_intent_plus-5.3.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
       "name": "ansicolor",
       "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/ansicolor-2.0.3",
       "packageUri": "lib/",
@@ -564,6 +570,12 @@
       "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/flutter_native_splash-2.4.4",
       "packageUri": "lib/",
       "languageVersion": "3.0"
+    },
+    {
+      "name": "flutter_overlay_window",
+      "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/flutter_overlay_window-0.4.5",
+      "packageUri": "lib/",
+      "languageVersion": "2.16"
     },
     {
       "name": "flutter_plugin_android_lifecycle",
