@@ -169,7 +169,7 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                               mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Image.asset(assetPath, height: 36, fit: BoxFit.contain),
+                                Image.asset(assetPath, height: 40, fit: BoxFit.contain),
                                 const SizedBox(height: 6),
                                 Text(
                                   label,
@@ -211,11 +211,20 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  WhereAreYouGoingButton(
-                    onPressed: () {
-                      locator<HomeBloc>().add(HomeEvent.changeOrderSubmissionPage(
-                        orderSubmissionPage: OrderSubmissionPage.rideWaypointsInput,
-                      ));
+                  BlocBuilder<HomeBloc, HomeState>(
+                    bloc: locator<HomeBloc>(),
+                    builder: (context, homeState) {
+                      final isRideNow = homeState.orderType == Enum$TaxiOrderType.Ride;
+                      return WhereAreYouGoingButton(
+                        assetPath: isRideNow
+                            ? 'assets/images/ev_auto_icon_small.png'
+                            : 'assets/images/cargo_truck_icon.png',
+                        onPressed: () {
+                          locator<HomeBloc>().add(HomeEvent.changeOrderSubmissionPage(
+                            orderSubmissionPage: OrderSubmissionPage.rideWaypointsInput,
+                          ));
+                        },
+                      );
                     },
                   ),
                   const SizedBox(height: 16),

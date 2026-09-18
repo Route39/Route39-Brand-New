@@ -52,7 +52,7 @@ export default function DriverDocumentsTab() {
             >
               <div className="aspect-square w-full overflow-hidden bg-muted">
                 <img
-                  src={doc.media.address}
+                  src={`/uploads/${doc.media.address}`}
                   alt={doc.driverDocument.title}
                   className="h-full w-full object-cover"
                   loading="lazy"
@@ -86,7 +86,7 @@ export default function DriverDocumentsTab() {
           </DialogHeader>
           {open ? (
             <img
-              src={open.media.address}
+              src={`/uploads/${open.media.address}`}
               alt={open.driverDocument.title}
               className="w-full rounded-md"
             />

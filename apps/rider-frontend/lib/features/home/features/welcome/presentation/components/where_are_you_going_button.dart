@@ -4,8 +4,13 @@ import 'package:ridy/core/extensions/extensions.dart';
 
 class WhereAreYouGoingButton extends StatelessWidget {
   final VoidCallback? onPressed;
+  final String assetPath;
 
-  const WhereAreYouGoingButton({super.key, this.onPressed});
+  const WhereAreYouGoingButton({
+    super.key,
+    this.onPressed,
+    this.assetPath = 'assets/images/ev_auto_icon_small.png',
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,9 +32,9 @@ class WhereAreYouGoingButton extends StatelessWidget {
         child: Row(
           children: [
             Image.asset(
-              'assets/images/ev_auto_icon_small.png',
-              width: 48,
-              height: 48,
+              assetPath,
+              width: 60,
+              height: 60,
               fit: BoxFit.contain,
               filterQuality: FilterQuality.high,
             ),

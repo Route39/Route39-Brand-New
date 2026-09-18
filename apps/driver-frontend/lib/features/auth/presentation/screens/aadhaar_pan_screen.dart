@@ -2,12 +2,16 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:ridy_driver/config/locator/locator.dart';
+import 'package:ridy_driver/core/datasources/upload_datasource.dart';
+import 'package:ridy_driver/core/graphql/fragments/media.fragment.graphql.dart';
+import '../blocs/login.bloc.dart';
+import 'package:ridy_driver/features/auth/domain/repositories/auth_repository.dart';
 
 class AadhaarPanScreen extends StatefulWidget {
   final String? initialAadhaarNumber;
   final String? initialPanNumber;
-  final void Function({String? aadhaarNumber, String? panNumber})?
-  onDraftChanged;
+  final void Function({String? aadhaarNumber, String? panNumber})? onDraftChanged;
   final void Function(String aadhaarNumber, String panNumber) onSubmit;
 
   const AadhaarPanScreen({
@@ -27,16 +31,20 @@ class _AadhaarPanScreenState extends State<AadhaarPanScreen> {
   late final TextEditingController panController;
   Uint8List? aadhaarFrontBytes;
   Uint8List? aadhaarBackBytes;
-  Uint8List? panFrontBytes;
-  Uint8List? panBackBytes;
+  Uint8List? panImageBytes;
+  Fragment$Media? aadhaarFrontMedia;
+  Fragment$Media? aadhaarBackMedia;
+  Fragment$Media? panMedia;
+  bool uploadingAadhaarFront = false;
+  bool uploadingAadhaarBack = false;
+  bool uploadingPan = false;
+  bool submitting = false;
   final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
-    aadhaarController = TextEditingController(
-      text: widget.initialAadhaarNumber ?? '',
-    );
+    aadhaarController = TextEditingController(text: widget.initialAadhaarNumber ?? '');
     panController = TextEditingController(text: widget.initialPanNumber ?? '');
   }
 
@@ -49,11 +57,16 @@ class _AadhaarPanScreenState extends State<AadhaarPanScreen> {
 
   bool get canSubmit =>
       aadhaarController.text.trim().isNotEmpty &&
-      panController.text.trim().isNotEmpty;
+      panController.text.trim().isNotEmpty &&
+      !submitting;
 
   Future<void> _pickImage({
     required String title,
-    required void Function(Uint8List) onPicked,
+    required int driverDocumentId,
+    required Uint8List? Function() getBytes,
+    required void Function(Uint8List) setBytes,
+    required void Function(Fragment$Media?) setMedia,
+    required void Function(bool) setUploading,
   }) async {
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
@@ -63,79 +76,51 @@ class _AadhaarPanScreenState extends State<AadhaarPanScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (sheetContext) {
-        return FractionallySizedBox(
-          heightFactor: 0.48,
+        return SizedBox(
+          height: MediaQuery.of(sheetContext).size.height * 0.45,
           child: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+              padding: const EdgeInsets.symmetric(vertical: 16),
               child: Column(
                 children: [
                   Container(
-                    width: 42,
+                    width: 40,
                     height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.black26,
-                      borderRadius: BorderRadius.circular(3),
+                    decoration: BoxDecoration(color: Colors.black12, borderRadius: BorderRadius.circular(2)),
+                  ),
+                  const SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        title,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 18),
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 12),
                   ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 4),
                     leading: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.camera_alt_outlined,
-                        color: Colors.red.shade700,
-                      ),
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(color: ColorPalette.primary95, borderRadius: BorderRadius.circular(10)),
+                      child: Icon(Icons.camera_alt, color: ColorPalette.primary40),
                     ),
-                    title: const Text(
-                      'Take Photo',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    onTap: () =>
-                        Navigator.pop(sheetContext, ImageSource.camera),
+                    title: const Text('Take Photo', style: TextStyle(fontWeight: FontWeight.w600)),
+                    onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
                   ),
                   ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 4),
                     leading: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.photo_library_outlined,
-                        color: Colors.red.shade700,
-                      ),
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(color: ColorPalette.primary95, borderRadius: BorderRadius.circular(10)),
+                      child: Icon(Icons.photo_library, color: ColorPalette.primary40),
                     ),
-                    title: const Text(
-                      'Choose from Gallery',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    onTap: () =>
-                        Navigator.pop(sheetContext, ImageSource.gallery),
+                    title: const Text('Choose from Gallery', style: TextStyle(fontWeight: FontWeight.w600)),
+                    onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
                   ),
+                  const Spacer(),
                 ],
               ),
             ),
@@ -146,241 +131,209 @@ class _AadhaarPanScreenState extends State<AadhaarPanScreen> {
 
     if (source == null) return;
 
-    final picked = await _picker.pickImage(source: source, imageQuality: 85);
-
+    final XFile? picked = await _picker.pickImage(source: source, imageQuality: 85);
     if (picked == null) return;
 
-    onPicked(await picked.readAsBytes());
+    final bytes = await picked.readAsBytes();
+    setState(() {
+      setBytes(bytes);
+      setUploading(true);
+    });
+
+    try {
+      final media = await locator<UploadDatasource>().uploadDocument(picked.name, bytes);
+      await locator<AuthRepository>().attachDriverDocument(
+        driverDocumentId: driverDocumentId,
+        mediaId: int.parse(media.id),
+      );
+      if (!mounted) return;
+      setState(() {
+        setMedia(media);
+        setUploading(false);
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        setUploading(false);
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Upload failed. Please try again.')),
+        );
+      }
+    }
   }
 
   Widget _uploadTile({
     required String label,
     required Uint8List? imageBytes,
+    required bool uploading,
     required VoidCallback onTap,
   }) {
     final uploaded = imageBytes != null;
-
-    return Expanded(
-      child: Container(
-        height: 118,
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: uploaded ? Colors.red.shade400 : Colors.black26,
+    return InkWell(
+        onTap: uploading ? null : onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          height: 90,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.black26),
           ),
-        ),
-        child: Column(
-          children: [
-            Expanded(
-              child: uploaded
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              uploaded
                   ? ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.memory(
-                        imageBytes,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.memory(imageBytes, fit: BoxFit.cover, width: double.infinity, height: double.infinity),
                     )
                   : Center(
-                      child: Text(
-                        label,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.add_photo_alternate_outlined, color: ColorPalette.primary40),
+                          const SizedBox(height: 4),
+                          Text(label, style: TextStyle(color: ColorPalette.primary40, fontWeight: FontWeight.w600, fontSize: 13)),
+                        ],
                       ),
                     ),
-            ),
-            const SizedBox(height: 6),
-            SizedBox(
-              width: double.infinity,
-              height: 32,
-              child: ElevatedButton(
-                onPressed: onTap,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade700,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.zero,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+              if (uploading)
+                Container(
+                  decoration: BoxDecoration(color: Colors.black45, borderRadius: BorderRadius.circular(12)),
+                  child: const Center(child: CircularProgressIndicator(color: Colors.white)),
                 ),
-                child: Text(
-                  uploaded ? 'Retake / Change Photo' : 'Upload Photo',
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
     );
   }
 
   InputDecoration _fieldDecoration(String hint) => InputDecoration(
-    hintText: hint,
-    filled: true,
-    fillColor: Colors.white,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: Colors.black26),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: Colors.black26),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: ColorPalette.primary40),
-    ),
-  );
+        hintText: hint,
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.black26),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.black26),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: ColorPalette.primary40),
+        ),
+      );
+
+  Future<void> _handleSubmit() async {
+    setState(() => submitting = true);
+    final loginBloc = locator<LoginBloc>();
+    loginBloc.onCertificateNumberChanged(
+      '${loginBloc.state.certificateNumber ?? ''} | Aadhaar: ${aadhaarController.text.trim()} | PAN: ${panController.text.trim()}',
+    );
+    final newDocs = [
+      if (aadhaarFrontMedia != null) aadhaarFrontMedia!,
+      if (aadhaarBackMedia != null) aadhaarBackMedia!,
+      if (panMedia != null) panMedia!,
+    ];
+    if (newDocs.isNotEmpty) {
+      loginBloc.setDocuments([...loginBloc.state.documents, ...newDocs]);
+    }
+    widget.onSubmit(aadhaarController.text.trim(), panController.text.trim());
+    // Trigger the actual backend save now that all steps are collected.
+    loginBloc.onConfirmDocumentsPressed();
+  }
 
   Widget _buildBody(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 4),
-
-                const Text(
-                  'Aadhaar',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black,
-                  ),
-                ),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
                 const SizedBox(height: 8),
-
-                const Text(
-                  'Upload Aadhaar Images',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
-                  ),
-                ),
+                const Text('Aadhaar Card', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black)),
+                const SizedBox(height: 10),
+                const Text('Upload Aadhaar Images', style: TextStyle(fontSize: 14, color: Colors.black54)),
                 const SizedBox(height: 8),
-
                 Row(
                   children: [
-                    _uploadTile(
-                      label: 'FRONT',
-                      imageBytes: aadhaarFrontBytes,
-                      onTap: () => _pickImage(
-                        title: 'Upload Aadhaar Front',
-                        onPicked: (bytes) =>
-                            setState(() => aadhaarFrontBytes = bytes),
+                    Expanded(
+                      child: _uploadTile(
+                        label: 'Front',
+                        imageBytes: aadhaarFrontBytes,
+                        uploading: uploadingAadhaarFront,
+                        onTap: () => _pickImage(
+                          title: 'Upload front side of Aadhaar',
+                        driverDocumentId: 1,
+                          getBytes: () => aadhaarFrontBytes,
+                          setBytes: (b) => aadhaarFrontBytes = b,
+                          setMedia: (m) => aadhaarFrontMedia = m,
+                          setUploading: (v) => uploadingAadhaarFront = v,
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    _uploadTile(
-                      label: 'BACK',
-                      imageBytes: aadhaarBackBytes,
-                      onTap: () => _pickImage(
-                        title: 'Upload Aadhaar Back',
-                        onPicked: (bytes) =>
-                            setState(() => aadhaarBackBytes = bytes),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _uploadTile(
+                        label: 'Back',
+                        imageBytes: aadhaarBackBytes,
+                        uploading: uploadingAadhaarBack,
+                        onTap: () => _pickImage(
+                          title: 'Upload back side of Aadhaar',
+                        driverDocumentId: 1,
+                          getBytes: () => aadhaarBackBytes,
+                          setBytes: (b) => aadhaarBackBytes = b,
+                          setMedia: (m) => aadhaarBackMedia = m,
+                          setUploading: (v) => uploadingAadhaarBack = v,
+                        ),
                       ),
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 10),
-
-                const Text(
-                  'Aadhaar Number',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 5),
-
+                const SizedBox(height: 16),
+                const Text('Enter Aadhaar Number', style: TextStyle(fontSize: 14, color: Colors.black54)),
+                const SizedBox(height: 6),
                 TextField(
                   controller: aadhaarController,
-                  keyboardType: TextInputType.number,
                   onChanged: (value) {
                     setState(() {});
                     widget.onDraftChanged?.call(aadhaarNumber: value);
                   },
                   decoration: _fieldDecoration('Eg: 1234 5678 9012'),
                 ),
-
+                const SizedBox(height: 28),
+                const Divider(),
                 const SizedBox(height: 16),
-
-                const Text(
-                  'PAN',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 8),
-
-                const Text(
-                  'Upload PAN Images',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 8),
-
-                Row(
-                  children: [
-                    _uploadTile(
-                      label: 'FRONT',
-                      imageBytes: panFrontBytes,
-                      onTap: () => _pickImage(
-                        title: 'Upload PAN Front',
-                        onPicked: (bytes) =>
-                            setState(() => panFrontBytes = bytes),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    _uploadTile(
-                      label: 'BACK',
-                      imageBytes: panBackBytes,
-                      onTap: () => _pickImage(
-                        title: 'Upload PAN Back',
-                        onPicked: (bytes) =>
-                            setState(() => panBackBytes = bytes),
-                      ),
-                    ),
-                  ],
-                ),
-
+                const Text('PAN Card', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black)),
                 const SizedBox(height: 10),
-
-                const Text(
-                  'PAN Number',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
+                const Text('Upload PAN Image', style: TextStyle(fontSize: 14, color: Colors.black54)),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: _uploadTile(
+                    label: 'PAN Card',
+                    imageBytes: panImageBytes,
+                    uploading: uploadingPan,
+                    onTap: () => _pickImage(
+                      title: 'Upload PAN card image',
+                      driverDocumentId: 2,
+                      getBytes: () => panImageBytes,
+                      setBytes: (b) => panImageBytes = b,
+                      setMedia: (m) => panMedia = m,
+                      setUploading: (v) => uploadingPan = v,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 5),
-
+                const SizedBox(height: 16),
+                const Text('Enter PAN Number', style: TextStyle(fontSize: 14, color: Colors.black54)),
+                const SizedBox(height: 6),
                 TextField(
                   controller: panController,
-                  textCapitalization: TextCapitalization.characters,
                   onChanged: (value) {
                     setState(() {});
                     widget.onDraftChanged?.call(panNumber: value);
@@ -389,36 +342,25 @@ class _AadhaarPanScreenState extends State<AadhaarPanScreen> {
                 ),
               ],
             ),
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        SizedBox(
-          width: double.infinity,
-          height: 48,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade700,
-              foregroundColor: Colors.white,
-              disabledBackgroundColor: Colors.red.shade200,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: canSubmit ? ColorPalette.primary40 : ColorPalette.primary80,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-            ),
-            onPressed: canSubmit
-                ? () => widget.onSubmit(
-                    aadhaarController.text.trim(),
-                    panController.text.trim(),
-                  )
-                : null,
-            child: const Text(
-              'Submit',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              onPressed: canSubmit ? _handleSubmit : null,
+              child: submitting
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : const Text('Submit', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ),
-        ),
-      ],
+          const SizedBox(height: 8),
+        ],
+      ),
     );
   }
 

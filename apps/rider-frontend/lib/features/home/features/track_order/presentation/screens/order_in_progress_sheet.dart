@@ -164,13 +164,10 @@ class OrderInProgressSheet extends StatelessWidget {
                             icon: Ionicons.call,
                             backgroundColor: Colors.green,
                             onPressed: () async {
-                              await locator<GraphqlDatasource>().mutate(
-                                Options$Mutation$initiateCall(
-                                  variables: Variables$Mutation$initiateCall(
-                                    orderId: order.id,
-                                  ),
-                                ),
-                              );
+                              final number = order.driver?.mobileNumber;
+                              if (number != null && number.isNotEmpty) {
+                                await launchUrlString('tel:$number');
+                              }
                             },
                           ),
                         ],

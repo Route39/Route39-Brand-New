@@ -18537,6 +18537,36 @@ driver_entity_ts_decorate([
         nullable: true
     }),
     driver_entity_ts_metadata("design:type", String)
+], DriverEntity.prototype, "city", void 0);
+driver_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    driver_entity_ts_metadata("design:type", String)
+], DriverEntity.prototype, "vehicleOwnership", void 0);
+driver_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    driver_entity_ts_metadata("design:type", String)
+], DriverEntity.prototype, "aadhaarNumber", void 0);
+driver_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    driver_entity_ts_metadata("design:type", String)
+], DriverEntity.prototype, "panNumber", void 0);
+driver_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    driver_entity_ts_metadata("design:type", String)
+], DriverEntity.prototype, "dob", void 0);
+driver_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    driver_entity_ts_metadata("design:type", String)
 ], DriverEntity.prototype, "notificationPlayerId", void 0);
 driver_entity_ts_decorate([
     (0,external_typeorm_.Column)({

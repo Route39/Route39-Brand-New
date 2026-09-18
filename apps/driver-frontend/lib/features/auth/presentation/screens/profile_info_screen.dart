@@ -1,7 +1,12 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
+import 'package:flutter_common/core/enums/gender.dart' as gender_enum;
 import 'package:image_picker/image_picker.dart';
+import 'package:ridy_driver/config/locator/locator.dart';
+import 'package:ridy_driver/core/datasources/upload_datasource.dart';
+import 'package:ridy_driver/core/graphql/fragments/media.fragment.graphql.dart';
+import '../blocs/login.bloc.dart';
 
 class ProfileInfoScreen extends StatefulWidget {
   final String? initialFirstName;
@@ -31,6 +36,9 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
   DateTime? dob;
   String? gender;
   Uint8List? profilePhotoBytes;
+  Fragment$Media? profileMedia;
+  bool uploadingPhoto = false;
+  bool submitting = false;
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -55,7 +63,9 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
       firstNameController.text.trim().isNotEmpty &&
       lastNameController.text.trim().isNotEmpty &&
       dob != null &&
-      gender != null;
+      gender != null &&
+      profileMedia != null &&
+      !submitting;
 
   String _formatDob(DateTime d) => '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 
@@ -129,7 +139,30 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
     if (picked == null) return;
 
     final bytes = await picked.readAsBytes();
-    setState(() => profilePhotoBytes = bytes);
+    setState(() {
+      profilePhotoBytes = bytes;
+      uploadingPhoto = true;
+    });
+
+    try {
+      final media = await locator<UploadDatasource>().uploadProfilePicture(picked.name, bytes);
+      if (!mounted) return;
+      setState(() {
+        profileMedia = media;
+        uploadingPhoto = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        profilePhotoBytes = null;
+        uploadingPhoto = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Photo upload failed. Please try again.')),
+        );
+      }
+    }
   }
 
   Future<void> _pickDob() async {
@@ -153,6 +186,32 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
     }
   }
 
+  gender_enum.Gender _mapGender(String value) {
+    switch (value) {
+      case 'Male':
+        return gender_enum.Gender.male;
+      case 'Female':
+        return gender_enum.Gender.female;
+      default:
+        return gender_enum.Gender.unknown;
+    }
+  }
+
+  Future<void> _handleSubmit() async {
+    setState(() => submitting = true);
+    final loginBloc = locator<LoginBloc>();
+    loginBloc.onFirstNameChanged(firstNameController.text.trim());
+    loginBloc.onLastNameChanged(lastNameController.text.trim());
+    loginBloc.onGenderChanged(_mapGender(gender!));
+    loginBloc.onProfilePhotoChanged(profileMedia);
+    widget.onSubmit(
+      firstNameController.text.trim(),
+      lastNameController.text.trim(),
+      dob!.toIso8601String(),
+      gender!,
+    );
+  }
+
   Widget _buildBody(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.max,
@@ -164,18 +223,30 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 8),
-                Container(
-                  width: 100,
-                  height: 100,
-                  clipBehavior: Clip.antiAlias,
-                  decoration: const BoxDecoration(color: Colors.black12, shape: BoxShape.circle),
-                  child: profilePhotoBytes != null
-                      ? Image.memory(profilePhotoBytes!, fit: BoxFit.cover)
-                      : const Icon(Icons.person, size: 56, color: Colors.black38),
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      width: 100,
+                      height: 100,
+                      clipBehavior: Clip.antiAlias,
+                      decoration: const BoxDecoration(color: Colors.black12, shape: BoxShape.circle),
+                      child: profilePhotoBytes != null
+                          ? Image.memory(profilePhotoBytes!, fit: BoxFit.cover)
+                          : const Icon(Icons.person, size: 56, color: Colors.black38),
+                    ),
+                    if (uploadingPhoto)
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: const BoxDecoration(color: Colors.black45, shape: BoxShape.circle),
+                        child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 8),
                 TextButton(
-                  onPressed: _pickProfilePhoto,
+                  onPressed: uploadingPhoto ? null : _pickProfilePhoto,
                   child: Text('Edit', style: TextStyle(color: ColorPalette.primary40, fontWeight: FontWeight.w600)),
                 ),
                 const SizedBox(height: 16),
@@ -297,15 +368,10 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            onPressed: canSubmit
-                ? () => widget.onSubmit(
-                      firstNameController.text.trim(),
-                      lastNameController.text.trim(),
-                      dob!.toIso8601String(),
-                      gender!,
-                    )
-                : null,
-            child: const Text('Submit', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            onPressed: canSubmit ? _handleSubmit : null,
+            child: submitting
+                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                : const Text('Submit', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           ),
         ),
         const SizedBox(height: 8),

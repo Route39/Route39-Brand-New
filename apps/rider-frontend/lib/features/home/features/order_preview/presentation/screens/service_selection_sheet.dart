@@ -341,6 +341,8 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
   }
 
   Widget _buildServiceCard(BuildContext context, dynamic selectedService, String? categoryName) {
+    final isCargo = locator<HomeBloc>().state.orderType != Enum$TaxiOrderType.Ride;
+    final fallbackAsset = isCargo ? 'assets/images/route39_cargo_icon.png' : 'assets/images/route39_auto_photo.png';
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(color: ColorPalette.neutralVariant99, borderRadius: BorderRadius.circular(12)),
@@ -350,7 +352,7 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
             borderRadius: BorderRadius.circular(8),
             child: (selectedService.media?.address == null || (selectedService.media.address as String).isEmpty)
                 ? Image.asset(
-                    'assets/images/route39_auto_photo.png',
+                    fallbackAsset,
                     width: 56,
                     height: 56,
                     fit: BoxFit.cover,
@@ -363,13 +365,13 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
                     fadeInDuration: Duration.zero,
                     fadeOutDuration: Duration.zero,
                     placeholder: (context, url) => Image.asset(
-                      'assets/images/route39_auto_photo.png',
+                      fallbackAsset,
                       width: 56,
                       height: 56,
                       fit: BoxFit.cover,
                     ),
                     errorWidget: (context, url, error) => Image.asset(
-                      'assets/images/route39_auto_photo.png',
+                      fallbackAsset,
                       width: 56,
                       height: 56,
                       fit: BoxFit.cover,
@@ -378,7 +380,7 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text('Route39 EV', style: context.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            child: Text(isCargo ? 'Route39 Cargo' : 'Route39 EV', style: context.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

@@ -108,25 +108,6 @@ export default function DriverDetailsTab() {
           <KeyValueList
             items={[
               { label: "Plate", value: driver.carPlate },
-              { label: "Production year", value: driver.carProductionYear },
-              { label: "Car ID", value: driver.carId },
-              { label: "Color ID", value: driver.carColorId },
-            ]}
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Banking</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <KeyValueList
-            items={[
-              { label: "Bank name", value: driver.bankName },
-              { label: "Account number", value: driver.accountNumber },
-              { label: "Routing number", value: driver.bankRoutingNumber },
-              { label: "SWIFT", value: driver.bankSwift },
             ]}
           />
         </CardContent>

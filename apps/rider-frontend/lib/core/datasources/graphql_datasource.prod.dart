@@ -6,6 +6,9 @@ import 'package:injectable/injectable.dart';
 import 'package:logger/logger.dart';
 
 import 'package:ridy/core/datasources/graphql_datasource.dart';
+import 'package:ridy/config/locator/locator.dart';
+import 'package:ridy/config/router/app_router.dart';
+import 'package:ridy/core/blocs/auth_bloc.dart';
 
 @LazySingleton(as: GraphqlDatasource)
 class GraphqlDatasourceImpl implements GraphqlDatasource {
@@ -25,6 +28,7 @@ class GraphqlDatasourceImpl implements GraphqlDatasource {
         print('GraphQL Error: ${options.document}');
         print('GraphQL Error: ${result.exception}');
       }
+      _handleAuthFailureIfNeeded(result.exception!);
       return ApiResponse.error(_parseOperationException(result.exception!).errorMessage);
     }
     return ApiResponse.loaded(result.parsedData as TParsed);
@@ -43,6 +47,7 @@ class GraphqlDatasourceImpl implements GraphqlDatasource {
         print('GraphQL Error: ${result.exception}');
       }
       Logger().e(result.exception);
+      _handleAuthFailureIfNeeded(result.exception!);
       return ApiResponse.error(_parseOperationException(result.exception!).errorMessage);
     }
     return ApiResponse.loaded(result.parsedData as TParsed);
@@ -91,7 +96,18 @@ class GraphqlDatasourceImpl implements GraphqlDatasource {
     }
   }
 
+  static void _handleAuthFailureIfNeeded(OperationException exception) {
+    final isAuthFailure = exception.graphqlErrors.any((e) => e.message == 'GqlAuthGuard');
+    if (isAuthFailure) {
+      locator<AuthBloc>().onLoggedOut();
+      locator<AppRouter>().replaceAll([const AuthRoute()]);
+    }
+  }
+
   static Failure _parseOperationException(OperationException exception) {
+    if (exception.graphqlErrors.any((e) => e.message == 'GqlAuthGuard')) {
+      return const Failure(errorMessage: 'Your session has expired. Please sign in again.');
+    }
     if (exception.graphqlErrors.isNotEmpty) {
       return Failure(errorMessage: exception.graphqlErrors.first.message);
     }

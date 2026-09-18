@@ -107,4 +107,27 @@ class LoginRepositoryImpl implements AuthRepository {
     ));
     return registerResponse;
   }
+
+  @override
+  Future<ApiResponse<Mutation$AttachDriverDocument>> attachDriverDocument({
+    required int driverDocumentId,
+    required int mediaId,
+  }) async {
+    final response = await graphqlDatasource.mutate(Options$Mutation$AttachDriverDocument(
+      fetchPolicy: FetchPolicy.noCache,
+      variables: Variables$Mutation$AttachDriverDocument(
+        driverDocumentId: driverDocumentId,
+        mediaId: mediaId,
+      ),
+    ));
+    return response;
+  }
+
+  @override
+  Future<ApiResponse<Mutation$DeleteAccount>> deleteAccount() async {
+    final response = await graphqlDatasource.mutate(Options$Mutation$DeleteAccount(
+      fetchPolicy: FetchPolicy.noCache,
+    ));
+    return response;
+  }
 }

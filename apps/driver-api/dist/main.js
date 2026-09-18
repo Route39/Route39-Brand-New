@@ -52,24 +52,24 @@ const _setup = __webpack_require__(26);
 const _apollo = __webpack_require__(17);
 const _announcementsmodule = __webpack_require__(27);
 const _authmodule = __webpack_require__(32);
-const _jwtstrategy = __webpack_require__(72);
-const _chatmodule = __webpack_require__(75);
-const _complaintmodule = __webpack_require__(78);
-const _driverapisetupnotfoundcontroller = __webpack_require__(81);
-const _driverapicontroller = __webpack_require__(82);
+const _jwtstrategy = __webpack_require__(73);
+const _chatmodule = __webpack_require__(76);
+const _complaintmodule = __webpack_require__(79);
+const _driverapisetupnotfoundcontroller = __webpack_require__(82);
+const _driverapicontroller = __webpack_require__(83);
 const _drivermodule = __webpack_require__(35);
-const _feedbacksmodule = __webpack_require__(86);
+const _feedbacksmodule = __webpack_require__(87);
 const _ordermodule = __webpack_require__(50);
-const _payoutmodule = __webpack_require__(91);
-const _sosmodule = __webpack_require__(111);
+const _payoutmodule = __webpack_require__(92);
+const _sosmodule = __webpack_require__(112);
 const _uploadmodule = __webpack_require__(38);
-const _walletmodule = __webpack_require__(102);
+const _walletmodule = __webpack_require__(103);
 const _core = __webpack_require__(3);
-const _nestjsprometheus = __webpack_require__(115);
+const _nestjsprometheus = __webpack_require__(116);
 const _licenseverify = __webpack_require__(15);
-const _notificationmodule = __webpack_require__(116);
-const _ephemeralmessagesmodule = __webpack_require__(119);
-const _supportmodule = __webpack_require__(123);
+const _notificationmodule = __webpack_require__(117);
+const _ephemeralmessagesmodule = __webpack_require__(120);
+const _supportmodule = __webpack_require__(124);
 let DriverAPIModule = class DriverAPIModule {
     constructor(licenseService){
         this.licenseService = licenseService;
@@ -18506,6 +18506,36 @@ driver_entity_ts_decorate([
     }),
     driver_entity_ts_metadata("design:type", String)
 ], DriverEntity.prototype, "address", void 0);
+driver_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    driver_entity_ts_metadata("design:type", String)
+], DriverEntity.prototype, "city", void 0);
+driver_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    driver_entity_ts_metadata("design:type", String)
+], DriverEntity.prototype, "vehicleOwnership", void 0);
+driver_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    driver_entity_ts_metadata("design:type", String)
+], DriverEntity.prototype, "aadhaarNumber", void 0);
+driver_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    driver_entity_ts_metadata("design:type", String)
+], DriverEntity.prototype, "panNumber", void 0);
+driver_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    driver_entity_ts_metadata("design:type", String)
+], DriverEntity.prototype, "dob", void 0);
 driver_entity_ts_decorate([
     (0,external_typeorm_.Column)({
         nullable: true
@@ -44931,7 +44961,7 @@ const _drivermodule = __webpack_require__(35);
 const _ordermodule = __webpack_require__(50);
 const _authresolver = __webpack_require__(59);
 const _authservice = __webpack_require__(66);
-const _jwtstrategy = __webpack_require__(72);
+const _jwtstrategy = __webpack_require__(73);
 const _database = __webpack_require__(12);
 const _licenseverify = __webpack_require__(15);
 const _typeorm = __webpack_require__(11);
@@ -45028,7 +45058,8 @@ DriverModule = _ts_decorate._([
             _database.GoogleServicesModule,
             _typeorm.TypeOrmModule.forFeature([
                 _database.DriverEntity,
-                _database.TaxiOrderEntity
+                _database.TaxiOrderEntity,
+                _database.DriverToDriverDocumentEntity
             ])
         ],
         providers: [
@@ -45067,7 +45098,7 @@ const _typeorm1 = __webpack_require__(11);
 const _timesheetservice = __webpack_require__(37);
 const _apollo = __webpack_require__(17);
 let DriverService = class DriverService {
-    constructor(driverRepository, taxiOrderRepository, activeOrderRedisService, driverRedisService, serviceRedisService, timesheetService, pubsub, rideOfferRedisService, googleServices){
+    constructor(driverRepository, taxiOrderRepository, activeOrderRedisService, driverRedisService, serviceRedisService, timesheetService, pubsub, rideOfferRedisService, googleServices, driverToDriverDocumentRepository){
         this.driverRepository = driverRepository;
         this.taxiOrderRepository = taxiOrderRepository;
         this.activeOrderRedisService = activeOrderRedisService;
@@ -45077,11 +45108,16 @@ let DriverService = class DriverService {
         this.pubsub = pubsub;
         this.rideOfferRedisService = rideOfferRedisService;
         this.googleServices = googleServices;
+        this.driverToDriverDocumentRepository = driverToDriverDocumentRepository;
     }
     async findWithDeleted(input) {
         return this.driverRepository.findOne({
             where: input,
-            withDeleted: true
+            withDeleted: true,
+            relations: {
+                documents: true,
+                media: true
+            }
         });
     }
     async findOrCreateUserWithMobileNumber(input) {
@@ -45119,8 +45155,14 @@ let DriverService = class DriverService {
         await this.driverRepository.update(input.driverId, {
             password: input.password
         });
-        return this.driverRepository.findOneByOrFail({
-            id: input.driverId
+        return this.driverRepository.findOneOrFail({
+            where: {
+                id: input.driverId
+            },
+            relations: {
+                documents: true,
+                media: true
+            }
         });
     }
     async expireDriverStatus(driverIds) {
@@ -45138,6 +45180,19 @@ let DriverService = class DriverService {
             // know an order is still in progress.
             if ((onlineDriver?.activeOrderIds?.length ?? 0) > 0) {
                 _common.Logger.log(`Driver ${driverId} has an active order, skipping location expiry`);
+                continue;
+            }
+            // Only expire drivers who are actually Online/InService in the DB.
+            // A driver in a registration-flow status (WaitingDocuments,
+            // PendingApproval, SoftReject, HardReject, Blocked) should never be
+            // silently flipped to Offline just because they have stale Redis
+            // presence data from an earlier session.
+            const currentEntity = await this.driverRepository.findOne({
+                where: {
+                    id: driverId
+                }
+            });
+            if (currentEntity == null || currentEntity.status !== _database.DriverStatus.Online && currentEntity.status !== _database.DriverStatus.InService) {
                 continue;
             }
             // Clean up pending ride offers before expiring driver
@@ -45287,7 +45342,16 @@ let DriverService = class DriverService {
             searchDistance: entity.searchDistance ?? null,
             currency: currency,
             walletCredit: primaryWallet.balance,
-            softRejectionNote: entity.softRejectionNote ?? null
+            softRejectionNote: entity.softRejectionNote ?? null,
+            city: entity.city ?? null,
+            vehicleOwnership: entity.vehicleOwnership ?? null,
+            carPlate: entity.carPlate ?? null,
+            carId: entity.carId ?? null,
+            carColorId: entity.carColorId ?? null,
+            carProductionYear: entity.carProductionYear ?? null,
+            aadhaarNumber: entity.aadhaarNumber ?? null,
+            panNumber: entity.panNumber ?? null,
+            documentsUploadedCount: entity.documents?.length ?? 0
         };
         return dto;
     }
@@ -45303,7 +45367,16 @@ let DriverService = class DriverService {
             currency: snapshot.currency,
             status: (snapshot.activeOrderIds?.length ?? 0) > 0 ? _database.DriverStatus.InService : _database.DriverStatus.Online,
             searchDistance: snapshot.searchDistance ?? null,
-            softRejectionNote: null
+            softRejectionNote: null,
+            city: null,
+            vehicleOwnership: null,
+            carPlate: null,
+            carId: null,
+            carColorId: null,
+            carProductionYear: null,
+            aadhaarNumber: null,
+            panNumber: null,
+            documentsUploadedCount: 0
         };
         return dto;
     }
@@ -45464,11 +45537,60 @@ let DriverService = class DriverService {
                 }));
         }
     }
+    async attachDriverDocument(driverId, driverDocumentId, mediaId) {
+        console.log('=== ATTACH DOC DEBUG ===', {
+            driverId,
+            driverDocumentId,
+            mediaId
+        });
+        try {
+            const record = this.driverToDriverDocumentRepository.create({
+                driverId,
+                driverDocumentId,
+                mediaId
+            });
+            const saved = await this.driverToDriverDocumentRepository.save(record);
+            console.log('=== ATTACH DOC SAVED ===', saved);
+            return true;
+        } catch (err) {
+            console.error('=== ATTACH DOC ERROR ===', err);
+            throw err;
+        }
+    }
+    async deleteAccount(driverId) {
+        // Wipe uploaded documents so the driver starts with a clean slate.
+        await this.driverToDriverDocumentRepository.delete({
+            driverId
+        });
+        // Reset registration fields so logging back in with the same number
+        // restarts onboarding from City selection instead of showing
+        // Access Denied or resuming stale progress.
+        await this.driverRepository.update(driverId, {
+            status: _database.DriverStatus.WaitingDocuments,
+            // firstName is what the frontend uses to detect "already completed
+            // registration before" — clearing it is what makes the app treat
+            // this driver as brand-new and restart from City selection.
+            firstName: '',
+            lastName: '',
+            city: null,
+            vehicleOwnership: null,
+            carPlate: null,
+            carId: null,
+            carColorId: null,
+            carProductionYear: null,
+            aadhaarNumber: null,
+            panNumber: null,
+            certificateNumber: null,
+            softRejectionNote: null
+        });
+        return true;
+    }
 };
 DriverService = _ts_decorate._([
     (0, _common.Injectable)(),
     _ts_param._(0, (0, _typeorm1.InjectRepository)(_database.DriverEntity)),
     _ts_param._(1, (0, _typeorm1.InjectRepository)(_database.TaxiOrderEntity)),
+    _ts_param._(9, (0, _typeorm1.InjectRepository)(_database.DriverToDriverDocumentEntity)),
     _ts_metadata._("design:type", Function),
     _ts_metadata._("design:paramtypes", [
         typeof _typeorm.Repository === "undefined" ? Object : _typeorm.Repository,
@@ -45479,7 +45601,8 @@ DriverService = _ts_decorate._([
         typeof _timesheetservice.TimesheetService === "undefined" ? Object : _timesheetservice.TimesheetService,
         typeof _database.PubSubService === "undefined" ? Object : _database.PubSubService,
         typeof _database.RideOfferRedisService === "undefined" ? Object : _database.RideOfferRedisService,
-        typeof _database.GoogleServicesService === "undefined" ? Object : _database.GoogleServicesService
+        typeof _database.GoogleServicesService === "undefined" ? Object : _database.GoogleServicesService,
+        typeof _typeorm.Repository === "undefined" ? Object : _typeorm.Repository
     ])
 ], DriverService);
 
@@ -45767,6 +45890,12 @@ let DriverResolver = class DriverResolver {
         }
         return this.callMaskingService.initiateLostPropertyCall(orderId, driver.mobileNumber.toString(), _database.CallerType.DRIVER);
     }
+    async deleteAccount() {
+        return this.driverService.deleteAccount(this.context.req.user.id);
+    }
+    async attachDriverDocument(driverDocumentId, mediaId) {
+        return this.driverService.attachDriverDocument(this.context.req.user.id, driverDocumentId, mediaId);
+    }
 };
 _ts_decorate._([
     (0, _graphql.Query)(()=>_driverdto.DriverDTO),
@@ -45866,6 +45995,27 @@ _ts_decorate._([
     ]),
     _ts_metadata._("design:returntype", Promise)
 ], DriverResolver.prototype, "initiateLostPropertyCall", null);
+_ts_decorate._([
+    (0, _graphql.Mutation)(()=>Boolean),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", []),
+    _ts_metadata._("design:returntype", Promise)
+], DriverResolver.prototype, "deleteAccount", null);
+_ts_decorate._([
+    (0, _graphql.Mutation)(()=>Boolean),
+    _ts_param._(0, (0, _graphql.Args)('driverDocumentId', {
+        type: ()=>_graphql.Int
+    })),
+    _ts_param._(1, (0, _graphql.Args)('mediaId', {
+        type: ()=>_graphql.Int
+    })),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        Number,
+        Number
+    ]),
+    _ts_metadata._("design:returntype", Promise)
+], DriverResolver.prototype, "attachDriverDocument", null);
 DriverResolver = _ts_decorate._([
     (0, _graphql.Resolver)(),
     (0, _common.UseGuards)(_jwtgqlauthguard.GqlAuthGuard),
@@ -46076,6 +46226,58 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", Object)
 ], DriverDTO.prototype, "softRejectionNote", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Object)
+], DriverDTO.prototype, "city", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Object)
+], DriverDTO.prototype, "vehicleOwnership", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Object)
+], DriverDTO.prototype, "carPlate", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Int, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Object)
+], DriverDTO.prototype, "carId", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Int, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Object)
+], DriverDTO.prototype, "carColorId", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Int, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Object)
+], DriverDTO.prototype, "carProductionYear", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Object)
+], DriverDTO.prototype, "aadhaarNumber", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Object)
+], DriverDTO.prototype, "panNumber", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Int),
+    _ts_metadata._("design:type", Number)
+], DriverDTO.prototype, "documentsUploadedCount", void 0);
 DriverDTO = _ts_decorate._([
     (0, _graphql.ObjectType)('Driver')
 ], DriverDTO);
@@ -48255,9 +48457,10 @@ const _driverdocumentdto = __webpack_require__(67);
 const _typeorm = __webpack_require__(13);
 const _typeorm1 = __webpack_require__(11);
 const _carmodeldto = __webpack_require__(68);
-const _carcolordto = __webpack_require__(69);
-const _completeregistrationinput = __webpack_require__(70);
-const _googlelibphonenumber = __webpack_require__(71);
+const _saveregistrationprogressinput = __webpack_require__(69);
+const _carcolordto = __webpack_require__(70);
+const _completeregistrationinput = __webpack_require__(71);
+const _googlelibphonenumber = __webpack_require__(72);
 let AuthResolver = class AuthResolver {
     constructor(driverService, sharedDriverService, driverDocumentRepository, carModelRepository, carColorRepository, jwtService, userContext, authService, sharedPasskeyService){
         this.driverService = driverService;
@@ -48387,6 +48590,12 @@ let AuthResolver = class AuthResolver {
             hasName: driver.firstName != null && driver.lastName != null,
             hasPassword: driver.password != null
         };
+    }
+    async saveRegistrationProgress(input) {
+        return this.authService.saveRegistrationProgress({
+            userId: this.userContext.req.user.id,
+            input
+        });
     }
     async carModels(query) {
         return this.carModelRepository.find({
@@ -48630,6 +48839,18 @@ _ts_decorate._([
     ]),
     _ts_metadata._("design:returntype", Promise)
 ], AuthResolver.prototype, "setPassword", null);
+_ts_decorate._([
+    (0, _graphql.Mutation)(()=>_driverdto.DriverDTO, {
+        description: 'Saves partial registration progress (city, vehicle type, documents step data) so the driver can resume from where they left off on any device.'
+    }),
+    (0, _common.UseGuards)(_jwtgqlauthguard.GqlAuthGuard),
+    _ts_param._(0, (0, _graphql.Args)('input')),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        typeof _saveregistrationprogressinput.SaveRegistrationProgressInput === "undefined" ? Object : _saveregistrationprogressinput.SaveRegistrationProgressInput
+    ]),
+    _ts_metadata._("design:returntype", Promise)
+], AuthResolver.prototype, "saveRegistrationProgress", null);
 _ts_decorate._([
     (0, _graphql.Query)(()=>[
             _carmodeldto.CarModelDTO
@@ -49105,6 +49326,32 @@ let AuthService = class AuthService {
         await this.authRedisService.deleteVerificationCode(hash);
         return result;
     }
+    async saveRegistrationProgress(input) {
+        const { city, vehicleOwnership, carId, carColorId, carProductionYear, carPlate, aadhaarNumber, panNumber, dob } = input.input;
+        const updatePayload = {};
+        if (city !== undefined) updatePayload.city = city;
+        if (vehicleOwnership !== undefined) updatePayload.vehicleOwnership = vehicleOwnership;
+        if (carId !== undefined) updatePayload.carId = carId;
+        if (carColorId !== undefined) updatePayload.carColorId = carColorId;
+        if (carProductionYear !== undefined) updatePayload.carProductionYear = carProductionYear;
+        if (carPlate !== undefined) updatePayload.carPlate = carPlate;
+        if (aadhaarNumber !== undefined) updatePayload.aadhaarNumber = aadhaarNumber;
+        if (panNumber !== undefined) updatePayload.panNumber = panNumber;
+        if (dob !== undefined) updatePayload.dob = dob;
+        if (Object.keys(updatePayload).length > 0) {
+            await this.driverRepository.update(input.userId, updatePayload);
+        }
+        const driver = await this.driverRepository.findOneOrFail({
+            where: {
+                id: input.userId
+            },
+            relations: {
+                documents: true,
+                media: true
+            }
+        });
+        return this.driverService.createDTOFromEntity(driver);
+    }
     async completeRegistration(input) {
         let driver = await this.driverRepository.findOneOrFail({
             where: {
@@ -49115,7 +49362,7 @@ let AuthService = class AuthService {
             throw new Error('Driver not found');
         }
         const isDemoMode = process.env.DEMO_MODE?.toLowerCase() == 'true';
-        const { firstName, lastName, certificateNumber, email, carProductionYear, carPlate, profilePictureId, gender, address, carId, carColorId, documentPairs } = input.input;
+        const { firstName, lastName, certificateNumber, email, carProductionYear, carPlate, profilePictureId, gender, address, city, vehicleOwnership, aadhaarNumber, panNumber, dob, carId, carColorId, documentPairs } = input.input;
         this.driverRepository.update(input.userId, {
             firstName: firstName?.trim(),
             lastName: lastName?.trim(),
@@ -49126,6 +49373,11 @@ let AuthService = class AuthService {
             mediaId: profilePictureId,
             gender,
             address: address,
+            city: city?.trim(),
+            vehicleOwnership: vehicleOwnership?.trim(),
+            aadhaarNumber: aadhaarNumber?.trim(),
+            panNumber: panNumber?.trim(),
+            dob: dob?.trim(),
             carId,
             carColorId,
             status: isDemoMode ? _database.DriverStatus.Offline : _database.DriverStatus.PendingApproval
@@ -49142,7 +49394,7 @@ let AuthService = class AuthService {
             }
             await this.driverServiceRepository.save(services);
         }
-        if (input.input.documentPairs) {
+        if (input.input.documentPairs && input.input.documentPairs.length > 0) {
             await this.driverToDocumentRepository.delete({
                 driverId: input.userId
             });
@@ -49448,6 +49700,84 @@ CarModelDTO = _ts_decorate._([
 Object.defineProperty(exports, "__esModule", ({
     value: true
 }));
+Object.defineProperty(exports, "SaveRegistrationProgressInput", ({
+    enumerable: true,
+    get: function() {
+        return SaveRegistrationProgressInput;
+    }
+}));
+const _ts_decorate = __webpack_require__(6);
+const _ts_metadata = __webpack_require__(7);
+const _graphql = __webpack_require__(9);
+let SaveRegistrationProgressInput = class SaveRegistrationProgressInput {
+};
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], SaveRegistrationProgressInput.prototype, "city", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], SaveRegistrationProgressInput.prototype, "vehicleOwnership", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.ID, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], SaveRegistrationProgressInput.prototype, "carId", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.ID, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], SaveRegistrationProgressInput.prototype, "carColorId", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Int, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], SaveRegistrationProgressInput.prototype, "carProductionYear", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], SaveRegistrationProgressInput.prototype, "carPlate", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], SaveRegistrationProgressInput.prototype, "aadhaarNumber", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], SaveRegistrationProgressInput.prototype, "panNumber", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], SaveRegistrationProgressInput.prototype, "dob", void 0);
+SaveRegistrationProgressInput = _ts_decorate._([
+    (0, _graphql.InputType)()
+], SaveRegistrationProgressInput);
+
+
+/***/ }),
+/* 70 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({
+    value: true
+}));
 Object.defineProperty(exports, "CarColorDTO", ({
     enumerable: true,
     get: function() {
@@ -49476,7 +49806,7 @@ CarColorDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 70 */
+/* 71 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49563,6 +49893,36 @@ _ts_decorate._([
     _ts_metadata._("design:type", String)
 ], CompleteRegistrationInput.prototype, "address", void 0);
 _ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], CompleteRegistrationInput.prototype, "city", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], CompleteRegistrationInput.prototype, "vehicleOwnership", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], CompleteRegistrationInput.prototype, "aadhaarNumber", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], CompleteRegistrationInput.prototype, "panNumber", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], CompleteRegistrationInput.prototype, "dob", void 0);
+_ts_decorate._([
     (0, _graphql.Field)(()=>_graphql.ID, {
         nullable: true
     }),
@@ -49594,13 +49954,13 @@ CompleteRegistrationInput = _ts_decorate._([
 
 
 /***/ }),
-/* 71 */
+/* 72 */
 /***/ ((module) => {
 
 module.exports = require("google-libphonenumber");
 
 /***/ }),
-/* 72 */
+/* 73 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49623,10 +49983,10 @@ _export(exports, {
 });
 const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
-const _passportjwt = __webpack_require__(73);
+const _passportjwt = __webpack_require__(74);
 const _passport = __webpack_require__(34);
 const _common = __webpack_require__(2);
-const _jwtdecode = __webpack_require__(74);
+const _jwtdecode = __webpack_require__(75);
 let JwtStrategy = class JwtStrategy extends (0, _passport.PassportStrategy)(_passportjwt.Strategy, 'jwt') {
     constructor(){
         super({
@@ -49656,19 +50016,19 @@ async function validateToken(token) {
 
 
 /***/ }),
-/* 73 */
+/* 74 */
 /***/ ((module) => {
 
 module.exports = require("passport-jwt");
 
 /***/ }),
-/* 74 */
+/* 75 */
 /***/ ((module) => {
 
 module.exports = require("jwt-decode");
 
 /***/ }),
-/* 75 */
+/* 76 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49684,8 +50044,8 @@ Object.defineProperty(exports, "ChatModule", ({
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
-const _chatresolver = __webpack_require__(76);
-const _chatservice = __webpack_require__(77);
+const _chatresolver = __webpack_require__(77);
+const _chatservice = __webpack_require__(78);
 let ChatModule = class ChatModule {
 };
 ChatModule = _ts_decorate._([
@@ -49703,7 +50063,7 @@ ChatModule = _ts_decorate._([
 
 
 /***/ }),
-/* 76 */
+/* 77 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49720,7 +50080,7 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(29);
 const _graphql = __webpack_require__(9);
-const _chatservice = __webpack_require__(77);
+const _chatservice = __webpack_require__(78);
 const _database = __webpack_require__(12);
 let ChatResolver = class ChatResolver {
     constructor(chatService){
@@ -49770,7 +50130,7 @@ ChatResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 77 */
+/* 78 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49845,7 +50205,7 @@ ChatService = _ts_decorate._([
 
 
 /***/ }),
-/* 78 */
+/* 79 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49864,8 +50224,8 @@ const _nestjsquerytypeorm = __webpack_require__(39);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
 const _jwtgqlauthguard = __webpack_require__(43);
-const _complaintdto = __webpack_require__(79);
-const _complaintinput = __webpack_require__(80);
+const _complaintdto = __webpack_require__(80);
+const _complaintinput = __webpack_require__(81);
 let ComplaintModule = class ComplaintModule {
 };
 ComplaintModule = _ts_decorate._([
@@ -49908,7 +50268,7 @@ ComplaintModule = _ts_decorate._([
 
 
 /***/ }),
-/* 79 */
+/* 80 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49956,7 +50316,7 @@ ComplaintDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 80 */
+/* 81 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50007,7 +50367,7 @@ ComplaintInput = _ts_decorate._([
 
 
 /***/ }),
-/* 81 */
+/* 82 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50058,7 +50418,7 @@ DriverApiSetupNotFoundController = _ts_decorate._([
 
 
 /***/ }),
-/* 82 */
+/* 83 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50071,18 +50431,18 @@ Object.defineProperty(exports, "DriverAPIController", ({
         return DriverAPIController;
     }
 }));
-const _interop_require_default = __webpack_require__(83);
+const _interop_require_default = __webpack_require__(84);
 const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(29);
 const _common = __webpack_require__(2);
-const _restjwtauthguard = __webpack_require__(84);
+const _restjwtauthguard = __webpack_require__(85);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 const _typeorm1 = __webpack_require__(13);
 const _properurljoin = /*#__PURE__*/ _interop_require_default._(__webpack_require__(14));
 const _express = __webpack_require__(4);
-const _packagejson = __webpack_require__(85);
+const _packagejson = __webpack_require__(86);
 let DriverAPIController = class DriverAPIController {
     constructor(mediaRepository, driverDocumentRepository, driverRepository, paymentRepository, cryptoService, sharedDriverService){
         this.mediaRepository = mediaRepository;
@@ -50269,13 +50629,13 @@ DriverAPIController = _ts_decorate._([
 
 
 /***/ }),
-/* 83 */
+/* 84 */
 /***/ ((module) => {
 
 module.exports = require("@swc/helpers/_/_interop_require_default");
 
 /***/ }),
-/* 84 */
+/* 85 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50308,13 +50668,13 @@ RestJwtAuthGuard = _ts_decorate._([
 
 
 /***/ }),
-/* 85 */
+/* 86 */
 /***/ ((module) => {
 
 module.exports = /*#__PURE__*/JSON.parse('{"name":"bettersuite","version":"5.3.2","license":"MIT","scripts":{"ng":"nx","nx":"nx","start":"ts-node src/index.ts","build":"ng build","test":"ng test","lint":"nx workspace-lint && ng lint","e2e":"ng e2e","affected:apps":"nx affected:apps","affected:libs":"nx affected:libs","affected:build":"nx affected:build","affected:e2e":"nx affected:e2e","affected:test":"nx affected:test","affected:lint":"nx affected:lint","affected:dep-graph":"nx affected:dep-graph","affected":"nx affected","format":"nx format:write","format:write":"nx format:write","format:check":"nx format:check","update":"nx migrate latest","workspace-generator":"nx workspace-generator","dep-graph":"nx dep-graph","help":"nx help","lint:fix":"eslint \'./**/*.{ts,tsx}\' --fix","i18n:extract":"ngx-translate-extract --input ./apps/admin-panel/src --output ./apps/admin-panel/src/assets/i18n/{en,es,bn,de,hi,ko,id,ja,pt,ru,ur,zh,fr,ar,hy}.json --clean --format namespaced-json","typeorm":"node --require ts-node/register ./node_modules/typeorm/cli.js","semantic-release":"semantic-release","publish-frontend":"bash scripts/docker-frontend-publish.sh","publish-backend":"bash scripts/docker-backend-publish.sh","inject-google-maps-key":"bash scripts/inject-google-maps-key.sh","client-setup":"bash scripts/client_setup/client-setup.sh","build-apks":"bash scripts/build-apks.sh","smoke-test":"bash scripts/backend-smoke-test.sh","gql-stats":"bash scripts/gql-stats.sh","load-test:seed":"node tools/load-tests/scripts/seed-database.js","load-test:seed:clean":"node tools/load-tests/scripts/seed-database.js --clean","load-test":"bash tools/load-tests/scripts/run-load-test.sh","load-test:rider":"bash tools/load-tests/scripts/run-load-test.sh rider","load-test:driver":"bash tools/load-tests/scripts/run-load-test.sh driver"},"private":true,"dependencies":{"@angular/animations":"20.1.4","@angular/cdk":"20.1.4","@angular/common":"20.1.4","@angular/compiler":"20.1.4","@angular/core":"20.1.4","@angular/forms":"20.1.4","@angular/google-maps":"20.1.4","@angular/platform-browser":"20.1.4","@angular/platform-browser-dynamic":"20.1.4","@angular/router":"20.1.4","@angular/service-worker":"20.1.4","@ant-design/icons-angular":"^20.0.0","@antv/g2":"^4.2.10","@apollo/client":"^3.13.8","@apollo/server":"^4.12.2","@aws-sdk/client-s3":"^3.886.0","@aws-sdk/client-secrets-manager":"^3.974.0","@bull-board/api":"^6.12.0","@bull-board/express":"^6.12.0","@bull-board/nestjs":"^6.12.0","@ctrl/tinycolor":"^4.1.0","@googlemaps/google-maps-services-js":"^3.4.2","@googlemaps/places":"^2.0.1","@googlemaps/routing":"^2.0.1","@ingameltd/payu":"^1.0.5","@nestjs/apollo":"^13.1.0","@nestjs/axios":"^4.0.1","@nestjs/bullmq":"^11.0.3","@nestjs/common":"11.1.5","@nestjs/config":"^4.0.2","@nestjs/core":"11.1.5","@nestjs/graphql":"^13.1.0","@nestjs/jwt":"^11.0.0","@nestjs/passport":"^11.0.5","@nestjs/platform-express":"^11.1.5","@nestjs/schedule":"^6.0.0","@nestjs/serve-static":"^5.0.3","@nestjs/typeorm":"11.0.0","@nestjs/websockets":"^11.1.3","@nx/angular":"21.3.10","@nx/web":"21.3.10","@paypal/checkout-server-sdk":"^1.0.3","@ptc-org/nestjs-query-core":"^9.1.0","@ptc-org/nestjs-query-graphql":"^9.1.0","@ptc-org/nestjs-query-typeorm":"^9.1.0","@redis/client":"^6.2.1","@redis/json":"^6.2.1","@redis/search":"^6.2.1","@sentry/cli":"^2.50.2","@sentry/nestjs":"^10.0.0","@sentry/profiling-node":"10.0.0","@simplewebauthn/server":"^13.0.0","@simplewebauthn/types":"^12.0.0","@willsoto/nestjs-prometheus":"^6.0.2","apollo-angular":"^11.0.0","autoprefixer":"^10.4.21","bullmq":"^5.56.9","class-transformer":"0.5.1","class-validator":"0.14.2","core-js":"^3.42.0","dataloader":"^2.2.3","dotenv":"16.5.0","firebase-admin":"^13.4.0","google-libphonenumber":"^3.2.43","graphql":"^16.11.0","graphql-redis-subscriptions":"^2.7.0","graphql-relay":"^0.10.2","graphql-subscriptions":"^3.0.0","graphql-tools":"^9.0.20","graphql-ws":"^6.0.6","h3-js":"^4.2.1","instamojo-payment-nodejs":"^3.0.0","ioredis":"^5.7.0","json-2-csv":"^4.0.0","jwt-decode":"^4.0.0","license-verify":"0.1.5","mercadopago":"^1.5.17","multer":"^2.0.0","mysql2":"^3.14.3","ng-zorro-antd":"^20.1.0","ngx-timeago":"^3.0.0","node-rsa":"^1.1.1","overshom-wayforpay":"^1.1.0","passport":"^0.7.0","passport-jwt":"^4.0.1","passport-local":"^1.0.0","paystack-node":"^0.3.0","paytmchecksum":"^1.5.1","pdfkit":"^0.17.1","pdfkit-table":"^0.1.99","plivo":"^4.70.0","prom-client":"^15.1.3","proper-url-join":"^2.1.2","razorpay":"^2.9.8","redis":"^6.2.1","reflect-metadata":"^0.2.2","rxjs":"7.8.2","sberbank-acquiring":"^1.2.2","sharp":"^0.34.3","stripe":"^18.4.0","tslib":"^2.6.1","twilio":"^5.6.1","typeorm":"0.3.26","uuid":"^11.1.0","zone.js":"0.15.1"},"devDependencies":{"@angular-devkit/build-angular":"20.1.4","@angular-devkit/core":"20.1.4","@angular-devkit/schematics":"20.1.4","@angular-eslint/eslint-plugin":"20.1.0","@angular-eslint/eslint-plugin-template":"20.1.0","@angular-eslint/template-parser":"20.1.0","@angular/cli":"~20.1.0","@angular/compiler-cli":"20.1.4","@angular/language-service":"20.1.4","@bartholomej/ngx-translate-extract":"^8.0.2","@graphql-codegen/cli":"^5.0.7","@graphql-codegen/introspection":"^4.0.3","@graphql-codegen/typescript":"^4.1.6","@graphql-codegen/typescript-apollo-angular":"^4.0.1","@graphql-codegen/typescript-operations":"^4.6.1","@monodon/rust":"^2.3.0","@nestjs/cli":"^11.0.10","@nestjs/schematics":"11.0.5","@nestjs/testing":"11.1.3","@ngx-translate/core":"^17.0.0","@ngx-translate/http-loader":"^17.0.0","@nx/eslint":"21.3.10","@nx/eslint-plugin":"21.3.10","@nx/jest":"21.3.10","@nx/js":"21.3.10","@nx/node":"21.3.10","@nx/webpack":"21.3.10","@nxrocks/nx-flutter":"^10.0.1","@schematics/angular":"20.1.4","@semantic-release/changelog":"^6.0.3","@semantic-release/commit-analyzer":"^13.0.1","@semantic-release/git":"^10.0.1","@semantic-release/npm":"^12.0.1","@semantic-release/release-notes-generator":"^14.0.3","@swc-node/register":"1.10.10","@swc/cli":"^0.7.8","@swc/core":"1.13.3","@swc/helpers":"0.5.17","@swc/jest":"0.2.39","@tailwindcss/forms":"^0.5.4","@tailwindcss/typography":"^0.5.9","@testcontainers/mysql":"^11.5.1","@testcontainers/redis":"^11.5.1","@types/busboy":"^1.5.0","@types/cron":"^2.0.1","@types/estree":"1.0.1","@types/google-libphonenumber":"^7.4.30","@types/jest":"^29.5.0","@types/multer":"^1.4.12","@types/node":"^24.0.10","@types/passport-jwt":"^4.0.1","@types/paypal__checkout-server-sdk":"^1.0.5","@types/pdfkit":"^0.17.0","@types/proper-url-join":"^2.1.5","@types/supertest":"^6.0.3","conventional-changelog-conventionalcommits":"^9.0.0","eslint":"^9.28.0","eslint-config-prettier":"10.1.5","eslint-plugin-unused-imports":"^4.1.4","jest":"^29.7.0","jest-environment-jsdom":"^29.7.0","jest-util":"^29.7.0","jsonc-eslint-parser":"^2.1.0","ng-packagr":"20.1.0","nx":"21.3.10","postcss":"^8.4.27","postcss-import":"15.1.0","postcss-preset-env":"9.1.0","postcss-url":"10.1.3","prettier":"^3.5.3","supertest":"^7.1.4","swc-loader":"^0.2.6","tailwindcss":"^3.3.3","testcontainers":"^11.5.1","ts-jest":"29.4.0","ts-node":"10.9.2","tslib":"^2.3.0","typescript":"5.8.3","typescript-eslint":"^8.33.0","webpack-cli":"^5.1.4"},"workspaces":["libs/*","apps/*"],"overrides":{"typescript":"5.8.3","eslint":"^9.28.0","rxjs":"7.8.2","typeorm":{"redis":"^5.8.2"}},"repository":{"type":"git","url":"https://github.com/ridyio/ridy-monorepo.git"},"publishConfig":{"access":"restricted"},"allowScripts":{"cpu-features@0.0.10":true,"core-js@3.43.0":true,"lmdb@3.4.1":true,"msgpackr-extract@3.0.3":true,"nx@21.3.10":true,"protobufjs@7.5.3":true,"sharp@0.34.3":true,"ssh2@1.16.0":true,"unrs-resolver@1.11.1":true,"@apollo/protobufjs@1.2.7":true,"@firebase/util@1.12.1":true,"@nestjs/core@11.1.5":true,"@parcel/watcher@2.6.0":true,"@sentry/cli@2.50.2":true,"@sentry-internal/node-cpu-profiler@2.2.0":true,"@swc/core@1.13.3":true,"fsevents@2.3.3":true,"esbuild@0.25.5":true}}');
 
 /***/ }),
-/* 86 */
+/* 87 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50331,8 +50691,8 @@ const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
-const _feedbacksservice = __webpack_require__(87);
-const _feedbacksresolver = __webpack_require__(88);
+const _feedbacksservice = __webpack_require__(88);
+const _feedbacksresolver = __webpack_require__(89);
 let FeedbacksModule = class FeedbacksModule {
 };
 FeedbacksModule = _ts_decorate._([
@@ -50353,7 +50713,7 @@ FeedbacksModule = _ts_decorate._([
 
 
 /***/ }),
-/* 87 */
+/* 88 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50441,7 +50801,7 @@ FeedbacksService = _ts_decorate._([
 
 
 /***/ }),
-/* 88 */
+/* 89 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50458,8 +50818,8 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(29);
 const _graphql = __webpack_require__(9);
-const _feedbacksservice = __webpack_require__(87);
-const _feedbackssummarydto = __webpack_require__(89);
+const _feedbacksservice = __webpack_require__(88);
+const _feedbackssummarydto = __webpack_require__(90);
 const _common = __webpack_require__(2);
 const _authenticateduser = __webpack_require__(44);
 const _jwtgqlauthguard = __webpack_require__(43);
@@ -50493,7 +50853,7 @@ FeedbacksResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 89 */
+/* 90 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50509,7 +50869,7 @@ Object.defineProperty(exports, "FeedbacksSummaryDTO", ({
 const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _graphql = __webpack_require__(9);
-const _reviewdto = __webpack_require__(90);
+const _reviewdto = __webpack_require__(91);
 let FeedbacksSummaryDTO = class FeedbacksSummaryDTO {
 };
 _ts_decorate._([
@@ -50548,7 +50908,7 @@ FeedbacksSummaryDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 90 */
+/* 91 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50598,7 +50958,7 @@ ReviewEntity = _ts_decorate._([
 
 
 /***/ }),
-/* 91 */
+/* 92 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50617,12 +50977,12 @@ const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 const _nestjsquerygraphql = __webpack_require__(16);
 const _jwtgqlauthguard = __webpack_require__(43);
-const _payoutaccountdto = __webpack_require__(92);
+const _payoutaccountdto = __webpack_require__(93);
 const _nestjsquerytypeorm = __webpack_require__(39);
-const _payoutservice = __webpack_require__(96);
-const _payoutresolver = __webpack_require__(97);
-const _walletmodule = __webpack_require__(102);
-const _payoutmethoddto = __webpack_require__(94);
+const _payoutservice = __webpack_require__(97);
+const _payoutresolver = __webpack_require__(98);
+const _walletmodule = __webpack_require__(103);
+const _payoutmethoddto = __webpack_require__(95);
 const _axios = __webpack_require__(18);
 let PayoutModule = class PayoutModule {
 };
@@ -50705,7 +51065,7 @@ PayoutModule = _ts_decorate._([
 
 
 /***/ }),
-/* 92 */
+/* 93 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50722,10 +51082,10 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _graphql = __webpack_require__(9);
 const _nestjsquerygraphql = __webpack_require__(16);
-const _paymentgatewaydto = __webpack_require__(93);
+const _paymentgatewaydto = __webpack_require__(94);
 const _database = __webpack_require__(12);
-const _payoutmethoddto = __webpack_require__(94);
-const _drivertransactiondto = __webpack_require__(95);
+const _payoutmethoddto = __webpack_require__(95);
+const _drivertransactiondto = __webpack_require__(96);
 let PayoutAccountDTO = class PayoutAccountDTO {
 };
 _ts_decorate._([
@@ -50848,7 +51208,7 @@ PayoutAccountDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 93 */
+/* 94 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50925,7 +51285,7 @@ PaymentGatewayDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 94 */
+/* 95 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50999,7 +51359,7 @@ PayoutMethodDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 95 */
+/* 96 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51088,7 +51448,7 @@ DriverTransactionDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 96 */
+/* 97 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51222,7 +51582,7 @@ PayoutService = _ts_decorate._([
 
 
 /***/ }),
-/* 97 */
+/* 98 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51247,16 +51607,16 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(29);
 const _graphql = __webpack_require__(9);
-const _payoutservice = __webpack_require__(96);
-const _payoutaccountdto = __webpack_require__(92);
+const _payoutservice = __webpack_require__(97);
+const _payoutaccountdto = __webpack_require__(93);
 const _common = __webpack_require__(2);
 const _authenticateduser = __webpack_require__(44);
-const _payoutmethoddto = __webpack_require__(94);
-const _topupwalletinput = __webpack_require__(98);
-const _payoutaccountinput = __webpack_require__(99);
-const _getpayoutlinkurlinput = __webpack_require__(100);
+const _payoutmethoddto = __webpack_require__(95);
+const _topupwalletinput = __webpack_require__(99);
+const _payoutaccountinput = __webpack_require__(100);
+const _getpayoutlinkurlinput = __webpack_require__(101);
 const _jwtgqlauthguard = __webpack_require__(43);
-const _updatepayoutmethodinput = __webpack_require__(101);
+const _updatepayoutmethodinput = __webpack_require__(102);
 let PayoutResolver = class PayoutResolver {
     constructor(payoutService, context){
         this.payoutService = payoutService;
@@ -51380,7 +51740,7 @@ const IntentResultToTopUpWalletStatus = (status)=>{
 
 
 /***/ }),
-/* 98 */
+/* 99 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51494,7 +51854,7 @@ TopUpWalletResponse = _ts_decorate._([
 
 
 /***/ }),
-/* 99 */
+/* 100 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51608,7 +51968,7 @@ PayoutAccountInput = _ts_decorate._([
 
 
 /***/ }),
-/* 100 */
+/* 101 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51637,7 +51997,7 @@ GetPayoutLinkUrlInput = _ts_decorate._([
 
 
 /***/ }),
-/* 101 */
+/* 102 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51673,7 +52033,7 @@ UpdatePayoutMethodInput = _ts_decorate._([
 
 
 /***/ }),
-/* 102 */
+/* 103 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51693,12 +52053,12 @@ const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 const _jwtgqlauthguard = __webpack_require__(43);
-const _drivertransactiondto = __webpack_require__(95);
-const _driverwalletdto = __webpack_require__(103);
-const _earningsservice = __webpack_require__(104);
-const _walletresolver = __webpack_require__(106);
+const _drivertransactiondto = __webpack_require__(96);
+const _driverwalletdto = __webpack_require__(104);
+const _earningsservice = __webpack_require__(105);
+const _walletresolver = __webpack_require__(107);
 const _axios = __webpack_require__(18);
-const _walletservice = __webpack_require__(109);
+const _walletservice = __webpack_require__(110);
 let WalletModule = class WalletModule {
 };
 WalletModule = _ts_decorate._([
@@ -51787,7 +52147,7 @@ WalletModule = _ts_decorate._([
 
 
 /***/ }),
-/* 103 */
+/* 104 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51842,7 +52202,7 @@ DriverWalletDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 104 */
+/* 105 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51862,7 +52222,7 @@ const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 const _typeorm1 = __webpack_require__(13);
-const _earningsdto = __webpack_require__(105);
+const _earningsdto = __webpack_require__(106);
 let EarningsService = class EarningsService {
     constructor(requestRepository){
         this.requestRepository = requestRepository;
@@ -52057,7 +52417,7 @@ EarningsService = _ts_decorate._([
 
 
 /***/ }),
-/* 105 */
+/* 106 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52166,7 +52526,7 @@ Datapoint = _ts_decorate._([
 
 
 /***/ }),
-/* 106 */
+/* 107 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52189,15 +52549,15 @@ const _database = __webpack_require__(12);
 const _typeorm1 = __webpack_require__(13);
 const _authenticateduser = __webpack_require__(44);
 const _jwtgqlauthguard = __webpack_require__(43);
-const _earningsdto = __webpack_require__(105);
-const _topupwalletinput = __webpack_require__(98);
-const _earningsservice = __webpack_require__(104);
-const _giftcarddto = __webpack_require__(107);
-const _setup_payment_methoddto = __webpack_require__(108);
+const _earningsdto = __webpack_require__(106);
+const _topupwalletinput = __webpack_require__(99);
+const _earningsservice = __webpack_require__(105);
+const _giftcarddto = __webpack_require__(108);
+const _setup_payment_methoddto = __webpack_require__(109);
 const _rxjs = __webpack_require__(21);
 const _axios = __webpack_require__(18);
-const _walletservice = __webpack_require__(109);
-const _razorpayorderdto = __webpack_require__(110);
+const _walletservice = __webpack_require__(110);
+const _razorpayorderdto = __webpack_require__(111);
 let WalletResolver = class WalletResolver {
     constructor(gatewayRepo, driverRepo, context, earningsService, commonGiftCardService, httpService, cryptoService, walletService, razorpayService, sharedDriverService){
         this.gatewayRepo = gatewayRepo;
@@ -52469,7 +52829,7 @@ WalletResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 107 */
+/* 108 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52510,7 +52870,7 @@ GiftCardDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 108 */
+/* 109 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52540,7 +52900,7 @@ SetupPaymentMethodDto = _ts_decorate._([
 
 
 /***/ }),
-/* 109 */
+/* 110 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52638,7 +52998,7 @@ WalletService = _ts_decorate._([
 
 
 /***/ }),
-/* 110 */
+/* 111 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52678,7 +53038,7 @@ RazorpayOrderDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 111 */
+/* 112 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52695,8 +53055,8 @@ const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
-const _sosresolver = __webpack_require__(112);
-const _sosservice = __webpack_require__(114);
+const _sosresolver = __webpack_require__(113);
+const _sosservice = __webpack_require__(115);
 let SOSModule = class SOSModule {
 };
 SOSModule = _ts_decorate._([
@@ -52716,7 +53076,7 @@ SOSModule = _ts_decorate._([
 
 
 /***/ }),
-/* 112 */
+/* 113 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52736,8 +53096,8 @@ const _common = __webpack_require__(2);
 const _graphql = __webpack_require__(9);
 const _database = __webpack_require__(12);
 const _jwtgqlauthguard = __webpack_require__(43);
-const _sosdto = __webpack_require__(113);
-const _sosservice = __webpack_require__(114);
+const _sosdto = __webpack_require__(114);
+const _sosservice = __webpack_require__(115);
 let SOSResolver = class SOSResolver {
     constructor(sosService){
         this.sosService = sosService;
@@ -52776,7 +53136,7 @@ SOSResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 113 */
+/* 114 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52805,7 +53165,7 @@ SOSDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 114 */
+/* 115 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52876,13 +53236,13 @@ SOSService = _ts_decorate._([
 
 
 /***/ }),
-/* 115 */
+/* 116 */
 /***/ ((module) => {
 
 module.exports = require("@willsoto/nestjs-prometheus");
 
 /***/ }),
-/* 116 */
+/* 117 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52897,8 +53257,8 @@ Object.defineProperty(exports, "NotificationModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _notificationservice = __webpack_require__(117);
-const _notificationresolver = __webpack_require__(118);
+const _notificationservice = __webpack_require__(118);
+const _notificationresolver = __webpack_require__(119);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 let NotificationModule = class NotificationModule {
@@ -52921,7 +53281,7 @@ NotificationModule = _ts_decorate._([
 
 
 /***/ }),
-/* 117 */
+/* 118 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52974,7 +53334,7 @@ NotificationService = _ts_decorate._([
 
 
 /***/ }),
-/* 118 */
+/* 119 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52992,7 +53352,7 @@ const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(29);
 const _common = __webpack_require__(2);
 const _graphql = __webpack_require__(9);
-const _notificationservice = __webpack_require__(117);
+const _notificationservice = __webpack_require__(118);
 const _authenticateduser = __webpack_require__(44);
 const _jwtgqlauthguard = __webpack_require__(43);
 let NotificationResolver = class NotificationResolver {
@@ -53030,7 +53390,7 @@ NotificationResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 119 */
+/* 120 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53046,8 +53406,8 @@ Object.defineProperty(exports, "EphemeralMessagesModule", ({
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
-const _ephemeralmessagesservice = __webpack_require__(120);
-const _ephemeralmessagesresolver = __webpack_require__(121);
+const _ephemeralmessagesservice = __webpack_require__(121);
+const _ephemeralmessagesresolver = __webpack_require__(122);
 const _ordermodule = __webpack_require__(50);
 let EphemeralMessagesModule = class EphemeralMessagesModule {
 };
@@ -53066,7 +53426,7 @@ EphemeralMessagesModule = _ts_decorate._([
 
 
 /***/ }),
-/* 120 */
+/* 121 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53120,7 +53480,7 @@ EphemeralMessagesService = _ts_decorate._([
 
 
 /***/ }),
-/* 121 */
+/* 122 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53137,8 +53497,8 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(29);
 const _graphql = __webpack_require__(9);
-const _ephemeralmessagesservice = __webpack_require__(120);
-const _ephemeralmessagedto = __webpack_require__(122);
+const _ephemeralmessagesservice = __webpack_require__(121);
+const _ephemeralmessagedto = __webpack_require__(123);
 const _common = __webpack_require__(2);
 const _authenticateduser = __webpack_require__(44);
 const _jwtgqlauthguard = __webpack_require__(43);
@@ -53186,7 +53546,7 @@ EphemeralMessagesResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 122 */
+/* 123 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53264,7 +53624,7 @@ EphemeralMessageDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 123 */
+/* 124 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53279,8 +53639,8 @@ Object.defineProperty(exports, "SupportModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _supportservice = __webpack_require__(124);
-const _supportresolver = __webpack_require__(125);
+const _supportservice = __webpack_require__(125);
+const _supportresolver = __webpack_require__(126);
 let SupportModule = class SupportModule {
 };
 SupportModule = _ts_decorate._([
@@ -53297,7 +53657,7 @@ SupportModule = _ts_decorate._([
 
 
 /***/ }),
-/* 124 */
+/* 125 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53329,7 +53689,7 @@ SupportService = _ts_decorate._([
 
 
 /***/ }),
-/* 125 */
+/* 126 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53349,7 +53709,7 @@ const _graphql = __webpack_require__(9);
 const _common = __webpack_require__(2);
 const _jwtgqlauthguard = __webpack_require__(43);
 const _authenticateduser = __webpack_require__(44);
-const _supportservice = __webpack_require__(124);
+const _supportservice = __webpack_require__(125);
 let SupportResolver = class SupportResolver {
     constructor(context, supportService){
         this.context = context;
@@ -53381,13 +53741,13 @@ SupportResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 126 */
+/* 127 */
 /***/ ((module) => {
 
 module.exports = require("firebase-admin/app");
 
 /***/ }),
-/* 127 */
+/* 128 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 // Import with `const Sentry = require("@sentry/nestjs");` if you are using CJS
@@ -53398,9 +53758,9 @@ Object.defineProperty(exports, "__esModule", ({
 const _interop_require_wildcard = __webpack_require__(1);
 const _apollo = __webpack_require__(17);
 const _common = __webpack_require__(2);
-const _nestjs = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(128));
-const _profilingnode = __webpack_require__(129);
-const _dotenv = __webpack_require__(130);
+const _nestjs = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(129));
+const _profilingnode = __webpack_require__(130);
+const _dotenv = __webpack_require__(131);
 (0, _dotenv.config)({
     path: __dirname + '/.env'
 });
@@ -53425,19 +53785,19 @@ _nestjs.init({
 
 
 /***/ }),
-/* 128 */
+/* 129 */
 /***/ ((module) => {
 
 module.exports = require("@sentry/nestjs");
 
 /***/ }),
-/* 129 */
+/* 130 */
 /***/ ((module) => {
 
 module.exports = require("@sentry/profiling-node");
 
 /***/ }),
-/* 130 */
+/* 131 */
 /***/ ((module) => {
 
 module.exports = require("dotenv");
@@ -53524,10 +53884,10 @@ const _common = __webpack_require__(2);
 const _core = __webpack_require__(3);
 const _express = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(4));
 const _driverapimodule = __webpack_require__(5);
-const _app = __webpack_require__(126);
+const _app = __webpack_require__(127);
 const _firebaseadmin = __webpack_require__(22);
 const _database = __webpack_require__(12);
-__webpack_require__(127);
+__webpack_require__(128);
 const _licenseverify = __webpack_require__(15);
 async function bootstrap() {
     await (0, _database.loadSecrets)();

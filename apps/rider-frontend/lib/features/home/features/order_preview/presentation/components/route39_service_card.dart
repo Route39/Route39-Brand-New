@@ -17,7 +17,7 @@ class Route39ServiceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final String? imageUrl = selectedService.media?.address;
     final isCargo = locator<HomeBloc>().state.orderType != Enum$TaxiOrderType.Ride;
-    final fallbackAsset = isCargo ? 'assets/images/route39_cargo_icon.png' : fallbackAsset;
+    final fallbackAsset = isCargo ? 'assets/images/route39_cargo_icon.png' : 'assets/images/route39_auto_photo.png';
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),

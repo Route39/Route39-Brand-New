@@ -64,15 +64,25 @@ export default function DriverReviewPage() {
 
   useEffect(() => {
     if (svcData?.driver.enabledServices) {
-      setSelectedSvc(
-        new Set(
-          svcData.driver.enabledServices
-            .filter((e) => e.driverEnabled)
-            .map((e) => e.serviceId),
-        ),
+      const enabled = new Set(
+        svcData.driver.enabledServices
+          .filter((e) => e.driverEnabled)
+          .map((e) => e.serviceId),
       );
+      // For a driver with no services enabled yet, default-select the
+      // service matching what they picked during registration (canDeliver).
+      if (enabled.size === 0 && svcData.services && data?.driver) {
+        const wantsCargo = data.driver.canDeliver;
+        const match = svcData.services.find((s) =>
+          wantsCargo
+            ? s.name.toLowerCase() === "cargo"
+            : s.name.toLowerCase() === "passenger",
+        );
+        if (match) enabled.add(match.id);
+      }
+      setSelectedSvc(enabled);
     }
-  }, [svcData]);
+  }, [svcData, data]);
 
   useEffect(() => {
     if (data?.driver.softRejectionNote) {
@@ -312,7 +322,7 @@ export default function DriverReviewPage() {
                     onClick={() =>
                       setPreviewDoc({
                         title: doc.driverDocument.title,
-                        address: doc.media.address,
+                        address: `/uploads/${doc.media.address}`,
                         expiresAt: doc.expiresAt,
                       })
                     }
@@ -320,7 +330,7 @@ export default function DriverReviewPage() {
                   >
                     <div className="aspect-square w-full overflow-hidden bg-muted">
                       <img
-                        src={doc.media.address}
+                        src={`/uploads/${doc.media.address}`}
                         alt={doc.driverDocument.title}
                         className="h-full w-full object-cover"
                         loading="lazy"

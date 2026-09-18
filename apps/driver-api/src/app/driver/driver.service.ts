@@ -23,6 +23,7 @@ import { UpdateDriverOfferFilterInput } from './inputs/update-driver-offer-filte
 import { ServiceDTO } from '../core/dtos/service.dto';
 import { TaxiServiceRedisService } from '@ridy/database';
 import { ForbiddenError } from '@nestjs/apollo';
+import { DriverToDriverDocumentEntity } from '@ridy/database';
 
 @Injectable()
 export class DriverService {
@@ -38,12 +39,21 @@ export class DriverService {
     private readonly pubsub: PubSubService,
     private readonly rideOfferRedisService: RideOfferRedisService,
     private readonly googleServices: GoogleServicesService,
+    @InjectRepository(DriverToDriverDocumentEntity)
+    private driverToDriverDocumentRepository: Repository<DriverToDriverDocumentEntity>,
   ) {}
 
   async findWithDeleted(
     input: FindOptionsWhere<DriverEntity>,
   ): Promise<DriverEntity | null> {
-    return this.driverRepository.findOne({ where: input, withDeleted: true });
+    return this.driverRepository.findOne({
+      where: input,
+      withDeleted: true,
+      relations: {
+        documents: true,
+        media: true,
+      },
+    });
   }
 
   async findOrCreateUserWithMobileNumber(input: {
@@ -85,7 +95,13 @@ export class DriverService {
     await this.driverRepository.update(input.driverId, {
       password: input.password,
     });
-    return this.driverRepository.findOneByOrFail({ id: input.driverId });
+    return this.driverRepository.findOneOrFail({
+      where: { id: input.driverId },
+      relations: {
+        documents: true,
+        media: true,
+      },
+    });
   }
 
   async expireDriverStatus(driverIds: number[]) {
@@ -109,6 +125,22 @@ export class DriverService {
         Logger.log(
           `Driver ${driverId} has an active order, skipping location expiry`,
         );
+        continue;
+      }
+
+      // Only expire drivers who are actually Online/InService in the DB.
+      // A driver in a registration-flow status (WaitingDocuments,
+      // PendingApproval, SoftReject, HardReject, Blocked) should never be
+      // silently flipped to Offline just because they have stale Redis
+      // presence data from an earlier session.
+      const currentEntity = await this.driverRepository.findOne({
+        where: { id: driverId },
+      });
+      if (
+        currentEntity == null ||
+        (currentEntity.status !== DriverStatus.Online &&
+          currentEntity.status !== DriverStatus.InService)
+      ) {
         continue;
       }
 
@@ -270,6 +302,15 @@ export class DriverService {
       currency: currency,
       walletCredit: primaryWallet.balance,
       softRejectionNote: entity.softRejectionNote ?? null,
+      city: entity.city ?? null,
+      vehicleOwnership: entity.vehicleOwnership ?? null,
+      carPlate: entity.carPlate ?? null,
+      carId: entity.carId ?? null,
+      carColorId: entity.carColorId ?? null,
+      carProductionYear: entity.carProductionYear ?? null,
+      aadhaarNumber: entity.aadhaarNumber ?? null,
+      panNumber: entity.panNumber ?? null,
+      documentsUploadedCount: entity.documents?.length ?? 0,
     };
     return dto;
   }
@@ -290,6 +331,15 @@ export class DriverService {
           : DriverStatus.Online,
       searchDistance: snapshot.searchDistance ?? null,
       softRejectionNote: null,
+      city: null,
+      vehicleOwnership: null,
+      carPlate: null,
+      carId: null,
+      carColorId: null,
+      carProductionYear: null,
+      aadhaarNumber: null,
+      panNumber: null,
+      documentsUploadedCount: 0,
     };
     return dto;
   }
@@ -488,5 +538,53 @@ export class DriverService {
         imageUrl: service!.service!.media!.address!,
       }));
     }
+  }
+
+  async attachDriverDocument(
+    driverId: number,
+    driverDocumentId: number,
+    mediaId: number,
+  ): Promise<boolean> {
+    console.log('=== ATTACH DOC DEBUG ===', { driverId, driverDocumentId, mediaId });
+    try {
+      const record = this.driverToDriverDocumentRepository.create({
+        driverId,
+        driverDocumentId,
+        mediaId,
+      });
+      const saved = await this.driverToDriverDocumentRepository.save(record);
+      console.log('=== ATTACH DOC SAVED ===', saved);
+      return true;
+    } catch (err) {
+      console.error('=== ATTACH DOC ERROR ===', err);
+      throw err;
+    }
+  }
+
+  async deleteAccount(driverId: number): Promise<boolean> {
+    // Wipe uploaded documents so the driver starts with a clean slate.
+    await this.driverToDriverDocumentRepository.delete({ driverId });
+    // Reset registration fields so logging back in with the same number
+    // restarts onboarding from City selection instead of showing
+    // Access Denied or resuming stale progress.
+    await this.driverRepository.update(driverId, {
+      status: DriverStatus.WaitingDocuments,
+      // firstName is what the frontend uses to detect "already completed
+      // registration before" — clearing it is what makes the app treat
+      // this driver as brand-new and restart from City selection.
+      firstName: '',
+      lastName: '',
+      city: null,
+      vehicleOwnership: null,
+      carPlate: null,
+      carId: null,
+      carColorId: null,
+      carProductionYear: null,
+      aadhaarNumber: null,
+      panNumber: null,
+      certificateNumber: null,
+      softRejectionNote: null,
+    });
+    return true;
   }
 }

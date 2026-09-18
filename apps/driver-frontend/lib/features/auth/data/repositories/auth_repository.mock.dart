@@ -77,6 +77,7 @@ class AuthRepositoryMock implements AuthRepository {
           mockVehicleColor1,
           mockVehicleColor2,
         ],
+        driverRequiredDocuments: const [],
       ),
     );
   }
@@ -90,6 +91,25 @@ class AuthRepositoryMock implements AuthRepository {
       Mutation$Register(
         completeRegistration: mockProfileFull1,
       ),
+    );
+  }
+
+  @override
+  Future<ApiResponse<Mutation$AttachDriverDocument>> attachDriverDocument({
+    required int driverDocumentId,
+    required int mediaId,
+  }) async {
+    await Future.delayed(const Duration(seconds: 1));
+    return ApiResponse.loaded(
+      Mutation$AttachDriverDocument(attachDriverDocument: true),
+    );
+  }
+
+  @override
+  Future<ApiResponse<Mutation$DeleteAccount>> deleteAccount() async {
+    await Future.delayed(const Duration(seconds: 1));
+    return ApiResponse.loaded(
+      Mutation$DeleteAccount(deleteAccount: true),
     );
   }
 }

@@ -109,8 +109,8 @@ flutter:
   generate: true
 
   assets:
-    - dev.env
-    - prod.env
+    - .env.dev
+    - .env.prod
     - assets/images/
     - assets/lottie/
     - assets/notification.mp3

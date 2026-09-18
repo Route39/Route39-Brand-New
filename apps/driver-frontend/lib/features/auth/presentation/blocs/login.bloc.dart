@@ -8,6 +8,7 @@ import 'package:ridy_driver/core/graphql/fragments/profile.fragment.graphql.dart
 import 'package:ridy_driver/core/graphql/fragments/vehicle_color.fragment.graphql.dart';
 import 'package:ridy_driver/core/graphql/fragments/vehicle_model.fragment.graphql.dart';
 import 'package:ridy_driver/core/graphql/schema.gql.dart';
+import 'package:ridy_driver/core/graphql/documents/login.graphql.dart';
 import 'package:ridy_driver/features/auth/domain/entities/login_page.dart';
 import 'package:flutter_common/core/enums/gender.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -88,8 +89,9 @@ class LoginBloc extends HydratedCubit<LoginState> {
   void onVehicleConfirmed(String vehicleType) =>
       emit(state.copyWith(selectedVehicleType: vehicleType));
 
-  void onDocumentsChecklistConfirmed() =>
-      emit(state.copyWith(documentsChecklistDone: true));
+  void onDocumentsChecklistConfirmed() => emit(
+        state.copyWith(documentsChecklistDone: true, loginPage: LoginPage.success),
+      );
 
   void onDrivingLicenseAnswer(bool answer) => emit(
     state.copyWith(hasDrivingLicense: answer, showLicenseUpload: answer),
@@ -311,13 +313,30 @@ class LoginBloc extends HydratedCubit<LoginState> {
         final remoteDataResponse = await repository.getRegistrationData();
         if (remoteDataResponse.isLoaded) {
           final data = remoteDataResponse.data!;
+          final me = data.me;
+
+          // A driver who has actually completed registration will have
+          // submitted their name (firstName is a required field on the
+          // register mutation). A brand-new driver, even with backend
+          // status WaitingDocuments, will not.
+          final hasCompletedRegistration = me.firstName.trim().isNotEmpty;
+
           emit(
             state.copyWith(
               loginPage: LoginPage.contactDetails,
               vehicleModels: data.carModels,
               vehicleColors: data.carColors,
+              requiredDocuments: data.driverRequiredDocuments,
               jwtToken: response.jwtToken,
               profile: response.user,
+              // Only carry forward the driver's real saved city when
+              // they've actually completed registration before — never
+              // fall back to a hardcoded default for a new driver.
+              selectedCity: hasCompletedRegistration ? me.city : null,
+              selectedVehicleType: hasCompletedRegistration
+                  ? (state.selectedVehicleType ?? 'Passenger Auto')
+                  : null,
+              documentsChecklistDone: hasCompletedRegistration,
             ),
           );
           return;

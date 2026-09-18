@@ -34,8 +34,10 @@ class AuthScreenDesktop extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(state.loginPage.title(context), style: context.titleLarge),
-                        const SizedBox(height: 16),
+                        if (state.loginPage != LoginPage.contactDetails && state.loginPage != LoginPage.success) ...[
+                          Text(state.loginPage.title(context), style: context.titleLarge),
+                          const SizedBox(height: 16),
+                        ],
                         // ---- Step indicator (commented out) ----
                         // if (state.loginPage.wizardStep != null) ...[
                         //   SizedBox(

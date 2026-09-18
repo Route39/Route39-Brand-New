@@ -142,11 +142,10 @@ class ActiveOrderSheet extends StatelessWidget {
                             AppIconButton(
                               icon: Ionicons.call,
                               onPressed: () async {
-                                await locator<GraphqlDatasource>().mutate(
-                                  Options$Mutation$initiateCall(
-                                    variables: Variables$Mutation$initiateCall(orderId: order.id),
-                                  ),
-                                );
+                                final number = order.rider?.mobileNumber;
+                                if (number != null && number.isNotEmpty) {
+                                  await launchUrlString('tel:$number');
+                                }
                               },
                             ),
                           ],
