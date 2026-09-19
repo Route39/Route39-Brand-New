@@ -526,6 +526,14 @@ if (selectedService != null)
               ),
             ],
           ),
+            if (state.orderType == Enum$TaxiOrderType.ParcelDelivery &&
+              cargoWaitingTimeMinutes != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Waiting charges apply after $cargoWaitingTimeMinutes minutes of waiting',
+              style: context.bodySmall?.copyWith(color: ColorPalette.neutralVariant50),
+            ),
+          ],
           if (_showFareBreakdown) ...[
             const Divider(height: 20, color: ColorPalette.neutral95),
             Row(
@@ -593,13 +601,7 @@ if (selectedService != null)
                 Text(_formatAmount(platformFeeAmount), style: context.bodyMedium),
               ],
             ),
-            if (cargoWaitingTimeMinutes != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                'Waiting charges apply after $cargoWaitingTimeMinutes minutes of waiting',
-                style: context.bodySmall?.copyWith(color: ColorPalette.neutralVariant50),
-              ),
-            ],            const SizedBox(height: 8),
+            const SizedBox(height: 8),          
             Text(
               'For online payments, a Payment Gateway charge of $paymentGatewayFeePercent% will be applied.',
               style: context.bodySmall?.copyWith(color: ColorPalette.neutralVariant50),

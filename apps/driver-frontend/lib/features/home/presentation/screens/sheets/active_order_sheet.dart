@@ -186,7 +186,7 @@ class ActiveOrderSheet extends StatelessWidget {
                             const Divider(height: 8),
                             Row(
                               children: [
-                                const WaitingTimeButton(),
+                                //const WaitingTimeButton(),
                                 const Spacer(),
                                 AppTextButton(
                                   iconData: Ionicons.closeCircle,

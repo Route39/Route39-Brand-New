@@ -2764,10 +2764,12 @@ input DriverAggregateFilter {
   and: [DriverAggregateFilter!]
   or: [DriverAggregateFilter!]
   id: IDFilterComparison
+  driverCode: StringFieldComparison
   fleetId: IDFilterComparison
   firstName: StringFieldComparison
   lastName: StringFieldComparison
   mobileNumber: StringFieldComparison
+  city: StringFieldComparison
   maxDeliveryPackageSize: DeliveryPackageSizeFilterComparison
   carId: IDFilterComparison
   carColorId: IDFilterComparison
@@ -2935,10 +2937,12 @@ input DriverFilter {
   and: [DriverFilter!]
   or: [DriverFilter!]
   id: IDFilterComparison
+  driverCode: StringFieldComparison
   fleetId: IDFilterComparison
   firstName: StringFieldComparison
   lastName: StringFieldComparison
   mobileNumber: StringFieldComparison
+  city: StringFieldComparison
   maxDeliveryPackageSize: DeliveryPackageSizeFilterComparison
   carId: IDFilterComparison
   carColorId: IDFilterComparison
@@ -2957,10 +2961,12 @@ input DriverSort {
 
 enum DriverSortFields {
   id
+  driverCode
   fleetId
   firstName
   lastName
   mobileNumber
+  city
   maxDeliveryPackageSize
   carId
   carColorId
@@ -3793,10 +3799,12 @@ type DriverConnection {
 
 type DriverAggregateGroupBy {
   id: ID
+  driverCode: String
   fleetId: ID
   firstName: String
   lastName: String
   mobileNumber: String
+  city: String
   maxDeliveryPackageSize: DeliveryPackageSize
   carId: ID
   carColorId: ID
@@ -3809,10 +3817,12 @@ type DriverAggregateGroupBy {
 
 type DriverCountAggregate {
   id: Int
+  driverCode: Int
   fleetId: Int
   firstName: Int
   lastName: Int
   mobileNumber: Int
+  city: Int
   maxDeliveryPackageSize: Int
   carId: Int
   carColorId: Int
@@ -3843,10 +3853,12 @@ type DriverAvgAggregate {
 
 type DriverMinAggregate {
   id: ID
+  driverCode: String
   fleetId: ID
   firstName: String
   lastName: String
   mobileNumber: String
+  city: String
   maxDeliveryPackageSize: DeliveryPackageSize
   carId: ID
   carColorId: ID
@@ -3859,10 +3871,12 @@ type DriverMinAggregate {
 
 type DriverMaxAggregate {
   id: ID
+  driverCode: String
   fleetId: ID
   firstName: String
   lastName: String
   mobileNumber: String
+  city: String
   maxDeliveryPackageSize: DeliveryPackageSize
   carId: ID
   carColorId: ID
@@ -4752,10 +4766,12 @@ type FleetTransactionsConnection {
 
 type FleetDriversAggregateGroupBy {
   id: ID
+  driverCode: String
   fleetId: ID
   firstName: String
   lastName: String
   mobileNumber: String
+  city: String
   maxDeliveryPackageSize: DeliveryPackageSize
   carId: ID
   carColorId: ID
@@ -4768,10 +4784,12 @@ type FleetDriversAggregateGroupBy {
 
 type FleetDriversCountAggregate {
   id: Int
+  driverCode: Int
   fleetId: Int
   firstName: Int
   lastName: Int
   mobileNumber: Int
+  city: Int
   maxDeliveryPackageSize: Int
   carId: Int
   carColorId: Int
@@ -4802,10 +4820,12 @@ type FleetDriversAvgAggregate {
 
 type FleetDriversMinAggregate {
   id: ID
+  driverCode: String
   fleetId: ID
   firstName: String
   lastName: String
   mobileNumber: String
+  city: String
   maxDeliveryPackageSize: DeliveryPackageSize
   carId: ID
   carColorId: ID
@@ -4818,10 +4838,12 @@ type FleetDriversMinAggregate {
 
 type FleetDriversMaxAggregate {
   id: ID
+  driverCode: String
   fleetId: ID
   firstName: String
   lastName: String
   mobileNumber: String
+  city: String
   maxDeliveryPackageSize: DeliveryPackageSize
   carId: ID
   carColorId: ID

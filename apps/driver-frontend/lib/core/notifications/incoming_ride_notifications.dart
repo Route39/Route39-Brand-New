@@ -53,9 +53,9 @@ await flutterLocalNotificationsPlugin
       : 'A customer is waiting for you';
 
   await flutterLocalNotificationsPlugin.show(
-    id: orderId.hashCode,
-    title: 'New ride request',
-    body: body,
+  id: orderId.hashCode,
+  title: 'New ride request',
+  body: body,
     notificationDetails: NotificationDetails(
       android: AndroidNotificationDetails(
         incomingRideChannel.id,

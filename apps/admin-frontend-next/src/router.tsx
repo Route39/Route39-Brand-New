@@ -25,7 +25,8 @@ const DriverReviewPage = lazy(() => import("@/routes/panel/drivers/$id/review"))
 // const RiderFinancialsTab = lazy(() => import("@/routes/panel/riders/$id/financials"));
 // const RiderOrdersTab = lazy(() => import("@/routes/panel/riders/$id/orders"));
 
-const RequestsListPage = lazy(() => import("@/routes/panel/requests"));
+//const RequestsListPage = lazy(() => import("@/routes/panel/requests"));
+const DailyCollectionPage = lazy(() => import("@/routes/panel/requests/DailyCollectionPage"));
 const OrderDetailLayout = lazy(() => import("@/routes/panel/requests/$id/layout"));
 const OrderInfoTab = lazy(() => import("@/routes/panel/requests/$id/info"));
 const OrderFinancialsTab = lazy(() => import("@/routes/panel/requests/$id/financials"));
@@ -164,7 +165,8 @@ export const router = createBrowserRouter(
       //   ],
       // },
 
-      { path: "requests", Component: RequestsListPage },
+      //{ path: "requests", Component: RequestsListPage },
+      { path: "requests", Component: DailyCollectionPage },
       {
         path: "requests/:id",
         Component: OrderDetailLayout,
