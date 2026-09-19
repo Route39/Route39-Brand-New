@@ -16,7 +16,11 @@ class GraphqlDatasourceImpl implements GraphqlDatasource {
   @override
   Future<ApiResponse<TParsed>> mutate<TParsed>(MutationOptions<TParsed> options) async {
     try {
-      final result = await client.mutate(options);
+      print(
+  '[HTTP-AUTH-DEBUG] mutate operation=${options.operationName}',
+);
+
+final result = await client.mutate(options);
       if (result.hasException) {
         return ApiResponse.error(_parseOperationException(result.exception!).errorMessage);
       }

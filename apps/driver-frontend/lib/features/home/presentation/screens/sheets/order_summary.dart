@@ -101,6 +101,8 @@ class OrderSummary extends StatelessWidget {
                   ("Ride Amount", order.costBest),
                   ("GST ${order.gstPercent ?? 0}%", order.gstAmount),
                   ("Platform Fee ${order.platformFee ?? 0}", order.platformFeeAmount),
+                  if ((order.waitingChargeAmount ?? 0) > 0)
+                    ("Waiting Charges", order.waitingChargeAmount ?? 0),
                   if (order.paymentMethod.mode == Enum$PaymentMode.PaymentGateway ||
                       order.paymentMethod.mode == Enum$PaymentMode.SavedPaymentMethod)
                     (

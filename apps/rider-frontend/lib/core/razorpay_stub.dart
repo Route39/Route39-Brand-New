@@ -44,6 +44,24 @@ void openRazorpayCheckout({
     'name': name,
     'description': description,
     'order_id': orderId,
+    'config': {
+      'display': {
+        'blocks': {
+          'upi_block': {
+            'name': 'Pay via UPI',
+            'instruments': [
+              {
+                'method': 'upi',
+              },
+            ],
+          },
+        },
+        'sequence': ['block.upi_block'],
+        'preferences': {
+          'show_default_blocks': true,
+        },
+      },
+    },
   };
 
   razorpay.open(options);

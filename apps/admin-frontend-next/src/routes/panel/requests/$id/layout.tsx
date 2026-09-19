@@ -9,6 +9,7 @@ import { ConfirmAction } from "@/components/panel/ConfirmAction";
 import { DetailHeader } from "@/components/panel/DetailHeader";
 import { TabNav } from "@/components/panel/TabNav";
 import { Badge } from "@/components/ui/badge";
+import { PickupTimer } from "@/components/panel/PickupTimer";
 import { ErrorBlock, LoadingBlock } from "@/components/panel/StateBlock";
 import { CANCEL_ORDER_MUTATION } from "@/lib/graphql/documents/admin-actions";
 import {
@@ -73,7 +74,18 @@ export default function OrderDetailLayout() {
             <span>{order.addresses[0] ?? "—"}</span>
           </div>
         }
-        badges={<Badge variant={orderStatusVariant(order.status)}>{order.status}</Badge>}
+        badges={
+          <>
+            <Badge variant={orderStatusVariant(order.status)}>{order.status}</Badge>
+            {order.status === "Arrived" ? (
+              <PickupTimer
+                arrivedAt={order.arrivedAt}
+                freeWaitMinutes={order.service?.cargoWaitingTimeMinutes}
+                
+              />
+            ) : null}
+          </>
+        }
         actions={
           cancellable ? (
             <ConfirmAction

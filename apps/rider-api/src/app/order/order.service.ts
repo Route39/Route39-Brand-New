@@ -533,8 +533,9 @@ export class RiderOrderService {
         : order?.paymentMethod?.mode === PaymentMode.SavedPaymentMethod
         ? { ...order.paymentMethod, name: order.paymentMethod.name ?? 'Unknown' }
         : order?.paymentMethod,
-      totalCost: order?.costEstimateForRider ?? 0,
+      totalCost: (order?.costEstimateForRider ?? 0) + (order?.waitingChargeAmount ?? 0),
       paymentGatewayFeePercent: order?.paymentGatewayFeePercent ?? 0,
+      waitingChargeAmount: order?.waitingChargeAmount ?? 0,
       costResult:
         order?.pricingMode === PricingMode.RANGE &&
         order?.costMin != null &&
@@ -730,7 +731,7 @@ export class RiderOrderService {
         estimatedDuration: order.durationBest,
         options: order.options ?? [],
         waypoints: order.waypoints(),
-        totalCost: order.costAfterCoupon,
+        totalCost: order.totalCost ?? order.costAfterCoupon,
         couponDiscount: order.costBest - order.costAfterCoupon,
         directions: order.directions ?? [],
         paymentMethod: order.paymentMethod(),
@@ -754,11 +755,31 @@ export class RiderOrderService {
     paymentMethod: PaymentMethodInput;
   }): Promise<TopUpWalletResponse> {
     const activeOrder = await this.activeOrderRedisService.getActiveOrder(
-      input.orderId.toString(),
-    );
-    const driver = await this.driverRedisService.getOnlineDriverMetaData(
-      activeOrder.driverId,
-    );
+  input.orderId.toString(),
+);
+
+if (activeOrder == null) {
+  throw new ForbiddenError('ACTIVE_ORDER_NOT_FOUND');
+}
+
+const waitingChargeAmount = activeOrder.waitingChargeAmount ?? 0;
+
+const finalPaymentAmount =
+  activeOrder.costEstimateForRider +
+  waitingChargeAmount -
+  activeOrder.totalPaid;
+
+this.logger.log(
+  `[PAY-RIDE] order=${activeOrder.id} ` +
+    `costEstimateForRider=${activeOrder.costEstimateForRider} ` +
+    `waitingChargeAmount=${waitingChargeAmount} ` +
+    `totalPaid=${activeOrder.totalPaid} ` +
+    `finalPaymentAmount=${finalPaymentAmount}`,
+);
+
+const driver = await this.driverRedisService.getOnlineDriverMetaData(
+  activeOrder.driverId,
+);
     const rider = await this.riderRedisService.getOnlineRider(
       activeOrder.riderId,
     );
@@ -864,7 +885,7 @@ export class RiderOrderService {
           paymentMode: PaymentMode.PaymentGateway,
           gatewayId: input.paymentMethod.id!,
           userId: parseInt(activeOrder.riderId),
-          amount: activeOrder.costEstimateForRider - activeOrder.totalPaid,
+          amount: finalPaymentAmount,
           currency: activeOrder.currency,
           payoutData: payoutData,
           orderNumber: activeOrder.id.toString(),
@@ -912,7 +933,7 @@ export class RiderOrderService {
           paymentMode: PaymentMode.PaymentGateway,
           gatewayId: input.paymentMethod.id!,
           userId: parseInt(activeOrder.riderId),
-          amount: activeOrder.costEstimateForRider - activeOrder.totalPaid,
+          amount: finalPaymentAmount,
           currency: activeOrder.currency,
           payoutData: payoutData,
           orderNumber: activeOrder.id.toString(),
@@ -930,6 +951,7 @@ export class RiderOrderService {
   async createRazorpayRideOrder(input: {
     orderId: number;
     riderId: number;
+    tip?: number;
   }): Promise<{
     orderId: string;
     amount: number;
@@ -948,33 +970,62 @@ export class RiderOrderService {
       throw new ForbiddenError('ORDER_NOT_BELONG_TO_RIDER');
     }
 
-    const amount =
-      activeOrder.costEstimateForRider - activeOrder.totalPaid;
+    const tip = Math.max(0, input.tip ?? 0);
+    const waitingChargeAmount = activeOrder.waitingChargeAmount ?? 0;
 
-    if (amount <= 0) {
-      throw new BadRequestException('NO_PAYMENT_REQUIRED');
-    }
+const rideBalance =
+  activeOrder.costEstimateForRider +
+  waitingChargeAmount -
+  activeOrder.totalPaid;
 
-    const existingPayment = await this.paymentRepo.findOne({
-      where: {
-        userType: 'rider',
-        userId: input.riderId.toString(),
-        orderNumber: activeOrder.id.toString(),
-        status: PaymentStatus.Processing,
-      },
-      order: {
-        id: 'DESC',
-      },
-    });
+const gatewayFeeAmount =
+  (rideBalance * (activeOrder.paymentGatewayFeePercent ?? 0)) / 100;
 
-    if (existingPayment?.transactionNumber) {
-      return {
-        orderId: existingPayment.transactionNumber,
-        amount: existingPayment.amount,
-        currency: existingPayment.currency,
-        keyId: process.env.RAZORPAY_KEY_ID!,
-      };
-    }
+const amount = rideBalance + gatewayFeeAmount + tip;
+
+this.logger.log(
+  `[RAZORPAY] order=${activeOrder.id} ` +
+    `costEstimateForRider=${activeOrder.costEstimateForRider} ` +
+    `waitingChargeAmount=${waitingChargeAmount} ` +
+    `totalPaid=${activeOrder.totalPaid} ` +
+    `gatewayFeeAmount=${gatewayFeeAmount} ` +
+    `tip=${tip} ` +
+    `amount=${amount}`,
+);
+
+if (amount <= 0) {
+  throw new BadRequestException('NO_PAYMENT_REQUIRED');
+}
+
+const existingPayment = await this.paymentRepo.findOne({
+  where: {
+    userType: 'rider',
+    userId: input.riderId.toString(),
+    orderNumber: activeOrder.id.toString(),
+    status: PaymentStatus.Processing,
+  },
+  order: {
+    id: 'DESC',
+  },
+});
+
+if (
+  existingPayment?.transactionNumber &&
+  Math.abs(existingPayment.amount - amount) <= 0.01
+) {
+  return {
+    orderId: existingPayment.transactionNumber,
+    amount: existingPayment.amount,
+    currency: existingPayment.currency,
+    keyId: process.env.RAZORPAY_KEY_ID!,
+  };
+}
+
+if (existingPayment) {
+  await this.paymentRepo.update(existingPayment.id, {
+    status: PaymentStatus.Failed,
+  });
+}
 
     const razorpayOrder = await this.razorpayService.createOrder(
       amount,
@@ -985,6 +1036,7 @@ export class RiderOrderService {
     await this.paymentRepo.save({
       status: PaymentStatus.Processing,
       amount,
+      tip,
       currency: activeOrder.currency,
       transactionNumber: razorpayOrder.id,
       externalReferenceNumber: null,
@@ -1059,15 +1111,35 @@ export class RiderOrderService {
       throw new ForbiddenError('INVALID_RAZORPAY_SIGNATURE');
     }
 
-    const expectedAmount =
-      activeOrder.costEstimateForRider - activeOrder.totalPaid;
+    const waitingChargeAmount = activeOrder.waitingChargeAmount ?? 0;
 
-    if (Math.abs(payment.amount - expectedAmount) > 0.01) {
-      await this.paymentRepo.update(payment.id, {
-        status: PaymentStatus.Failed,
-      });
-      throw new ForbiddenError('PAYMENT_AMOUNT_MISMATCH');
-    }
+const rideBalance =
+  activeOrder.costEstimateForRider +
+  waitingChargeAmount -
+  activeOrder.totalPaid;
+
+const gatewayFeeAmount =
+  (rideBalance * (activeOrder.paymentGatewayFeePercent ?? 0)) / 100;
+
+const expectedAmount = rideBalance + gatewayFeeAmount + payment.tip;
+
+this.logger.log(
+  `[RAZORPAY-VERIFY] order=${activeOrder.id} ` +
+    `paymentAmount=${payment.amount} ` +
+    `costEstimateForRider=${activeOrder.costEstimateForRider} ` +
+    `waitingChargeAmount=${waitingChargeAmount} ` +
+    `totalPaid=${activeOrder.totalPaid} ` +
+    `gatewayFeeAmount=${gatewayFeeAmount} ` +
+    `tip=${payment.tip} ` +
+    `expectedAmount=${expectedAmount}`,
+);
+
+if (Math.abs(payment.amount - expectedAmount) > 0.01) {
+  await this.paymentRepo.update(payment.id, {
+    status: PaymentStatus.Failed,
+  });
+  throw new ForbiddenError('PAYMENT_AMOUNT_MISMATCH');
+}
 
     await this.paymentRepo.update(payment.id, {
       status: PaymentStatus.Success,
@@ -1085,6 +1157,18 @@ export class RiderOrderService {
       driverId: parseInt(activeOrder.driverId),
     });
 
+    if (payment.tip > 0) {
+      await this.driverService.rechargeWallet({
+        action: TransactionAction.Recharge,
+        rechargeType: DriverRechargeTransactionType.Gift,
+        amount: payment.tip,
+        requestId: parseInt(activeOrder.id),
+        status: TransactionStatus.Done,
+        currency: activeOrder.currency,
+        driverId: parseInt(activeOrder.driverId),
+      });
+    }
+
     await this.finishOrderWithReview(activeOrder);
 
     return TopUpWalletStatus.OK;
@@ -1099,31 +1183,45 @@ export class RiderOrderService {
     ]);
     await Promise.all([
       this.riderRedisService.createEphemeralMessage(activeOrder.riderId, {
-        type: RiderEphemeralMessageType.RateDriver,
-        orderId: parseInt(activeOrder.id),
-        serviceImageUrl: activeOrder.serviceImageAddress,
-        serviceName: activeOrder.serviceName,
-        vehicleName: driver?.vehicleName ?? null,
-        driverFullName: driver?.firstName ?? activeOrder.driverFirstName ?? null,
-        driverProfileUrl: driver?.avatarImageAddress ?? activeOrder.driverAvatarUrl ?? null,
-        createdAt: new Date(),
-        expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000),
-      }),
+  messageId: `rate-driver-${activeOrder.id}`,
+  type: RiderEphemeralMessageType.RateDriver,
+  orderId: parseInt(activeOrder.id),
+  serviceImageUrl: activeOrder.serviceImageAddress,
+  serviceName: activeOrder.serviceName,
+  vehicleName: driver?.vehicleName ?? null,
+  driverFullName: driver?.firstName ?? activeOrder.driverFirstName ?? null,
+  driverProfileUrl:
+    driver?.avatarImageAddress ?? activeOrder.driverAvatarUrl ?? null,
+  createdAt: new Date(),
+  expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000),
+}),
       this.driverRedisService.createEphemeralMessage(activeOrder.driverId, {
-        type: DriverEphemeralMessageType.RateRider,
-        orderId: parseInt(activeOrder.id),
-        serviceImageUrl: activeOrder.serviceImageAddress,
-        serviceName: activeOrder.serviceName,
-        riderFullName: rider?.firstName ?? activeOrder.riderFirstName ?? null,
-        riderProfileUrl: rider?.profileImageUrl ?? activeOrder.riderAvatarUrl ?? null,
-        createdAt: new Date(),
-        expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000),
-      }),
+  messageId: `rate-rider-${activeOrder.id}`,
+  type: DriverEphemeralMessageType.RateRider,
+  orderId: parseInt(activeOrder.id),
+  serviceImageUrl: activeOrder.serviceImageAddress,
+  serviceName: activeOrder.serviceName,
+  riderFullName:
+    rider?.firstName ?? activeOrder.riderFirstName ?? null,
+  riderProfileUrl:
+    rider?.profileImageUrl ?? activeOrder.riderAvatarUrl ?? null,
+  amount: 0,
+  createdAt: new Date(),
+  expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000),
+}),
     ]);
-    await this.sharedOrderService.saveActiveOrderToDisk(
-      { ...activeOrder, status: OrderStatus.Finished, totalPaid: activeOrder.costEstimateForRider },
-      { finishTimestamp: new Date() },
-    );
+    const finalOrderTotal =
+  activeOrder.costEstimateForRider +
+  (activeOrder.waitingChargeAmount ?? 0);
+
+await this.sharedOrderService.saveActiveOrderToDisk(
+  {
+    ...activeOrder,
+    status: OrderStatus.Finished,
+    totalPaid: finalOrderTotal,
+  },
+  { finishTimestamp: new Date() },
+);
     await this.activeOrderRedisService.deleteOrder(activeOrder.id);
     // OrderCompleted removes the order from the rider's stream AND triggers getEphemeralMessages()
     this.pubsub.publish(

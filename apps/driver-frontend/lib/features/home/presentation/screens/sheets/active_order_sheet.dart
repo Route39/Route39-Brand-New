@@ -6,6 +6,7 @@ import 'package:ridy_driver/core/extensions/extensions.dart';
 import 'package:ridy_driver/core/graphql/fragments/coordinate.extensions.dart';
 import 'package:ridy_driver/core/presentation/slider_button.dart';
 import 'package:flutter/material.dart';
+import '../../components/pickup_wait_timer.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
 import 'package:flutter_common/core/enums/order_status.dart';
@@ -225,7 +226,15 @@ class ActiveOrderSheet extends StatelessWidget {
                                   },
                                 )
                               : order.status.toEntity == OrderStatus.arrived
-                              ? SliderButton(
+                              ? Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    PickupWaitTimer(
+                                      arrivedAt: order.arrivedAt,
+                                      freeWaitMinutes: order.cargoWaitingTimeMinutes,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    SliderButton(
                                   text: context.translate.slideToConfirmPickup,
                                   onSlided: () {
                                     if (!order.pickupOtpRequired) {
@@ -236,15 +245,16 @@ class ActiveOrderSheet extends StatelessWidget {
                                         ),
                                       );
                                     } else {
-                                      showDialog(
-                                        context: context,
-                                        useSafeArea: false,
-                                        builder: (context) =>
-                                            PickupOtpDialog(orderId: order.id),
-                                      );
-                                    }
-                                  },
-                                )
+                                          showDialog(
+                                            context: context,
+                                            useSafeArea: false,
+                                            builder: (context) =>
+                                                PickupOtpDialog(orderId: order.id),
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ],                                )
                               : order.status.toEntity == OrderStatus.started
                               ? SliderButton(
                                   text: context.translate.slideToConfirmDropoff,

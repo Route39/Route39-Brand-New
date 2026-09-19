@@ -57,6 +57,8 @@ export class ServiceDTO {
   paymentGatewayFee?: number;
   @Field(() => Float, { nullable: true })
   cargoExtraKmChargeAfter45Min?: number;
+  @Field(() => Int, { nullable: true })
+  cargoWaitingTimeMinutes?: number;
   @Field(() => Float, { nullable: false })
   perHundredMeters: number;
   @Field(() => Float, { nullable: false })

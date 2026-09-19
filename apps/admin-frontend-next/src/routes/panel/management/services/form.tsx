@@ -57,6 +57,7 @@ const schema = z.object({
   platformFee: optionalNumericString("Must be a number"),
   paymentGatewayFee: optionalNumericString("Must be a number"),
   cargoExtraKmChargeAfter45Min: optionalNumericString("Must be a number"),
+  cargoWaitingTimeMinutes: optionalNumericString("Must be a whole number"),
   paymentMethod: z.enum(["Both", "OnlyCash", "OnlyOnline"]),
   orderTypes: z.array(z.string()).min(1, "Pick at least one order type"),
   mediaId: z.string().optional(),
@@ -133,6 +134,7 @@ export function ServiceForm({ mode, id, initialValues }: Props) {
       platformFee: "",
       paymentGatewayFee: "",
       cargoExtraKmChargeAfter45Min: "",
+      cargoWaitingTimeMinutes: "",
       paymentMethod: "Both",
       orderTypes: ["Ride"],
       mediaId: "",
@@ -164,6 +166,12 @@ export function ServiceForm({ mode, id, initialValues }: Props) {
       });
       return;
     }
+    if (isCargoCategory && !values.cargoWaitingTimeMinutes) {
+      setError("cargoWaitingTimeMinutes", {
+        message: "Required for Cargo services",
+      });
+      return;
+    }
     const input = {
       name: values.name,
       description: values.description || null,
@@ -186,6 +194,9 @@ export function ServiceForm({ mode, id, initialValues }: Props) {
       paymentGatewayFee: values.paymentGatewayFee ? Number(values.paymentGatewayFee) : null,
       cargoExtraKmChargeAfter45Min: values.cargoExtraKmChargeAfter45Min
         ? Number(values.cargoExtraKmChargeAfter45Min)
+        : null,
+      cargoWaitingTimeMinutes: values.cargoWaitingTimeMinutes
+        ? Number(values.cargoWaitingTimeMinutes)
         : null,
       paymentMethod: (values.paymentMethod === "Both" ? "CashCredit" : values.paymentMethod === "OnlyOnline" ? "OnlyCredit" : "OnlyCash") as never,
       orderTypes: values.orderTypes as never,
@@ -373,7 +384,7 @@ export function ServiceForm({ mode, id, initialValues }: Props) {
           {isCargoCategory ? (
           <FormGrid>
             <Field
-              label="Added KM charges after 45 min"
+              label="Cargo - Waiting KM charges"
               htmlFor="cargoExtraKmChargeAfter45Min"
               error={errors.cargoExtraKmChargeAfter45Min?.message}
               required
@@ -383,6 +394,20 @@ export function ServiceForm({ mode, id, initialValues }: Props) {
                 type="number"
                 step="0.01"
                 {...register("cargoExtraKmChargeAfter45Min")}
+              />
+            </Field>
+            <Field
+              label="Cargo Waiting time (min)"
+              htmlFor="cargoWaitingTimeMinutes"
+              error={errors.cargoWaitingTimeMinutes?.message}
+              required
+            >
+              <Input
+                id="cargoWaitingTimeMinutes"
+                type="number"
+                step="1"
+                min="0"
+                {...register("cargoWaitingTimeMinutes")}
               />
             </Field>
           </FormGrid>

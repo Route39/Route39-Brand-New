@@ -18,6 +18,10 @@ sealed class HomeEvent with _$HomeEvent {
     required Fragment$RideOffer request,
   }) = HomeEvent$OnAcceptOrder;
 
+  const factory HomeEvent.acceptOrderById({
+    required String orderId,
+  }) = HomeEvent$AcceptOrderById;
+
   const factory HomeEvent.onCancelOrder({
     required String orderId,
     required String reasonId,

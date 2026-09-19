@@ -100,25 +100,25 @@ export class WalletResolver {
   }
 
   @Mutation(() => RazorpayOrderDTO)
-  async createRazorpayRideOrder(
-    @Args('orderId', { type: () => ID }) orderId: number,
-  ): Promise<RazorpayOrderDTO> {
-    const activeOrder = await this.orderRedisService.getActiveOrder(
-      orderId.toString(),
-    );
-    const amount = activeOrder?.costEstimateForRider ?? 0;
-    const order = await this.razorpayService.createOrder(
-      amount,
-      'INR',
-      `ride_${orderId}_${Date.now()}`,
-    );
-    return {
-      orderId: order.id,
-      amount: amount,
-      currency: 'INR',
-      keyId: process.env.RAZORPAY_KEY_ID!,
-    };
-  }
+async createRazorpayWalletOrder(
+  @Args('orderId', { type: () => ID }) orderId: number,
+): Promise<RazorpayOrderDTO> {
+  const activeOrder = await this.orderRedisService.getActiveOrder(
+    orderId.toString(),
+  );
+  const amount = activeOrder?.costEstimateForRider ?? 0;
+  const order = await this.razorpayService.createOrder(
+    amount,
+    'INR',
+    `ride_${orderId}_${Date.now()}`,
+  );
+  return {
+    orderId: order.id,
+    amount: amount,
+    currency: 'INR',
+    keyId: process.env.RAZORPAY_KEY_ID!,
+  };
+}
 
   @Mutation(() => Boolean)
   async verifyRazorpayRidePayment(

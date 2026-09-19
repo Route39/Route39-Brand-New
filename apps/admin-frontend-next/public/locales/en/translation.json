@@ -119,7 +119,7 @@
 			"header": "Accounting"
 		},
 		"riders": "Riders",
-		"requests": "Requests",
+		"requests": "Daily Collection",
 		"sos": "SOS",
 		"complaints": "Complaints",
 		"management": {
@@ -502,6 +502,13 @@
 	"requests": {
 		"list": {
 			"description": "All ride requests across the platform."
+		},
+		"filters": {
+			"today": "Today",
+			"thisWeek": "This week",
+			"last30": "Last 30",
+			"clear": "Clear filter",
+			"totalCollection": "Total collection"
 		}
 	},
 	"complaint": {

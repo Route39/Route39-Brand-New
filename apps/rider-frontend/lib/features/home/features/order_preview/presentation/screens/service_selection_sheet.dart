@@ -118,10 +118,35 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
       isFullScreen: true,
       child: BlocBuilder<HomeBloc, HomeState>(
         builder: (context, state) {
-          final selectedService = state.selectedService ??
-              widget.serviceCategories.firstOrNull?.services.firstOrNull;
-          final pickup = state.waypoints.firstOrNull ?? locator<LocationCubit>().state.place;
-          final dropoff = state.waypoints.length > 1 ? state.waypoints.last : null;
+          final selectedCategory = state.selectedServiceCategory ??
+    widget.serviceCategories.firstWhereOrNull(
+      (category) {
+        final categoryKey = category.name
+            .trim()
+            .toLowerCase()
+            .replaceAll(RegExp(r'[\s-]+'), '');
+
+        final desiredCategoryKey =
+            state.orderType == Enum$TaxiOrderType.ParcelDelivery
+                ? 'cargo'
+                : 'passengerauto';
+
+        return categoryKey == desiredCategoryKey;
+      },
+    ) ??
+    widget.serviceCategories.firstOrNull;
+
+final selectedService = state.selectedService ??
+    selectedCategory?.services.firstOrNull;
+
+final pickup =
+    state.waypoints.firstOrNull ??
+    locator<LocationCubit>().state.place;
+
+final dropoff =
+    state.waypoints.length > 1
+        ? state.waypoints.last
+        : null;
           return SizedBox.expand(
             child: SafeArea(
             top: false,
@@ -141,8 +166,12 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
                           const SizedBox(height: 20),
                           _buildDateStrip(context),
                           const SizedBox(height: 20),
-                          if (selectedService != null) _buildServiceCard(context, selectedService, widget.serviceCategories.firstOrNull?.name),
-                          const SizedBox(height: 16),
+if (selectedService != null)
+  _buildServiceCard(
+    context,
+    selectedService,
+    selectedCategory?.name,
+  ),                          const SizedBox(height: 16),
                           _buildRouteSection(context, pickup, dropoff),
                           const SizedBox(height: 16),
                           _buildRidePreferencesRow(context, state, selectedService, pickup, dropoff),
@@ -380,7 +409,15 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(isCargo ? 'Route39 Cargo' : 'Route39 EV', style: context.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            //child: Text(isCargo ? 'Route39 Cargo' : 'Route39 EV', style: context.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            child: Text(
+    (categoryName?.trim().toLowerCase() == 'cargo')
+        ? 'Route39 Cargo'
+        : 'Route39 Passenger-Auto',
+    style: context.titleMedium?.copyWith(
+      fontWeight: FontWeight.bold,
+    ),
+  ),
           ),
         ],
       ),
@@ -436,6 +473,7 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
     final gstPercent = ((selectedService?.gstPercent ?? 0) as num).toDouble();
     final platformFee = ((selectedService?.platformFee ?? 0) as num).toDouble();
     final paymentGatewayFeePercent = ((selectedService?.paymentGatewayFee ?? 0) as num).toDouble();
+    final cargoWaitingTimeMinutes = selectedService?.cargoWaitingTimeMinutes as int?;
     final isOnlinePayment = state.selectedPaymentMethod?.paymentMode == PaymentMode.paymentGateway ||
         state.selectedPaymentMethod?.paymentMode == PaymentMode.savedPaymentMethod;
     final gstAmount = baseFare * gstPercent / 100;
@@ -515,7 +553,15 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Km charges', style: context.bodyMedium?.copyWith(color: ColorPalette.neutralVariant50)),
+                Text(
+  state.orderType == Enum$TaxiOrderType.ParcelDelivery
+      ? 'Cargo fare'
+      : 'Km charges',
+  style: context.bodyMedium?.copyWith(
+    color: ColorPalette.neutralVariant50,
+  ),
+),
+
                 Text(_formatAmount(baseFare), style: context.bodyMedium),
               ],
             ),
@@ -535,7 +581,13 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
                 Text(_formatAmount(platformFeeAmount), style: context.bodyMedium),
               ],
             ),
-            const SizedBox(height: 8),
+            if (cargoWaitingTimeMinutes != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Waiting charges apply after $cargoWaitingTimeMinutes minutes of waiting',
+                style: context.bodySmall?.copyWith(color: ColorPalette.neutralVariant50),
+              ),
+            ],            const SizedBox(height: 8),
             Text(
               'For online payments, a Payment Gateway charge of $paymentGatewayFeePercent% will be applied.',
               style: context.bodySmall?.copyWith(color: ColorPalette.neutralVariant50),

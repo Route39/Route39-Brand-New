@@ -51,6 +51,9 @@ export class ActiveOrderRedisSnapshot {
   platformFeeAmount: number;
   paymentGatewayFeePercent?: number;
   paymentGatewayFeeAmount: number;
+  arrivedAt?: number;
+  waitingChargeAmount?: number;
+  cargoWaitingTimeMinutes?: number;
   costMin?: number;
   costMax?: number;
   pricingMode: PricingMode;

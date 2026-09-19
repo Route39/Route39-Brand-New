@@ -41,6 +41,8 @@ export class ServiceDTO {
   platformFee?: number;
   @Field(() => Float, { nullable: true })
   paymentGatewayFee?: number;
+  @Field(() => Int, { nullable: true })
+  cargoWaitingTimeMinutes?: number;
   @Field(() => Int, { nullable: false })
   prepayPercent!: number;
   @Field(() => Boolean, { nullable: false })

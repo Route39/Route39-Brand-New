@@ -49,24 +49,25 @@ export default function OrderInfoTab() {
         <CardContent>
           <KeyValueList
             items={[
+              // {
+              //   label: "Rider",
+              //   value: (
+              //     <Link to={`/riders/${order.riderId}`} className="underline-offset-2 hover:underline">
+              //       #{order.riderId}
+              //     </Link>
+              //   ),
+              // },
               {
-                label: "Rider",
-                value: (
-                  <Link to={`/riders/${order.riderId}`} className="underline-offset-2 hover:underline">
-                    #{order.riderId}
-                  </Link>
-                ),
-              },
-              {
-                label: "Driver",
-                value: order.driverId ? (
-                  <Link to={`/drivers/${order.driverId}`} className="underline-offset-2 hover:underline">
-                    #{order.driverId}
-                  </Link>
-                ) : null,
-              },
+  label: "Driver",
+  value: order.driverId ? (
+    <Link to={`/drivers/${order.driverId}`} className="underline-offset-2 hover:underline">
+      {[order.driver?.firstName, order.driver?.lastName].filter(Boolean).join(" ") ||
+        `#${order.driverId}`}
+    </Link>
+  ) : null,
+},
               { label: "Fleet", value: order.fleetId },
-              { label: "Region", value: order.regionId },
+              // { label: "Region", value: order.regionId },
               { label: "Service", value: order.serviceId },
               { label: "Payment mode", value: order.paymentMode },
             ]}

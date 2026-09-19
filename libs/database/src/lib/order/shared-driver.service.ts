@@ -191,6 +191,11 @@ export class SharedDriverService {
 
   async deleteById(id: number): Promise<DriverEntity> {
     const user = await this.findById(id);
+    // mobileNumber has a DB-level unique constraint that ignores deletedAt,
+    // so a soft-deleted row still blocks that number from being reused.
+    // Overwrite it with a value derived from the id (guaranteed unique,
+    // never collides with a real mobile number) before soft-deleting.
+    await this.driverRepo.update(id, { mobileNumber: String(-id) });
     await this.driverRepo.softDelete(id);
     return user;
   }

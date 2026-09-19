@@ -9,6 +9,24 @@ export default function OrderFinancialsTab() {
   const { order } = useOutletContext<OrderContext>();
   const fmt = (v: number) => formatCurrency(v, order.currency);
 
+  const isOnlinePayment =
+    order.paymentMode === "PaymentGateway" ||
+    order.paymentMode === "SavedPaymentMethod";
+
+  const gstAmount = order.gstAmount ?? 0;
+  const platformFeeAmount = order.platformFeeAmount ?? 0;
+  const paymentGatewayFeeAmount = isOnlinePayment
+    ? order.paymentGatewayFeeAmount ?? 0
+    : 0;
+  const waitingChargeAmount = order.waitingChargeAmount ?? 0;
+
+  const totalCharged =
+    (order.costAfterCoupon ?? 0) +
+    gstAmount +
+    platformFeeAmount +
+    paymentGatewayFeeAmount +
+    waitingChargeAmount;
+
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <Card>
@@ -24,6 +42,9 @@ export default function OrderFinancialsTab() {
               { label: "Wait cost", value: fmt(order.waitCost) },
               { label: "Ride options", value: fmt(order.rideOptionsCost) },
               { label: "Tax", value: fmt(order.taxCost) },
+              { label: "GST", value: fmt(gstAmount) },
+              { label: "Platform Fee", value: fmt(platformFeeAmount) },
+              { label: "Payment Gateway Fee", value: fmt(paymentGatewayFeeAmount) },
             ]}
           />
         </CardContent>
@@ -38,7 +59,7 @@ export default function OrderFinancialsTab() {
             items={[
               { label: "Currency", value: order.currency },
               { label: "Mode", value: order.paymentMode },
-              { label: "Total charged", value: fmt(order.costAfterCoupon) },
+              { label: "Total charged", value: fmt(totalCharged) },
             ]}
           />
         </CardContent>

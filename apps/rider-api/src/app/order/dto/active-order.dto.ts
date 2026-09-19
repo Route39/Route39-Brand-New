@@ -74,4 +74,6 @@ export class ActiveOrderDTO {
   pickupOtp?: string;
   @Field(() => Float, { defaultValue: 0 })
   paymentGatewayFeePercent!: number;
+  @Field(() => Float, { nullable: true })
+  waitingChargeAmount?: number;
 }

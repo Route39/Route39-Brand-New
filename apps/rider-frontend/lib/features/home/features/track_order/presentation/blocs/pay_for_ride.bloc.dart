@@ -54,6 +54,7 @@ class PayForRideCubit extends Cubit<PayForRideState> {
     required String currency,
     required double amount,
     required String orderId,
+    double? tip,
   }) async {
     emit(
       state.copyWith(
@@ -63,6 +64,7 @@ class PayForRideCubit extends Cubit<PayForRideState> {
 
     final razorpayResponse = await _repository.createRazorpayRideOrder(
       orderId: orderId,
+      tip: tip,
     );
 
     final razorpayOrder = razorpayResponse.mapData(
@@ -149,7 +151,7 @@ class PayForRideCubit extends Cubit<PayForRideState> {
       state.copyWith(
         paymentStatus: response.mapData(
           (data) => Fragment$IntentResult(
-            status: data.verifyRazorpayRidePayment
+            status: (data?.verifyRazorpayRidePayment ?? false)
                 ? Enum$TopUpWalletStatus.OK
                 : Enum$TopUpWalletStatus.Failed,
           ),

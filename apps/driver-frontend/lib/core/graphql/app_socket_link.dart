@@ -54,7 +54,7 @@ _connection = _Connection(
           autoReconnect: true,
           initialPayload: {"authToken": token},
           inactivityTimeout: const Duration(minutes: 30),
-          headers: {"Authorization": " Bearer $token"},
+          headers: {"Authorization": "Bearer $token"},
         ),
       ),
       token: token,

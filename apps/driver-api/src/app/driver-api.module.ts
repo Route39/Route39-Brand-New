@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Logger } from '@nestjs/common';
 import {
   CallMaskingModule,
   CryptoService,
@@ -81,20 +82,54 @@ export class DriverAPIModule implements OnModuleInit {
               'graphql-ws': {
                 connectionInitWaitTimeout: 5000,
                 onConnect: async (
-                  ctx: Context<Record<string, unknown> | undefined, unknown>,
-                ) => {
-                  const token =
-                    (ctx.connectionParams?.['authToken'] as string) ||
-                    undefined;
-                  if (!token) {
-                    throw new Error('Missing auth token!');
-                  }
-                  const user = await validateToken(token!)!;
-                  ctx.extra = {
-                    user,
-                  };
-                  return { user };
-                },
+  ctx: Context<Record<string, unknown> | undefined, unknown>,
+) => {
+  Logger.log(
+    `[WS-AUTH] connectionParams=${JSON.stringify(ctx.connectionParams)}`,
+    'DriverWS',
+  );
+
+  const token =
+    (ctx.connectionParams?.['authToken'] as string) ||
+    undefined;
+
+  Logger.log(
+    `[WS-AUTH] token received=${!!token}`,
+    'DriverWS',
+  );
+
+  if (!token) {
+    throw new Error('Missing auth token!');
+  }
+
+  const user = await validateToken(token);
+
+  Logger.log(
+    `[WS-AUTH] authenticated driver=${JSON.stringify(user)}`,
+    'DriverWS',
+  );
+
+  ctx.extra = {
+    user,
+  };
+
+  return { user };
+},
+                // onConnect: async (
+                //   ctx: Context<Record<string, unknown> | undefined, unknown>,
+                // ) => {
+                //   const token =
+                //     (ctx.connectionParams?.['authToken'] as string) ||
+                //     undefined;
+                //   if (!token) {
+                //     throw new Error('Missing auth token!');
+                //   }
+                //   const user = await validateToken(token!)!;
+                //   ctx.extra = {
+                //     user,
+                //   };
+                //   return { user };
+                // },
               },
             },
             autoSchemaFile: join(

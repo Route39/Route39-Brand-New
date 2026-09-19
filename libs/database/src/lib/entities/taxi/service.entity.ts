@@ -238,6 +238,13 @@ export class ServiceEntity {
   })
   cargoExtraKmChargeAfter45Min?: number;
 
+  @Column('int', {
+    nullable: true,
+    comment:
+      'Free waiting time (in minutes) before cargo waiting charges start applying.',
+  })
+  cargoWaitingTimeMinutes?: number;
+
   @OneToOne(() => MediaEntity, { eager: true, nullable: true })
   @JoinColumn()
   media?: MediaEntity;

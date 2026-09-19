@@ -14,6 +14,7 @@ abstract class TrackOrderRepository {
 
   Future<ApiResponse<Mutation$CreateRazorpayRideOrder>> createRazorpayRideOrder({
     required String orderId,
+    double? tip,
   });
 
   Future<ApiResponse<Mutation$VerifyRazorpayRidePayment>> verifyRazorpayRidePayment({

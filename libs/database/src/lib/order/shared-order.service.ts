@@ -283,18 +283,31 @@ export class SharedOrderService {
     }
 
     const _cats = cats
-      .map((cat) => {
-        const { services, ..._cat } = cat;
+  .map((cat) => {
+    const { services, ..._cat } = cat;
 
-        const _services = services
-  .filter((x) => x.deletedAt == null)
-  .filter(
-    (x) =>
-      unrestrictedServices ||
-      servicesInRegion.filter((y) => y.id == x.id).length > 0,
-  )
-  .filter((x) => x.orderTypes.includes(input.orderType))
-          .map((service) => {
+    const categoryKey = cat.name
+      .trim()
+      .toLowerCase()
+      .replace(/[\s-]+/g, '');
+
+    const isCargoCategory =
+      input.orderType === TaxiOrderType.ParcelDelivery &&
+      categoryKey === 'cargo';
+
+    const _services = services
+      .filter((x) => x.deletedAt == null)
+      .filter(
+        (x) =>
+          unrestrictedServices ||
+          servicesInRegion.filter((y) => y.id == x.id).length > 0,
+      )
+      .filter(
+        (x) =>
+          x.orderTypes.includes(input.orderType) ||
+          isCargoCategory,
+      )
+      .map((service) => {
             let cost = 0;
 let costResult: {
   cost: number;
@@ -786,6 +799,7 @@ Logger.log(
       platformFeeAmount: order.platformFeeAmount,
       paymentGatewayFeePercent: order.service!.paymentGatewayFee ?? 0,
       paymentGatewayFeeAmount: order.paymentGatewayFeeAmount,
+      cargoWaitingTimeMinutes: order.service!.cargoWaitingTimeMinutes ?? null,
       costMin: order.costMin,
       costMax: order.costMax,
       pricingMode: order.pricingMode,
@@ -899,14 +913,16 @@ Logger.log(
     Logger.log(driver, 'SharedOrderService.finish.driver');
 
     // 2) Totals
+    const waitingChargeAmount = order.waitingChargeAmount ?? 0;
     const providerShare =
       order.costEstimateForRider - order.costEstimateForDriver;
 
     const tip = 0;
     const alreadyPaid = order.totalPaid ?? 0;
 
-    // What the rider still owes for this trip (fare+tip minus alreadyPaid)
-    let remainingDue = order.costEstimateForRider + tip - alreadyPaid;
+    // What the rider still owes for this trip (fare+tip+waiting charge minus alreadyPaid)
+    let remainingDue =
+      order.costEstimateForRider + waitingChargeAmount + tip - alreadyPaid;
 
     Logger.log(
       {
@@ -1222,7 +1238,8 @@ Logger.log(
 
     // 4c) Credit driver for non-cash portion + tip
     // (matches your existing logic; cash was handed directly to driver)
-    const driverNonCash = order.costEstimateForDriver - cashAmount + tip;
+    const driverNonCash =
+      order.costEstimateForDriver + waitingChargeAmount - cashAmount + tip;
     Logger.log(
       {
         driverNonCash,
@@ -1292,7 +1309,11 @@ Logger.log(
         deduceFromWallet)
         ? Math.max(
             0,
-            order.costEstimateForRider + tip - alreadyPaid - cashAmount,
+            order.costEstimateForRider +
+              waitingChargeAmount +
+              tip -
+              alreadyPaid -
+              cashAmount,
           )
         : 0;
 
@@ -1312,7 +1333,7 @@ Logger.log(
     await this.saveActiveOrderToDisk(
       {
         ...order,
-        totalPaid: order.costEstimateForRider,
+        totalPaid: order.costEstimateForRider + waitingChargeAmount,
         status: OrderStatus.Finished,
       },
       {

@@ -263,6 +263,7 @@ export const SERVICE_QUERY = graphql(`
       platformFee
       paymentGatewayFee
       cargoExtraKmChargeAfter45Min
+      cargoWaitingTimeMinutes
       mediaId
       media {
         id

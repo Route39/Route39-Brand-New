@@ -554,6 +554,7 @@ type UpdateStatus {
   nextDestination: WaypointBase
   directions: [Point!]
   totalCost: Float
+  waitingChargeAmount: Float
 }
 
 type ActiveOrderRider {
@@ -596,6 +597,9 @@ type ActiveOrder {
   platformFeeAmount: Float!
   paymentGatewayFeePercent: Float
   paymentGatewayFeeAmount: Float!
+  waitingChargeAmount: Float
+  arrivedAt: DateTime
+  cargoWaitingTimeMinutes: Int
   directions: [Point!]!
   unreadMessagesCount: Int!
   nextDestination: WaypointBase

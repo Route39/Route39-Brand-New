@@ -54,6 +54,8 @@ export default function EditServicePage() {
           paymentGatewayFee: s.paymentGatewayFee != null ? String(s.paymentGatewayFee) : "",
           cargoExtraKmChargeAfter45Min:
             s.cargoExtraKmChargeAfter45Min != null ? String(s.cargoExtraKmChargeAfter45Min) : "",
+          cargoWaitingTimeMinutes:
+            s.cargoWaitingTimeMinutes != null ? String(s.cargoWaitingTimeMinutes) : "",
           paymentMethod:
             s.paymentMethod === "CashCredit"
               ? "Both"

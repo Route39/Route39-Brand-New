@@ -19,6 +19,14 @@ import 'core/router/app_router.dart';
 import 'core/router/router_observer.dart';
 import 'core/presentation/route39_splash.dart';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+import 'core/notifications/incoming_ride_notifications.dart';
+
+import 'features/home/presentation/overlay/ride_request_overlay.dart';
+
+import 'features/home/presentation/blocs/home.bloc.dart';
+
 import 'firebase_options.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';

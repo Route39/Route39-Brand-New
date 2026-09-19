@@ -53,15 +53,21 @@ export class DispatchPubSubService {
 
     // Then fetch the updated payload to send to drivers
     const order = await this.buildOrderPayload(orderId);
+    const pushData = this.buildPushNotificationData(order);
 
     for (const driverId of availableDriverIds) {
       const driver = await this.driverRedisService.getOnlineDriverMetaData(
         driverId.toString(),
       );
-      this.driverNotificationService.requests(driver?.fcmTokens || []);
+      this.driverNotificationService.requests(
+        driver?.fcmTokens || [],
+        orderId,
+        pushData,
+      );
         await this.driverRedisService.createEphemeralMessage(
           driverId.toString(),
           {
+            messageId: `${orderId}-${driverId}-${Date.now()}`,
             type: DriverEphemeralMessageType.RideReceived,
             orderId,
             createdAt: new Date(),
@@ -156,6 +162,18 @@ export class DispatchPubSubService {
           (config.sequentialConfig?.perDriverTimeoutSeconds ?? 30) * 1000,
       ),
     });
+
+    const order = await this.buildOrderPayload(orderId);
+
+    // Push notification: this is what wakes the driver app when it's
+    // backgrounded/closed (the websocket pubsub publish below only reaches
+    // an actively-connected app, i.e. one that's open in the foreground).
+    this.driverNotificationService.requests(
+      driver?.fcmTokens || [],
+      orderId,
+      this.buildPushNotificationData(order),
+    );
+
     await this.pubsubService.publish(
       'driver.event',
       {
@@ -163,12 +181,31 @@ export class DispatchPubSubService {
       },
       {
         type: DriverEventType.RideOfferReceived,
-        rideOffer: await this.buildOrderPayload(orderId),
+        rideOffer: order,
         driverId: driverId,
         orderId: orderId,
       },
     );
     return true;
+  }
+
+  /**
+   * Shapes the fields the driver app needs to render its incoming-ride
+   * overlay/heads-up UI straight from the FCM `data` payload, without
+   * waiting on a GraphQL round trip first. FCM data payloads must be flat
+   * string maps, so every value is stringified.
+   */
+  private buildPushNotificationData(order: RideOfferDTO): Record<string, string> {
+    const pickup = order.waypoints?.[0];
+    return {
+      fareEstimate: order.fareEstimate?.toString() ?? '',
+      currency: order.currency ?? '',
+      distance: order.distance?.toString() ?? '',
+      duration: order.duration?.toString() ?? '',
+      serviceName: order.serviceName ?? '',
+      pickupAddress: pickup?.address ?? '',
+      expiresAt: order.expiresAt?.toISOString() ?? '',
+    };
   }
 
   /**

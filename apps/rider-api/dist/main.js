@@ -5862,6 +5862,13 @@ service_entity_ts_decorate([
     service_entity_ts_metadata("design:type", Number)
 ], ServiceEntity.prototype, "cargoExtraKmChargeAfter45Min", void 0);
 service_entity_ts_decorate([
+    (0,external_typeorm_.Column)('int', {
+        nullable: true,
+        comment: 'Free waiting time (in minutes) before cargo waiting charges start applying.'
+    }),
+    service_entity_ts_metadata("design:type", Number)
+], ServiceEntity.prototype, "cargoWaitingTimeMinutes", void 0);
+service_entity_ts_decorate([
     (0,external_typeorm_.OneToOne)(function() {
         return MediaEntity;
     }, {
@@ -13921,6 +13928,14 @@ payment_entity_ts_decorate([
     payment_entity_ts_metadata("design:type", Number)
 ], PaymentEntity.prototype, "amount", void 0);
 payment_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 0,
+        precision: 10,
+        scale: 2
+    }),
+    payment_entity_ts_metadata("design:type", Number)
+], PaymentEntity.prototype, "tip", void 0);
+payment_entity_ts_decorate([
     (0,external_typeorm_.Column)(),
     payment_entity_ts_metadata("design:type", String)
 ], PaymentEntity.prototype, "currency", void 0);
@@ -16762,8 +16777,8 @@ var TaxiOrderEntity = /*#__PURE__*/ function() {
     function TaxiOrderEntity() {}
     var _proto = TaxiOrderEntity.prototype;
     _proto.computeTotalCost = function computeTotalCost() {
-        var _this_costAfterCoupon, _ref, _this_gstAmount, _this_platformFeeAmount, _this_paymentGatewayFeeAmount;
-        this.totalCost = ((_ref = (_this_costAfterCoupon = this.costAfterCoupon) != null ? _this_costAfterCoupon : this.costBest) != null ? _ref : 0) + ((_this_gstAmount = this.gstAmount) != null ? _this_gstAmount : 0) + ((_this_platformFeeAmount = this.platformFeeAmount) != null ? _this_platformFeeAmount : 0) + ((_this_paymentGatewayFeeAmount = this.paymentGatewayFeeAmount) != null ? _this_paymentGatewayFeeAmount : 0);
+        var _this_costAfterCoupon, _ref, _this_gstAmount, _this_platformFeeAmount, _this_paymentGatewayFeeAmount, _this_waitingChargeAmount;
+        this.totalCost = ((_ref = (_this_costAfterCoupon = this.costAfterCoupon) != null ? _this_costAfterCoupon : this.costBest) != null ? _ref : 0) + ((_this_gstAmount = this.gstAmount) != null ? _this_gstAmount : 0) + ((_this_platformFeeAmount = this.platformFeeAmount) != null ? _this_platformFeeAmount : 0) + ((_this_paymentGatewayFeeAmount = this.paymentGatewayFeeAmount) != null ? _this_paymentGatewayFeeAmount : 0) + ((_this_waitingChargeAmount = this.waitingChargeAmount) != null ? _this_waitingChargeAmount : 0);
     };
     _proto.waypoints = function waypoints() {
         var _this = this;
@@ -17121,6 +17136,21 @@ taxi_order_entity_ts_decorate([
     }),
     taxi_order_entity_ts_metadata("design:type", Boolean)
 ], TaxiOrderEntity.prototype, "pickupOtpRequired", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", typeof Date === "undefined" ? Object : Date)
+], TaxiOrderEntity.prototype, "arrivedAt", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        nullable: true,
+        precision: 10,
+        scale: 2,
+        default: 0
+    }),
+    taxi_order_entity_ts_metadata("design:type", Number)
+], TaxiOrderEntity.prototype, "waitingChargeAmount", void 0);
 taxi_order_entity_ts_decorate([
     (0,external_typeorm_.Column)({
         nullable: true
@@ -19220,10 +19250,10 @@ DatabaseModule = database_module_ts_decorate([
                                         migrations: [
                                             "" + __dirname + "/migration/*.js"
                                         ],
-                                        migrationsRun: true,
+                                        migrationsRun: false,
                                         synchronize: configService.get('NODE_ENV') === 'dev' || configService.get('FORCE_SYNC_DB', false) || currentTables[0].count < 10,
                                         // logging: configService.get('NODE_ENV') === 'dev',
-                                        logging: false
+                                        logging: true
                                     };
                                     logger.log('Database connection configured');
                                     return [
@@ -25914,6 +25944,22 @@ rider_active_order_update_payload_ts_decorate([
 ], RiderActiveOrderUpdateDTO.prototype, "cost", void 0);
 rider_active_order_update_payload_ts_decorate([
     (0,graphql_.Field)(function() {
+        return graphql_.Float;
+    }, {
+        nullable: true
+    }),
+    rider_active_order_update_payload_ts_metadata("design:type", Number)
+], RiderActiveOrderUpdateDTO.prototype, "totalCost", void 0);
+rider_active_order_update_payload_ts_decorate([
+    (0,graphql_.Field)(function() {
+        return graphql_.Float;
+    }, {
+        nullable: true
+    }),
+    rider_active_order_update_payload_ts_metadata("design:type", Number)
+], RiderActiveOrderUpdateDTO.prototype, "waitingChargeAmount", void 0);
+rider_active_order_update_payload_ts_decorate([
+    (0,graphql_.Field)(function() {
         return Point;
     }, {
         nullable: true
@@ -28145,6 +28191,20 @@ function driver_notification_service_async_to_generator(fn) {
         });
     };
 }
+function driver_notification_service_extends() {
+    driver_notification_service_extends = Object.assign || function(target) {
+        for(var i = 1; i < arguments.length; i++){
+            var source = arguments[i];
+            for(var key in source){
+                if (Object.prototype.hasOwnProperty.call(source, key)) {
+                    target[key] = source[key];
+                }
+            }
+        }
+        return target;
+    };
+    return driver_notification_service_extends.apply(this, arguments);
+}
 function driver_notification_service_ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -28248,12 +28308,13 @@ var DriverNotificationService = /*#__PURE__*/ function() {
     "use strict";
     function DriverNotificationService() {}
     var _proto = DriverNotificationService.prototype;
-    _proto.requests = function requests(tokens) {
-        return driver_notification_service_async_to_generator(function() {
+    _proto.requests = function requests() {
+        return driver_notification_service_async_to_generator(function(tokens, orderId, orderData) {
             var _process_env_REQUEST_SOUND, notificationResult, error;
             return driver_notification_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
+                        if (orderData === void 0) orderData = {};
                         tokens = tokens.filter(function(token) {
                             var _token_length;
                             return ((_token_length = token == null ? void 0 : token.length) != null ? _token_length : 0) > 0;
@@ -28276,18 +28337,12 @@ var DriverNotificationService = /*#__PURE__*/ function() {
                             4,
                             (0,external_firebase_admin_.messaging)().sendEachForMulticast({
                                 tokens: tokens,
-                                data: {
-                                    type: 'requests'
-                                },
+                                data: driver_notification_service_extends({
+                                    type: 'requests',
+                                    orderId: orderId.toString()
+                                }, orderData),
                                 android: {
-                                    notification: {
-                                        sound: 'default',
-                                        titleLocKey: 'notification_new_request_title',
-                                        bodyLocKey: 'notification_new_request_body',
-                                        channelId: 'orders',
-                                        icon: 'notification_icon',
-                                        priority: 'high'
-                                    }
+                                    priority: 'high'
                                 },
                                 apns: {
                                     payload: {
@@ -28328,7 +28383,7 @@ var DriverNotificationService = /*#__PURE__*/ function() {
                         ];
                 }
             });
-        })();
+        }).apply(this, arguments);
     };
     _proto.canceled = function canceled(fcmToken) {
         this.sendNotification(fcmToken, 'notification_cancel_title', 'notification_cancel_body', [], 'default', 'tripEvents', {
@@ -30496,11 +30551,23 @@ var SharedDriverService = /*#__PURE__*/ function() {
                         ];
                     case 1:
                         user = _state.sent();
+                        // mobileNumber has a DB-level unique constraint that ignores deletedAt,
+                        // so a soft-deleted row still blocks that number from being reused.
+                        // Overwrite it with a value derived from the id (guaranteed unique,
+                        // never collides with a real mobile number) before soft-deleting.
+                        return [
+                            4,
+                            this.driverRepo.update(id, {
+                                mobileNumber: String(-id)
+                            })
+                        ];
+                    case 2:
+                        _state.sent();
                         return [
                             4,
                             this.driverRepo.softDelete(id)
                         ];
-                    case 2:
+                    case 3:
                         _state.sent();
                         return [
                             2,
@@ -32125,6 +32192,7 @@ function shared_order_service_ts_param(paramIndex, decorator) {
 
 
 
+
 var SharedOrderService = /*#__PURE__*/ function() {
     "use strict";
     function SharedOrderService(orderRepository, activityRepository, regionService, serviceCategoryRepository, serviceOptionRepository, zonePriceRepository, paymentRepository, messageRepository, googleServices, servicesService, riderService, sharedRiderWalletService, driverRedisService, riderRedisService, rideOfferRedisService, activeOrderRedisService, driverService, sharedProviderService, sharedFleetService, commonCouponService, driverNotificationService, riderNotificationService, httpService, dispatchMainQueue, pubsubService, configService) {
@@ -32432,6 +32500,8 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             var services = cat.services, _cat = _object_without_properties_loose(cat, [
                                 "services"
                             ]);
+                            var categoryKey = cat.name.trim().toLowerCase().replace(/[\s-]+/g, '');
+                            var isCargoCategory = input.orderType === TaxiOrderType.ParcelDelivery && categoryKey === 'cargo';
                             var _services = services.filter(function(x) {
                                 return x.deletedAt == null;
                             }).filter(function(x) {
@@ -32439,7 +32509,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                     return y.id == x.id;
                                 }).length > 0;
                             }).filter(function(x) {
-                                return x.orderTypes.includes(input.orderType);
+                                return x.orderTypes.includes(input.orderType) || isCargoCategory;
                             }).map(function(service) {
                                 var cost = 0;
                                 var costResult = null;
@@ -32876,7 +32946,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.dispatchRide = function dispatchRide(order) {
         return shared_order_service_async_to_generator(function() {
-            var _order_driverId, _order_rider_media, _order_rider_wallets_filter_, _order_rider_wallets, _order_service_media, now, config, _config_preDispatchBufferMinutes, preDispatchBufferMinutes, timeUntilScheduled, intervalMinutes, _order_service_gstPercent, _order_service_platformFee, _order_service_paymentGatewayFee, _order_rider_wallets_filter__balance, _order_service_media_address, _order_options;
+            var _order_driverId, _order_rider_media, _order_rider_wallets_filter_, _order_rider_wallets, _order_service_media, now, config, _config_preDispatchBufferMinutes, preDispatchBufferMinutes, timeUntilScheduled, intervalMinutes, _order_service_gstPercent, _order_service_platformFee, _order_service_paymentGatewayFee, _order_service_cargoWaitingTimeMinutes, _order_rider_wallets_filter__balance, _order_service_media_address, _order_options;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32929,6 +32999,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 platformFeeAmount: order.platformFeeAmount,
                                 paymentGatewayFeePercent: (_order_service_paymentGatewayFee = order.service.paymentGatewayFee) != null ? _order_service_paymentGatewayFee : 0,
                                 paymentGatewayFeeAmount: order.paymentGatewayFeeAmount,
+                                cargoWaitingTimeMinutes: (_order_service_cargoWaitingTimeMinutes = order.service.cargoWaitingTimeMinutes) != null ? _order_service_cargoWaitingTimeMinutes : null,
                                 costMin: order.costMin,
                                 costMax: order.costMax,
                                 pricingMode: order.pricingMode,
@@ -33058,7 +33129,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
         if (cashAmount === void 0) cashAmount = 0;
         if (deduceFromWallet === void 0) deduceFromWallet = true;
         return shared_order_service_async_to_generator(function() {
-            var _this, order, driver, providerShare, tip, _order_totalPaid, alreadyPaid, remainingDue, commissionAlreadyDeducted, driverWallet, fleetShare, fleet, providerCommission, ensurePostPay, _, credit, walletCredit, auth, capture, driverNonCash, _payoutAccount_payoutMethod, orderFeeWallet, payoutAccount, riderDeductAmount, _process_env_DRIVER_MINIMUM_ALLOWED_BALANCE, minimumAllowedBalance, closingBalance;
+            var _this, order, driver, _order_waitingChargeAmount, waitingChargeAmount, providerShare, tip, _order_totalPaid, alreadyPaid, remainingDue, commissionAlreadyDeducted, driverWallet, fleetShare, fleet, providerCommission, ensurePostPay, _, credit, walletCredit, auth, capture, driverNonCash, _payoutAccount_payoutMethod, orderFeeWallet, payoutAccount, riderDeductAmount, _process_env_DRIVER_MINIMUM_ALLOWED_BALANCE, minimumAllowedBalance, closingBalance;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -33083,11 +33154,12 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         driver = _state.sent();
                         common_.Logger.log(driver, 'SharedOrderService.finish.driver');
                         // 2) Totals
+                        waitingChargeAmount = (_order_waitingChargeAmount = order.waitingChargeAmount) != null ? _order_waitingChargeAmount : 0;
                         providerShare = order.costEstimateForRider - order.costEstimateForDriver;
                         tip = 0;
                         alreadyPaid = (_order_totalPaid = order.totalPaid) != null ? _order_totalPaid : 0;
-                        // What the rider still owes for this trip (fare+tip minus alreadyPaid)
-                        remainingDue = order.costEstimateForRider + tip - alreadyPaid;
+                        // What the rider still owes for this trip (fare+tip+waiting charge minus alreadyPaid)
+                        remainingDue = order.costEstimateForRider + waitingChargeAmount + tip - alreadyPaid;
                         common_.Logger.log({
                             providerShare: providerShare,
                             tip: tip,
@@ -33479,7 +33551,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         // Note: Commission (4a) and fleet/provider split (4b) already deducted earlier in the function
                         // 4c) Credit driver for non-cash portion + tip
                         // (matches your existing logic; cash was handed directly to driver)
-                        driverNonCash = order.costEstimateForDriver - cashAmount + tip;
+                        driverNonCash = order.costEstimateForDriver + waitingChargeAmount - cashAmount + tip;
                         common_.Logger.log({
                             driverNonCash: driverNonCash,
                             costEstimateForDriver: order.costEstimateForDriver,
@@ -33546,7 +33618,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         // totalDueBeforeCash = costAfterCoupon + tip - alreadyPaid
                         // walletPart = max(0, totalDueBeforeCash - cashAmount - capturedFromGateway)
                         // Since we don’t track capture amount separately here, use the simple guard:
-                        riderDeductAmount = order.paymentMethod.mode === PaymentMode.Wallet || order.paymentMethod.mode === PaymentMode.SavedPaymentMethod && deduceFromWallet ? Math.max(0, order.costEstimateForRider + tip - alreadyPaid - cashAmount) : 0;
+                        riderDeductAmount = order.paymentMethod.mode === PaymentMode.Wallet || order.paymentMethod.mode === PaymentMode.SavedPaymentMethod && deduceFromWallet ? Math.max(0, order.costEstimateForRider + waitingChargeAmount + tip - alreadyPaid - cashAmount) : 0;
                         if (!(riderDeductAmount > 0)) return [
                             3,
                             40
@@ -33571,7 +33643,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         return [
                             4,
                             this.saveActiveOrderToDisk(shared_order_service_extends({}, order, {
-                                totalPaid: order.costEstimateForRider,
+                                totalPaid: order.costEstimateForRider + waitingChargeAmount,
                                 status: OrderStatus.Finished
                             }), {
                                 finishTimestamp: new Date()
@@ -47167,10 +47239,11 @@ let OrderResolver = class OrderResolver {
             paymentMethod
         });
     }
-    async createRazorpayRideOrder(orderId) {
+    async createRazorpayRideOrder(orderId, tip) {
         return this.riderOrderService.createRazorpayRideOrder({
             orderId,
-            riderId: this.context.req.user.id
+            riderId: this.context.req.user.id,
+            tip: tip ?? 0
         });
     }
     async verifyRazorpayRidePayment(orderId, razorpayOrderId, razorpayPaymentId, razorpaySignature) {
@@ -47412,8 +47485,13 @@ _ts_decorate._([
     _ts_param._(0, (0, _graphql.Args)('orderId', {
         type: ()=>_graphql.ID
     })),
+    _ts_param._(1, (0, _graphql.Args)('tip', {
+        type: ()=>_graphql.Float,
+        nullable: true
+    })),
     _ts_metadata._("design:type", Function),
     _ts_metadata._("design:paramtypes", [
+        Number,
         Number
     ]),
     _ts_metadata._("design:returntype", Promise)
@@ -47729,6 +47807,12 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", Number)
 ], ServiceDTO.prototype, "paymentGatewayFee", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Int, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceDTO.prototype, "cargoWaitingTimeMinutes", void 0);
 _ts_decorate._([
     (0, _graphql.Field)(()=>_graphql.Int, {
         nullable: false
@@ -48549,8 +48633,9 @@ let RiderOrderService = class RiderOrderService {
                 ...order.paymentMethod,
                 name: order.paymentMethod.name ?? 'Unknown'
             } : order?.paymentMethod,
-            totalCost: order?.costEstimateForRider ?? 0,
+            totalCost: (order?.costEstimateForRider ?? 0) + (order?.waitingChargeAmount ?? 0),
             paymentGatewayFeePercent: order?.paymentGatewayFeePercent ?? 0,
+            waitingChargeAmount: order?.waitingChargeAmount ?? 0,
             costResult: order?.pricingMode === _database.PricingMode.RANGE && order?.costMin != null && order?.costMax != null ? {
                 cost: order.costEstimateForRider ?? 0,
                 min: order.costMin,
@@ -48708,7 +48793,7 @@ let RiderOrderService = class RiderOrderService {
                 estimatedDuration: order.durationBest,
                 options: order.options ?? [],
                 waypoints: order.waypoints(),
-                totalCost: order.costAfterCoupon,
+                totalCost: order.totalCost ?? order.costAfterCoupon,
                 couponDiscount: order.costBest - order.costAfterCoupon,
                 directions: order.directions ?? [],
                 paymentMethod: order.paymentMethod()
@@ -48730,6 +48815,12 @@ let RiderOrderService = class RiderOrderService {
     }
     async payForRide(input) {
         const activeOrder = await this.activeOrderRedisService.getActiveOrder(input.orderId.toString());
+        if (activeOrder == null) {
+            throw new _apollo.ForbiddenError('ACTIVE_ORDER_NOT_FOUND');
+        }
+        const waitingChargeAmount = activeOrder.waitingChargeAmount ?? 0;
+        const finalPaymentAmount = activeOrder.costEstimateForRider + waitingChargeAmount - activeOrder.totalPaid;
+        this.logger.log(`[PAY-RIDE] order=${activeOrder.id} ` + `costEstimateForRider=${activeOrder.costEstimateForRider} ` + `waitingChargeAmount=${waitingChargeAmount} ` + `totalPaid=${activeOrder.totalPaid} ` + `finalPaymentAmount=${finalPaymentAmount}`);
         const driver = await this.driverRedisService.getOnlineDriverMetaData(activeOrder.driverId);
         const rider = await this.riderRedisService.getOnlineRider(activeOrder.riderId);
         let amountToApplyRiderWallet = 0;
@@ -48820,7 +48911,7 @@ let RiderOrderService = class RiderOrderService {
                         paymentMode: _database.PaymentMode.PaymentGateway,
                         gatewayId: input.paymentMethod.id,
                         userId: parseInt(activeOrder.riderId),
-                        amount: activeOrder.costEstimateForRider - activeOrder.totalPaid,
+                        amount: finalPaymentAmount,
                         currency: activeOrder.currency,
                         payoutData: payoutData,
                         orderNumber: activeOrder.id.toString(),
@@ -48862,7 +48953,7 @@ let RiderOrderService = class RiderOrderService {
                         paymentMode: _database.PaymentMode.PaymentGateway,
                         gatewayId: input.paymentMethod.id,
                         userId: parseInt(activeOrder.riderId),
-                        amount: activeOrder.costEstimateForRider - activeOrder.totalPaid,
+                        amount: finalPaymentAmount,
                         currency: activeOrder.currency,
                         payoutData: payoutData,
                         orderNumber: activeOrder.id.toString(),
@@ -48883,7 +48974,12 @@ let RiderOrderService = class RiderOrderService {
         if (parseInt(activeOrder.riderId) !== input.riderId) {
             throw new _apollo.ForbiddenError('ORDER_NOT_BELONG_TO_RIDER');
         }
-        const amount = activeOrder.costEstimateForRider - activeOrder.totalPaid;
+        const tip = Math.max(0, input.tip ?? 0);
+        const waitingChargeAmount = activeOrder.waitingChargeAmount ?? 0;
+        const rideBalance = activeOrder.costEstimateForRider + waitingChargeAmount - activeOrder.totalPaid;
+        const gatewayFeeAmount = rideBalance * (activeOrder.paymentGatewayFeePercent ?? 0) / 100;
+        const amount = rideBalance + gatewayFeeAmount + tip;
+        this.logger.log(`[RAZORPAY] order=${activeOrder.id} ` + `costEstimateForRider=${activeOrder.costEstimateForRider} ` + `waitingChargeAmount=${waitingChargeAmount} ` + `totalPaid=${activeOrder.totalPaid} ` + `gatewayFeeAmount=${gatewayFeeAmount} ` + `tip=${tip} ` + `amount=${amount}`);
         if (amount <= 0) {
             throw new _common.BadRequestException('NO_PAYMENT_REQUIRED');
         }
@@ -48898,7 +48994,7 @@ let RiderOrderService = class RiderOrderService {
                 id: 'DESC'
             }
         });
-        if (existingPayment?.transactionNumber) {
+        if (existingPayment?.transactionNumber && Math.abs(existingPayment.amount - amount) <= 0.01) {
             return {
                 orderId: existingPayment.transactionNumber,
                 amount: existingPayment.amount,
@@ -48906,10 +49002,16 @@ let RiderOrderService = class RiderOrderService {
                 keyId: process.env.RAZORPAY_KEY_ID
             };
         }
+        if (existingPayment) {
+            await this.paymentRepo.update(existingPayment.id, {
+                status: _database.PaymentStatus.Failed
+            });
+        }
         const razorpayOrder = await this.razorpayService.createOrder(amount, activeOrder.currency, `ride_${activeOrder.id}`);
         await this.paymentRepo.save({
             status: _database.PaymentStatus.Processing,
             amount,
+            tip,
             currency: activeOrder.currency,
             transactionNumber: razorpayOrder.id,
             externalReferenceNumber: null,
@@ -48959,7 +49061,11 @@ let RiderOrderService = class RiderOrderService {
             });
             throw new _apollo.ForbiddenError('INVALID_RAZORPAY_SIGNATURE');
         }
-        const expectedAmount = activeOrder.costEstimateForRider - activeOrder.totalPaid;
+        const waitingChargeAmount = activeOrder.waitingChargeAmount ?? 0;
+        const rideBalance = activeOrder.costEstimateForRider + waitingChargeAmount - activeOrder.totalPaid;
+        const gatewayFeeAmount = rideBalance * (activeOrder.paymentGatewayFeePercent ?? 0) / 100;
+        const expectedAmount = rideBalance + gatewayFeeAmount + payment.tip;
+        this.logger.log(`[RAZORPAY-VERIFY] order=${activeOrder.id} ` + `paymentAmount=${payment.amount} ` + `costEstimateForRider=${activeOrder.costEstimateForRider} ` + `waitingChargeAmount=${waitingChargeAmount} ` + `totalPaid=${activeOrder.totalPaid} ` + `gatewayFeeAmount=${gatewayFeeAmount} ` + `tip=${payment.tip} ` + `expectedAmount=${expectedAmount}`);
         if (Math.abs(payment.amount - expectedAmount) > 0.01) {
             await this.paymentRepo.update(payment.id, {
                 status: _database.PaymentStatus.Failed
@@ -48980,6 +49086,17 @@ let RiderOrderService = class RiderOrderService {
             currency: activeOrder.currency,
             driverId: parseInt(activeOrder.driverId)
         });
+        if (payment.tip > 0) {
+            await this.driverService.rechargeWallet({
+                action: _database.TransactionAction.Recharge,
+                rechargeType: _database.DriverRechargeTransactionType.Gift,
+                amount: payment.tip,
+                requestId: parseInt(activeOrder.id),
+                status: _database.TransactionStatus.Done,
+                currency: activeOrder.currency,
+                driverId: parseInt(activeOrder.driverId)
+            });
+        }
         await this.finishOrderWithReview(activeOrder);
         return _topupwalletinput.TopUpWalletStatus.OK;
     }
@@ -48990,6 +49107,7 @@ let RiderOrderService = class RiderOrderService {
         ]);
         await Promise.all([
             this.riderRedisService.createEphemeralMessage(activeOrder.riderId, {
+                messageId: `rate-driver-${activeOrder.id}`,
                 type: _database.RiderEphemeralMessageType.RateDriver,
                 orderId: parseInt(activeOrder.id),
                 serviceImageUrl: activeOrder.serviceImageAddress,
@@ -49001,20 +49119,23 @@ let RiderOrderService = class RiderOrderService {
                 expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000)
             }),
             this.driverRedisService.createEphemeralMessage(activeOrder.driverId, {
+                messageId: `rate-rider-${activeOrder.id}`,
                 type: _database.DriverEphemeralMessageType.RateRider,
                 orderId: parseInt(activeOrder.id),
                 serviceImageUrl: activeOrder.serviceImageAddress,
                 serviceName: activeOrder.serviceName,
                 riderFullName: rider?.firstName ?? activeOrder.riderFirstName ?? null,
                 riderProfileUrl: rider?.profileImageUrl ?? activeOrder.riderAvatarUrl ?? null,
+                amount: 0,
                 createdAt: new Date(),
                 expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000)
             })
         ]);
+        const finalOrderTotal = activeOrder.costEstimateForRider + (activeOrder.waitingChargeAmount ?? 0);
         await this.sharedOrderService.saveActiveOrderToDisk({
             ...activeOrder,
             status: _database.OrderStatus.Finished,
-            totalPaid: activeOrder.costEstimateForRider
+            totalPaid: finalOrderTotal
         }, {
             finishTimestamp: new Date()
         });
@@ -49253,10 +49374,12 @@ let DispatchPubSubService = class DispatchPubSubService {
         });
         // Then fetch the updated payload to send to drivers
         const order = await this.buildOrderPayload(orderId);
+        const pushData = this.buildPushNotificationData(order);
         for (const driverId of availableDriverIds){
             const driver = await this.driverRedisService.getOnlineDriverMetaData(driverId.toString());
-            this.driverNotificationService.requests(driver?.fcmTokens || []);
+            this.driverNotificationService.requests(driver?.fcmTokens || [], orderId, pushData);
             await this.driverRedisService.createEphemeralMessage(driverId.toString(), {
+                messageId: `${orderId}-${driverId}-${Date.now()}`,
                 type: _database.DriverEphemeralMessageType.RideReceived,
                 orderId,
                 createdAt: new Date(),
@@ -49322,15 +49445,37 @@ let DispatchPubSubService = class DispatchPubSubService {
             ],
             offerExpiresAt: new Date(Date.now() + (config.sequentialConfig?.perDriverTimeoutSeconds ?? 30) * 1000)
         });
+        const order = await this.buildOrderPayload(orderId);
+        // Push notification: this is what wakes the driver app when it's
+        // backgrounded/closed (the websocket pubsub publish below only reaches
+        // an actively-connected app, i.e. one that's open in the foreground).
+        this.driverNotificationService.requests(driver?.fcmTokens || [], orderId, this.buildPushNotificationData(order));
         await this.pubsubService.publish('driver.event', {
             driverId: driverId
         }, {
             type: _database.DriverEventType.RideOfferReceived,
-            rideOffer: await this.buildOrderPayload(orderId),
+            rideOffer: order,
             driverId: driverId,
             orderId: orderId
         });
         return true;
+    }
+    /**
+   * Shapes the fields the driver app needs to render its incoming-ride
+   * overlay/heads-up UI straight from the FCM `data` payload, without
+   * waiting on a GraphQL round trip first. FCM data payloads must be flat
+   * string maps, so every value is stringified.
+   */ buildPushNotificationData(order) {
+        const pickup = order.waypoints?.[0];
+        return {
+            fareEstimate: order.fareEstimate?.toString() ?? '',
+            currency: order.currency ?? '',
+            distance: order.distance?.toString() ?? '',
+            duration: order.duration?.toString() ?? '',
+            serviceName: order.serviceName ?? '',
+            pickupAddress: pickup?.address ?? '',
+            expiresAt: order.expiresAt?.toISOString() ?? ''
+        };
     }
     /**
    * Helper to shape order payload sent to the client
@@ -50403,6 +50548,12 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", Number)
 ], ActiveOrderDTO.prototype, "paymentGatewayFeePercent", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ActiveOrderDTO.prototype, "waitingChargeAmount", void 0);
 ActiveOrderDTO = _ts_decorate._([
     (0, _graphql.ObjectType)('ActiveOrder')
 ], ActiveOrderDTO);
@@ -51152,7 +51303,7 @@ let WalletResolver = class WalletResolver {
             url: paymentLink.url
         };
     }
-    async createRazorpayRideOrder(orderId) {
+    async createRazorpayWalletOrder(orderId) {
         const activeOrder = await this.orderRedisService.getActiveOrder(orderId.toString());
         const amount = activeOrder?.costEstimateForRider ?? 0;
         const order = await this.razorpayService.createOrder(amount, 'INR', `ride_${orderId}_${Date.now()}`);
@@ -51262,7 +51413,7 @@ _ts_decorate._([
         Number
     ]),
     _ts_metadata._("design:returntype", Promise)
-], WalletResolver.prototype, "createRazorpayRideOrder", null);
+], WalletResolver.prototype, "createRazorpayWalletOrder", null);
 _ts_decorate._([
     (0, _graphql.Mutation)(()=>Boolean),
     _ts_param._(0, (0, _graphql.Args)('orderId', {

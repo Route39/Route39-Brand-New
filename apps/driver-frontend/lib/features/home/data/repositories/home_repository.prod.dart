@@ -106,14 +106,299 @@ class HomeRepositoryImpl implements HomeRepository {
     }
     return ApiResponse.loaded(null);
   }
+//   @override
+// void startListeningToOrderUpdates() {
+//   print('[DRIVER-SOCKET] Starting DriverEvents subscription');
 
+//   // Cancel any previous subscription before creating a new one.
+//   eventStreamSubscription?.cancel();
+//   eventStreamSubscription = null;
+
+//   final orderUpdateStream = graphQLDatasource.subscribe(
+//     Options$Subscription$DriverEvents(
+//       fetchPolicy: FetchPolicy.noCache,
+//     ),
+//   );
+
+//   eventStreamSubscription = orderUpdateStream.listen(
+//     (event) {
+//       print(
+//         '[DRIVER-SOCKET] EVENT RECEIVED: '
+//         'type=${event.driverEvents.type}, '
+//         'orderId=${event.driverEvents.orderId}',
+//       );
+
+//       switch (event.driverEvents.type) {
+//         case Enum$DriverEventType.RideOfferReceived:
+//           print(
+//             '[DRIVER-SOCKET] RIDE OFFER RECEIVED: '
+//             'orderId=${event.driverEvents.orderId}',
+//           );
+
+//           final rideOffer = event.driverEvents.rideOffer;
+
+//           if (rideOffer == null) {
+//             print(
+//               '[DRIVER-SOCKET] ERROR: RideOfferReceived event '
+//               'has null rideOffer. orderId=${event.driverEvents.orderId}',
+//             );
+//             break;
+//           }
+
+//           final currentRequests = _orderRequests.value;
+
+//           if (!currentRequests.any((e) => e.id == rideOffer.id)) {
+//             _orderRequests.add(
+//               [
+//                 ...currentRequests,
+//                 rideOffer,
+//               ],
+//             );
+
+//             print(
+//               '[DRIVER-SOCKET] Added ride offer to orderRequests: '
+//               '${rideOffer.id}',
+//             );
+//           } else {
+//             print(
+//               '[DRIVER-SOCKET] Ride offer already exists: '
+//               '${rideOffer.id}',
+//             );
+//           }
+
+//           break;
+
+//         case Enum$DriverEventType.RideOfferRevoked:
+//           print(
+//             '[DRIVER-SOCKET] RIDE OFFER REVOKED: '
+//             '${event.driverEvents.orderId}',
+//           );
+
+//           _orderRequests.add(
+//             _orderRequests.value
+//                 .where((e) => e.id != event.driverEvents.orderId)
+//                 .toList(),
+//           );
+
+//           break;
+
+//         case Enum$DriverEventType.ActiveOrderCompleted:
+//           print(
+//             '[DRIVER-SOCKET] ACTIVE ORDER COMPLETED: '
+//             '${event.driverEvents.orderId}',
+//           );
+
+//           _activeOrders.add(
+//             _activeOrders.value
+//                 .where((e) => e.id != event.driverEvents.orderId)
+//                 .toList(),
+//           );
+
+//           if (_activeOrders.value.isEmpty) {
+//             _profile.add(
+//               ApiResponse.loaded(
+//                 _profile.value.data!.copyWith(
+//                   status: Enum$DriverStatus.Online,
+//                 ),
+//               ),
+//             );
+//           }
+
+//           getEphemeralMessages();
+
+//           break;
+
+//         case Enum$DriverEventType.MessageReceived:
+//           print(
+//             '[DRIVER-SOCKET] MESSAGE RECEIVED: '
+//             '${event.driverEvents.orderId}',
+//           );
+
+//           final message = event.driverEvents.message;
+
+//           if (message == null) {
+//             print(
+//               '[DRIVER-SOCKET] ERROR: MessageReceived event '
+//               'has null message.',
+//             );
+//             break;
+//           }
+
+//           final order = _activeOrders.value.firstWhereOrNull(
+//             (element) => element.id == event.driverEvents.orderId,
+//           );
+
+//           if (order == null) {
+//             print(
+//               '[DRIVER-SOCKET] Message received for order not found '
+//               'in activeOrders: ${event.driverEvents.orderId}',
+//             );
+//             break;
+//           }
+
+//           final updatedOrders = _activeOrders.value.map((e) {
+//             if (e.id == order.id) {
+//               return e.copyWith(
+//                 chatMessages: [
+//                   ...e.chatMessages,
+//                   message,
+//                 ],
+//                 unreadMessagesCount:
+//                     event.driverEvents.unreadMessagesCount,
+//               );
+//             }
+
+//             return e;
+//           }).toList();
+
+//           _activeOrders.add(updatedOrders);
+
+//           break;
+
+//         case Enum$DriverEventType.$unknown:
+//           print(
+//             '[DRIVER-SOCKET] Unknown driver event type received.',
+//           );
+//           break;
+
+//         case Enum$DriverEventType.ActiveOrderUpdated:
+//           print(
+//             '[DRIVER-SOCKET] ACTIVE ORDER UPDATED: '
+//             '${event.driverEvents.orderId} '
+//             'status=${event.driverEvents.status}',
+//           );
+
+//           final currentOrders = _activeOrders.value;
+
+//           final updatedOrders = currentOrders
+//               .map((e) {
+//                 if (e.id == event.driverEvents.orderId) {
+//                   if (event.driverEvents.status ==
+//                       Enum$OrderStatus.Finished) {
+//                     return null;
+//                   }
+
+//                   return e.copyWith(
+//                     status:
+//                         event.driverEvents.status ?? e.status,
+//                     waitMinutes:
+//                         event.driverEvents.waitTime ?? e.waitMinutes,
+//                     totalCost:
+//                         event.driverEvents.totalCost ?? e.totalCost,
+//                   );
+//                 }
+
+//                 return e;
+//               })
+//               .nonNulls
+//               .toList();
+
+//           if (updatedOrders.isEmpty) {
+//             _profile.add(
+//               ApiResponse.loaded(
+//                 _profile.value.data!.copyWith(
+//                   status: Enum$DriverStatus.Online,
+//                 ),
+//               ),
+//             );
+//           }
+
+//           _activeOrders.add(updatedOrders);
+
+//           break;
+
+//         case Enum$DriverEventType.ActiveOrderAssigned:
+//           print(
+//             '[DRIVER-SOCKET] ACTIVE ORDER ASSIGNED: '
+//             '${event.driverEvents.orderId}',
+//           );
+
+//           // acceptOrderRequest() already updates _activeOrders
+//           // immediately. Do not refresh here because a stale
+//           // server response can overwrite the newly accepted order.
+//           break;
+//       }
+//     },
+//     onError: (error, stackTrace) {
+//       print(
+//         '[DRIVER-SOCKET] SUBSCRIPTION ERROR: $error',
+//       );
+//       print(
+//         '[DRIVER-SOCKET] STACK TRACE: $stackTrace',
+//       );
+//     },
+//     onDone: () {
+//       print(
+//         '[DRIVER-SOCKET] DriverEvents subscription CLOSED',
+//       );
+//     },
+//     cancelOnError: false,
+//   );
+
+//   print(
+//     '[DRIVER-SOCKET] DriverEvents subscription started',
+//   );
+// }
+
+// @override
+// void stopListeningToOrderUpdates() {
+//   print(
+//     '[DRIVER-SOCKET] Stopping DriverEvents subscription',
+//   );
+
+//   eventStreamSubscription?.cancel();
+//   eventStreamSubscription = null;
+// }
   @override
-  startListeningToOrderUpdates() {
-    final orderUpdateStream = graphQLDatasource.subscribe(
-      Options$Subscription$DriverEvents(fetchPolicy: FetchPolicy.noCache),
-    );
-    eventStreamSubscription = orderUpdateStream.listen((event) {
+startListeningToOrderUpdates() {
+  print('[DRIVER-SOCKET] Starting DriverEvents subscription');
+
+  final orderUpdateStream = graphQLDatasource.subscribe(
+    Options$Subscription$DriverEvents(fetchPolicy: FetchPolicy.noCache),
+  );
+
+  eventStreamSubscription = orderUpdateStream.listen(
+    (event) {
+      print(
+        '[DRIVER-SOCKET] EVENT RECEIVED: '
+        'type=${event.driverEvents.type}, '
+        'orderId=${event.driverEvents.orderId}',
+      );
+
       switch (event.driverEvents.type) {
+        case Enum$DriverEventType.RideOfferReceived:
+          print(
+            '[DRIVER-SOCKET] RIDE OFFER RECEIVED: '
+            '${event.driverEvents.orderId}',
+          );
+
+          _orderRequests.add(
+            _orderRequests.value
+                .followedBy([event.driverEvents.rideOffer!])
+                .fold<List<Fragment$RideOffer>>(
+              [],
+              (
+                previousValue,
+                element,
+              ) {
+                if (!previousValue.any((e) => e.id == element.id)) {
+                  previousValue.add(element);
+                }
+                return previousValue;
+              },
+            ).toList(),
+          );
+
+          break;
+
+        // keep your existing cases here...
+  // @override
+  // startListeningToOrderUpdates() {
+  //   final orderUpdateStream = graphQLDatasource.subscribe(
+  //     Options$Subscription$DriverEvents(fetchPolicy: FetchPolicy.noCache),
+  //   );
+  //   eventStreamSubscription = orderUpdateStream.listen((event) {
+  //     switch (event.driverEvents.type) {
         case Enum$DriverEventType.RideOfferReceived:
           _orderRequests.add(
             _orderRequests.value.followedBy([event.driverEvents.rideOffer!]).fold<List<Fragment$RideOffer>>([], (
@@ -287,14 +572,40 @@ Future<ApiResponse<Fragment$ActiveOrder>> acceptOrderRequest({
   }
 
   @override
-  Future<ApiResponse<Fragment$ActiveOrder?>> startTrip({required String orderId}) async {
+  Future<ApiResponse<Fragment$ActiveOrder?>> startTrip({
+    required String orderId,
+  }) async {
     final updateResponse = await graphQLDatasource.mutate(
       Options$Mutation$initiateRide(
         fetchPolicy: FetchPolicy.noCache,
         variables: Variables$Mutation$initiateRide(id: orderId),
       ),
     );
-    return _updateOrderStatus(updateResponse.mapData((r) => r.initiateRide));
+
+    final statusResponse =
+        updateResponse.mapData((r) => r.initiateRide);
+
+    // Update the local order immediately.
+    final mergedResponse = await _updateOrderStatus(statusResponse);
+
+    // Re-fetch the complete active order.
+    // This gets the final total calculated by the backend,
+    // including waiting charges, GST, platform fee and
+    // payment gateway fee.
+    await refreshActiveOrders();
+
+    // Return the freshly fetched order instead of the older
+    // initiateRide response.
+    final refreshedOrder = _activeOrders.value.firstWhereOrNull(
+      (order) => order.id == orderId,
+    );
+
+    if (refreshedOrder != null) {
+      return ApiResponse.loaded(refreshedOrder);
+    }
+
+    // Fallback in case the refresh did not return the order.
+    return mergedResponse;
   }
 
   @override
@@ -328,6 +639,8 @@ Future<ApiResponse<Fragment$ActiveOrder>> acceptOrderRequest({
               status: data.status,
               directions: data.directions ?? e.directions,
               nextDestination: data.nextDestination ?? e.nextDestination,
+              totalCost: data.totalCost ?? e.totalCost,
+              waitingChargeAmount: data.waitingChargeAmount ?? e.waitingChargeAmount,
             );
             return mergedOrder;
           }
@@ -429,7 +742,11 @@ Future<ApiResponse<Fragment$ActiveOrder>> acceptOrderRequest({
 
   @override
   Future<void> refreshActiveOrders() async {
-    final activeOrders = await graphQLDatasource.query(Options$Query$ActiveOrders());
+    final activeOrders = await graphQLDatasource.query(
+      Options$Query$ActiveOrders(
+        fetchPolicy: FetchPolicy.noCache,
+      ),
+    );
     if (activeOrders.isLoaded) {
       _activeOrders.add(activeOrders.data?.activeOrders ?? []);
     } else {
@@ -437,7 +754,11 @@ Future<ApiResponse<Fragment$ActiveOrder>> acceptOrderRequest({
       // should not be treated as "no active ride" - retry once shortly after
       // instead of silently clearing an in-progress trip.
       await Future.delayed(const Duration(seconds: 2));
-      final retry = await graphQLDatasource.query(Options$Query$ActiveOrders());
+      final retry = await graphQLDatasource.query(
+        Options$Query$ActiveOrders(
+          fetchPolicy: FetchPolicy.noCache,
+        ),
+      );
       if (retry.isLoaded) {
         _activeOrders.add(retry.data?.activeOrders ?? []);
       }

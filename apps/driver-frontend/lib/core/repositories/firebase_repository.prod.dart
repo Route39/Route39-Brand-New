@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:ridy_driver/core/graphql/documents/profile.graphql.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:injectable/injectable.dart';
 
 import '../datasources/graphql_datasource.dart';
@@ -16,8 +17,30 @@ class FirebaseRepositoryImpl implements FirebaseRepository {
 
   StreamSubscription? _fcmTokenSubscription;
 
+  // Only prompt for "display over other apps" once per app run - the OS
+  // settings screen is disruptive to open on every resume if the driver
+  // has already dismissed it once.
+  bool _overlayPermissionRequested = false;
+
+  Future<void> _ensureOverlayPermission() async {
+    if (_overlayPermissionRequested) return;
+    _overlayPermissionRequested = true;
+    try {
+      final granted = await FlutterOverlayWindow.isPermissionGranted();
+      if (!granted) {
+        // Opens the system "display over other apps" settings screen for
+        // this app. Without this, incoming ride requests can only appear
+        // while the app itself is open in the foreground.
+        await FlutterOverlayWindow.requestPermission();
+      }
+    } catch (_) {
+      // Non-fatal: the driver still gets the regular push notification.
+    }
+  }
+
   @override
   Future<void> retrieveAndUpdateFcmToken() async {
+    unawaited(_ensureOverlayPermission());
     if (_fcmTokenSubscription != null) {
       return; // Already subscribed
     }

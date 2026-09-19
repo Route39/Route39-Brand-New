@@ -2,6 +2,7 @@ import { Inject, UseGuards } from "@nestjs/common";
 import {
   Args,
   CONTEXT,
+  Float,
   ID,
   Int,
   Mutation,
@@ -257,10 +258,12 @@ export class OrderResolver {
   @UseGuards(GqlAuthGuard)
   async createRazorpayRideOrder(
     @Args('orderId', { type: () => ID }) orderId: number,
+    @Args('tip', { type: () => Float, nullable: true }) tip?: number,
   ): Promise<RazorpayRideOrderDTO> {
     return this.riderOrderService.createRazorpayRideOrder({
       orderId,
       riderId: this.context.req.user!.id,
+      tip: tip ?? 0,
     });
   }
 

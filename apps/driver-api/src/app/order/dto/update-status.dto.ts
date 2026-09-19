@@ -16,4 +16,7 @@ export class UpdateStatusDTO {
 
   @Field(() => Float, { nullable: true })
   totalCost?: number | null;
+
+  @Field(() => Float, { nullable: true })
+  waitingChargeAmount?: number | null;
 }
