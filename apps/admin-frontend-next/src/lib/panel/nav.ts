@@ -1,8 +1,8 @@
 import {
   AlertTriangle,
   BadgeDollarSign,
-  Building2,
   Car,
+  Truck,
   Compass,
   Gauge,
   Headphones,
@@ -63,6 +63,12 @@ export const NAV: NavEntry[] = [
       },
       { label: "menu.driver.all", to: "/drivers", search: "?sort=id%7CDESC" },
     ],
+  },
+  {
+    label: "menu.driver.vehicles",
+    to: "/management/fleets",
+    icon: Truck,
+    perm: ["Fleets_View"],
   },
   // {
   //   label: "menu.riders",
@@ -134,7 +140,6 @@ export const NAV: NavEntry[] = [
       { label: "menu.management.regions", to: "/management/regions", icon: MapPin, perm: ["Regions_View"] },
       { label: "menu.management.services", to: "/management/services", icon: Compass, perm: ["Services_View"] },
       { label: "menu.management.serviceOptions", to: "/management/service-options", icon: Ticket, perm: ["Services_View"] },
-      { label: "menu.management.fleets", to: "/management/fleets", icon: Building2, perm: ["Fleets_View"] },
       { label: "menu.management.zonePrices", to: "/management/zone-prices", icon: Tag, perm: ["Services_View"] },
       { label: "menu.management.orderCancelReasons", to: "/management/order-cancel-reasons", icon: AlertTriangle, perm: ["Services_View"] },
       { label: "menu.management.reviewParameters", to: "/management/review-parameters", icon: Ticket, perm: ["ReviewParameter_Edit"] },

@@ -116,10 +116,10 @@ export function FleetForm({ mode, id, initialValues }: Props) {
     try {
       if (mode === "create") {
         await createOne({ variables: { input: input as never } });
-        toast.success("Fleet created");
+        toast.success("Vehicle created");
       } else if (id) {
         await updateOne({ variables: { id, input: input as never } });
-        toast.success("Fleet updated");
+        toast.success("Vehicle updated");
       }
       navigate("/management/fleets");
     } catch (err) {
@@ -128,10 +128,10 @@ export function FleetForm({ mode, id, initialValues }: Props) {
   });
 
   async function handleDelete() {
-    if (!id || !(await confirm({ title: "Delete this fleet?", actionLabel: "Delete", destructive: true }))) return;
+    if (!id || !(await confirm({ title: "Delete this vehicle?", actionLabel: "Delete", destructive: true }))) return;
     try {
       await deleteOne({ variables: { id } });
-      toast.success("Fleet deleted");
+      toast.success("Vehicle deleted");
       navigate("/management/fleets");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Delete failed");
@@ -146,7 +146,7 @@ export function FleetForm({ mode, id, initialValues }: Props) {
         </Alert>
       ) : null}
 
-      <FormSection title="Fleet" description="Display name and contact details.">
+      <FormSection title="Vehicle" description="Display name and contact details.">
         <FormGrid>
           <Field label="Name" htmlFor="name" error={errors.name?.message} required>
             <Input id="name" {...register("name")} />
@@ -169,7 +169,7 @@ export function FleetForm({ mode, id, initialValues }: Props) {
           render={({ field }) => (
             <SwitchField
               label="Blocked"
-              description="Prevents this fleet from operating."
+              description="Prevents this vehicle from operating."
               checked={field.value}
               onChange={field.onChange}
             />
@@ -177,7 +177,7 @@ export function FleetForm({ mode, id, initialValues }: Props) {
         />
       </FormSection>
 
-      <FormSection title="Login" description="Credentials the fleet uses to sign in.">
+      <FormSection title="Login" description="Credentials the vehicle uses to sign in.">
         <FormGrid>
           <Field label="Username" htmlFor="userName" error={errors.userName?.message} required>
             <Input id="userName" {...register("userName")} />
@@ -229,7 +229,7 @@ export function FleetForm({ mode, id, initialValues }: Props) {
 
       <FormSection
         title="Exclusivity areas"
-        description="Optional geofences this fleet is the exclusive operator within. Leave empty to operate everywhere."
+        description="Optional geofences this vehicle is the exclusive operator within. Leave empty to operate everywhere."
       >
         <Controller
           control={control}

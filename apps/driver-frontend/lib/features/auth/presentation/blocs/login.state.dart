@@ -127,7 +127,6 @@ sealed class LoginState with _$LoginState {
         address: address,
         city: selectedCity,
         vehicleOwnership: vehicleOwnership,
-        canDeliver: selectedVehicleType == 'Cargo Auto',
         aadhaarNumber: aadhaarNumberValue,
         panNumber: panNumberValue,
         dob: profileDob,
