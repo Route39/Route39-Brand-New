@@ -18412,7 +18412,7 @@ driver_entity_ts_decorate([
     driver_entity_ts_metadata("design:type", Number)
 ], DriverEntity.prototype, "id", void 0);
 driver_entity_ts_decorate([
-    (0,external_typeorm_.Column)({
+    (0, external_typeorm_.Column)({
         nullable: true,
         unique: true
     }),
@@ -40729,9 +40729,10 @@ function driver_code_util_asyncGeneratorStep(gen, resolve, reject, _next, _throw
     }
 }
 function driver_code_util_async_to_generator(fn) {
-    return function() {
+    return function () {
+
         var self = this, args = arguments;
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
             var gen = fn.apply(self, args);
             function _next(value) {
                 driver_code_util_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
@@ -40746,7 +40747,7 @@ function driver_code_util_async_to_generator(fn) {
 function driver_code_util_ts_generator(thisArg, body) {
     var f, y, t, _ = {
         label: 0,
-        sent: function() {
+        sent: function () {
             if (t[0] & 1) throw t[1];
             return t[1];
         },
@@ -40757,7 +40758,7 @@ function driver_code_util_ts_generator(thisArg, body) {
         return this;
     }), g;
     function verb(n) {
-        return function(v) {
+        return function (v) {
             return step([
                 n,
                 v
@@ -40766,13 +40767,13 @@ function driver_code_util_ts_generator(thisArg, body) {
     }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while(g && (g = 0, op[0] && (_ = 0)), _)try {
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [
                 op[0] & 2,
                 t.value
             ];
-            switch(op[0]){
+            switch (op[0]) {
                 case 0:
                 case 1:
                     t = op;
@@ -40824,7 +40825,7 @@ function driver_code_util_ts_generator(thisArg, body) {
                 e
             ];
             y = 0;
-        } finally{
+            } finally {
             f = t = 0;
         }
         if (op[0] & 5) throw op[1];
@@ -40845,7 +40846,7 @@ function getCityPrefix(city) {
     return CITY_PREFIX_MAP[city];
 }
 function generateDriverCode(driverRepository, city) {
-    return driver_code_util_async_to_generator(function() {
+    return driver_code_util_async_to_generator(function () {
         var prefix, lastDriver, nextNumber, numPart, parsed;
         return driver_code_util_ts_generator(this, function(_state) {
             switch(_state.label){
@@ -52802,13 +52803,13 @@ _ts_decorate._([
     _ts_metadata._("design:type", String)
 ], DriverDTO.prototype, "certificateNumber", void 0);
 _ts_decorate._([
-    (0, _graphql.Field)(()=>String, {
+    (0, _graphql.Field)(() => String, {
         nullable: true
     }),
     _ts_metadata._("design:type", String)
 ], DriverDTO.prototype, "aadhaarNumber", void 0);
 _ts_decorate._([
-    (0, _graphql.Field)(()=>String, {
+    (0, _graphql.Field)(() => String, {
         nullable: true
     }),
     _ts_metadata._("design:type", String)

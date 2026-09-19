@@ -27,7 +27,7 @@ class VehicleRCScreen extends StatefulWidget {
 }
 
 class _VehicleRCScreenState extends State<VehicleRCScreen> {
-  static const List<String> ownershipOptions = ['Self Owned', 'Rental'];
+  static const List<String> ownershipOptions = ['Self Owned'];
 
   String? ownership;
   late final TextEditingController vehicleNumberController;
@@ -43,7 +43,7 @@ class _VehicleRCScreenState extends State<VehicleRCScreen> {
   @override
   void initState() {
     super.initState();
-    ownership = widget.initialOwnership;
+    ownership = ownershipOptions.contains(widget.initialOwnership) ? widget.initialOwnership : ownershipOptions.first;
     vehicleNumberController = TextEditingController(text: widget.initialVehicleNumber ?? '');
   }
 
@@ -57,6 +57,7 @@ class _VehicleRCScreenState extends State<VehicleRCScreen> {
 
   bool get canSubmit =>
       ownership != null &&
+      frontMedia != null && backMedia != null &&
       (!vehicleNumberRequired || vehicleNumberController.text.trim().isNotEmpty) &&
       !submitting;
 
@@ -309,7 +310,7 @@ class _VehicleRCScreenState extends State<VehicleRCScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text('Upload RC Images (Optional)', style: TextStyle(fontSize: 14, color: Colors.black54)),
+                const Text('Upload RC Images (Required)', style: TextStyle(fontSize: 14, color: Colors.black54)),
                 const SizedBox(height: 8),
                 Row(
                   children: [
