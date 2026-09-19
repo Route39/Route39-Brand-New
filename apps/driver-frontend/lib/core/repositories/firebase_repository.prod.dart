@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 
 import 'package:ridy_driver/core/graphql/documents/profile.graphql.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';

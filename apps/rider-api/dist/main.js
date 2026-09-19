@@ -643,7 +643,7 @@ __webpack_require__.d(__webpack_exports__, {
   WeekdayScheduleDTO: () => (/* reexport */ WeekdayScheduleDTO),
   ZonePriceCategoryEntity: () => (/* reexport */ ZonePriceCategoryEntity),
   ZonePriceEntity: () => (/* reexport */ ZonePriceEntity),
-    entities: () => (/* reexport */ entities),
+  entities: () => (/* reexport */ entities),
   generateDriverCode: () => (/* reexport */ generateDriverCode),
   getCityPrefix: () => (/* reexport */ getCityPrefix),
   getRedisConnectionConfig: () => (/* reexport */ getRedisConnectionConfig),

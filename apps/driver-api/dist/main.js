@@ -620,9 +620,7 @@ __webpack_require__.d(__webpack_exports__, {
   WeekdayScheduleDTO: () => (/* reexport */ WeekdayScheduleDTO),
   ZonePriceCategoryEntity: () => (/* reexport */ ZonePriceCategoryEntity),
   ZonePriceEntity: () => (/* reexport */ ZonePriceEntity),
-    entities: () => (/* reexport */ entities),
-    generateDriverCode: () => (/* reexport */ generateDriverCode),
-    getCityPrefix: () => (/* reexport */ getCityPrefix),
+  entities: () => (/* reexport */ entities),
   generateDriverCode: () => (/* reexport */ generateDriverCode),
   getCityPrefix: () => (/* reexport */ getCityPrefix),
   getRedisConnectionConfig: () => (/* reexport */ getRedisConnectionConfig),
@@ -49707,7 +49705,6 @@ let AuthService = class AuthService {
         const isDemoMode = process.env.DEMO_MODE?.toLowerCase() == 'true';
         const { firstName, lastName, certificateNumber, email, carProductionYear, carPlate, profilePictureId, gender, address, city, vehicleOwnership, aadhaarNumber, panNumber, dob, carId, carColorId, canDeliver, documentPairs } = input.input;
         await this.driverRepository.update(input.userId, {
-            canDeliver: canDeliver ?? false,
             firstName: firstName?.trim(),
             lastName: lastName?.trim(),
             certificateNumber: certificateNumber?.trim(),
