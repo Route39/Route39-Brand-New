@@ -378,7 +378,9 @@ class MyApp extends StatelessWidget {
             localizationsDelegates: const [...S.localizationsDelegates, common_messages.S.delegate],
             supportedLocales: S.supportedLocales,
             routerConfig: locator<AppRouter>().config(navigatorObservers: () => [RouterObserver()]),
-
+            builder: (context, child) {
+              return Route39Splash(child: child ?? const SizedBox());
+            },
           );
         },
       ),
