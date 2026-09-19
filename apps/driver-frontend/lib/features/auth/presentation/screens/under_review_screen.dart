@@ -38,24 +38,41 @@ class _UnderReviewScreenState extends State<UnderReviewScreen> {
   }
 
   void _onAuthStateChanged(AuthState state) {
-    if (_approved || _rejected) return;
+    // Once approved, this screen is done for good — no need to keep polling.
+    if (_approved) return;
+
     final status = state.profile?.status;
+
+    // Rejections stay reversible: an admin can revert a soft/hard reject
+    // back to approval later, so we keep polling in the background even
+    // while showing the rejected screen, instead of tearing down the
+    // timer/subscription. Only a genuine approval stops the polling.
     if (status == Enum$DriverStatus.SoftReject || status == Enum$DriverStatus.HardReject) {
-      _pollTimer?.cancel();
-      _authSubscription?.cancel();
-      if (mounted) {
+      if (mounted && !_rejected) {
         setState(() => _rejected = true);
       }
       return;
     }
+
     if (status != null &&
         status != Enum$DriverStatus.PendingApproval &&
         status != Enum$DriverStatus.WaitingDocuments) {
       _pollTimer?.cancel();
       _authSubscription?.cancel();
       if (mounted) {
-        setState(() => _approved = true);
+        setState(() {
+          _rejected = false;
+          _approved = true;
+        });
       }
+      return;
+    }
+
+    // Status moved back to a pending state (e.g. an admin reverted a
+    // reject to pending) — clear the rejected flag so the review UI
+    // shows again instead of being stuck on the rejected screen.
+    if (_rejected && mounted) {
+      setState(() => _rejected = false);
     }
   }
 

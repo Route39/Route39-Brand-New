@@ -162,6 +162,18 @@ final dropoff =
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 8),
+                          Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Row(
+                      children: [
+                        AppBackButton(
+                          onPressed: () {
+                            locator<HomeBloc>().add(HomeEvent.onExitPreview());
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
                           _buildBookingSummaryHero(context),
                           const SizedBox(height: 20),
                           _buildDateStrip(context),

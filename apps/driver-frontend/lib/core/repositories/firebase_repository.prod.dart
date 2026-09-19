@@ -41,9 +41,7 @@ class FirebaseRepositoryImpl implements FirebaseRepository {
   @override
   Future<void> retrieveAndUpdateFcmToken() async {
     unawaited(_ensureOverlayPermission());
-    if (_fcmTokenSubscription != null) {
-      return; // Already subscribed
-    }
+    
     FirebaseMessaging messaging = FirebaseMessaging.instance;
     if (!await messaging.isSupported()) {
       return;
@@ -58,7 +56,22 @@ class FirebaseRepositoryImpl implements FirebaseRepository {
         provisional: true,
         sound: true,
       );
+      debugPrint('FCM permission status: ${settings.authorizationStatus}');
       if (settings.authorizationStatus != AuthorizationStatus.denied) {
+        final token = await messaging.getToken(
+          vapidKey: "",
+        );
+        debugPrint('FCM token fetched: $token');
+        if (token != null) {
+          await _graphqlDatasource.mutate(
+            Options$Mutation$UpdateFcmToken(
+              variables: Variables$Mutation$UpdateFcmToken(token: token),
+            ),
+          );
+        }
+
+        // Only subscribe AFTER the first fetch succeeds
+        if (_fcmTokenSubscription == null) {
         _fcmTokenSubscription = messaging.onTokenRefresh.listen(
           (String? token) async {
             if (token != null) {
@@ -70,19 +83,12 @@ class FirebaseRepositoryImpl implements FirebaseRepository {
             }
           },
         );
-        final token = await messaging.getToken(
-          vapidKey: "",
-        );
-        if (token != null) {
-          await _graphqlDatasource.mutate(
-            Options$Mutation$UpdateFcmToken(
-              variables: Variables$Mutation$UpdateFcmToken(token: token),
-            ),
-          );
+        
         }
       }
-    } catch (e) {
-      // Handle error
+    } catch (e, stack) {
+      debugPrint('FCM token retrieval failed: $e');
+      debugPrint('$stack');
     }
   }
 }

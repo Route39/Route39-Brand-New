@@ -28,6 +28,8 @@ export class CompleteRegistrationInput {
   profilePictureId!: number;
   @Field(() => Gender)
   gender!: Gender;
+  @Field(() => Boolean, { nullable: true })
+  canDeliver?: boolean;
   @Field(() => String, { nullable: true })
   address?: string;
   @Field(() => String, { nullable: true })

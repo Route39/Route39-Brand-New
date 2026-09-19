@@ -1919,6 +1919,7 @@ class $AssetsImagesGen {
 
   /// File path: assets/images/car.png
   AssetGenImage get car => const AssetGenImage('assets/images/car.png');
+  
 
   /// File path: assets/images/cargo_truck_icon.png
   AssetGenImage get cargoTruckIcon =>

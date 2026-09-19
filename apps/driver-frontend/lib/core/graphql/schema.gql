@@ -510,6 +510,7 @@ type DriverPerformance {
 
 type Driver {
   id: ID!
+  driverCode: String
   firstName: String!
   lastName: String!
   profileImageUrl: String!
@@ -1427,6 +1428,7 @@ input CompleteRegistrationInput {
   carPlate: String
   profilePictureId: ID!
   gender: Gender!
+  canDeliver: Boolean
   address: String
   city: String
   vehicleOwnership: String

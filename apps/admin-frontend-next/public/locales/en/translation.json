@@ -98,8 +98,8 @@
 			"header": "Home"
 		},
 		"driver": {
-			"pendingVerification": "Pending Verification",
-			"all": "View All",
+			"pendingVerification": "Driver Verification",
+			"all": "All Drivers",
 			"header": "Drivers"
 		},
 		"payouts": "Payouts",
@@ -474,7 +474,7 @@
 	},
 	"driver": {
 		"name": "Name",
-		"carPlate": "Car Plate",
+		"carPlate": "Vehicle Number",
 		"rating": "Rating",
 		"registered": "Registered",
 		"lastSeen": "Last seen",

@@ -11,6 +11,13 @@ export const DRIVER_STATUS_OPTIONS: FilterSelectOption[] = [
   { value: "HardReject", label: "Hard reject" },
 ];
 
+export const DRIVER_CITY_OPTIONS: FilterSelectOption[] = [
+  { value: "Bangalore", label: "Bangalore" },
+  { value: "Tiruppur", label: "Tiruppur" },
+  { value: "Coimbatore", label: "Coimbatore" },
+  { value: "Chennai", label: "Chennai" },
+];
+
 export const RIDER_STATUS_OPTIONS: FilterSelectOption[] = [
   { value: "Enabled", label: "Enabled" },
   { value: "Disabled", label: "Disabled" },

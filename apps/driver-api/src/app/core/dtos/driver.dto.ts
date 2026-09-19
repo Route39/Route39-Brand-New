@@ -6,6 +6,8 @@ import { DriverStatus } from '@ridy/database';
 export class DriverDTO {
   @IDField(() => ID)
   id!: number;
+  @Field(() => String, { nullable: true })
+  driverCode?: string;
   @Field(() => String)
   firstName!: string;
   @Field(() => String)

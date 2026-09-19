@@ -12,11 +12,12 @@ import {
   FilterSelect,
   FilterText,
   TableToolbar,
+  FilterTabs,
 } from "@/components/tables/TableToolbar";
 import { DRIVERS_LIST_QUERY } from "@/lib/graphql/documents/drivers";
 import { EXPORT_DRIVERS_QUERY } from "@/lib/graphql/documents/extras-2";
 import { buildSortInput as buildSortInputForExport } from "@/lib/panel/page-state";
-import { DRIVER_STATUS_OPTIONS } from "@/lib/panel/enum-options";
+import { DRIVER_STATUS_OPTIONS, DRIVER_CITY_OPTIONS } from "@/lib/panel/enum-options";
 import {
   buildFilterInput,
   buildOffsetPaging,
@@ -28,6 +29,7 @@ import { formatDateTime, formatName } from "@/lib/format";
 
 type DriverRow = {
   id: string;
+  driverCode?: string | null;
   firstName?: string | null;
   lastName?: string | null;
   mobileNumber: string;
@@ -60,7 +62,12 @@ export default function DriversListPage() {
       key: "id",
       header: "ID",
       sortField: "id",
-      cell: (r) => <span className="font-mono text-xs text-muted-foreground">{r.id}</span>,
+      cell: (r) => <span className="font-mono text-xs text-muted-foreground">{r.driverCode ?? r.id}</span>,
+    },
+    {
+      key: "carPlate",
+      header: t("driver.carPlate", { defaultValue: "Vehicle Number" }),
+      cell: (r) => r.carPlate ?? <span className="text-muted-foreground">—</span>,
     },
     {
       key: "name",
@@ -84,11 +91,6 @@ export default function DriversListPage() {
           })}
         </Badge>
       ),
-    },
-    {
-      key: "carPlate",
-      header: t("driver.carPlate", { defaultValue: "Car Plate" }),
-      cell: (r) => r.carPlate ?? <span className="text-muted-foreground">—</span>,
     },
     {
       key: "rating",
@@ -159,6 +161,7 @@ export default function DriversListPage() {
         <FilterText field="mobileNumber" placeholder="Phone number" />
         <FilterSelect field="status" options={DRIVER_STATUS_OPTIONS} placeholder="Any status" width="11rem" />
       </TableToolbar>
+      <FilterTabs field="city" options={DRIVER_CITY_OPTIONS} allLabel="All cities" />
       <DataTable
         columns={columns}
         rows={rows}

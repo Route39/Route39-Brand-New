@@ -42,11 +42,12 @@ export default function DriverDetailsTab() {
               { label: "First name", value: driver.firstName },
               { label: "Last name", value: driver.lastName },
               { label: "Mobile number", value: driver.mobileNumber },
-              { label: "Email", value: driver.email },
+              { label: "City", value: driver.city },
               { label: "Country", value: driver.countryIso },
               { label: "Gender", value: driver.gender },
-              { label: "Address", value: driver.address },
-              { label: "Certificate", value: driver.certificateNumber },
+              { label: "Driving license number", value: driver.certificateNumber },
+              { label: "Aadhaar number", value: driver.aadhaarNumber },
+              { label: "PAN number", value: driver.panNumber },
             ]}
           />
         </CardContent>
@@ -63,9 +64,6 @@ export default function DriverDetailsTab() {
               { label: "Rating", value: driver.rating != null ? `${driver.rating} (${driver.reviewCount})` : null },
               { label: "Registered", value: formatDateTime(driver.registrationTimestamp) },
               { label: "Last seen", value: formatDateTime(driver.lastSeenTimestamp) },
-              { label: "Fleet", value: driver.fleetId },
-              { label: "Can deliver", value: driver.canDeliver ? "Yes" : "No" },
-              { label: "Max package size", value: driver.maxDeliveryPackageSize },
               { label: "Soft rejection note", value: driver.softRejectionNote },
             ]}
           />
@@ -107,7 +105,7 @@ export default function DriverDetailsTab() {
         <CardContent>
           <KeyValueList
             items={[
-              { label: "Plate", value: driver.carPlate },
+              { label: "Vehicle number", value: driver.carPlate },
             ]}
           />
         </CardContent>

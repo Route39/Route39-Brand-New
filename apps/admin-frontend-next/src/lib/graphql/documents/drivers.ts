@@ -10,6 +10,7 @@ export const DRIVERS_LIST_QUERY = graphql(`
       totalCount
       nodes {
         id
+        driverCode
         firstName
         lastName
         mobileNumber

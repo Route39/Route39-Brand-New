@@ -193,6 +193,9 @@ case HomeEvent$OnDeliveryOptionSelected():
         case HomeEvent$OnCouponCodeUpdated(:final couponCode):
           emit(state.copyWith(couponCode: couponCode));
           break;
+          case HomeEvent$OnExitPreview():
+          emit(state.copyWith(ridePreviewFareResponse: ApiResponse.initial()));
+          break;
 
         case HomeEvent$ShowPreview(:final destination):
           if (destination != null) {

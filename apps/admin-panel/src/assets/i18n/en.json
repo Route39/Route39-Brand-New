@@ -99,7 +99,7 @@
 		},
 		"driver": {
 			"pendingVerification": "Pending Verification",
-			"all": "View All",
+			"all": "All Drivers",
 			"header": "Drivers"
 		},
 		"payouts": "Payouts",

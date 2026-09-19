@@ -20,6 +20,7 @@ import { ForbiddenError } from '@nestjs/apollo';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DriverService } from '../driver/driver.service';
+import { generateDriverCode } from '@ridy/database';
 import { CompleteRegistrationInput } from './dto/complete-registration.input';
 import { SaveRegistrationProgressInput } from './dto/save-registration-progress.input';
 import { DriverDTO } from '../core/dtos/driver.dto';
@@ -154,9 +155,10 @@ export class AuthService {
       dob,
       carId,
       carColorId,
+      canDeliver,
       documentPairs,
     } = input.input;
-    this.driverRepository.update(input.userId, {
+    await this.driverRepository.update(input.userId, {
       firstName: firstName?.trim(),
       lastName: lastName?.trim(),
       certificateNumber: certificateNumber?.trim(),
@@ -173,8 +175,16 @@ export class AuthService {
       dob: dob?.trim(),
       carId,
       carColorId,
+      canDeliver: canDeliver ?? false,
       status: isDemoMode ? DriverStatus.Offline : DriverStatus.PendingApproval,
     });
+    if (city) {
+      const driverCode = await generateDriverCode(this.driverRepository, city);
+      if (driverCode) {
+        await this.driverRepository.update(input.userId, { driverCode });
+      }
+    }
+
     if (isDemoMode) {
       const allowedServices = await this.serviceRepository.find();
       const services = [];

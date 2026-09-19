@@ -126,19 +126,7 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                             activePopularSearchNotifier.value = null;
                           },
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Where do you want to go?',
-                            style: context.headlineSmall,
-                          ),
-                        ),
                       ],
-                    )
-                  else
-                    Text(
-                      'Where do you want to go?',
-                      style: context.headlineSmall,
                     ),
                   const SizedBox(height: 16),
                   BlocBuilder<HomeBloc, HomeState>(

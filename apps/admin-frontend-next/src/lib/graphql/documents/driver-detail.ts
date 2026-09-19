@@ -9,7 +9,10 @@ export const DRIVER_DETAIL_QUERY = graphql(`
       mobileNumber
       email
       countryIso
+      city
       certificateNumber
+      aadhaarNumber
+      panNumber
       address
       gender
       status

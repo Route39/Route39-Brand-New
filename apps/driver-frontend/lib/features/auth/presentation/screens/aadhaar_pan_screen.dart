@@ -231,9 +231,6 @@ class _AadhaarPanScreenState extends State<AadhaarPanScreen> {
   Future<void> _handleSubmit() async {
     setState(() => submitting = true);
     final loginBloc = locator<LoginBloc>();
-    loginBloc.onCertificateNumberChanged(
-      '${loginBloc.state.certificateNumber ?? ''} | Aadhaar: ${aadhaarController.text.trim()} | PAN: ${panController.text.trim()}',
-    );
     final newDocs = [
       if (aadhaarFrontMedia != null) aadhaarFrontMedia!,
       if (aadhaarBackMedia != null) aadhaarBackMedia!,

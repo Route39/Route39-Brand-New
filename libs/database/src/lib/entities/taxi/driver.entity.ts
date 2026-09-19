@@ -41,6 +41,9 @@ export class DriverEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
+  @Column({ nullable: true, unique: true })
+  driverCode?: string;
+
   @Column({
     nullable: true,
   })

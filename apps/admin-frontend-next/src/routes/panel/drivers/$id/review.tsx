@@ -108,7 +108,27 @@ export default function DriverReviewPage() {
   }
 
   const allServices = svcData?.services ?? [];
-  const docs = (docsData?.driverToDriverDocuments.edges ?? []).map((e) => e.node);
+  const rawDocs = (docsData?.driverToDriverDocuments.edges ?? []).map((e) => e.node);
+  // Some document types (License, RC, Aadhaar) are uploaded as two separate
+  // images — front and back. Label them explicitly instead of showing two
+  // identically-titled cards.
+  const docTotals = new Map<string, number>();
+  for (const doc of rawDocs) {
+    docTotals.set(doc.driverDocument.title, (docTotals.get(doc.driverDocument.title) ?? 0) + 1);
+  }
+  const docSeen = new Map<string, number>();
+  const docs = rawDocs.map((doc) => {
+    const title = doc.driverDocument.title;
+    const total = docTotals.get(title) ?? 1;
+    if (total < 2) return doc;
+    const index = docSeen.get(title) ?? 0;
+    docSeen.set(title, index + 1);
+    const suffix = index === 0 ? "Front" : index === 1 ? "Back" : `#${index + 1}`;
+    return {
+      ...doc,
+      driverDocument: { ...doc.driverDocument, title: `${title} - ${suffix}` },
+    };
+  });
   const canApprove = selectedSvc.size > 0;
 
   function toggleSvc(serviceId: string) {
@@ -222,7 +242,6 @@ export default function DriverReviewPage() {
             <h1 className="text-2xl font-semibold tracking-tight">{formatName(driver)}</h1>
             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
               <span>{driver.mobileNumber}</span>
-              {driver.email ? <span>· {driver.email}</span> : null}
               <Badge variant={driverStatusVariant(driver.status)}>{driver.status}</Badge>
             </div>
             <p className="text-sm font-medium">{statusHeadline}</p>
@@ -257,11 +276,12 @@ export default function DriverReviewPage() {
               { label: "First name", value: driver.firstName },
               { label: "Last name", value: driver.lastName },
               { label: "Mobile number", value: driver.mobileNumber },
-              { label: "Email", value: driver.email },
               { label: "Country", value: driver.countryIso },
+              { label: "City", value: driver.city },
               { label: "Gender", value: driver.gender },
-              { label: "Address", value: driver.address },
-              { label: "Certificate number", value: driver.certificateNumber },
+              { label: "Driving license number", value: driver.certificateNumber },
+              { label: "Aadhaar number", value: driver.aadhaarNumber },
+              { label: "PAN number", value: driver.panNumber },
             ]}
           />
         </CardContent>
@@ -274,26 +294,7 @@ export default function DriverReviewPage() {
         <CardContent>
           <KeyValueList
             items={[
-              { label: "Car plate", value: driver.carPlate },
-              { label: "Production year", value: driver.carProductionYear },
-              { label: "Can deliver", value: driver.canDeliver ? "Yes" : "No" },
-              { label: "Max package size", value: driver.maxDeliveryPackageSize },
-            ]}
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Banking</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <KeyValueList
-            items={[
-              { label: "Bank name", value: driver.bankName },
-              { label: "Account number", value: driver.accountNumber },
-              { label: "Routing number", value: driver.bankRoutingNumber },
-              { label: "SWIFT", value: driver.bankSwift },
+              { label: "Vehicle number", value: driver.carPlate },
             ]}
           />
         </CardContent>

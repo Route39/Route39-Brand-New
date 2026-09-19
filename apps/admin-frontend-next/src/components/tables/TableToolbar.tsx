@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useFilterField, usePageState } from "@/lib/panel/page-state";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface TableToolbarProps {
   children?: ReactNode;
@@ -150,5 +151,34 @@ export function FilterSelect({
         ))}
       </SelectContent>
     </Select>
+  );
+}
+
+export interface FilterTabsProps {
+  field: string;
+  options: FilterSelectOption[];
+  operator?: string;
+  allLabel?: string;
+}
+
+export function FilterTabs({
+  field,
+  options,
+  operator = "eq",
+  allLabel = "All",
+}: FilterTabsProps) {
+  const [value, setValue] = useFilterField(field, operator);
+
+  return (
+    <Tabs value={value || "__all__"} onValueChange={(v) => setValue(v === "__all__" ? "" : v)}>
+      <TabsList>
+        <TabsTrigger value="__all__">{allLabel}</TabsTrigger>
+        {options.map((option) => (
+          <TabsTrigger key={option.value} value={option.value}>
+            {option.label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
   );
 }

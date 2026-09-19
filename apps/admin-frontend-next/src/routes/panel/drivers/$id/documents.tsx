@@ -31,11 +31,32 @@ export default function DriverDocumentsTab() {
 
   if (loading && !data) return <LoadingBlock />;
 
-  const docs = (data?.driverToDriverDocuments.edges ?? []).map((e) => e.node) as DocItem[];
+  const rawDocs = (data?.driverToDriverDocuments.edges ?? []).map((e) => e.node) as DocItem[];
 
-  if (docs.length === 0) {
+  if (rawDocs.length === 0) {
     return <EmptyBlock title="No documents" description="This driver has not uploaded any documents." />;
   }
+
+  // The driver app uploads some document types (License, RC, Aadhaar) as two
+  // separate images — front and back. They share the same document title, so
+  // label them explicitly by upload order instead of showing two identical cards.
+  const seenCounts = new Map<string, number>();
+  const totalByTitle = new Map<string, number>();
+  for (const doc of rawDocs) {
+    totalByTitle.set(doc.driverDocument.title, (totalByTitle.get(doc.driverDocument.title) ?? 0) + 1);
+  }
+  const docs = rawDocs.map((doc) => {
+    const title = doc.driverDocument.title;
+    const total = totalByTitle.get(title) ?? 1;
+    if (total < 2) return doc;
+    const index = seenCounts.get(title) ?? 0;
+    seenCounts.set(title, index + 1);
+    const suffix = index === 0 ? "Front" : index === 1 ? "Back" : `#${index + 1}`;
+    return {
+      ...doc,
+      driverDocument: { ...doc.driverDocument, title: `${title} - ${suffix}` },
+    };
+  });
 
   return (
     <>
