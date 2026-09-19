@@ -52,11 +52,13 @@ class TrackOrderRepositoryImpl implements TrackOrderRepository {
   @override
   Future<ApiResponse<Mutation$CreateRazorpayRideOrder>> createRazorpayRideOrder({
     required String orderId,
+    double? tip,
   }) async {
     return graphQLDatasource.mutate(
       Options$Mutation$CreateRazorpayRideOrder(
         variables: Variables$Mutation$CreateRazorpayRideOrder(
           orderId: orderId,
+          tip: tip,
         ),
       ),
     );

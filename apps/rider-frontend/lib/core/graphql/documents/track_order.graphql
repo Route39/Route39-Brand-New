@@ -57,8 +57,8 @@ query CancelReasons {
   }
 }
 
-mutation CreateRazorpayRideOrder($orderId: ID!) {
-  createRazorpayRideOrder(orderId: $orderId) {
+mutation CreateRazorpayRideOrder($orderId: ID!, $tip: Float) {
+  createRazorpayRideOrder(orderId: $orderId, tip: $tip) {
     orderId
     amount
     currency

@@ -15,6 +15,7 @@ import {
   UserCog,
   Users,
   Wallet,
+  Container,
   type LucideIcon,
 } from "lucide-react";
 
@@ -70,7 +71,7 @@ export const NAV: NavEntry[] = [
   //   search: "?sort=id%7CDESC",
   //   perm: ["Riders_View"],
   // },
-  /* Requests tab — temporarily disabled
+  /* Requests tab */
   {
     label: "menu.requests",
     icon: Container,
@@ -78,7 +79,7 @@ export const NAV: NavEntry[] = [
     search: "?sort=id%7CDESC",
     perm: ["Requests_View"],
   },
-  */
+
   {
     label: "menu.sos",
     icon: ShieldAlert,

@@ -211,7 +211,7 @@ export function NewBookingDialog() {
         <DialogHeader>
           <DialogTitle>New booking</DialogTitle>
           <DialogDescription>
-            Create an order for a rider without adding them in the Riders tab first.
+            Create a new Booking.
           </DialogDescription>
         </DialogHeader>
 

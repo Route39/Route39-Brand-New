@@ -21,7 +21,7 @@ describe('customersInsightsService', () => {
           password: process.env.MYSQL_PASS,
           database: process.env.MYSQL_DB,
           entities: entities,
-          logging: true,
+          logging: false
         }),
         TypeOrmModule.forFeature(entities),
       ],

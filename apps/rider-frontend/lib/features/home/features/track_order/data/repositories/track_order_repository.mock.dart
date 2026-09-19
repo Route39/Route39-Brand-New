@@ -122,6 +122,7 @@ class TrackOrderRepositoryMock implements TrackOrderRepository {
   @override
   Future<ApiResponse<Mutation$CreateRazorpayRideOrder>> createRazorpayRideOrder({
     required String orderId,
+    double? tip,
   }) async {
     throw UnimplementedError();
   }

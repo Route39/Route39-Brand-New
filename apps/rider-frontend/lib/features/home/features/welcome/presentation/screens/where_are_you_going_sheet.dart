@@ -7,6 +7,7 @@ import 'package:flutter_common/core/presentation/snackbar/snackbar.dart';
 import 'package:flutter_common/core/theme/animation_duration.dart';
 import 'package:generic_map/interfaces/place.dart';
 import 'package:ridy/config/env.dart';
+import 'package:ridy/core/graphql/schema.gql.dart';
 import 'package:ridy/config/locator/locator.dart';
 import 'package:ridy/core/blocs/auth_bloc.dart';
 import 'package:ridy/core/blocs/home.bloc.dart';
@@ -125,26 +126,93 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                             activePopularSearchNotifier.value = null;
                           },
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Where do you want to go?',
-                            style: context.headlineSmall,
-                          ),
-                        ),
                       ],
-                    )
-                  else
-                    Text(
-                      'Where do you want to go?',
-                      style: context.headlineSmall,
                     ),
                   const SizedBox(height: 16),
-                  WhereAreYouGoingButton(
-                    onPressed: () {
-                      locator<HomeBloc>().add(HomeEvent.changeOrderSubmissionPage(
-                        orderSubmissionPage: OrderSubmissionPage.rideWaypointsInput,
-                      ));
+                  BlocBuilder<HomeBloc, HomeState>(
+                    bloc: locator<HomeBloc>(),
+                    builder: (context, homeState) {
+                      final isRide = homeState.orderType == Enum$TaxiOrderType.Ride;
+                      Widget optionCard({
+                        required String label,
+                        required String assetPath,
+                        required bool selected,
+                        required VoidCallback onTap,
+                      }) {
+                        return GestureDetector(
+                          onTap: onTap,
+                          child: Container(
+                            height: 92,
+                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                            margin: const EdgeInsets.only(right: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: selected ? Colors.red : Colors.grey.shade300,
+                                width: selected ? 2 : 1,
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(assetPath, height: 40, fit: BoxFit.contain),
+                                const SizedBox(height: 6),
+                                Text(
+                                  label,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: context.bodySmall?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 12,
+                                    color: selected ? Colors.black : Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: optionCard(
+                              label: 'Passenger',
+                              assetPath: 'assets/images/ev_auto_icon.png',
+                              selected: isRide,
+                              onTap: () => locator<HomeBloc>().add(const HomeEvent.onRideOptionSelected()),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: optionCard(
+                              label: 'Cargo',
+                              assetPath: 'assets/images/route39_cargo_icon.png',
+                              selected: !isRide,
+                              onTap: () => locator<HomeBloc>().add(const HomeEvent.onDeliveryOptionSelected()),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  BlocBuilder<HomeBloc, HomeState>(
+                    bloc: locator<HomeBloc>(),
+                    builder: (context, homeState) {
+                      final isRideNow = homeState.orderType == Enum$TaxiOrderType.Ride;
+                      return WhereAreYouGoingButton(
+                        assetPath: isRideNow
+                            ? 'assets/images/ev_auto_icon_small.png'
+                            : 'assets/images/cargo_truck_icon.png',
+                        onPressed: () {
+                          locator<HomeBloc>().add(HomeEvent.changeOrderSubmissionPage(
+                            orderSubmissionPage: OrderSubmissionPage.rideWaypointsInput,
+                          ));
+                        },
+                      );
                     },
                   ),
                   const SizedBox(height: 16),

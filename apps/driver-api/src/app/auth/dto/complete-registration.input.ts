@@ -28,8 +28,20 @@ export class CompleteRegistrationInput {
   profilePictureId!: number;
   @Field(() => Gender)
   gender!: Gender;
+  @Field(() => Boolean, { nullable: true })
+  canDeliver?: boolean;
   @Field(() => String, { nullable: true })
   address?: string;
+  @Field(() => String, { nullable: true })
+  city?: string;
+  @Field(() => String, { nullable: true })
+  vehicleOwnership?: string;
+  @Field(() => String, { nullable: true })
+  aadhaarNumber?: string;
+  @Field(() => String, { nullable: true })
+  panNumber?: string;
+  @Field(() => String, { nullable: true })
+  dob?: string;
   @Field(() => ID, { nullable: true })
   carId?: number;
   @Field(() => ID, { nullable: true })

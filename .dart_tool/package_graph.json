@@ -57,6 +57,7 @@
         "moment_dart",
         "package_info_plus",
         "path_provider",
+        "razorpay_flutter",
         "rxdart",
         "sentry_flutter",
         "share_plus",
@@ -84,6 +85,7 @@
       "name": "ridy_driver",
       "version": "4.0.0+312",
       "dependencies": [
+        "android_intent_plus",
         "api_response",
         "audioplayers",
         "auto_route",
@@ -103,7 +105,9 @@
         "flutter_bloc",
         "flutter_common",
         "flutter_dotenv",
+        "flutter_local_notifications",
         "flutter_localizations",
+        "flutter_overlay_window",
         "flutter_rating_bar",
         "flutter_ringtone_player",
         "form_builder_validators",
@@ -753,6 +757,19 @@
       ]
     },
     {
+      "name": "flutter_local_notifications",
+      "version": "22.3.1",
+      "dependencies": [
+        "clock",
+        "flutter",
+        "flutter_local_notifications_linux",
+        "flutter_local_notifications_platform_interface",
+        "flutter_local_notifications_web",
+        "flutter_local_notifications_windows",
+        "timezone"
+      ]
+    },
+    {
       "name": "razorpay_flutter",
       "version": "1.4.6",
       "dependencies": [
@@ -914,6 +931,22 @@
     {
       "name": "flutter_rating_bar",
       "version": "4.0.1",
+      "dependencies": [
+        "flutter"
+      ]
+    },
+    {
+      "name": "android_intent_plus",
+      "version": "5.3.1",
+      "dependencies": [
+        "flutter",
+        "meta",
+        "platform"
+      ]
+    },
+    {
+      "name": "flutter_overlay_window",
+      "version": "0.4.5",
       "dependencies": [
         "flutter"
       ]
@@ -1985,6 +2018,57 @@
       "dependencies": []
     },
     {
+      "name": "timezone",
+      "version": "0.11.1",
+      "dependencies": [
+        "http",
+        "path"
+      ]
+    },
+    {
+      "name": "flutter_local_notifications_platform_interface",
+      "version": "12.2.0",
+      "dependencies": [
+        "plugin_platform_interface",
+        "timezone"
+      ]
+    },
+    {
+      "name": "flutter_local_notifications_web",
+      "version": "1.0.0",
+      "dependencies": [
+        "collection",
+        "flutter",
+        "flutter_local_notifications_platform_interface",
+        "timezone",
+        "web"
+      ]
+    },
+    {
+      "name": "flutter_local_notifications_windows",
+      "version": "3.1.1",
+      "dependencies": [
+        "ffi",
+        "flutter",
+        "flutter_local_notifications_platform_interface",
+        "meta",
+        "timezone",
+        "xml"
+      ]
+    },
+    {
+      "name": "flutter_local_notifications_linux",
+      "version": "8.0.1",
+      "dependencies": [
+        "dbus",
+        "ffi",
+        "flutter",
+        "flutter_local_notifications_platform_interface",
+        "path",
+        "xdg_directories"
+      ]
+    },
+    {
       "name": "eventify",
       "version": "1.0.1",
       "dependencies": []
@@ -2179,6 +2263,11 @@
         "gql",
         "meta"
       ]
+    },
+    {
+      "name": "platform",
+      "version": "3.1.6",
+      "dependencies": []
     },
     {
       "name": "firebase_messaging_web",
@@ -2898,14 +2987,17 @@
       "dependencies": []
     },
     {
-      "name": "platform",
-      "version": "3.1.6",
-      "dependencies": []
-    },
-    {
       "name": "globbing",
       "version": "1.0.0",
       "dependencies": [
+        "path"
+      ]
+    },
+    {
+      "name": "xdg_directories",
+      "version": "1.1.0",
+      "dependencies": [
+        "meta",
         "path"
       ]
     },
@@ -2930,14 +3022,6 @@
         "firebase_core_platform_interface",
         "flutter",
         "meta"
-      ]
-    },
-    {
-      "name": "xdg_directories",
-      "version": "1.1.0",
-      "dependencies": [
-        "meta",
-        "path"
       ]
     },
     {

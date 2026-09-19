@@ -29,11 +29,25 @@ class AuthBloc extends HydratedCubit<AuthState> {
       return;
     }
     final result = await profileRepository.getProfile();
-    emit(
-      result.fold(
-        (l, {failure}) => AuthState.error(message: "Couldn't retrieve user info"),
-        (r) => state.authenticatedState!.copyWith(profile: r.me),
-      ),
+    result.fold(
+      (l, {failure}) {
+        // Transient failure (network glitch, timeout, etc). Keep the
+        // current authenticated state so the jwtToken is never wiped —
+        // emitting AuthState.error here would permanently break auth
+        // since jwtToken becomes null and can never recover.
+      },
+      (r) => emit(state.authenticatedState!.copyWith(profile: r.me)),
+    );
+  }
+
+  Future<void> refreshProfileSilently() async {
+    if (!state.isAuthenticated) {
+      return;
+    }
+    final result = await profileRepository.getProfile();
+    result.fold(
+      (l, {failure}) {},
+      (r) => emit(state.authenticatedState!.copyWith(profile: r.me)),
     );
   }
 

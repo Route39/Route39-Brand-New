@@ -178,13 +178,13 @@ import { AuthVerificationConfigEntity } from './entities/auth-verification-confi
           entities: entities,
           legacySpatialSupport: false,
           migrations: [`${__dirname}/migration/*.js`],
-          migrationsRun: true,
+          migrationsRun: false,
           synchronize:
             configService.get('NODE_ENV') === 'dev' ||
             configService.get('FORCE_SYNC_DB', false) ||
             currentTables[0].count < 10,
           // logging: configService.get('NODE_ENV') === 'dev',
-          logging: false, // Enable logging by default
+          logging: true, // Enable logging by default
         };
 
         logger.log('Database connection configured');

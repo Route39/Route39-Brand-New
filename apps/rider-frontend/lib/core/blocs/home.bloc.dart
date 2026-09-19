@@ -113,24 +113,26 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           break;
 
         case HomeEvent$OnRideOptionSelected():
-          emit(
-            state.copyWith(
-              orderSubmissionPage: OrderSubmissionPage.rideWaypointsInput,
-              selectedWaypointIndex: null,
-              orderType: Enum$TaxiOrderType.Ride,
-            ),
-          );
-          break;
+  emit(
+    state.copyWith(
+      orderType: Enum$TaxiOrderType.Ride,
+      selectedServiceCategory: null,
+      selectedService: null,
+      ridePreviewFareResponse: ApiResponse.initial(),
+    ),
+  );
+  break;
 
-        case HomeEvent$OnDeliveryOptionSelected():
-          emit(
-            state.copyWith(
-              orderSubmissionPage: OrderSubmissionPage.deliverySearchPlaceInput,
-              selectedWaypointIndex: 0,
-              orderType: Enum$TaxiOrderType.ParcelDelivery,
-            ),
-          );
-          break;
+case HomeEvent$OnDeliveryOptionSelected():
+  emit(
+    state.copyWith(
+      orderType: Enum$TaxiOrderType.ParcelDelivery,
+      selectedServiceCategory: null,
+      selectedService: null,
+      ridePreviewFareResponse: ApiResponse.initial(),
+    ),
+  );
+  break;
 
         case HomeEvent$OnMapMoved(:final selectedLocation):
           switch (state.orderSubmissionPage) {
@@ -173,9 +175,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           emit(
             state.copyWith(
               waypoints: locations,
-              orderSubmissionPage: state.orderType == Enum$TaxiOrderType.Ride
-                  ? OrderSubmissionPage.rideWaypointsInput
-                  : OrderSubmissionPage.deliveryContactInfoInput,
+              orderSubmissionPage: OrderSubmissionPage.rideWaypointsInput,
             ),
           );
           break;
@@ -192,6 +192,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
         case HomeEvent$OnCouponCodeUpdated(:final couponCode):
           emit(state.copyWith(couponCode: couponCode));
+          break;
+          case HomeEvent$OnExitPreview():
+          emit(state.copyWith(ridePreviewFareResponse: ApiResponse.initial()));
           break;
 
         case HomeEvent$ShowPreview(:final destination):
@@ -219,21 +222,54 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             args: Input$CalculateFareInput(points: state.waypoints.nonNulls.toList().toGql, orderType: state.orderType),
           );
           if (result.isLoaded) {
-            final fares = result.mapData((data) => data.getFares);
-            emit(
-              state.copyWith(
-                ridePreviewFareResponse: result,
-                selectedServiceCategory: fares.data?.services.firstOrNull,
-                selectedService: fares.data?.services.firstOrNull?.services.firstOrNull,
-                selectedDateTime: null,
-              ),
-            );
-            try {
-              state.mapViewController?.fitBounds(state.waypoints.nonNulls.toList().latLngs);
-            } catch (_) {
-              // Map may already be disposed if full-screen booking summary is showing; ignore.
-            }
-          }
+  final fares = result.mapData((data) => data.getFares);
+
+  final desiredCategoryKey =
+      state.orderType == Enum$TaxiOrderType.ParcelDelivery
+          ? 'cargo'
+          : 'passengerauto';
+
+  final selectedCategory = fares.data?.services.firstWhereOrNull(
+    (category) {
+      final categoryKey = category.name
+          .trim()
+          .toLowerCase()
+          .replaceAll(RegExp(r'[\s-]+'), '');
+
+      return categoryKey == desiredCategoryKey;
+    },
+  );
+
+  final categoryToUse =
+      selectedCategory ?? fares.data?.services.firstOrNull;
+
+  final serviceToUse =
+      categoryToUse?.services.firstOrNull;
+
+  debugPrint(
+    '[Rider HomeBloc] Fare category selected: '
+    '${categoryToUse?.name}, '
+    'service: ${serviceToUse?.name}, '
+    'orderType: ${state.orderType}',
+  );
+
+  emit(
+    state.copyWith(
+      ridePreviewFareResponse: result,
+      selectedServiceCategory: categoryToUse,
+      selectedService: serviceToUse,
+      selectedDateTime: null,
+    ),
+  );
+
+  try {
+    state.mapViewController?.fitBounds(
+      state.waypoints.nonNulls.toList().latLngs,
+    );
+  } catch (_) {
+    // Map may already be disposed if full-screen booking summary is showing; ignore.
+  }
+}
           if (result.isError) {
             emit(
               state.copyWith(

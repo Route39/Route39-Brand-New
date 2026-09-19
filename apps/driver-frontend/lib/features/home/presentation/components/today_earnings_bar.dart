@@ -1,5 +1,6 @@
 import 'package:api_response/api_response.dart';
 import 'package:ridy_driver/config/locator/locator.dart';
+import 'package:ridy_driver/core/blocs/auth_bloc.dart';
 import 'package:ridy_driver/core/blocs/route.dart';
 import 'package:ridy_driver/core/extensions/extensions.dart';
 import 'package:ridy_driver/core/graphql/documents/earnings.graphql.dart';
@@ -127,6 +128,11 @@ class _TodayEarningsBarState extends State<TodayEarningsBar> {
         loadedData?.getStatsNew.lastOrderEarnings?.formatCurrency(currency) ??
         '₹0';
 
+    final authProfile = context.watch<AuthBloc>().state.profile;
+    final walletBalance = (authProfile?.walletCredit ?? 0).formatCurrency(
+      authProfile?.currency ?? (currency.isNotEmpty ? currency : 'INR'),
+    );
+
     return BlocListener<RouteCubit, NavItem>(
       bloc: locator<RouteCubit>(),
       listenWhen: (previous, current) =>
@@ -223,7 +229,7 @@ class _TodayEarningsBarState extends State<TodayEarningsBar> {
                     _statCard(
                       icon: Icons.account_balance_wallet_outlined,
                       label: 'Wallet Balance',
-                      value: '₹0',
+                      value: walletBalance,
                     ),
                     _statCard(
                       icon: Icons.currency_rupee,

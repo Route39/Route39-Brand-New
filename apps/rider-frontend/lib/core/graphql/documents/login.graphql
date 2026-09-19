@@ -1,5 +1,5 @@
 mutation VerifyNumber($number: String!, $countryIso: String!) {
-  verifyNumber(mobileNumber: $number, countryIso: $countryIso) {
+  verifyNumber(mobileNumber: $number, countryIso: $countryIso, forceSendOtp: true) {
     ...VerifyNumber
   }
 }

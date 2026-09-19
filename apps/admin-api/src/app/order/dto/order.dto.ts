@@ -77,11 +77,11 @@ export class TaxiOrderDTO {
   rideOptionsCost!: number;
   @Field(() => Float, { nullable: false })
   taxCost!: number;
-  @Field(() => Float, { nullable: false })
+  @FilterableField(() => Float)
   gstAmount!: number;
-  @Field(() => Float, { nullable: false })
+  @FilterableField(() => Float)
   platformFeeAmount!: number;
-  @Field(() => Float, { nullable: false })
+  @FilterableField(() => Float)
   paymentGatewayFeeAmount!: number;
   @Field(() => Float, { nullable: true })
   totalCost?: number;
@@ -113,4 +113,8 @@ export class TaxiOrderDTO {
   serviceId?: number;
   @Field(() => [Point], { nullable: true })
   directions?: Point[];
+  @Field(() => GraphQLISODateTime, { nullable: true })
+  arrivedAt?: Date;
+  @Field(() => Float, { nullable: true })
+  waitingChargeAmount?: number;
 }

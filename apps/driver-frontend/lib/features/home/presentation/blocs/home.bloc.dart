@@ -219,6 +219,50 @@ if (response.isLoaded && response.data != null) {
 
   break;
 
+        case HomeEvent$AcceptOrderById(:final orderId):
+          emit(
+            state.copyWith(
+              acceptOrderReponse: ApiResponse.loading(),
+            ),
+          );
+
+          final byIdResponse = await _repository.acceptOrderRequest(
+            requestId: orderId,
+          );
+
+          if (byIdResponse.isLoaded && byIdResponse.data != null) {
+            final acceptedOrder = byIdResponse.data!;
+            final updatedActiveOrders = [
+              ...state.activeOrders.where(
+                (order) => order.id != acceptedOrder.id,
+              ),
+              acceptedOrder,
+            ];
+
+            emit(
+              state.copyWith(
+                activeOrders: updatedActiveOrders,
+                currentOrderId: acceptedOrder.id,
+                page: OnTripPage.overview,
+                acceptOrderReponse: ApiResponse.initial(),
+              ),
+            );
+          } else {
+            emit(
+              state.copyWith(
+                acceptOrderReponse: byIdResponse,
+              ),
+            );
+
+            emit(
+              state.copyWith(
+                acceptOrderReponse: ApiResponse.initial(),
+              ),
+            );
+          }
+
+          break;
+
         case HomeEvent$OnCancelOrder(:final orderId, :final reasonId, :final reasonNote):
           await _repository.cancelOrder(orderId: orderId, reasonId: reasonId, reasonNote: reasonNote);
           emit(state.copyWith(
@@ -325,6 +369,8 @@ final paidResponse = await _repository.paidInCash(orderId: orderId, amount: amou
   void onStatusChanged(Enum$DriverStatus status) => add(HomeEvent.onStatusChanged(status: status));
 
   void onAcceptOrder(Fragment$RideOffer request) => add(HomeEvent.onAcceptOrder(request: request));
+
+  void acceptOrderById(String orderId) => add(HomeEvent.acceptOrderById(orderId: orderId));
 
   // @override
   // HomeState? fromJson(Map<String, dynamic> json) => HomeState.fromJson(json);

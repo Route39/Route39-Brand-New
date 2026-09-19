@@ -8,6 +8,7 @@ import 'package:ridy_driver/core/graphql/fragments/profile.fragment.graphql.dart
 import 'package:ridy_driver/core/graphql/fragments/vehicle_color.fragment.graphql.dart';
 import 'package:ridy_driver/core/graphql/fragments/vehicle_model.fragment.graphql.dart';
 import 'package:ridy_driver/core/graphql/schema.gql.dart';
+import 'package:ridy_driver/core/graphql/documents/login.graphql.dart';
 import 'package:ridy_driver/features/auth/domain/entities/login_page.dart';
 import 'package:flutter_common/core/enums/gender.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -27,13 +28,54 @@ class LoginBloc extends HydratedCubit<LoginState> {
   LoginBloc(this.repository) : super(LoginState());
 
   void onBackPressed() {
+    if (state.loginPage == LoginPage.success) {
+      emit(
+        state.copyWith(
+          loginPage: LoginPage.contactDetails,
+          documentsChecklistDone: false,
+        ),
+      );
+      return;
+    }
+
+    if (state.loginPage == LoginPage.contactDetails) {
+      if (state.showAadhaarPan) {
+        emit(state.copyWith(showAadhaarPan: false));
+        return;
+      }
+      if (state.showVehicleRC) {
+        emit(state.copyWith(showVehicleRC: false));
+        return;
+      }
+      if (state.showProfileInfo) {
+        emit(state.copyWith(showProfileInfo: false));
+        return;
+      }
+      if (state.showLicenseUpload) {
+        emit(state.copyWith(showLicenseUpload: false));
+        return;
+      }
+      if (state.documentsChecklistDone) {
+        emit(state.copyWith(documentsChecklistDone: false));
+        return;
+      }
+      if (state.selectedVehicleType != null) {
+        emit(state.copyWith(selectedVehicleType: null));
+        return;
+      }
+      if (state.selectedCity != null) {
+        emit(state.copyWith(selectedCity: null));
+        return;
+      }
+      emit(state.copyWith(loginPage: LoginPage.enterOtp));
+      return;
+    }
     emit(
       state.copyWith(
         loginPage: switch (state.loginPage) {
           LoginPage.enterOtp => LoginPage.enterNumber,
           LoginPage.enterPassword => LoginPage.enterNumber,
           LoginPage.setPassword => LoginPage.enterNumber,
-          LoginPage.contactDetails => LoginPage.enterOtp,
           LoginPage.vehicleDetails => LoginPage.contactDetails,
           LoginPage.documents => LoginPage.contactDetails,
           _ => state.loginPage,
@@ -41,6 +83,113 @@ class LoginBloc extends HydratedCubit<LoginState> {
       ),
     );
   }
+
+  void onCityConfirmed(String city) => emit(state.copyWith(selectedCity: city));
+
+  void onVehicleConfirmed(String vehicleType) =>
+      emit(state.copyWith(selectedVehicleType: vehicleType));
+
+  void onDocumentsChecklistConfirmed() => emit(
+        state.copyWith(documentsChecklistDone: true, loginPage: LoginPage.success),
+      );
+
+  void onDrivingLicenseAnswer(bool answer) => emit(
+    state.copyWith(hasDrivingLicense: answer, showLicenseUpload: answer),
+  );
+
+  void onOpenLicenseUpload() => emit(state.copyWith(showLicenseUpload: true));
+
+  void onCloseLicenseUpload() => emit(state.copyWith(showLicenseUpload: false));
+
+  void onLicenseSubmitted() =>
+      emit(state.copyWith(licenseSubmitted: true, showLicenseUpload: false));
+
+  void onOpenProfileInfo() => emit(state.copyWith(showProfileInfo: true));
+
+  void onCloseProfileInfo() => emit(state.copyWith(showProfileInfo: false));
+
+  void onProfileInfoSubmitted({
+    required String firstName,
+    required String lastName,
+    required String dob,
+    required String gender,
+  }) => emit(
+    state.copyWith(
+      profileFirstName: firstName,
+      profileLastName: lastName,
+      profileDob: dob,
+      profileGender: gender,
+      profileInfoSubmitted: true,
+      showProfileInfo: false,
+    ),
+  );
+
+  void onDraftCityChanged(String? city) =>
+      emit(state.copyWith(draftCity: city));
+
+  void onDraftVehicleChanged(String? vehicle) =>
+      emit(state.copyWith(draftVehicleType: vehicle));
+
+  void onDraftLicenseNumberChanged(String number) =>
+      emit(state.copyWith(draftLicenseNumber: number));
+
+  void onDraftProfileChanged({
+    String? firstName,
+    String? lastName,
+    String? dob,
+    String? gender,
+  }) => emit(
+    state.copyWith(
+      draftProfileFirstName: firstName ?? state.draftProfileFirstName,
+      draftProfileLastName: lastName ?? state.draftProfileLastName,
+      draftProfileDob: dob ?? state.draftProfileDob,
+      draftProfileGender: gender ?? state.draftProfileGender,
+    ),
+  );
+
+  void onOpenVehicleRC() => emit(state.copyWith(showVehicleRC: true));
+
+  void onCloseVehicleRC() => emit(state.copyWith(showVehicleRC: false));
+
+  void onVehicleRCSubmitted({
+    required String ownership,
+    required String? vehicleNumber,
+  }) => emit(
+    state.copyWith(
+      vehicleOwnership: ownership,
+      vehicleNumberValue: vehicleNumber,
+      vehicleRCSubmitted: true,
+      showVehicleRC: false,
+    ),
+  );
+
+  void onDraftVehicleOwnershipChanged(String? ownership) =>
+      emit(state.copyWith(draftVehicleOwnership: ownership));
+
+  void onDraftVehicleNumberChanged(String number) =>
+      emit(state.copyWith(draftVehicleNumber: number));
+
+  void onOpenAadhaarPan() => emit(state.copyWith(showAadhaarPan: true));
+
+  void onCloseAadhaarPan() => emit(state.copyWith(showAadhaarPan: false));
+
+  void onAadhaarPanSubmitted({
+    required String aadhaarNumber,
+    required String panNumber,
+  }) => emit(
+    state.copyWith(
+      aadhaarNumberValue: aadhaarNumber,
+      panNumberValue: panNumber,
+      aadhaarPanSubmitted: true,
+      showAadhaarPan: false,
+    ),
+  );
+
+  void onDraftAadhaarNumberChanged(String number) =>
+      emit(state.copyWith(draftAadhaarNumber: number));
+
+  void onDraftPanNumberChanged(String number) =>
+      emit(state.copyWith(draftPanNumber: number));
 
   void reset() => emit(LoginState());
 
@@ -164,13 +313,30 @@ class LoginBloc extends HydratedCubit<LoginState> {
         final remoteDataResponse = await repository.getRegistrationData();
         if (remoteDataResponse.isLoaded) {
           final data = remoteDataResponse.data!;
+          final me = data.me;
+
+          // A driver who has actually completed registration will have
+          // submitted their name (firstName is a required field on the
+          // register mutation). A brand-new driver, even with backend
+          // status WaitingDocuments, will not.
+          final hasCompletedRegistration = me.firstName.trim().isNotEmpty;
+
           emit(
             state.copyWith(
               loginPage: LoginPage.contactDetails,
               vehicleModels: data.carModels,
               vehicleColors: data.carColors,
+              requiredDocuments: data.driverRequiredDocuments,
               jwtToken: response.jwtToken,
               profile: response.user,
+              // Only carry forward the driver's real saved city when
+              // they've actually completed registration before — never
+              // fall back to a hardcoded default for a new driver.
+              selectedCity: hasCompletedRegistration ? me.city : null,
+              selectedVehicleType: hasCompletedRegistration
+                  ? (state.selectedVehicleType ?? 'Passenger Auto')
+                  : null,
+              documentsChecklistDone: hasCompletedRegistration,
             ),
           );
           return;

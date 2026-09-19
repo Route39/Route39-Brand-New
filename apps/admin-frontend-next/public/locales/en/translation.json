@@ -98,8 +98,8 @@
 			"header": "Home"
 		},
 		"driver": {
-			"pendingVerification": "Pending Verification",
-			"all": "View All",
+			"pendingVerification": "Driver Verification",
+			"all": "All Drivers",
 			"header": "Drivers"
 		},
 		"payouts": "Payouts",
@@ -119,7 +119,7 @@
 			"header": "Accounting"
 		},
 		"riders": "Riders",
-		"requests": "Requests",
+		"requests": "Daily Collection",
 		"sos": "SOS",
 		"complaints": "Complaints",
 		"management": {
@@ -474,7 +474,7 @@
 	},
 	"driver": {
 		"name": "Name",
-		"carPlate": "Car Plate",
+		"carPlate": "Vehicle Number",
 		"rating": "Rating",
 		"registered": "Registered",
 		"lastSeen": "Last seen",
@@ -502,6 +502,13 @@
 	"requests": {
 		"list": {
 			"description": "All ride requests across the platform."
+		},
+		"filters": {
+			"today": "Today",
+			"thisWeek": "This week",
+			"last30": "Last 30",
+			"clear": "Clear filter",
+			"totalCollection": "Total collection"
 		}
 	},
 	"complaint": {

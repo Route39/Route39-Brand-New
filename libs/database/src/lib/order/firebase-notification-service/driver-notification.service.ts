@@ -2,7 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { messaging } from 'firebase-admin';
 @Injectable()
 export class DriverNotificationService {
-  async requests(tokens: string[]) {
+  async requests(
+    tokens: string[],
+    orderId: number,
+    orderData: Record<string, string> = {},
+  ) {
     tokens = tokens
       .filter((token) => (token?.length ?? 0) > 0)
       .map((x) => x) as unknown as string[];
@@ -11,16 +15,13 @@ export class DriverNotificationService {
     try {
       const notificationResult = await messaging().sendEachForMulticast({
         tokens: tokens,
-        data: { type: 'requests' },
+        data: {
+          type: 'requests',
+          orderId: orderId.toString(),
+          ...orderData,
+        },
         android: {
-          notification: {
-            sound: 'default',
-            titleLocKey: 'notification_new_request_title',
-            bodyLocKey: 'notification_new_request_body',
-            channelId: 'orders',
-            icon: 'notification_icon',
-            priority: 'high',
-          },
+          priority: 'high',
         },
         apns: {
           payload: {

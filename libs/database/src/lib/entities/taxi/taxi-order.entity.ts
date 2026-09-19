@@ -228,7 +228,8 @@ export class TaxiOrderEntity {
       (this.costAfterCoupon ?? this.costBest ?? 0) +
       (this.gstAmount ?? 0) +
       (this.platformFeeAmount ?? 0) +
-      (this.paymentGatewayFeeAmount ?? 0);
+      (this.paymentGatewayFeeAmount ?? 0) +
+      (this.waitingChargeAmount ?? 0);
   }
 
   @Column('float', {
@@ -251,6 +252,17 @@ export class TaxiOrderEntity {
 
   @Column({ type: 'boolean', default: true })
   pickupOtpRequired!: boolean;
+
+  @Column({ nullable: true })
+  arrivedAt?: Date;
+
+  @Column('float', {
+    nullable: true,
+    precision: 10,
+    scale: 2,
+    default: 0,
+  })
+  waitingChargeAmount?: number;
 
   @Column({ nullable: true })
   waitSeconds?: number;

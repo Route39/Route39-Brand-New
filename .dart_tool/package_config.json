@@ -20,6 +20,12 @@
       "languageVersion": "3.9"
     },
     {
+      "name": "android_intent_plus",
+      "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/android_intent_plus-5.3.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
       "name": "ansicolor",
       "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/ansicolor-2.0.3",
       "packageUri": "lib/",
@@ -459,7 +465,7 @@
     },
     {
       "name": "flutter",
-      "rootUri": "file:///Users/admin/development/flutter/packages/flutter",
+      "rootUri": "file:///Users/admin/flutter/packages/flutter",
       "packageUri": "lib/",
       "languageVersion": "3.11"
     },
@@ -512,8 +518,38 @@
       "languageVersion": "3.1"
     },
     {
+      "name": "flutter_local_notifications",
+      "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/flutter_local_notifications-22.3.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.10"
+    },
+    {
+      "name": "flutter_local_notifications_linux",
+      "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/flutter_local_notifications_linux-8.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.10"
+    },
+    {
+      "name": "flutter_local_notifications_platform_interface",
+      "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/flutter_local_notifications_platform_interface-12.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.10"
+    },
+    {
+      "name": "flutter_local_notifications_web",
+      "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/flutter_local_notifications_web-1.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.10"
+    },
+    {
+      "name": "flutter_local_notifications_windows",
+      "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/flutter_local_notifications_windows-3.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.10"
+    },
+    {
       "name": "flutter_localizations",
-      "rootUri": "file:///Users/admin/development/flutter/packages/flutter_localizations",
+      "rootUri": "file:///Users/admin/flutter/packages/flutter_localizations",
       "packageUri": "lib/",
       "languageVersion": "3.11"
     },
@@ -566,6 +602,12 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "flutter_overlay_window",
+      "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/flutter_overlay_window-0.4.5",
+      "packageUri": "lib/",
+      "languageVersion": "2.16"
+    },
+    {
       "name": "flutter_plugin_android_lifecycle",
       "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.26",
       "packageUri": "lib/",
@@ -591,13 +633,13 @@
     },
     {
       "name": "flutter_test",
-      "rootUri": "file:///Users/admin/development/flutter/packages/flutter_test",
+      "rootUri": "file:///Users/admin/flutter/packages/flutter_test",
       "packageUri": "lib/",
       "languageVersion": "3.11"
     },
     {
       "name": "flutter_web_plugins",
-      "rootUri": "file:///Users/admin/development/flutter/packages/flutter_web_plugins",
+      "rootUri": "file:///Users/admin/flutter/packages/flutter_web_plugins",
       "packageUri": "lib/",
       "languageVersion": "3.11"
     },
@@ -1479,7 +1521,7 @@
     },
     {
       "name": "sky_engine",
-      "rootUri": "file:///Users/admin/development/flutter/bin/cache/pkg/sky_engine",
+      "rootUri": "file:///Users/admin/flutter/bin/cache/pkg/sky_engine",
       "packageUri": "lib/",
       "languageVersion": "3.11"
     },
@@ -1614,6 +1656,12 @@
       "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/time-2.1.6",
       "packageUri": "lib/",
       "languageVersion": "2.12"
+    },
+    {
+      "name": "timezone",
+      "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/timezone-0.11.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.10"
     },
     {
       "name": "turf",
@@ -1840,7 +1888,7 @@
   ],
   "generator": "pub",
   "generatorVersion": "3.13.1",
-  "flutterRoot": "file:///Users/admin/development/flutter",
+  "flutterRoot": "file:///Users/admin/flutter",
   "flutterVersion": "3.47.1",
   "pubCache": "file:///Users/admin/.pub-cache"
 }

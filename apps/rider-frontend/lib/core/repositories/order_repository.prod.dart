@@ -197,6 +197,8 @@ class OrderRepositoryImpl implements OrderRepository {
                         status: event.activeOrderUpdated.status ?? e.status,
                         directions: event.activeOrderUpdated.directions ?? e.directions,
                         nextDestination: event.activeOrderUpdated.nextDestination ?? e.nextDestination,
+                        totalCost: event.activeOrderUpdated.totalCost ?? e.totalCost,
+                        waitingChargeAmount: event.activeOrderUpdated.waitingChargeAmount ?? e.waitingChargeAmount,
                       );
                     }
                     return e;

@@ -11,6 +11,7 @@ final mockProfile1 = Fragment$Profile(
   searchDistance: 15,
   currency: 'USD',
   profileImageUrl: ImageFaker().person.random(),
+  documentsUploadedCount: 0,
 );
 
 final mockProfile2 = Fragment$Profile(
@@ -22,6 +23,7 @@ final mockProfile2 = Fragment$Profile(
   searchDistance: 12,
   currency: 'USD',
   profileImageUrl: ImageFaker().person.random(),
+  documentsUploadedCount: 0,
 );
 
 final mockProfileFull1 = Fragment$Profile(
@@ -33,4 +35,5 @@ final mockProfileFull1 = Fragment$Profile(
   searchDistance: 15,
   currency: 'USD',
   profileImageUrl: ImageFaker().person.random(),
+  documentsUploadedCount: 0,
 );

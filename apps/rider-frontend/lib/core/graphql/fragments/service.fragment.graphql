@@ -18,4 +18,5 @@ fragment Service on Service {
   gstPercent
   platformFee
   paymentGatewayFee
+  cargoWaitingTimeMinutes
 }

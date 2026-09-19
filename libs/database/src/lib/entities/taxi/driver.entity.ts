@@ -41,6 +41,9 @@ export class DriverEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
+  @Column({ nullable: true, unique: true })
+  driverCode?: string;
+
   @Column({
     nullable: true,
   })
@@ -204,6 +207,21 @@ export class DriverEntity {
 
   @Column({ nullable: true })
   address?: string;
+
+  @Column({ nullable: true })
+  city?: string;
+
+  @Column({ nullable: true })
+  vehicleOwnership?: string;
+
+  @Column({ nullable: true })
+  aadhaarNumber?: string;
+
+  @Column({ nullable: true })
+  panNumber?: string;
+
+  @Column({ nullable: true })
+  dob?: string;
 
   @Column({ nullable: true })
   notificationPlayerId?: string;

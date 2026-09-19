@@ -20,7 +20,9 @@ import { ForbiddenError } from '@nestjs/apollo';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DriverService } from '../driver/driver.service';
+import { generateDriverCode } from '@ridy/database';
 import { CompleteRegistrationInput } from './dto/complete-registration.input';
+import { SaveRegistrationProgressInput } from './dto/save-registration-progress.input';
 import { DriverDTO } from '../core/dtos/driver.dto';
 
 @Injectable()
@@ -82,6 +84,49 @@ export class AuthService {
     return result;
   }
 
+  async saveRegistrationProgress(input: {
+    userId: number;
+    input: SaveRegistrationProgressInput;
+  }): Promise<DriverDTO> {
+    const {
+      city,
+      vehicleOwnership,
+      carId,
+      carColorId,
+      carProductionYear,
+      carPlate,
+      aadhaarNumber,
+      panNumber,
+      dob,
+    } = input.input;
+    const updatePayload: Record<string, unknown> = {};
+    if (city !== undefined) updatePayload.city = city;
+    if (vehicleOwnership !== undefined)
+      updatePayload.vehicleOwnership = vehicleOwnership;
+    if (carId !== undefined) updatePayload.carId = carId;
+    if (carColorId !== undefined) updatePayload.carColorId = carColorId;
+    if (carProductionYear !== undefined)
+      updatePayload.carProductionYear = carProductionYear;
+    if (carPlate !== undefined) updatePayload.carPlate = carPlate;
+    if (aadhaarNumber !== undefined)
+      updatePayload.aadhaarNumber = aadhaarNumber;
+    if (panNumber !== undefined) updatePayload.panNumber = panNumber;
+    if (dob !== undefined) updatePayload.dob = dob;
+
+    if (Object.keys(updatePayload).length > 0) {
+      await this.driverRepository.update(input.userId, updatePayload);
+    }
+
+    const driver = await this.driverRepository.findOneOrFail({
+      where: { id: input.userId },
+      relations: {
+        documents: true,
+        media: true,
+      },
+    });
+    return this.driverService.createDTOFromEntity(driver);
+  }
+
   async completeRegistration(input: {
     userId: number;
     input: CompleteRegistrationInput;
@@ -103,11 +148,17 @@ export class AuthService {
       profilePictureId,
       gender,
       address,
+      city,
+      vehicleOwnership,
+      aadhaarNumber,
+      panNumber,
+      dob,
       carId,
       carColorId,
+      canDeliver,
       documentPairs,
     } = input.input;
-    this.driverRepository.update(input.userId, {
+    await this.driverRepository.update(input.userId, {
       firstName: firstName?.trim(),
       lastName: lastName?.trim(),
       certificateNumber: certificateNumber?.trim(),
@@ -117,10 +168,23 @@ export class AuthService {
       mediaId: profilePictureId,
       gender,
       address: address,
+      city: city?.trim(),
+      vehicleOwnership: vehicleOwnership?.trim(),
+      aadhaarNumber: aadhaarNumber?.trim(),
+      panNumber: panNumber?.trim(),
+      dob: dob?.trim(),
       carId,
       carColorId,
+      canDeliver: canDeliver ?? false,
       status: isDemoMode ? DriverStatus.Offline : DriverStatus.PendingApproval,
     });
+    if (city) {
+      const driverCode = await generateDriverCode(this.driverRepository, city);
+      if (driverCode) {
+        await this.driverRepository.update(input.userId, { driverCode });
+      }
+    }
+
     if (isDemoMode) {
       const allowedServices = await this.serviceRepository.find();
       const services = [];
@@ -135,7 +199,7 @@ export class AuthService {
       }
       await this.driverServiceRepository.save(services);
     }
-    if (input.input.documentPairs) {
+    if (input.input.documentPairs && input.input.documentPairs.length > 0) {
       await this.driverToDocumentRepository.delete({ driverId: input.userId });
       await this.driverToDocumentRepository.save(
         documentPairs.map(

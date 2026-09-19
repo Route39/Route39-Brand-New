@@ -46,6 +46,8 @@ import { DriverServicesServiceDTO } from './driver-services-service.dto';
 export class DriverDTO {
   @IDField(() => ID)
   id!: number;
+  @FilterableField(() => String, { nullable: true })
+  driverCode?: string;
   @FilterableField(() => ID, { nullable: true })
   fleetId?: number;
   @FilterableField(() => String, { nullable: true })
@@ -56,8 +58,15 @@ export class DriverDTO {
   mobileNumber!: string;
   @Field(() => String, { nullable: true })
   countryIso?: string;
+  @FilterableField(() => String, { nullable: true })
+  city?: string;
+
   @Field(() => String, { nullable: true })
   certificateNumber?: string;
+  @Field(() => String, { nullable: true })
+  aadhaarNumber?: string;
+  @Field(() => String, { nullable: true })
+  panNumber?: string;
   @Field(() => Boolean, { nullable: false })
   canDeliver!: boolean;
   @FilterableField(() => DeliveryPackageSize)

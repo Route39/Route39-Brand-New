@@ -1,0 +1,198 @@
+import { useQuery } from "@apollo/client";
+import { Printer } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableEmpty,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { DRIVER_TRIP_DETAILS_QUERY } from "@/lib/graphql/documents/daily-collection";
+import { formatCurrency, formatDate, formatName, formatPhone } from "@/lib/format";
+
+interface DriverInfo {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  mobileNumber?: string | null;
+  carPlate?: string | null;
+}
+
+interface DriverInvoiceDialogProps {
+  driverId: string;
+  driver: DriverInfo | null;
+  /** yyyy-mm-dd, may be empty (no lower bound) */
+  dateFrom: string;
+  /** yyyy-mm-dd, may be empty (no upper bound) */
+  dateTo: string;
+  onClose: () => void;
+}
+
+function dayStartISO(dateStr: string): string {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return new Date(year, month - 1, day, 0, 0, 0, 0).toISOString();
+}
+
+function dayEndISO(dateStr: string): string {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return new Date(year, month - 1, day, 23, 59, 59, 999).toISOString();
+}
+
+function formatTime(value: string | null | undefined): string {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+}
+
+function tripAmount(o: {
+  costAfterCoupon: number;
+  gstAmount: number;
+  platformFeeAmount: number;
+  paymentGatewayFeeAmount: number;
+}): number {
+  return o.costAfterCoupon + o.gstAmount + o.platformFeeAmount + o.paymentGatewayFeeAmount;
+}
+
+export function DriverInvoiceDialog({
+  driverId,
+  driver,
+  dateFrom,
+  dateTo,
+  onClose,
+}: DriverInvoiceDialogProps) {
+  const filter: Record<string, Record<string, unknown>> = { driverId: { eq: driverId } };
+  if (dateFrom) filter.createdOn = { ...(filter.createdOn ?? {}), gte: dayStartISO(dateFrom) };
+  if (dateTo) filter.createdOn = { ...(filter.createdOn ?? {}), lte: dayEndISO(dateTo) };
+
+  const { data, loading } = useQuery(DRIVER_TRIP_DETAILS_QUERY, {
+    variables: {
+      paging: { limit: 500, offset: 0 },
+      filter: filter as never,
+      sorting: [{ field: "createdOn", direction: "ASC" }] as never,
+    },
+  });
+
+  const trips = data?.orders.nodes ?? [];
+  const total = trips.reduce((sum, o) => sum + tripAmount(o), 0);
+  const currency = trips[0]?.currency ?? "INR";
+  const invoiceNo = `Auto-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${driverId
+    .slice(0, 8)
+    .toUpperCase()}`;
+
+  return (
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-2xl print:max-w-none print:border-0 print:shadow-none">
+        <style>{`
+          @media print {
+            body * { visibility: hidden; }
+            #driver-invoice-print, #driver-invoice-print * { visibility: visible; }
+            #driver-invoice-print { position: fixed; inset: 0; padding: 24px; }
+          }
+        `}</style>
+        <div id="driver-invoice-print">
+          <DialogHeader>
+            <DialogTitle>Auto Driver Daily Collection Bill</DialogTitle>
+            <DialogDescription>Route39 fleet management services</DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+            <div className="space-y-1">
+              <div>
+                <span className="text-muted-foreground">Driver Name: </span>
+                <span className="font-medium">{formatName(driver)}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Driver Phone: </span>
+                <span className="font-medium">{formatPhone(driver?.mobileNumber)}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Vehicle Number: </span>
+                <span className="font-medium">{driver?.carPlate ?? "—"}</span>
+              </div>
+            </div>
+            <div className="space-y-1 text-right">
+              <div>
+                <span className="text-muted-foreground">Invoice No: </span>
+                <span className="font-medium">{invoiceNo}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Print Date: </span>
+                <span className="font-medium">{formatDate(new Date())}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Period: </span>
+                <span className="font-medium">
+                  {dateFrom ? formatDate(dateFrom) : "Start"} – {dateTo ? formatDate(dateTo) : "Today"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-lg border border-border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>S.No</TableHead>
+                  <TableHead>Trip Date</TableHead>
+                  <TableHead>Trip Start Time</TableHead>
+                  <TableHead>Pickup &amp; Drop Location</TableHead>
+                  <TableHead className="text-right">Collected Amount</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {trips.map((trip, i) => (
+                  <TableRow key={trip.id}>
+                    <TableCell>{i + 1}</TableCell>
+                    <TableCell>{formatDate(trip.createdOn)}</TableCell>
+                    <TableCell>{formatTime(trip.startTimestamp ?? trip.createdOn)}</TableCell>
+                    <TableCell className="max-w-xs truncate">
+                      {trip.addresses.length > 0
+                        ? `${trip.addresses[0]} → ${trip.addresses[trip.addresses.length - 1]}`
+                        : "—"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(tripAmount(trip), trip.currency)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {!loading && trips.length === 0 ? (
+              <TableEmpty>No trips found for this driver in the selected period.</TableEmpty>
+            ) : null}
+          </div>
+
+          <div className="mt-4 flex justify-end text-sm">
+            <div className="text-right">
+              <div className="text-muted-foreground">Total Collected</div>
+              <div className="text-lg font-semibold">{formatCurrency(total, currency)}</div>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter className="print:hidden">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Close
+          </Button>
+          <Button type="button" onClick={() => window.print()} className="gap-2">
+            <Printer className="size-4" />
+            Download PDF
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

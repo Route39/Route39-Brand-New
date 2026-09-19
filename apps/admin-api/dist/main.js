@@ -748,6 +748,8 @@ __webpack_require__.d(__webpack_exports__, {
   ZonePriceCategoryEntity: () => (/* reexport */ ZonePriceCategoryEntity),
   ZonePriceEntity: () => (/* reexport */ ZonePriceEntity),
   entities: () => (/* reexport */ entities),
+  generateDriverCode: () => (/* reexport */ generateDriverCode),
+  getCityPrefix: () => (/* reexport */ getCityPrefix),
   getRedisConnectionConfig: () => (/* reexport */ getRedisConnectionConfig),
   getRedisUrl: () => (/* reexport */ getRedisUrl),
   loadSecrets: () => (/* reexport */ loadSecrets),
@@ -5956,6 +5958,22 @@ service_entity_ts_decorate([
     }),
     service_entity_ts_metadata("design:type", Number)
 ], ServiceEntity.prototype, "paymentGatewayFee", void 0);
+service_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        nullable: true,
+        precision: 10,
+        scale: 2,
+        comment: 'Extra per-km charge applied after 45 minutes, used for Cargo services'
+    }),
+    service_entity_ts_metadata("design:type", Number)
+], ServiceEntity.prototype, "cargoExtraKmChargeAfter45Min", void 0);
+service_entity_ts_decorate([
+    (0,external_typeorm_.Column)('int', {
+        nullable: true,
+        comment: 'Free waiting time (in minutes) before cargo waiting charges start applying.'
+    }),
+    service_entity_ts_metadata("design:type", Number)
+], ServiceEntity.prototype, "cargoWaitingTimeMinutes", void 0);
 service_entity_ts_decorate([
     (0,external_typeorm_.OneToOne)(function() {
         return MediaEntity;
@@ -14016,6 +14034,14 @@ payment_entity_ts_decorate([
     payment_entity_ts_metadata("design:type", Number)
 ], PaymentEntity.prototype, "amount", void 0);
 payment_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 0,
+        precision: 10,
+        scale: 2
+    }),
+    payment_entity_ts_metadata("design:type", Number)
+], PaymentEntity.prototype, "tip", void 0);
+payment_entity_ts_decorate([
     (0,external_typeorm_.Column)(),
     payment_entity_ts_metadata("design:type", String)
 ], PaymentEntity.prototype, "currency", void 0);
@@ -16857,8 +16883,8 @@ var TaxiOrderEntity = /*#__PURE__*/ function() {
     function TaxiOrderEntity() {}
     var _proto = TaxiOrderEntity.prototype;
     _proto.computeTotalCost = function computeTotalCost() {
-        var _this_costAfterCoupon, _ref, _this_gstAmount, _this_platformFeeAmount, _this_paymentGatewayFeeAmount;
-        this.totalCost = ((_ref = (_this_costAfterCoupon = this.costAfterCoupon) != null ? _this_costAfterCoupon : this.costBest) != null ? _ref : 0) + ((_this_gstAmount = this.gstAmount) != null ? _this_gstAmount : 0) + ((_this_platformFeeAmount = this.platformFeeAmount) != null ? _this_platformFeeAmount : 0) + ((_this_paymentGatewayFeeAmount = this.paymentGatewayFeeAmount) != null ? _this_paymentGatewayFeeAmount : 0);
+        var _this_costAfterCoupon, _ref, _this_gstAmount, _this_platformFeeAmount, _this_paymentGatewayFeeAmount, _this_waitingChargeAmount;
+        this.totalCost = ((_ref = (_this_costAfterCoupon = this.costAfterCoupon) != null ? _this_costAfterCoupon : this.costBest) != null ? _ref : 0) + ((_this_gstAmount = this.gstAmount) != null ? _this_gstAmount : 0) + ((_this_platformFeeAmount = this.platformFeeAmount) != null ? _this_platformFeeAmount : 0) + ((_this_paymentGatewayFeeAmount = this.paymentGatewayFeeAmount) != null ? _this_paymentGatewayFeeAmount : 0) + ((_this_waitingChargeAmount = this.waitingChargeAmount) != null ? _this_waitingChargeAmount : 0);
     };
     _proto.waypoints = function waypoints() {
         var _this = this;
@@ -17216,6 +17242,21 @@ taxi_order_entity_ts_decorate([
     }),
     taxi_order_entity_ts_metadata("design:type", Boolean)
 ], TaxiOrderEntity.prototype, "pickupOtpRequired", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", typeof Date === "undefined" ? Object : Date)
+], TaxiOrderEntity.prototype, "arrivedAt", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        nullable: true,
+        precision: 10,
+        scale: 2,
+        default: 0
+    }),
+    taxi_order_entity_ts_metadata("design:type", Number)
+], TaxiOrderEntity.prototype, "waitingChargeAmount", void 0);
 taxi_order_entity_ts_decorate([
     (0,external_typeorm_.Column)({
         nullable: true
@@ -18371,6 +18412,13 @@ driver_entity_ts_decorate([
     driver_entity_ts_metadata("design:type", Number)
 ], DriverEntity.prototype, "id", void 0);
 driver_entity_ts_decorate([
+    (0, external_typeorm_.Column)({
+        nullable: true,
+        unique: true
+    }),
+    driver_entity_ts_metadata("design:type", String)
+], DriverEntity.prototype, "driverCode", void 0);
+driver_entity_ts_decorate([
     (0,external_typeorm_.Column)({
         nullable: true
     }),
@@ -18627,6 +18675,36 @@ driver_entity_ts_decorate([
     }),
     driver_entity_ts_metadata("design:type", String)
 ], DriverEntity.prototype, "address", void 0);
+driver_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    driver_entity_ts_metadata("design:type", String)
+], DriverEntity.prototype, "city", void 0);
+driver_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    driver_entity_ts_metadata("design:type", String)
+], DriverEntity.prototype, "vehicleOwnership", void 0);
+driver_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    driver_entity_ts_metadata("design:type", String)
+], DriverEntity.prototype, "aadhaarNumber", void 0);
+driver_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    driver_entity_ts_metadata("design:type", String)
+], DriverEntity.prototype, "panNumber", void 0);
+driver_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    driver_entity_ts_metadata("design:type", String)
+], DriverEntity.prototype, "dob", void 0);
 driver_entity_ts_decorate([
     (0,external_typeorm_.Column)({
         nullable: true
@@ -19285,10 +19363,10 @@ DatabaseModule = database_module_ts_decorate([
                                         migrations: [
                                             "" + __dirname + "/migration/*.js"
                                         ],
-                                        migrationsRun: true,
+                                        migrationsRun: false,
                                         synchronize: configService.get('NODE_ENV') === 'dev' || configService.get('FORCE_SYNC_DB', false) || currentTables[0].count < 10,
                                         // logging: configService.get('NODE_ENV') === 'dev',
-                                        logging: false
+                                        logging: true
                                     };
                                     logger.log('Database connection configured');
                                     return [
@@ -25979,6 +26057,22 @@ rider_active_order_update_payload_ts_decorate([
 ], RiderActiveOrderUpdateDTO.prototype, "cost", void 0);
 rider_active_order_update_payload_ts_decorate([
     (0,graphql_.Field)(function() {
+        return graphql_.Float;
+    }, {
+        nullable: true
+    }),
+    rider_active_order_update_payload_ts_metadata("design:type", Number)
+], RiderActiveOrderUpdateDTO.prototype, "totalCost", void 0);
+rider_active_order_update_payload_ts_decorate([
+    (0,graphql_.Field)(function() {
+        return graphql_.Float;
+    }, {
+        nullable: true
+    }),
+    rider_active_order_update_payload_ts_metadata("design:type", Number)
+], RiderActiveOrderUpdateDTO.prototype, "waitingChargeAmount", void 0);
+rider_active_order_update_payload_ts_decorate([
+    (0,graphql_.Field)(function() {
         return Point;
     }, {
         nullable: true
@@ -28210,6 +28304,20 @@ function driver_notification_service_async_to_generator(fn) {
         });
     };
 }
+function driver_notification_service_extends() {
+    driver_notification_service_extends = Object.assign || function(target) {
+        for(var i = 1; i < arguments.length; i++){
+            var source = arguments[i];
+            for(var key in source){
+                if (Object.prototype.hasOwnProperty.call(source, key)) {
+                    target[key] = source[key];
+                }
+            }
+        }
+        return target;
+    };
+    return driver_notification_service_extends.apply(this, arguments);
+}
 function driver_notification_service_ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -28313,12 +28421,13 @@ var DriverNotificationService = /*#__PURE__*/ function() {
     "use strict";
     function DriverNotificationService() {}
     var _proto = DriverNotificationService.prototype;
-    _proto.requests = function requests(tokens) {
-        return driver_notification_service_async_to_generator(function() {
+    _proto.requests = function requests() {
+        return driver_notification_service_async_to_generator(function(tokens, orderId, orderData) {
             var _process_env_REQUEST_SOUND, notificationResult, error;
             return driver_notification_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
+                        if (orderData === void 0) orderData = {};
                         tokens = tokens.filter(function(token) {
                             var _token_length;
                             return ((_token_length = token == null ? void 0 : token.length) != null ? _token_length : 0) > 0;
@@ -28341,18 +28450,12 @@ var DriverNotificationService = /*#__PURE__*/ function() {
                             4,
                             (0,external_firebase_admin_.messaging)().sendEachForMulticast({
                                 tokens: tokens,
-                                data: {
-                                    type: 'requests'
-                                },
+                                data: driver_notification_service_extends({
+                                    type: 'requests',
+                                    orderId: orderId.toString()
+                                }, orderData),
                                 android: {
-                                    notification: {
-                                        sound: 'default',
-                                        titleLocKey: 'notification_new_request_title',
-                                        bodyLocKey: 'notification_new_request_body',
-                                        channelId: 'orders',
-                                        icon: 'notification_icon',
-                                        priority: 'high'
-                                    }
+                                    priority: 'high'
                                 },
                                 apns: {
                                     payload: {
@@ -28393,7 +28496,7 @@ var DriverNotificationService = /*#__PURE__*/ function() {
                         ];
                 }
             });
-        })();
+        }).apply(this, arguments);
     };
     _proto.canceled = function canceled(fcmToken) {
         this.sendNotification(fcmToken, 'notification_cancel_title', 'notification_cancel_body', [], 'default', 'tripEvents', {
@@ -30561,11 +30664,23 @@ var SharedDriverService = /*#__PURE__*/ function() {
                         ];
                     case 1:
                         user = _state.sent();
+                        // mobileNumber has a DB-level unique constraint that ignores deletedAt,
+                        // so a soft-deleted row still blocks that number from being reused.
+                        // Overwrite it with a value derived from the id (guaranteed unique,
+                        // never collides with a real mobile number) before soft-deleting.
+                        return [
+                            4,
+                            this.driverRepo.update(id, {
+                                mobileNumber: String(-id)
+                            })
+                        ];
+                    case 2:
+                        _state.sent();
                         return [
                             4,
                             this.driverRepo.softDelete(id)
                         ];
-                    case 2:
+                    case 3:
                         _state.sent();
                         return [
                             2,
@@ -32190,6 +32305,7 @@ function shared_order_service_ts_param(paramIndex, decorator) {
 
 
 
+
 var SharedOrderService = /*#__PURE__*/ function() {
     "use strict";
     function SharedOrderService(orderRepository, activityRepository, regionService, serviceCategoryRepository, serviceOptionRepository, zonePriceRepository, paymentRepository, messageRepository, googleServices, servicesService, riderService, sharedRiderWalletService, driverRedisService, riderRedisService, rideOfferRedisService, activeOrderRedisService, driverService, sharedProviderService, sharedFleetService, commonCouponService, driverNotificationService, riderNotificationService, httpService, dispatchMainQueue, pubsubService, configService) {
@@ -32497,6 +32613,8 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             var services = cat.services, _cat = _object_without_properties_loose(cat, [
                                 "services"
                             ]);
+                            var categoryKey = cat.name.trim().toLowerCase().replace(/[\s-]+/g, '');
+                            var isCargoCategory = input.orderType === TaxiOrderType.ParcelDelivery && categoryKey === 'cargo';
                             var _services = services.filter(function(x) {
                                 return x.deletedAt == null;
                             }).filter(function(x) {
@@ -32504,7 +32622,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                     return y.id == x.id;
                                 }).length > 0;
                             }).filter(function(x) {
-                                return x.orderTypes.includes(input.orderType);
+                                return x.orderTypes.includes(input.orderType) || isCargoCategory;
                             }).map(function(service) {
                                 var cost = 0;
                                 var costResult = null;
@@ -32941,7 +33059,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.dispatchRide = function dispatchRide(order) {
         return shared_order_service_async_to_generator(function() {
-            var _order_driverId, _order_rider_media, _order_rider_wallets_filter_, _order_rider_wallets, _order_service_media, now, config, _config_preDispatchBufferMinutes, preDispatchBufferMinutes, timeUntilScheduled, intervalMinutes, _order_service_gstPercent, _order_service_platformFee, _order_service_paymentGatewayFee, _order_rider_wallets_filter__balance, _order_service_media_address, _order_options;
+            var _order_driverId, _order_rider_media, _order_rider_wallets_filter_, _order_rider_wallets, _order_service_media, now, config, _config_preDispatchBufferMinutes, preDispatchBufferMinutes, timeUntilScheduled, intervalMinutes, _order_service_gstPercent, _order_service_platformFee, _order_service_paymentGatewayFee, _order_service_cargoWaitingTimeMinutes, _order_rider_wallets_filter__balance, _order_service_media_address, _order_options;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32994,6 +33112,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 platformFeeAmount: order.platformFeeAmount,
                                 paymentGatewayFeePercent: (_order_service_paymentGatewayFee = order.service.paymentGatewayFee) != null ? _order_service_paymentGatewayFee : 0,
                                 paymentGatewayFeeAmount: order.paymentGatewayFeeAmount,
+                                cargoWaitingTimeMinutes: (_order_service_cargoWaitingTimeMinutes = order.service.cargoWaitingTimeMinutes) != null ? _order_service_cargoWaitingTimeMinutes : null,
                                 costMin: order.costMin,
                                 costMax: order.costMax,
                                 pricingMode: order.pricingMode,
@@ -33123,7 +33242,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
         if (cashAmount === void 0) cashAmount = 0;
         if (deduceFromWallet === void 0) deduceFromWallet = true;
         return shared_order_service_async_to_generator(function() {
-            var _this, order, driver, providerShare, tip, _order_totalPaid, alreadyPaid, remainingDue, commissionAlreadyDeducted, driverWallet, fleetShare, fleet, providerCommission, ensurePostPay, _, credit, walletCredit, auth, capture, driverNonCash, _payoutAccount_payoutMethod, orderFeeWallet, payoutAccount, riderDeductAmount, _process_env_DRIVER_MINIMUM_ALLOWED_BALANCE, minimumAllowedBalance, closingBalance;
+            var _this, order, driver, _order_waitingChargeAmount, waitingChargeAmount, providerShare, tip, _order_totalPaid, alreadyPaid, remainingDue, commissionAlreadyDeducted, driverWallet, fleetShare, fleet, providerCommission, ensurePostPay, _, credit, walletCredit, auth, capture, driverNonCash, _payoutAccount_payoutMethod, orderFeeWallet, payoutAccount, riderDeductAmount, _process_env_DRIVER_MINIMUM_ALLOWED_BALANCE, minimumAllowedBalance, closingBalance;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -33148,11 +33267,12 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         driver = _state.sent();
                         common_.Logger.log(driver, 'SharedOrderService.finish.driver');
                         // 2) Totals
+                        waitingChargeAmount = (_order_waitingChargeAmount = order.waitingChargeAmount) != null ? _order_waitingChargeAmount : 0;
                         providerShare = order.costEstimateForRider - order.costEstimateForDriver;
                         tip = 0;
                         alreadyPaid = (_order_totalPaid = order.totalPaid) != null ? _order_totalPaid : 0;
-                        // What the rider still owes for this trip (fare+tip minus alreadyPaid)
-                        remainingDue = order.costEstimateForRider + tip - alreadyPaid;
+                        // What the rider still owes for this trip (fare+tip+waiting charge minus alreadyPaid)
+                        remainingDue = order.costEstimateForRider + waitingChargeAmount + tip - alreadyPaid;
                         common_.Logger.log({
                             providerShare: providerShare,
                             tip: tip,
@@ -33544,7 +33664,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         // Note: Commission (4a) and fleet/provider split (4b) already deducted earlier in the function
                         // 4c) Credit driver for non-cash portion + tip
                         // (matches your existing logic; cash was handed directly to driver)
-                        driverNonCash = order.costEstimateForDriver - cashAmount + tip;
+                        driverNonCash = order.costEstimateForDriver + waitingChargeAmount - cashAmount + tip;
                         common_.Logger.log({
                             driverNonCash: driverNonCash,
                             costEstimateForDriver: order.costEstimateForDriver,
@@ -33611,7 +33731,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         // totalDueBeforeCash = costAfterCoupon + tip - alreadyPaid
                         // walletPart = max(0, totalDueBeforeCash - cashAmount - capturedFromGateway)
                         // Since we don’t track capture amount separately here, use the simple guard:
-                        riderDeductAmount = order.paymentMethod.mode === PaymentMode.Wallet || order.paymentMethod.mode === PaymentMode.SavedPaymentMethod && deduceFromWallet ? Math.max(0, order.costEstimateForRider + tip - alreadyPaid - cashAmount) : 0;
+                        riderDeductAmount = order.paymentMethod.mode === PaymentMode.Wallet || order.paymentMethod.mode === PaymentMode.SavedPaymentMethod && deduceFromWallet ? Math.max(0, order.costEstimateForRider + waitingChargeAmount + tip - alreadyPaid - cashAmount) : 0;
                         if (!(riderDeductAmount > 0)) return [
                             3,
                             40
@@ -33636,7 +33756,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         return [
                             4,
                             this.saveActiveOrderToDisk(shared_order_service_extends({}, order, {
-                                totalPaid: order.costEstimateForRider,
+                                totalPaid: order.costEstimateForRider + waitingChargeAmount,
                                 status: OrderStatus.Finished
                             }), {
                                 finishTimestamp: new Date()
@@ -36487,7 +36607,18 @@ var SMSService = /*#__PURE__*/ function() {
                                         return data += chunk;
                                     });
                                     res.on('end', function() {
-                                        console.log("Successfully sent SMS to " + phoneNumber + " via BulkSMSPlans: " + data);
+                                        console.log("BulkSMSPlans response for " + phoneNumber + " (status " + res.statusCode + "): " + data);
+                                        var parsed = null;
+                                        try {
+                                            parsed = JSON.parse(data);
+                                        } catch (parseErr) {
+                                            console.error("BulkSMSPlans returned non-JSON response for " + phoneNumber + ": " + data);
+                                        }
+                                        var isFailure = res.statusCode >= 400 || parsed && (parsed.status === 'error' || parsed.status === false || parsed.error != null || /error|fail|invalid|insufficient|reject/i.test(typeof parsed === 'string' ? parsed : JSON.stringify(parsed)));
+                                        if (isFailure) {
+                                            reject(new Error("BulkSMSPlans failed to send SMS to " + phoneNumber + ": " + data));
+                                            return;
+                                        }
                                         resolve(data);
                                     });
                                 });
@@ -40582,7 +40713,174 @@ function withInitial(live, getInitial) {
     }();
 }
 
+;// ../../libs/database/src/lib/utils/driver-code.util.ts
+function driver_code_util_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+    try {
+        var info = gen[key](arg);
+        var value = info.value;
+    } catch (error) {
+        reject(error);
+        return;
+    }
+    if (info.done) {
+        resolve(value);
+    } else {
+        Promise.resolve(value).then(_next, _throw);
+    }
+}
+function driver_code_util_async_to_generator(fn) {
+    return function () {
+
+        var self = this, args = arguments;
+        return new Promise(function (resolve, reject) {
+            var gen = fn.apply(self, args);
+            function _next(value) {
+                driver_code_util_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+            }
+            function _throw(err) {
+                driver_code_util_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+            }
+            _next(undefined);
+        });
+    };
+}
+function driver_code_util_ts_generator(thisArg, body) {
+    var f, y, t, _ = {
+        label: 0,
+        sent: function () {
+            if (t[0] & 1) throw t[1];
+            return t[1];
+        },
+        trys: [],
+        ops: []
+    }, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() {
+        return this;
+    }), g;
+    function verb(n) {
+        return function (v) {
+            return step([
+                n,
+                v
+            ]);
+        };
+    }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [
+                op[0] & 2,
+                t.value
+            ];
+            switch (op[0]) {
+                case 0:
+                case 1:
+                    t = op;
+                    break;
+                case 4:
+                    _.label++;
+                    return {
+                        value: op[1],
+                        done: false
+                    };
+                case 5:
+                    _.label++;
+                    y = op[1];
+                    op = [
+                        0
+                    ];
+                    continue;
+                case 7:
+                    op = _.ops.pop();
+                    _.trys.pop();
+                    continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+                        _ = 0;
+                        continue;
+                    }
+                    if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+                        _.label = op[1];
+                        break;
+                    }
+                    if (op[0] === 6 && _.label < t[1]) {
+                        _.label = t[1];
+                        t = op;
+                        break;
+                    }
+                    if (t && _.label < t[2]) {
+                        _.label = t[2];
+                        _.ops.push(op);
+                        break;
+                    }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop();
+                    continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) {
+            op = [
+                6,
+                e
+            ];
+            y = 0;
+            } finally {
+            f = t = 0;
+        }
+        if (op[0] & 5) throw op[1];
+        return {
+            value: op[0] ? op[1] : void 0,
+            done: true
+        };
+    }
+}
+var CITY_PREFIX_MAP = {
+    Bangalore: 'BLR',
+    Tiruppur: 'TUP',
+    Coimbatore: 'CBE',
+    Chennai: 'CHN'
+};
+function getCityPrefix(city) {
+    if (!city) return undefined;
+    return CITY_PREFIX_MAP[city];
+}
+function generateDriverCode(driverRepository, city) {
+    return driver_code_util_async_to_generator(function () {
+        var prefix, lastDriver, nextNumber, numPart, parsed;
+        return driver_code_util_ts_generator(this, function(_state) {
+            switch(_state.label){
+                case 0:
+                    prefix = getCityPrefix(city);
+                    if (!prefix) return [
+                        2,
+                        undefined
+                    ];
+                    return [
+                        4,
+                        driverRepository.createQueryBuilder('driver').where('driver.driverCode LIKE :pattern', {
+                            pattern: "" + prefix + "%"
+                        }).orderBy('driver.driverCode', 'DESC').getOne()
+                    ];
+                case 1:
+                    lastDriver = _state.sent();
+                    nextNumber = 1;
+                    if (lastDriver == null ? void 0 : lastDriver.driverCode) {
+                        numPart = lastDriver.driverCode.slice(prefix.length);
+                        parsed = parseInt(numPart, 10);
+                        if (!isNaN(parsed)) nextNumber = parsed + 1;
+                    }
+                    return [
+                        2,
+                        "" + prefix + String(nextNumber).padStart(3, '0')
+                    ];
+            }
+        });
+    })();
+}
+
 ;// ../../libs/database/src/lib/utils/index.ts
+
 
 
 ;// ../../libs/database/src/lib/storage/local.storage.ts
@@ -50566,6 +50864,18 @@ _ts_decorate._([
 ], ServiceDTO.prototype, "paymentGatewayFee", void 0);
 _ts_decorate._([
     (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceDTO.prototype, "cargoExtraKmChargeAfter45Min", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Int, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceDTO.prototype, "cargoWaitingTimeMinutes", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
         nullable: false
     }),
     _ts_metadata._("design:type", Number)
@@ -50943,21 +51253,15 @@ _ts_decorate._([
     _ts_metadata._("design:type", Number)
 ], TaxiOrderDTO.prototype, "taxCost", void 0);
 _ts_decorate._([
-    (0, _graphql.Field)(()=>_graphql.Float, {
-        nullable: false
-    }),
+    (0, _nestjsquerygraphql.FilterableField)(()=>_graphql.Float),
     _ts_metadata._("design:type", Number)
 ], TaxiOrderDTO.prototype, "gstAmount", void 0);
 _ts_decorate._([
-    (0, _graphql.Field)(()=>_graphql.Float, {
-        nullable: false
-    }),
+    (0, _nestjsquerygraphql.FilterableField)(()=>_graphql.Float),
     _ts_metadata._("design:type", Number)
 ], TaxiOrderDTO.prototype, "platformFeeAmount", void 0);
 _ts_decorate._([
-    (0, _graphql.Field)(()=>_graphql.Float, {
-        nullable: false
-    }),
+    (0, _nestjsquerygraphql.FilterableField)(()=>_graphql.Float),
     _ts_metadata._("design:type", Number)
 ], TaxiOrderDTO.prototype, "paymentGatewayFeeAmount", void 0);
 _ts_decorate._([
@@ -51050,6 +51354,18 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", Array)
 ], TaxiOrderDTO.prototype, "directions", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.GraphQLISODateTime, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", typeof Date === "undefined" ? Object : Date)
+], TaxiOrderDTO.prototype, "arrivedAt", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], TaxiOrderDTO.prototype, "waitingChargeAmount", void 0);
 TaxiOrderDTO = _ts_decorate._([
     (0, _graphql.ObjectType)('Order'),
     (0, _nestjsquerygraphql.Relation)('driver', ()=>_driverdto.DriverDTO, {
@@ -52437,6 +52753,12 @@ _ts_decorate._([
     _ts_metadata._("design:type", Number)
 ], DriverDTO.prototype, "id", void 0);
 _ts_decorate._([
+    (0, _nestjsquerygraphql.FilterableField)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], DriverDTO.prototype, "driverCode", void 0);
+_ts_decorate._([
     (0, _nestjsquerygraphql.FilterableField)(()=>_graphql.ID, {
         nullable: true
     }),
@@ -52469,11 +52791,29 @@ _ts_decorate._([
     _ts_metadata._("design:type", String)
 ], DriverDTO.prototype, "countryIso", void 0);
 _ts_decorate._([
+    (0, _nestjsquerygraphql.FilterableField)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], DriverDTO.prototype, "city", void 0);
+_ts_decorate._([
     (0, _graphql.Field)(()=>String, {
         nullable: true
     }),
     _ts_metadata._("design:type", String)
 ], DriverDTO.prototype, "certificateNumber", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(() => String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], DriverDTO.prototype, "aadhaarNumber", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(() => String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], DriverDTO.prototype, "panNumber", void 0);
 _ts_decorate._([
     (0, _graphql.Field)(()=>Boolean, {
         nullable: false
@@ -52651,6 +52991,14 @@ let DriverUpdateHook = class DriverUpdateHook {
         // Extract the driver ID and the new status from the update input
         const driverId = instance.id;
         const newStatus = instance.update?.status;
+        const newCity = instance.update?.city;
+        // If the city is being changed, regenerate the driverCode for the new city
+        if (newCity) {
+            const driverCode = await (0, _database.generateDriverCode)(this.driverRepository, newCity);
+            if (driverCode) {
+                instance.update.driverCode = driverCode;
+            }
+        }
         // Only proceed if status is being updated to Offline (approved)
         if (newStatus !== _database.DriverStatus.Offline) {
             return instance;
@@ -64904,6 +65252,18 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", Number)
 ], ServiceInput.prototype, "paymentGatewayFee", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceInput.prototype, "cargoExtraKmChargeAfter45Min", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Int, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceInput.prototype, "cargoWaitingTimeMinutes", void 0);
 _ts_decorate._([
     (0, _graphql.Field)(()=>_graphql.Float, {
         nullable: false

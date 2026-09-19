@@ -1,4 +1,4 @@
-import { Args, CONTEXT, Mutation, Resolver, Query, ID } from '@nestjs/graphql';
+import { Args, CONTEXT, Mutation, Resolver, Query, ID, Int } from '@nestjs/graphql';
 import {
   CallMaskingConfigDTO,
   CallMaskingService,
@@ -111,6 +111,23 @@ export class DriverResolver {
       orderId,
       driver.mobileNumber.toString(),
       CallerType.DRIVER,
+    );
+  }
+
+  @Mutation(() => Boolean)
+  async deleteAccount(): Promise<boolean> {
+    return this.driverService.deleteAccount(this.context.req.user.id);
+  }
+
+  @Mutation(() => Boolean)
+  async attachDriverDocument(
+    @Args('driverDocumentId', { type: () => Int }) driverDocumentId: number,
+    @Args('mediaId', { type: () => Int }) mediaId: number,
+  ): Promise<boolean> {
+    return this.driverService.attachDriverDocument(
+      this.context.req.user.id,
+      driverDocumentId,
+      mediaId,
     );
   }
 }

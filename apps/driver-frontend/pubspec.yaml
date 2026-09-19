@@ -58,6 +58,8 @@ dependencies:
   firebase_analytics: any
   firebase_core: any
   firebase_messaging: any
+  flutter_overlay_window: ^0.4.5
+  android_intent_plus: ^5.2.0
 
   # UI
   ionicons: 0.2.3
@@ -90,6 +92,7 @@ dependencies:
   form_builder_validators: any
   razorpay_flutter: ^1.4.6
   web: ^1.1.1
+  flutter_local_notifications: ^22.3.1
 
 dev_dependencies:
   sentry_dart_plugin: any
@@ -174,9 +177,15 @@ flutter_gen:
       - .env.dev
       - .env.prod
 
-
 sentry:
   upload_debug_symbols: true
   upload_source_maps: true
   project: taxi-driver
   org: lumeagency
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/images/route39_logo_full.png
+  android_12:
+    image: assets/images/route39_logo_full.png
+    color: "#FFFFFF"

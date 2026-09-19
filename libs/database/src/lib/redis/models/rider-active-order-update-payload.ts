@@ -51,6 +51,10 @@ export class RiderActiveOrderUpdateDTO {
   status?: OrderStatus;
   @Field(() => Float, { nullable: true })
   cost?: number;
+  @Field(() => Float, { nullable: true })
+  totalCost?: number;
+  @Field(() => Float, { nullable: true })
+  waitingChargeAmount?: number;
   @Field(() => Point, { nullable: true })
   driverLocation?: Point;
   @Field(() => GraphQLISODateTime, { nullable: true })

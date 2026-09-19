@@ -53,6 +53,8 @@ subscription OrderUpdateSubsctipion {
       ...ChatMessage
     }
     status
+    totalCost
+    waitingChargeAmount
     unreadMessagesCount
     directions {
       ...Coordinate

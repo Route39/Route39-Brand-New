@@ -157,7 +157,9 @@ class _WaypointsInputSheetState extends State<WaypointsInputSheet> {
                                 children: widget.waypoints
                                     .mapIndexed(
                                       (index, waypoint) => Padding(
-                                        padding: const EdgeInsets.only(bottom: 16),
+                                        padding: EdgeInsets.only(
+                                          bottom: index == widget.waypoints.length - 1 ? 4 : 16,
+                                        ),
                                         child: LocationTextfield(
                                           key: ValueKey('waypoint_field_$index'),
                                           isFocused: state.selectedWaypointIndex == index,

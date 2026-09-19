@@ -12,6 +12,7 @@ import {
 } from '@ridy/database';
 import { Repository } from 'typeorm';
 import { DriverDTO } from '../dto/driver.dto';
+import { generateDriverCode } from '@ridy/database';
 
 // Statuses that indicate the driver is pending approval
 const PENDING_STATUSES: DriverStatus[] = [
@@ -39,6 +40,18 @@ export class DriverUpdateHook implements BeforeUpdateOneHook<DriverDTO> {
     // Extract the driver ID and the new status from the update input
     const driverId = instance.id as number;
     const newStatus = instance.update?.status as DriverStatus | undefined;
+    const newCity = instance.update?.city as string | undefined;
+
+    // If the city is being changed, regenerate the driverCode for the new city
+    if (newCity) {
+      const driverCode = await generateDriverCode(
+        this.driverRepository,
+        newCity,
+      );
+      if (driverCode) {
+        (instance.update as Record<string, unknown>).driverCode = driverCode;
+      }
+    }
 
     // Only proceed if status is being updated to Offline (approved)
     if (newStatus !== DriverStatus.Offline) {

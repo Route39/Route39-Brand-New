@@ -1920,12 +1920,20 @@ class $AssetsImagesGen {
   /// File path: assets/images/car.png
   AssetGenImage get car => const AssetGenImage('assets/images/car.png');
 
+  /// File path: assets/images/cargo_truck_icon.png
+  AssetGenImage get cargoTruckIcon =>
+      const AssetGenImage('assets/images/cargo_truck_icon.png');
+
   /// File path: assets/images/city_bg.png
   AssetGenImage get cityBg => const AssetGenImage('assets/images/city_bg.png');
 
   /// File path: assets/images/ev_auto_icon.png
   AssetGenImage get evAutoIcon =>
       const AssetGenImage('assets/images/ev_auto_icon.png');
+
+  /// File path: assets/images/ev_auto_icon_small.png
+  AssetGenImage get evAutoIconSmall =>
+      const AssetGenImage('assets/images/ev_auto_icon_small.png');
 
   /// File path: assets/images/language.png
   AssetGenImage get language =>
@@ -1958,6 +1966,14 @@ class $AssetsImagesGen {
   AssetGenImage get route39AutoPhoto =>
       const AssetGenImage('assets/images/route39_auto_photo.png');
 
+  /// File path: assets/images/route39_cargo_icon.png
+  AssetGenImage get route39CargoIcon =>
+      const AssetGenImage('assets/images/route39_cargo_icon.png');
+
+  /// File path: assets/images/route39_icon_full.png
+  AssetGenImage get route39IconFull =>
+      const AssetGenImage('assets/images/route39_icon_full.png');
+
   /// File path: assets/images/route39_logo.png
   AssetGenImage get route39Logo =>
       const AssetGenImage('assets/images/route39_logo.png');
@@ -1979,8 +1995,10 @@ class $AssetsImagesGen {
     appIcon,
     blueArrow,
     car,
+    cargoTruckIcon,
     cityBg,
     evAutoIcon,
+    evAutoIconSmall,
     language,
     logoHeader,
     logo,
@@ -1989,6 +2007,8 @@ class $AssetsImagesGen {
     popularBusStand,
     popularRailwayStation,
     route39AutoPhoto,
+    route39CargoIcon,
+    route39IconFull,
     route39Logo,
     route39LogoFull,
     route39LogoWhite,
@@ -2024,11 +2044,9 @@ abstract final class Assets {
   static const $AssetsImagesGen images = $AssetsImagesGen();
   static const $AssetsLottieGen lottie = $AssetsLottieGen();
   static const String notification = 'assets/notification.mp3';
-  static const String dev = 'dev.env';
-  static const String prod = 'prod.env';
 
   /// List of all assets
-  static List<String> get values => [notification, dev, prod];
+  static List<String> get values => [notification];
 }
 
 class AssetGenImage {

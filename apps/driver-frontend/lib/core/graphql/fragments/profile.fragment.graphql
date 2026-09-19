@@ -15,4 +15,13 @@ fragment Profile on Driver {
   currency
   searchDistance
   profileImageUrl
+  city
+  vehicleOwnership
+  carPlate
+  carId
+  carColorId
+  carProductionYear
+  aadhaarNumber
+  panNumber
+  documentsUploadedCount
 }

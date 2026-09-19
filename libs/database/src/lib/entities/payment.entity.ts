@@ -28,6 +28,13 @@ export class PaymentEntity {
   })
   amount!: number;
 
+  @Column('float', {
+    default: 0,
+    precision: 10,
+    scale: 2,
+  })
+  tip!: number;
+
   @Column()
   currency!: string;
 

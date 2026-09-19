@@ -39,6 +39,7 @@ class _SelectPaymentMethodSheetState extends State<PayForRideSheet> {
       currency: currency,
       amount: amount,
       orderId: orderId,
+      tip: tip,
     );
   }
 
@@ -194,7 +195,8 @@ class _SelectPaymentMethodSheetState extends State<PayForRideSheet> {
               clipBehavior: Clip.antiAlias,
               child: SafeArea(
                 bottom: false,
-                child: Column(
+                child: SingleChildScrollView(
+                  child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -414,6 +416,7 @@ class _SelectPaymentMethodSheetState extends State<PayForRideSheet> {
                       ),
                     ),
                   ],
+                ),
                 ),
               ),
             );

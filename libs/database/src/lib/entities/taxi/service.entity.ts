@@ -229,6 +229,22 @@ export class ServiceEntity {
   })
   paymentGatewayFee?: number;
 
+  @Column('float', {
+    nullable: true,
+    precision: 10,
+    scale: 2,
+    comment:
+      'Extra per-km charge applied after 45 minutes, used for Cargo services',
+  })
+  cargoExtraKmChargeAfter45Min?: number;
+
+  @Column('int', {
+    nullable: true,
+    comment:
+      'Free waiting time (in minutes) before cargo waiting charges start applying.',
+  })
+  cargoWaitingTimeMinutes?: number;
+
   @OneToOne(() => MediaEntity, { eager: true, nullable: true })
   @JoinColumn()
   media?: MediaEntity;

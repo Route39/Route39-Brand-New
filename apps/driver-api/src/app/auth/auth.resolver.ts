@@ -33,6 +33,7 @@ import { Repository, Like } from 'typeorm';
 import { DriverDocumentEntity } from '@ridy/database';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CarModelDTO } from '../core/dtos/car-model.dto';
+import { SaveRegistrationProgressInput } from './dto/save-registration-progress.input';
 import { CarColorDTO } from '../core/dtos/car-color.dto';
 import { CompleteRegistrationInput } from './dto/complete-registration.input';
 import { PhoneNumberUtil, PhoneNumberFormat } from 'google-libphonenumber';
@@ -222,6 +223,20 @@ export class AuthResolver {
       hasName: driver.firstName != null && driver.lastName != null,
       hasPassword: driver.password != null,
     };
+  }
+
+  @Mutation(() => DriverDTO, {
+    description:
+      'Saves partial registration progress (city, vehicle type, documents step data) so the driver can resume from where they left off on any device.',
+  })
+  @UseGuards(GqlAuthGuard)
+  async saveRegistrationProgress(
+    @Args('input') input: SaveRegistrationProgressInput,
+  ): Promise<DriverDTO> {
+    return this.authService.saveRegistrationProgress({
+      userId: this.userContext.req.user.id,
+      input,
+    });
   }
 
   @Query(() => [CarModelDTO])

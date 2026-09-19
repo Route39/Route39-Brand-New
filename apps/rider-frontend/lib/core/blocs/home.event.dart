@@ -26,6 +26,8 @@ sealed class HomeEvent with _$HomeEvent {
 
   const factory HomeEvent.onWaypointConfirmed() = HomeEvent$OnWaypointConfirmed;
 
+  const factory HomeEvent.onExitPreview() = HomeEvent$OnExitPreview;
+
   const factory HomeEvent.showConfirmWaypoint({required Place selectedLocation}) = HomeEvent$ShowConfirmWaypoint;
 
   const factory HomeEvent.onChatMessageSent({required String message}) = HomeEvent$OnChatMessageSent;

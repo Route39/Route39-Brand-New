@@ -22,39 +22,40 @@ class FirebaseRepositoryImpl implements FirebaseRepository {
     if (_tokenRefreshSubscription != null) {
       return; // Prevent multiple subscriptions
     }
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-    NotificationSettings settings = await messaging.requestPermission(
-      alert: true,
-      announcement: true,
-      badge: true,
-      carPlay: true,
-      criticalAlert: false,
-      provisional: true,
-      sound: true,
-    );
-    if (settings.authorizationStatus != AuthorizationStatus.denied) {
-      try {
-        final token = await messaging.getToken(
-          vapidKey: Env.firebaseMessagingVapidKey,
+    try {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+      NotificationSettings settings = await messaging.requestPermission(
+        alert: true,
+        announcement: true,
+        badge: true,
+        carPlay: true,
+        criticalAlert: false,
+        provisional: true,
+        sound: true,
+      ).timeout(const Duration(seconds: 5), onTimeout: () {
+        throw Exception('Push notification permission request timed out');
+      });
+      if (settings.authorizationStatus == AuthorizationStatus.denied) return;
+      final token = await messaging.getToken(
+        vapidKey: Env.firebaseMessagingVapidKey,
+      );
+      _tokenRefreshSubscription = messaging.onTokenRefresh.listen((newToken) {
+        _graphqlDatasource.mutate(
+          Options$Mutation$UpdateFcmToken(
+            variables: Variables$Mutation$UpdateFcmToken(token: newToken),
+          ),
         );
-        _tokenRefreshSubscription = messaging.onTokenRefresh.listen((newToken) {
-          _graphqlDatasource.mutate(
-            Options$Mutation$UpdateFcmToken(
-              variables: Variables$Mutation$UpdateFcmToken(token: newToken),
-            ),
-          );
-        });
-        if (token != null) {
-          await _graphqlDatasource.mutate(
-            Options$Mutation$UpdateFcmToken(
-              variables: Variables$Mutation$UpdateFcmToken(token: token),
-            ),
-          );
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          print(e);
-        }
+      });
+      if (token != null) {
+        await _graphqlDatasource.mutate(
+          Options$Mutation$UpdateFcmToken(
+            variables: Variables$Mutation$UpdateFcmToken(token: token),
+          ),
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
       }
     }
   }

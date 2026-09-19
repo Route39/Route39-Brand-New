@@ -3,6 +3,7 @@ import 'package:ionicons/ionicons.dart';
 import 'package:ridy/config/locator/locator.dart';
 import 'package:ridy/core/blocs/home.bloc.dart';
 import 'package:ridy/core/extensions/extensions.dart';
+import 'package:ridy/core/graphql/schema.gql.dart';
 
 class LookingForDriverSheet extends StatefulWidget {
   const LookingForDriverSheet({super.key});
@@ -16,6 +17,10 @@ class _LookingForDriverSheetState extends State<LookingForDriverSheet> with Tick
   late final Animation<Alignment> _position;
   late final AnimationController _pulseController;
 
+  bool get _isCargo => locator<HomeBloc>().state.orderType != Enum$TaxiOrderType.Ride;
+  String get _vehicleAsset =>
+      _isCargo ? 'assets/images/cargo_truck_icon.png' : 'assets/images/ev_auto_icon.png';
+
   @override
   void initState() {
     super.initState();
@@ -27,7 +32,7 @@ class _LookingForDriverSheetState extends State<LookingForDriverSheet> with Tick
     _pulseController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400))..repeat();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await Future.wait([
-        precacheImage(const AssetImage('assets/images/ev_auto_icon.png'), context),
+        precacheImage(AssetImage(_vehicleAsset), context),
         precacheImage(const AssetImage('assets/images/city_bg.png'), context),
       ]);
       if (mounted) {
@@ -80,7 +85,7 @@ class _LookingForDriverSheetState extends State<LookingForDriverSheet> with Tick
                           child: Padding(
                             padding: const EdgeInsets.only(bottom: 20),
                             child: Image.asset(
-                              'assets/images/ev_auto_icon.png',
+                              _vehicleAsset,
                               width: (panelWidth * 0.12).clamp(90.0, 220.0),
                               fit: BoxFit.contain,
                             ),

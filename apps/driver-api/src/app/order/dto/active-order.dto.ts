@@ -89,6 +89,12 @@ export class ActiveOrderDTO {
   paymentGatewayFeePercent?: number;
   @Field(() => Float, { nullable: false })
   paymentGatewayFeeAmount!: number;
+  @Field(() => Float, { nullable: true })
+  waitingChargeAmount?: number;
+  @Field(() => GraphQLISODateTime, { nullable: true })
+  arrivedAt?: Date;
+  @Field(() => Int, { nullable: true })
+  cargoWaitingTimeMinutes?: number;
   @Field(() => [Point], { defaultValue: [] })
   directions!: Point[];
   @Field(() => Int, { defaultValue: 0 })

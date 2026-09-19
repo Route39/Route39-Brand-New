@@ -13,6 +13,9 @@ export const ORDER_DETAIL_QUERY = graphql(`
       durationBest
       costBest
       costAfterCoupon
+      gstAmount
+      platformFeeAmount
+      paymentGatewayFeeAmount
       waitCost
       rideOptionsCost
       taxCost
@@ -29,9 +32,20 @@ export const ORDER_DETAIL_QUERY = graphql(`
       paymentMode
       riderId
       driverId
+      driver {
+        id
+        firstName
+        lastName
+      }
       regionId
       fleetId
       serviceId
+      arrivedAt
+      waitingChargeAmount
+      service {
+        id
+        cargoWaitingTimeMinutes
+      }
     }
   }
 `);
@@ -44,6 +58,7 @@ export const ORDER_UPDATED_SUBSCRIPTION = graphql(`
       startTimestamp
       finishTimestamp
       driverId
+      arrivedAt
     }
   }
 `);

@@ -324,17 +324,22 @@ export class OrderService {
     const order = await this.activeOrderRedisService.getActiveOrder(
       input.orderId.toString(),
     );
+    const arrivedAt = new Date();
     await this.activeOrderRedisService.updateOrderStatus(
       input.orderId.toString(),
       {
         status: OrderStatus.Arrived,
+        arrivedAt: arrivedAt.getTime(),
       },
     );
     this.activityRepository.insert({
       requestId: parseInt(order.id),
       type: RequestActivityType.ArrivedToPickupPoint,
     });
-    this.orderRepository.update(order.id, { status: OrderStatus.Arrived });
+    this.orderRepository.update(order.id, {
+      status: OrderStatus.Arrived,
+      arrivedAt,
+    });
 
     const rider = await this.riderRedisService.getOnlineRider(order.riderId);
     this.pubsub.publish(
@@ -376,6 +381,35 @@ export class OrderService {
     if (otpRequiredForGuard && !orderEntityForGuard.pickupOtpVerifiedAt) {
       throw new ForbiddenError('OTP_VERIFICATION_REQUIRED');
     }
+
+    // Cargo waiting-time charge: if the driver confirmed arrival more than
+    // the service's configured free-wait window before confirming pickup,
+    // bill the extra minutes at the service's configured per-minute rate.
+    let waitingChargeAmount = 0;
+    if (orderEntityForGuard.arrivedAt) {
+      const freeWaitMinutes =
+        orderEntityForGuard.service?.cargoWaitingTimeMinutes ?? 45;
+      const elapsedMinutes =
+        (Date.now() - new Date(orderEntityForGuard.arrivedAt).getTime()) /
+        60000;
+      const extraMinutes = Math.floor(elapsedMinutes) - freeWaitMinutes;
+      const extraChargeRate =
+        orderEntityForGuard.service?.cargoExtraKmChargeAfter45Min ?? 0;
+      if (extraMinutes > 0 && extraChargeRate > 0) {
+        waitingChargeAmount = extraMinutes * extraChargeRate;
+      }
+      // console.log('[WAITING_CHARGE_DEBUG]', {
+      //   orderId: orderEntityForGuard.id,
+      //   serviceId: orderEntityForGuard.serviceId,
+      //   arrivedAt: orderEntityForGuard.arrivedAt,
+      //   elapsedMinutes,
+      //   freeWaitMinutes,
+      //   extraMinutes,
+      //   extraChargeRate,
+      //   waitingChargeAmount,
+      // });
+    }
+
     const order = await this.activeOrderRedisService.getActiveOrder(
       input.orderId.toString(),
     );
@@ -384,12 +418,16 @@ export class OrderService {
     );
     order.currentLegIndex = 1;
     const rider = await this.riderRedisService.getOnlineRider(order.riderId);
-    this.orderRepository.update(order.id, { status: OrderStatus.Started });
+    this.orderRepository.update(order.id, {
+      status: OrderStatus.Started,
+      waitingChargeAmount,
+    });
     await this.activeOrderRedisService.updateOrderStatus(
       input.orderId.toString(),
       {
         status: OrderStatus.Started,
         currentLegIndex: 1,
+        waitingChargeAmount,
         // Initialize actual distance/duration tracking
         actualDistance: 0,
         actualDuration: 0,
@@ -412,6 +450,8 @@ export class OrderService {
         status: OrderStatus.Started,
         directions: order.tripDirections,
         nextDestination,
+        totalCost: (order.costEstimateForRider ?? 0) + waitingChargeAmount,
+        waitingChargeAmount,
       },
     );
     this.riderNotificationService.started(rider?.fcmTokens?.[0]);
@@ -420,6 +460,8 @@ export class OrderService {
       status: OrderStatus.Started,
       directions: order.tripDirections,
       nextDestination,
+      totalCost: (order.costEstimateForDriver ?? 0) + waitingChargeAmount,
+      waitingChargeAmount,
     };
   }
 
@@ -676,7 +718,12 @@ export class OrderService {
       }
       return {
         orderId: input.orderId,
-        totalCost: finishResult == null ? null : order.costEstimateForRider,
+        totalCost:
+          finishResult == null
+            ? null
+            : (order.costEstimateForDriver ?? 0) + (order.waitingChargeAmount ?? 0),
+        waitingChargeAmount:
+          finishResult == null ? null : (order.waitingChargeAmount ?? 0),
         status:
           finishResult == null
             ? OrderStatus.Finished
@@ -859,7 +906,7 @@ export class OrderService {
       })),
       options: order.options ?? [],
       waypoints: waypoints,
-      totalCost: order.costEstimateForDriver ?? 0,
+      totalCost: (order.costEstimateForDriver ?? 0) + (order.waitingChargeAmount ?? 0),
       costResult:
         order?.pricingMode === PricingMode.RANGE &&
         order?.costMin != null &&
@@ -885,6 +932,9 @@ export class OrderService {
       platformFeeAmount: order.platformFeeAmount ?? 0,
       paymentGatewayFeePercent: order.paymentGatewayFeePercent,
       paymentGatewayFeeAmount: order.paymentGatewayFeeAmount ?? 0,
+      waitingChargeAmount: order.waitingChargeAmount ?? 0,
+      arrivedAt: order.arrivedAt ? new Date(order.arrivedAt) : undefined,
+      cargoWaitingTimeMinutes: order.cargoWaitingTimeMinutes ?? undefined,
       directions: directions ?? [],
       unreadMessagesCount,
       nextDestination: nextDestination ?? undefined,
@@ -990,7 +1040,8 @@ export class OrderService {
           order.costAfterCoupon +
           (order.gstAmount ?? 0) +
           (order.platformFeeAmount ?? 0) +
-          (order.paymentGatewayFeeAmount ?? 0),
+          (order.paymentGatewayFeeAmount ?? 0) +
+          (order.waitingChargeAmount ?? 0),
         paymentMode: order.paymentMode ?? PaymentMode.Cash,
         directions: order.directions ?? [],
       };
@@ -1074,13 +1125,44 @@ export class OrderService {
         },
       },
     );
-    // Call finish with the full cost as cash amount to properly settle wallets
+    // Call finish with the full cost + waiting charge as cash amount, to properly settle wallets.
     // This ensures commission is deducted from driver and balance check is performed
-    await this.sharedOrderService.finish(
+    const cashAmount = order.costEstimateForRider + (order.waitingChargeAmount ?? 0);
+    const finishResult = await this.sharedOrderService.finish(
       input.orderId,
-      order.costEstimateForRider, // The full amount was paid in cash
+      cashAmount,
       false,
     );
+
+    if (finishResult != null) {
+      // finish() couldn't fully settle it and moved the order to WaitingForPostPay —
+      // do NOT announce completion; let the rider/driver screens reflect that instead.
+      this.pubsub.publish(
+        'rider.order.updated',
+        { riderId: parseInt(order.riderId) },
+        {
+          type: RiderOrderUpdateType.StatusUpdated,
+          orderId: input.orderId,
+          riderId: parseInt(order.riderId),
+          status: OrderStatus.WaitingForPostPay,
+        },
+      );
+      this.pubsub.publish(
+        'driver.event',
+        { driverId: parseInt(order.driverId) },
+        {
+          type: DriverEventType.ActiveOrderUpdated,
+          orderId: input.orderId,
+          driverId: parseInt(order.driverId),
+          status: OrderStatus.WaitingForPostPay,
+        },
+      );
+      return {
+        status: OrderStatus.WaitingForPostPay,
+        orderId: input.orderId,
+      };
+    }
+
     // Trigger rating dialog for both sides
     this.askRiderForReview(order);
     // Notify rider the order is complete (moves them off payment screen + triggers ephemeral fetch)
