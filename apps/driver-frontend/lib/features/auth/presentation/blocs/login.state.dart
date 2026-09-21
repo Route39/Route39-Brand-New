@@ -69,6 +69,23 @@ sealed class LoginState with _$LoginState {
 
   const LoginState._();
 
+  bool shouldRebuildFor(LoginState next) =>
+      loginPage != next.loginPage ||
+      otp != next.otp ||
+      enterOtpResponse != next.enterOtpResponse ||
+      selectedCity != next.selectedCity ||
+      selectedVehicleType != next.selectedVehicleType ||
+      documentsChecklistDone != next.documentsChecklistDone ||
+      hasDrivingLicense != next.hasDrivingLicense ||
+      showLicenseUpload != next.showLicenseUpload ||
+      licenseSubmitted != next.licenseSubmitted ||
+      showProfileInfo != next.showProfileInfo ||
+      profileInfoSubmitted != next.profileInfoSubmitted ||
+      showVehicleRC != next.showVehicleRC ||
+      vehicleRCSubmitted != next.vehicleRCSubmitted ||
+      showAadhaarPan != next.showAadhaarPan ||
+      aadhaarPanSubmitted != next.aadhaarPanSubmitted;
+
   bool get canResendOtp {
     if (lastOtpSentAt == null) {
       return true;

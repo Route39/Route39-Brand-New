@@ -147,24 +147,5 @@
 
 
 
-<script>
-window.addEventListener("load", async () => {
-  try {
-    const r = await fetch("http://localhost:3002/graphql", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({
-        query: "mutation VerifyNumber($countryIso: String!, $number: String!) { verifyNumber(countryIso: $countryIso, mobileNumber: $number) { hash isExistingUser } }",
-        variables: {countryIso: "IN", number: "918015899202"}
-      })
-    });
-
-    console.log("[DIRECT-FETCH] status =", r.status);
-    console.log("[DIRECT-FETCH] body =", await r.text());
-  } catch (e) {
-    console.error("[DIRECT-FETCH] ERROR =", e);
-  }
-});
-</script>
 
 </body></html>

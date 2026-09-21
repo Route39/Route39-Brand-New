@@ -26,9 +26,7 @@ class AuthScreenDesktop extends StatelessWidget {
                 duration: const Duration(milliseconds: 300),
                 child: BlocBuilder<LoginBloc, LoginState>(
                   buildWhen: (currentState, nextState) =>
-                      currentState.loginPage != nextState.loginPage ||
-                      currentState.otp != nextState.otp ||
-                      currentState.enterOtpResponse != nextState.enterOtpResponse,
+                    currentState.shouldRebuildFor(nextState),
                   builder: (context, state) => Padding(
                     padding: const EdgeInsets.all(64),
                     child: Column(
