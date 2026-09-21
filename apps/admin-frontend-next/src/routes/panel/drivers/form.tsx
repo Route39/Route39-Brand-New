@@ -60,9 +60,10 @@ interface Props {
   mode: "create" | "edit";
   id?: string;
   initialValues?: Partial<Values>;
+  redirectTo?: string;
 }
 
-export function DriverForm({ mode, id, initialValues }: Props) {
+export function DriverForm({ mode, id, initialValues, redirectTo }: Props) {
   const confirm = useConfirm();
   const navigate = useNavigate();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -124,12 +125,12 @@ export function DriverForm({ mode, id, initialValues }: Props) {
         const { data: created } = await createOne({ variables: { input } });
         toast.success("Driver created");
         const newId = created?.createOneDriver.id;
-        navigate(newId ? `/drivers/${newId}` : "/drivers");
+        navigate(redirectTo ?? (newId ? `/drivers/${newId}` : "/drivers"));
         return;
       } else if (id) {
         await updateOne({ variables: { id, input } });
         toast.success("Driver updated");
-        navigate(`/drivers/${id}`);
+        navigate(redirectTo ?? `/drivers/${id}`);
         return;
       }
     } catch (err) {

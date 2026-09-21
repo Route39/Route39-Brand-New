@@ -1,8 +1,8 @@
-import { useQuery } from "@apollo/client";
-import { Plus, Search, ArrowUpDown } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@apollo/client";
+import { Search, ArrowUpDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 import { CsvExportButton } from "@/components/tables/CsvExportButton";
 import { DataTable, type DataTableColumn } from "@/components/tables/DataTable";
 import { PageHeader } from "@/components/panel/PageHeader";
@@ -175,6 +175,9 @@ export default function VehiclesListPage() {
         description="Vehicles registered on the platform, fetched live from the driver app."
         actions={
           <div className="flex gap-2">
+            <Button onClick={() => navigate("/management/fleets/new")}>
+              + New Vehicle
+            </Button>
             <CsvExportButton
               query={EXPORT_DRIVERS_QUERY}
               resultField="exportDrivers"
@@ -190,12 +193,6 @@ export default function VehiclesListPage() {
               sorting={sort ? [{ field: sort.field, direction: sort.direction }] : []}
               entityLabel="vehicles"
             />
-            <Button asChild>
-              <Link to="/management/fleets/new">
-                <Plus className="size-4" />
-                New Vehicle
-              </Link>
-            </Button>
           </div>
         }
       />
