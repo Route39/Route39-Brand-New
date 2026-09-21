@@ -11,6 +11,8 @@ import { Field } from "@/components/forms/Field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/providers/AuthProvider";
+import { useQuery } from "@apollo/client";
+import { PUBLIC_LIVE_STATS_QUERY } from "@/lib/graphql/documents/public-stats";
 
 const schema = z.object({
   userName: z.string().min(1, "Username is required"),
@@ -19,8 +21,8 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-const BRAND = "#0037e7";
-const BRAND_DEEP = "#001a8a";
+const BRAND = "#c62828";
+const BRAND_DEEP = "#7f1414";
 
 function useClock() {
   const [now, setNow] = useState(() => new Date());
@@ -38,6 +40,10 @@ export default function LoginPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const now = useClock();
+  const { data: liveStatsData } = useQuery(PUBLIC_LIVE_STATS_QUERY, {
+    pollInterval: 15000,
+  });
+  const liveStats = liveStatsData?.publicLiveStats;
 
   const {
     register,
@@ -78,13 +84,12 @@ export default function LoginPage() {
     <div className="grid min-h-screen bg-background lg:grid-cols-[1fr_minmax(420px,520px)]">
       <style>{LOGIN_KEYFRAMES}</style>
 
-      <BrandPanel time={time} />
+      <BrandPanel time={time} stats={liveStats} />
 
       <section className="flex items-center justify-center px-6 py-10 lg:px-12">
         <div className="w-full max-w-sm">
           <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-            <img src={`${import.meta.env.BASE_URL}icon.svg`} alt="" className="size-8 rounded-md" />
-            <span className="text-base font-semibold tracking-tight">Route39 Admin</span>
+            <img src={`${import.meta.env.BASE_URL}route39_logo.png`} alt="Route39" className="h-8 w-auto" />
           </div>
 
           <form onSubmit={onSubmit} className="space-y-6">
@@ -175,14 +180,26 @@ export default function LoginPage() {
   );
 }
 
-function BrandPanel({ time }: { time: string }) {
+type LiveStats = {
+  driversOnline: number;
+  tripsToday: number;
+  avgPickupMinutes?: number | null;
+} | null | undefined;
+
+function BrandPanel({ time, stats }: { time: string; stats: LiveStats }) {
+  const driversOnline = stats?.driversOnline ?? 0;
+  const tripsToday = stats?.tripsToday ?? 0;
+  const avgPickupLabel =
+    stats?.avgPickupMinutes != null
+      ? `${Math.floor(stats.avgPickupMinutes)}:${String(Math.round((stats.avgPickupMinutes % 1) * 60)).padStart(2, "0")}`
+      : "—";
   return (
     <aside className="relative isolate hidden flex-col overflow-hidden p-10 text-white lg:flex lg:p-12">
       <div
         aria-hidden
         className="absolute inset-0 -z-30"
         style={{
-          background: `linear-gradient(150deg, ${BRAND_DEEP} 0%, ${BRAND} 50%, #1959ff 100%)`,
+          background: `linear-gradient(150deg, ${BRAND_DEEP} 0%, ${BRAND} 50%, #e53935 100%)`,
         }}
       />
 
@@ -233,16 +250,10 @@ function BrandPanel({ time }: { time: string }) {
         style={{ animationDelay: "40ms" }}
       >
         <img
-          src={`${import.meta.env.BASE_URL}icon.svg`}
-          alt=""
-          className="size-9 rounded-lg ring-1 ring-white/20"
+          src={`${import.meta.env.BASE_URL}route39_logo_dark.png`}
+          alt="Route39"
+          className="h-14 w-auto"
         />
-        <div className="leading-tight">
-          <div className="text-[0.95rem] font-semibold tracking-tight">Route39</div>
-          <div className="text-[0.7rem] font-medium uppercase tracking-[0.12em] text-white/55">
-            Admin Console
-          </div>
-        </div>
       </header>
 
       <div className="my-auto max-w-md space-y-4 py-10">
@@ -282,9 +293,9 @@ function BrandPanel({ time }: { time: string }) {
         className="login-rise grid grid-cols-3 gap-3"
         style={{ animationDelay: "400ms" }}
       >
-        <BrandStat icon={Car} value="423" label="Drivers online" delta="+12" />
-        <BrandStat icon={MapPin} value="2,194" label="Trips today" delta="+8.2%" />
-        <BrandStat icon={TrendingUp} value="3:41" label="Avg pickup" delta="−14s" />
+        <BrandStat icon={Car} value={driversOnline.toLocaleString()} label="Drivers online" />
+        <BrandStat icon={MapPin} value={tripsToday.toLocaleString()} label="Trips today" />
+        <BrandStat icon={TrendingUp} value={avgPickupLabel} label="Avg pickup" />
       </div>
 
       <div
@@ -307,15 +318,17 @@ function BrandStat({
   icon: typeof Car;
   value: string;
   label: string;
-  delta: string;
+  delta?: string;
 }) {
   return (
     <div className="rounded-lg bg-white/8 p-3 ring-1 ring-inset ring-white/10 backdrop-blur-sm">
       <div className="flex items-center justify-between text-white/65">
         <Icon className="size-3.5" />
-        <span className="text-[0.65rem] font-medium tabular-nums text-emerald-300/90">
-          {delta}
-        </span>
+        {delta ? (
+          <span className="text-[0.65rem] font-medium tabular-nums text-emerald-300/90">
+            {delta}
+          </span>
+        ) : null}
       </div>
       <div className="mt-2 text-xl font-semibold tabular-nums leading-none">{value}</div>
       <div className="mt-1.5 text-[0.65rem] font-medium uppercase tracking-[0.1em] text-white/55">

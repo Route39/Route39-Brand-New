@@ -145,7 +145,7 @@ export const NAV: NavEntry[] = [
       { label: "menu.management.reviewParameters", to: "/management/review-parameters", icon: Ticket, perm: ["ReviewParameter_Edit"] },
       { label: "menu.management.driverShiftRules", to: "/management/driver-shift-rules", icon: AlertTriangle, perm: ["Drivers_Edit"] },
       { label: "menu.management.retentionPolicies", to: "/management/retention-policies", icon: Ticket, perm: ["Drivers_Edit"] },
-      { label: "menu.management.cars", to: "/management/cars", icon: Car, perm: ["Cars_View"] },
+      // { label: "menu.management.cars", to: "/management/cars", icon: Car, perm: ["Cars_View"] },
       { label: "menu.management.userRoles", to: "/management/user-roles", icon: UserCog, perm: ["Users_View"] },
       { label: "menu.management.users", to: "/management/users", icon: Users, perm: ["Users_View"] },
       { label: "menu.management.smsProviders", to: "/management/sms-providers", icon: LifeBuoy, perm: ["SMSProviders_View"] },

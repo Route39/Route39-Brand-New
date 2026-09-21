@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useFilterField, usePageState } from "@/lib/panel/page-state";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface TableToolbarProps {
   children?: ReactNode;
@@ -161,6 +160,8 @@ export interface FilterTabsProps {
   allLabel?: string;
 }
 
+const FILTER_TAB_DOT_COLORS = ["#34d399", "#a78bfa", "#f87171", "#60a5fa", "#fbbf24", "#f472b6"];
+
 export function FilterTabs({
   field,
   options,
@@ -168,17 +169,41 @@ export function FilterTabs({
   allLabel = "All",
 }: FilterTabsProps) {
   const [value, setValue] = useFilterField(field, operator);
+  const current = value || "__all__";
 
   return (
-    <Tabs value={value || "__all__"} onValueChange={(v) => setValue(v === "__all__" ? "" : v)}>
-      <TabsList>
-        <TabsTrigger value="__all__">{allLabel}</TabsTrigger>
-        {options.map((option) => (
-          <TabsTrigger key={option.value} value={option.value}>
-            {option.label}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-    </Tabs>
+    <div className="flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        onClick={() => setValue("")}
+        className={cn(
+          "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+          current === "__all__"
+            ? "border-[#c62828] bg-[#c62828]/5 text-[#c62828]"
+            : "border-border bg-background text-foreground hover:bg-muted",
+        )}
+      >
+        {allLabel}
+      </button>
+      {options.map((option, i) => (
+        <button
+          key={option.value}
+          type="button"
+          onClick={() => setValue(option.value)}
+          className={cn(
+            "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+            current === option.value
+              ? "border-[#c62828] bg-[#c62828]/5 text-[#c62828]"
+              : "border-border bg-background text-foreground hover:bg-muted",
+          )}
+        >
+          <span
+            className="size-2 shrink-0 rounded-full"
+            style={{ backgroundColor: FILTER_TAB_DOT_COLORS[i % FILTER_TAB_DOT_COLORS.length] }}
+          />
+          {option.label}
+        </button>
+      ))}
+    </div>
   );
 }

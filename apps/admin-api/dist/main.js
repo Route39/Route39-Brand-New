@@ -149,12 +149,13 @@ const _licenseverify = __webpack_require__(20);
 const _taxisupportrequestmodule = __webpack_require__(468);
 const _notificationmodule = __webpack_require__(475);
 const _platformoverviewmodule = __webpack_require__(480);
-const _setup = __webpack_require__(486);
+const _publicstatsmodule = __webpack_require__(486);
+const _setup = __webpack_require__(490);
 const _core = __webpack_require__(8);
-const _configmodule = __webpack_require__(487);
-const _settingsmodule = __webpack_require__(488);
-const _supportwebhookmodule = __webpack_require__(491);
-const _kycexpirationmodule = __webpack_require__(492);
+const _configmodule = __webpack_require__(491);
+const _settingsmodule = __webpack_require__(492);
+const _supportwebhookmodule = __webpack_require__(495);
+const _kycexpirationmodule = __webpack_require__(496);
 let AdminAPIModule = class AdminAPIModule {
     constructor(licenseVerifyService){
         this.licenseVerifyService = licenseVerifyService;
@@ -172,6 +173,7 @@ let AdminAPIModule = class AdminAPIModule {
                     _database.DatabaseModule,
                     _licenseverify.LicenseVerifyModule,
                     _platformoverviewmodule.PlatformOverviewModule,
+                    _publicstatsmodule.PublicStatsModule,
                     _graphql.GraphQLModule.forRoot({
                         driver: _apollo.ApolloDriver,
                         context: ({ req, res, extra })=>{
@@ -18412,7 +18414,7 @@ driver_entity_ts_decorate([
     driver_entity_ts_metadata("design:type", Number)
 ], DriverEntity.prototype, "id", void 0);
 driver_entity_ts_decorate([
-    (0,external_typeorm_.Column)({
+    (0, external_typeorm_.Column)({
         nullable: true,
         unique: true
     }),
@@ -40729,9 +40731,9 @@ function driver_code_util_asyncGeneratorStep(gen, resolve, reject, _next, _throw
     }
 }
 function driver_code_util_async_to_generator(fn) {
-    return function() {
+    return function () {
         var self = this, args = arguments;
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
             var gen = fn.apply(self, args);
             function _next(value) {
                 driver_code_util_asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
@@ -40746,7 +40748,7 @@ function driver_code_util_async_to_generator(fn) {
 function driver_code_util_ts_generator(thisArg, body) {
     var f, y, t, _ = {
         label: 0,
-        sent: function() {
+        sent: function () {
             if (t[0] & 1) throw t[1];
             return t[1];
         },
@@ -40757,7 +40759,7 @@ function driver_code_util_ts_generator(thisArg, body) {
         return this;
     }), g;
     function verb(n) {
-        return function(v) {
+        return function (v) {
             return step([
                 n,
                 v
@@ -40766,13 +40768,13 @@ function driver_code_util_ts_generator(thisArg, body) {
     }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
-        while(g && (g = 0, op[0] && (_ = 0)), _)try {
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
             if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
             if (y = 0, t) op = [
                 op[0] & 2,
                 t.value
             ];
-            switch(op[0]){
+            switch (op[0]) {
                 case 0:
                 case 1:
                     t = op;
@@ -40824,7 +40826,7 @@ function driver_code_util_ts_generator(thisArg, body) {
                 e
             ];
             y = 0;
-        } finally{
+            } finally {
             f = t = 0;
         }
         if (op[0] & 5) throw op[1];
@@ -40845,7 +40847,7 @@ function getCityPrefix(city) {
     return CITY_PREFIX_MAP[city];
 }
 function generateDriverCode(driverRepository, city) {
-    return driver_code_util_async_to_generator(function() {
+    return driver_code_util_async_to_generator(function () {
         var prefix, lastDriver, nextNumber, numPart, parsed;
         return driver_code_util_ts_generator(this, function(_state) {
             switch(_state.label){
@@ -52802,13 +52804,13 @@ _ts_decorate._([
     _ts_metadata._("design:type", String)
 ], DriverDTO.prototype, "certificateNumber", void 0);
 _ts_decorate._([
-    (0, _graphql.Field)(()=>String, {
+    (0, _graphql.Field)(() => String, {
         nullable: true
     }),
     _ts_metadata._("design:type", String)
 ], DriverDTO.prototype, "aadhaarNumber", void 0);
 _ts_decorate._([
-    (0, _graphql.Field)(()=>String, {
+    (0, _graphql.Field)(() => String, {
         nullable: true
     }),
     _ts_metadata._("design:type", String)
@@ -78951,7 +78953,194 @@ OrderVolumeBucket = _ts_decorate._([
 
 
 /***/ }),
-/* 486 */
+    /* 486 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+        Object.defineProperty(exports, "__esModule", ({
+            value: true
+        }));
+        Object.defineProperty(exports, "PublicStatsModule", ({
+            enumerable: true,
+            get: function () {
+                return PublicStatsModule;
+            }
+        }));
+        const _ts_decorate = __webpack_require__(12);
+        const _common = __webpack_require__(7);
+        const _typeorm = __webpack_require__(16);
+        const _database = __webpack_require__(17);
+        const _publicstatsservice = __webpack_require__(487);
+        const _publicstatsresolver = __webpack_require__(488);
+        let PublicStatsModule = class PublicStatsModule {
+        };
+        PublicStatsModule = _ts_decorate._([
+            (0, _common.Module)({
+                imports: [
+                    _typeorm.TypeOrmModule.forFeature([
+                        _database.DriverEntity,
+                        _database.TaxiOrderEntity
+                    ])
+                ],
+                providers: [
+                    _publicstatsservice.PublicStatsService,
+                    _publicstatsresolver.PublicStatsResolver
+                ]
+            })
+        ], PublicStatsModule);
+
+
+        /***/
+}),
+    /* 495 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+        Object.defineProperty(exports, "__esModule", ({
+            value: true
+        }));
+        Object.defineProperty(exports, "PublicStatsService", ({
+            enumerable: true,
+            get: function () {
+                return PublicStatsService;
+            }
+        }));
+        const _ts_decorate = __webpack_require__(12);
+        const _ts_metadata = __webpack_require__(13);
+        const _ts_param = __webpack_require__(36);
+        const _common = __webpack_require__(7);
+        const _typeorm = __webpack_require__(16);
+        const _typeorm1 = __webpack_require__(18);
+        const _database = __webpack_require__(17);
+        let PublicStatsService = class PublicStatsService {
+            constructor(driverRepository, taxiOrderRepository) {
+                this.driverRepository = driverRepository;
+                this.taxiOrderRepository = taxiOrderRepository;
+            }
+            async getLiveStats() {
+                const todayStart = new Date();
+                todayStart.setHours(0, 0, 0, 0);
+                const driversOnline = await this.driverRepository.count({
+                    where: [
+                        {
+                            status: _database.DriverStatus.Online
+                        },
+                        {
+                            status: _database.DriverStatus.InService
+                        }
+                    ]
+                });
+                const tripsToday = await this.taxiOrderRepository.createQueryBuilder('order').where('order.requestTimestamp >= :todayStart', {
+                    todayStart
+                }).getCount();
+                const avgResult = await this.taxiOrderRepository.createQueryBuilder('order').select('AVG(TIMESTAMPDIFF(SECOND, order.requestTimestamp, order.arrivedAt))', 'avgSeconds').where('order.requestTimestamp >= :todayStart', {
+                    todayStart
+                }).andWhere('order.arrivedAt IS NOT NULL').getRawOne();
+                const avgSeconds = avgResult?.avgSeconds ? parseFloat(avgResult.avgSeconds) : null;
+                return {
+                    driversOnline,
+                    tripsToday,
+                    avgPickupMinutes: avgSeconds !== null ? avgSeconds / 60 : undefined
+                };
+            }
+        };
+        PublicStatsService = _ts_decorate._([
+            (0, _common.Injectable)(),
+            _ts_param._(0, (0, _typeorm.InjectRepository)(_database.DriverEntity)),
+            _ts_param._(1, (0, _typeorm.InjectRepository)(_database.TaxiOrderEntity)),
+            _ts_metadata._("design:type", Function),
+            _ts_metadata._("design:paramtypes", [
+                typeof _typeorm1.Repository === "undefined" ? Object : _typeorm1.Repository,
+                typeof _typeorm1.Repository === "undefined" ? Object : _typeorm1.Repository
+            ])
+        ], PublicStatsService);
+
+
+        /***/
+}),
+    /* 492 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+        Object.defineProperty(exports, "__esModule", ({
+            value: true
+        }));
+        Object.defineProperty(exports, "PublicStatsResolver", ({
+            enumerable: true,
+            get: function () {
+                return PublicStatsResolver;
+            }
+        }));
+        const _ts_decorate = __webpack_require__(12);
+        const _ts_metadata = __webpack_require__(13);
+        const _graphql = __webpack_require__(15);
+        const _publicstatsservice = __webpack_require__(487);
+        const _publiclivestatsdto = __webpack_require__(489);
+        let PublicStatsResolver = class PublicStatsResolver {
+            constructor(publicStatsService) {
+                this.publicStatsService = publicStatsService;
+            }
+            async publicLiveStats() {
+                return this.publicStatsService.getLiveStats();
+            }
+        };
+        _ts_decorate._([
+            (0, _graphql.Query)(() => _publiclivestatsdto.PublicLiveStatsDTO),
+            _ts_metadata._("design:type", Function),
+            _ts_metadata._("design:paramtypes", []),
+            _ts_metadata._("design:returntype", Promise)
+        ], PublicStatsResolver.prototype, "publicLiveStats", null);
+        PublicStatsResolver = _ts_decorate._([
+            (0, _graphql.Resolver)(),
+            _ts_metadata._("design:type", Function),
+            _ts_metadata._("design:paramtypes", [
+                typeof _publicstatsservice.PublicStatsService === "undefined" ? Object : _publicstatsservice.PublicStatsService
+            ])
+        ], PublicStatsResolver);
+
+
+        /***/
+}),
+    /* 497 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+        Object.defineProperty(exports, "__esModule", ({
+            value: true
+        }));
+        Object.defineProperty(exports, "PublicLiveStatsDTO", ({
+            enumerable: true,
+            get: function () {
+                return PublicLiveStatsDTO;
+            }
+        }));
+        const _ts_decorate = __webpack_require__(12);
+        const _ts_metadata = __webpack_require__(13);
+        const _graphql = __webpack_require__(15);
+        let PublicLiveStatsDTO = class PublicLiveStatsDTO {
+        };
+        _ts_decorate._([
+            (0, _graphql.Field)(() => _graphql.Int),
+            _ts_metadata._("design:type", Number)
+        ], PublicLiveStatsDTO.prototype, "driversOnline", void 0);
+        _ts_decorate._([
+            (0, _graphql.Field)(() => _graphql.Int),
+            _ts_metadata._("design:type", Number)
+        ], PublicLiveStatsDTO.prototype, "tripsToday", void 0);
+        _ts_decorate._([
+            (0, _graphql.Field)(() => _graphql.Float, {
+                nullable: true
+            }),
+            _ts_metadata._("design:type", Number)
+        ], PublicLiveStatsDTO.prototype, "avgPickupMinutes", void 0);
+        PublicLiveStatsDTO = _ts_decorate._([
+            (0, _graphql.ObjectType)('PublicLiveStats')
+        ], PublicLiveStatsDTO);
+
+
+        /***/
+}),
+    /* 498 */
 /***/ ((module) => {
 
 module.exports = require("@sentry/nestjs/setup");
@@ -78978,7 +79167,7 @@ Object.defineProperty(exports, "SettingsModule", ({
 }));
 const _ts_decorate = __webpack_require__(12);
 const _common = __webpack_require__(7);
-const _settingsresolver = __webpack_require__(489);
+    const _settingsresolver = __webpack_require__(493);
 const _operatormodule = __webpack_require__(83);
 let SettingsModule = class SettingsModule {
 };
@@ -79012,7 +79201,7 @@ const _ts_decorate = __webpack_require__(12);
 const _ts_metadata = __webpack_require__(13);
 const _ts_param = __webpack_require__(36);
 const _graphql = __webpack_require__(15);
-const _dispatchconfigdto = __webpack_require__(490);
+    const _dispatchconfigdto = __webpack_require__(494);
 const _database = __webpack_require__(17);
 const _common = __webpack_require__(7);
 const _jwtauthguard = __webpack_require__(37);
@@ -79402,8 +79591,8 @@ const _typeorm = __webpack_require__(16);
 const _bullmq = __webpack_require__(27);
 const _bullmq1 = __webpack_require__(28);
 const _database = __webpack_require__(17);
-const _kycexpirationservice = __webpack_require__(493);
-const _kycexpirationprocessor = __webpack_require__(494);
+    const _kycexpirationservice = __webpack_require__(497);
+    const _kycexpirationprocessor = __webpack_require__(498);
 const KYC_EXPIRATION_QUEUE = 'kyc-expiration-checker';
 let KycExpirationModule = class KycExpirationModule {
     constructor(kycExpirationQueue){
@@ -79660,7 +79849,7 @@ const _ts_decorate = __webpack_require__(12);
 const _ts_metadata = __webpack_require__(13);
 const _bullmq = __webpack_require__(27);
 const _common = __webpack_require__(7);
-const _kycexpirationservice = __webpack_require__(493);
+const _kycexpirationservice = __webpack_require__(497);
 let KycExpirationProcessor = class KycExpirationProcessor extends _bullmq.WorkerHost {
     constructor(kycExpirationService){
         super(), this.kycExpirationService = kycExpirationService, this.logger = new _common.Logger(KycExpirationProcessor.name);

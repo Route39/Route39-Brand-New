@@ -13997,6 +13997,12 @@ type OrderVolumeBucket {
   orderCount: Int!
 }
 
+type PublicLiveStats {
+  driversOnline: Int!
+  tripsToday: Int!
+  avgPickupMinutes: Float
+}
+
 type BroadcastConfig {
   """Number of drivers to notify in each wave"""
   waveSize: Int!
@@ -14305,6 +14311,7 @@ input DispatchConfigInput {
 type Query {
   platformKPI(input: PlatformKPIInput!): PlatformKPI!
   orderVolumeTimeSeries(period: KPIPeriod!): [OrderVolumeByApp!]!
+  publicLiveStats: PublicLiveStats!
   currentUserSessions: [OperatorSession!]!
   exportRiders(
     """Specify to filter the records returned."""
