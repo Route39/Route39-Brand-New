@@ -19368,7 +19368,7 @@ DatabaseModule = database_module_ts_decorate([
                                         migrationsRun: false,
                                         synchronize: configService.get('NODE_ENV') === 'dev' || configService.get('FORCE_SYNC_DB', false) || currentTables[0].count < 10,
                                         // logging: configService.get('NODE_ENV') === 'dev',
-                                        logging: true
+                                        logging: false
                                     };
                                     logger.log('Database connection configured');
                                     return [
@@ -51367,6 +51367,12 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", Number)
 ], TaxiOrderDTO.prototype, "waitingChargeAmount", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Int, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], TaxiOrderDTO.prototype, "waitSeconds", void 0);
 TaxiOrderDTO = _ts_decorate._([
     (0, _graphql.ObjectType)('Order'),
     (0, _nestjsquerygraphql.Relation)('driver', ()=>_driverdto.DriverDTO, {
@@ -65297,7 +65303,7 @@ _ts_decorate._([
 ], ServiceInput.prototype, "minimumFee", void 0);
 _ts_decorate._([
     (0, _graphql.Field)(()=>_graphql.Int, {
-        nullable: false
+        nullable: true
     }),
     _ts_metadata._("design:type", Number)
 ], ServiceInput.prototype, "searchRadius", void 0);

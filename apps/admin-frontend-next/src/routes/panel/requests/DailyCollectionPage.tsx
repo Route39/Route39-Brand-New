@@ -28,7 +28,7 @@ const CITY_TABS: { key: string; label: string; color: string }[] = [
   { key: "bangalore", label: "Bangalore", color: "#34d399" },
   { key: "chennai", label: "Chennai", color: "#a78bfa" },
   { key: "coimbatore", label: "Coimbatore", color: "#f87171" },
-  { key: "tirupur", label: "Tirupur", color: "#38bdf8" },
+  { key: "tiruppur", label: "Tiruppur", color: "#38bdf8" },
 ];
 
 function pad(n: number): string {
@@ -93,6 +93,7 @@ interface DriverInfo {
   lastName?: string | null;
   mobileNumber?: string | null;
   carPlate?: string | null;
+  city?: string | null;
 }
 
 export default function DailyCollectionPage() {
@@ -128,8 +129,13 @@ export default function DailyCollectionPage() {
 
   const orderFilter = useMemo(() => {
     const f: Record<string, Record<string, unknown>> = { driverId: { isNot: true } };
-    if (dateFrom) f.createdOn = { ...(f.createdOn ?? {}), gte: dayStartISO(dateFrom) };
-    if (dateTo) f.createdOn = { ...(f.createdOn ?? {}), lte: dayEndISO(dateTo) };
+    if (dateFrom && dateTo) {
+      f.createdOn = { between: { lower: dayStartISO(dateFrom), upper: dayEndISO(dateTo) } };
+    } else if (dateFrom) {
+      f.createdOn = { gte: dayStartISO(dateFrom) };
+    } else if (dateTo) {
+      f.createdOn = { lte: dayEndISO(dateTo) };
+    }
     return f;
   }, [dateFrom, dateTo]);
 
@@ -170,13 +176,51 @@ export default function DailyCollectionPage() {
 
   const driverMap = useMemo(() => {
     const m = new Map<string, DriverInfo>();
-    for (const d of driversData?.drivers.nodes ?? []) m.set(d.id, d as DriverInfo);
+
+    for (const d of driversData?.drivers.nodes ?? []) {
+      m.set(d.id, d as DriverInfo);
+    }
+
     return m;
   }, [driversData]);
 
-  const totalCollection = groups.reduce((sum, g) => sum + g.collected, 0);
-  const totalPages = Math.max(1, Math.ceil(groups.length / pageSize));
-  const pageRows = groups.slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize);
+  const filteredGroups = useMemo(() => {
+    if (!activeCity) {
+      return groups;
+    }
+
+    const selectedCity = CITY_TABS.find(
+      (city) => city.key === activeCity,
+    )?.label;
+
+    if (!selectedCity) {
+      return groups;
+    }
+
+    return groups.filter((group) => {
+      const driver = driverMap.get(group.driverId);
+
+      return (
+        driver?.city?.trim().toLowerCase() ===
+        selectedCity.trim().toLowerCase()
+      );
+    });
+  }, [groups, driverMap, activeCity]);
+
+  const totalCollection = filteredGroups.reduce(
+    (sum, g) => sum + g.collected,
+    0,
+  );
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredGroups.length / pageSize),
+  );
+
+  const pageRows = filteredGroups.slice(
+    (page - 1) * pageSize,
+    (page - 1) * pageSize + pageSize,
+  );
 
   return (
     <div className="space-y-6">
@@ -193,7 +237,10 @@ export default function DailyCollectionPage() {
             size="sm"
             variant={activeCity === city.key ? "default" : "outline"}
             className="gap-2 rounded-full"
-            onClick={() => setActiveCity((cur) => (cur === city.key ? null : city.key))}
+            onClick={() => {
+  setPage(1);
+  setActiveCity((cur) => (cur === city.key ? null : city.key));
+}}
           >
             <span className="size-2 rounded-full" style={{ backgroundColor: city.color }} />
             {city.label}
@@ -247,14 +294,14 @@ export default function DailyCollectionPage() {
             />
           </div>
           <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            disabled={!dateFrom && !dateTo}
-            onClick={handleClearFilters}
-          >
-            Clear filter
-          </Button>
+  type="button"
+  size="sm"
+  variant="ghost"
+  disabled={!dateFrom && !dateTo && !activeCity}
+  onClick={handleClearFilters}
+>
+  Clear filter
+</Button>
         </div>
 
         <div className="text-right">

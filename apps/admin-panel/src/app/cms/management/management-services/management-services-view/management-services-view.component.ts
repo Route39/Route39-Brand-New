@@ -133,7 +133,7 @@ export class ManagementServicesViewComponent implements OnInit {
       prepayPercent: [0, Validators.required],
       minimumFee: [0, Validators.required],
       roundingFactor: [null],
-      searchRadius: [0, Validators.required],
+      searchRadius: [0],
       twoWayAvailable: [false, Validators.required],
       maximumDestinationDistance: [0, Validators.required],
       paymentMethod: ['CashCredit', Validators.required],

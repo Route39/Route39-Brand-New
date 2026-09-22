@@ -184,7 +184,7 @@ import { AuthVerificationConfigEntity } from './entities/auth-verification-confi
             configService.get('FORCE_SYNC_DB', false) ||
             currentTables[0].count < 10,
           // logging: configService.get('NODE_ENV') === 'dev',
-          logging: true, // Enable logging by default
+          logging: false, // Enable logging by default
         };
 
         logger.log('Database connection configured');

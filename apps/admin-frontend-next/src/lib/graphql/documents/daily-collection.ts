@@ -24,7 +24,7 @@ export const DRIVER_COLLECTION_AGGREGATE_QUERY = graphql(`
   }
 `);
 
-/** Driver display info (name, phone, vehicle plate) for a set of driver ids. */
+/** Driver display info (name, phone, vehicle plate, city) for a set of driver ids. */
 export const DRIVERS_BY_IDS_QUERY = graphql(`
   query DriversByIds($filter: DriverFilter!, $paging: OffsetPaging!, $sorting: [DriverSort!]!) {
     drivers(paging: $paging, filter: $filter, sorting: $sorting) {
@@ -34,6 +34,7 @@ export const DRIVERS_BY_IDS_QUERY = graphql(`
         lastName
         mobileNumber
         carPlate
+        city
       }
     }
   }

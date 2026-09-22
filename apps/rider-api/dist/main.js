@@ -19262,7 +19262,7 @@ DatabaseModule = database_module_ts_decorate([
                                         migrationsRun: false,
                                         synchronize: configService.get('NODE_ENV') === 'dev' || configService.get('FORCE_SYNC_DB', false) || currentTables[0].count < 10,
                                         // logging: configService.get('NODE_ENV') === 'dev',
-                                        logging: true
+                                        logging: false
                                     };
                                     logger.log('Database connection configured');
                                     return [

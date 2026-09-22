@@ -3025,6 +3025,7 @@ type Order {
   directions: [Point!]
   arrivedAt: DateTime
   waitingChargeAmount: Float
+  waitSeconds: Int
   complaintsAggregate(
     """Filter to find records to aggregate on"""
     filter: TaxiSupportRequestAggregateFilter
@@ -17727,7 +17728,7 @@ input ServiceInput {
   perMinuteWait: Float!
   prepayPercent: Float!
   minimumFee: Float!
-  searchRadius: Int!
+  searchRadius: Int
   paymentMethod: ServicePaymentMethod!
   cancellationTotalFee: Float!
   cancellationDriverShare: Float!

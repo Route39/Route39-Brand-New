@@ -19,6 +19,8 @@ export default function OrderFinancialsTab() {
     ? order.paymentGatewayFeeAmount ?? 0
     : 0;
   const waitingChargeAmount = order.waitingChargeAmount ?? 0;
+  const isCargo = order.type === "ParcelDelivery";
+  const waitCost = isCargo ? waitingChargeAmount : order.waitCost;
 
   const totalCharged =
     (order.costAfterCoupon ?? 0) +
@@ -39,7 +41,7 @@ export default function OrderFinancialsTab() {
               { label: "Base cost", value: fmt(order.costBest) },
               { label: "After coupon", value: fmt(order.costAfterCoupon) },
               { label: "Service cost", value: fmt(order.serviceCost) },
-              { label: "Wait cost", value: fmt(order.waitCost) },
+              { label: "Wait cost", value: fmt(waitCost) },
               { label: "Ride options", value: fmt(order.rideOptionsCost) },
               { label: "Tax", value: fmt(order.taxCost) },
               { label: "GST", value: fmt(gstAmount) },

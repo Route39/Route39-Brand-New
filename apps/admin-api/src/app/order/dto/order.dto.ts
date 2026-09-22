@@ -117,4 +117,6 @@ export class TaxiOrderDTO {
   arrivedAt?: Date;
   @Field(() => Float, { nullable: true })
   waitingChargeAmount?: number;
+  @Field(() => Int, { nullable: true })
+  waitSeconds?: number;
 }
