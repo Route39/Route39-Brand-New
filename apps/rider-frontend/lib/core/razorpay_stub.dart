@@ -26,7 +26,12 @@ void openRazorpayCheckout({
   });
 
   razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, (PaymentFailureResponse response) {
-    onError(response.message ?? 'Payment failed');
+    final message = response.message?.trim();
+    final isCancelled = response.code == Razorpay.PAYMENT_CANCELLED ||
+        message == null ||
+        message.isEmpty ||
+        message.toLowerCase() == 'undefined';
+    onError(isCancelled ? 'Payment cancelled' : message!);
     razorpay.clear();
   });
 

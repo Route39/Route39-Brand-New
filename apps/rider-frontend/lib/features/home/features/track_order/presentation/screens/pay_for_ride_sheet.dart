@@ -5,6 +5,7 @@ import 'package:flutter_common/core/enums/order_status.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
 import 'package:flutter_common/core/presentation/snackbar/snackbar.dart';
 import 'package:flutter_common/core/entities/payment_method_union.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:ridy/config/locator/locator.dart';
 import 'package:ridy/core/blocs/auth_bloc.dart';
 import 'package:ridy/core/blocs/home.bloc.dart';
@@ -54,7 +55,30 @@ class _SelectPaymentMethodSheetState extends State<PayForRideSheet> {
           profile?.currency == order?.currency,
       cashEnabled: true,
     );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _reopenPendingCashDialogIfNeeded(order?.id);
+    });
     super.initState();
+  }
+
+  Future<void> _reopenPendingCashDialogIfNeeded(String? orderId) async {
+    if (orderId == null) return;
+    final box = await Hive.openBox<bool>('cash_payment_pending');
+    if (!mounted) return;
+    if (box.get(orderId) == true) {
+      showDialog(
+        context: context,
+        useSafeArea: false,
+        barrierDismissible: false,
+        builder: (context) => Align(
+  alignment: Alignment.bottomCenter,
+  child: SizedBox(
+    width: double.infinity,
+    child: const PayInCashDialog(),
+  ),
+),
+      );
+    }
   }
 
   @override
@@ -355,12 +379,18 @@ class _SelectPaymentMethodSheetState extends State<PayForRideSheet> {
                                         borderRadius: BorderRadius.circular(28),
                                       ),
                                     ),
-                                    onPressed: () {
+                                                                        onPressed: () {
                                       showDialog(
                                         context: context,
                                         useSafeArea: false,
-                                        builder: (context) =>
-                                            const PayInCashDialog(),
+                                        barrierDismissible: false,
+                                        builder: (context) => Align(
+  alignment: Alignment.bottomCenter,
+  child: SizedBox(
+    width: double.infinity,
+    child: const PayInCashDialog(),
+  ),
+),
                                       );
                                     },
                                     icon: const Icon(

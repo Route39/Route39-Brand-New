@@ -59,6 +59,7 @@ class PayForRideCubit extends Cubit<PayForRideState> {
     emit(
       state.copyWith(
         paymentStatus: ApiResponse.loading(),
+        razorpayOrderState: const ApiResponse.initial(),
       ),
     );
 
@@ -106,12 +107,12 @@ class PayForRideCubit extends Cubit<PayForRideState> {
     emit(
       state.copyWith(
         paymentStatus: ApiResponse.loading(),
+        razorpayOrderState: const ApiResponse.initial(),
       ),
     );
 
     // ignore: avoid_print
-    print('[PAY-DEBUG] calling createRazorpayRideOrder...');
-    final razorpayResponse = await _repository.createRazorpayRideOrder(
+    print('[PAY-DEBUG] calling createRazorpayRideOrder...');    final razorpayResponse = await _repository.createRazorpayRideOrder(
       orderId: orderId,
     );
     // ignore: avoid_print

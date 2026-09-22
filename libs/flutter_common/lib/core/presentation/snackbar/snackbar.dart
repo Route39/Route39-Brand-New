@@ -5,6 +5,7 @@ import 'package:flutter_common/core/extensions/extensions.dart';
 extension SnackBarX on BuildContext {
   void showSnackBar({
     required String message,
+    Color? backgroundColor,
   }) {
     ScaffoldMessenger.of(this).showSnackBar(
       SnackBar(
@@ -13,8 +14,7 @@ extension SnackBarX on BuildContext {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                color: ColorPalette.primary20,
-                boxShadow: const [
+                color: backgroundColor ?? ColorPalette.primary20,                boxShadow: const [
                   BoxShadow(
                     color: Color(0x26000000),
                     blurRadius: 8,
