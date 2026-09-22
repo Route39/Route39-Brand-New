@@ -100,23 +100,27 @@ context.showSnackBar(
             xl: DialogType.dialog,
           ),
           child: _isWaiting
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 32),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(
-                        width: 32,
-                        height: 32,
-                        child: CircularProgressIndicator(strokeWidth: 3),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        context.translate.waitingForDriverToConfirmPayment,
-                        textAlign: TextAlign.center,
-                        style: context.bodyMedium,
-                      ),
-                    ],
+              ? SafeArea(
+                  top: false,
+                  minimum: const EdgeInsets.only(bottom: 16),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 32, bottom: 8),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(
+                          width: 32,
+                          height: 32,
+                          child: CircularProgressIndicator(strokeWidth: 3),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          context.translate.waitingForDriverToConfirmPayment,
+                          textAlign: TextAlign.center,
+                          style: context.bodyMedium,
+                        ),
+                      ],
+                    ),
                   ),
                 )
               : Container(),        );

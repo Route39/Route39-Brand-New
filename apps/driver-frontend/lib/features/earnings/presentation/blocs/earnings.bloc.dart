@@ -34,33 +34,39 @@ class EarningsBloc extends Cubit<EarningsState> {
     ));
   }
 
+  Duration _windowFor(Enum$TimeQuery timeFrame) => switch (timeFrame) {
+        Enum$TimeQuery.Daily => const Duration(days: 1),
+        Enum$TimeQuery.Weekly => const Duration(days: 7),
+        Enum$TimeQuery.Monthly => const Duration(days: 180),
+        _ => const Duration(days: 180),
+      };
+
   void setTimeFrame(Enum$TimeQuery timeFrame) {
+    final now = DateTime.now();
     emit(state.copyWith(
       timeframe: timeFrame,
-      endDate: DateTime.now(),
-      startDate: DateTime.now().subtract(
-        Duration(days: timeFrame == Enum$TimeQuery.Daily ? 7 : 180),
-      ),
+      endDate: now,
+      startDate: timeFrame == Enum$TimeQuery.Daily ? now : now.subtract(_windowFor(timeFrame)),
     ));
     fetchEarningsDataset();
   }
 
   void previousTimeframe() {
+    final isDaily = state.timeframe == Enum$TimeQuery.Daily;
+    final newStart = state.startDate.subtract(_windowFor(state.timeframe));
     emit(state.copyWith(
-      endDate: state.startDate,
-      startDate: state.startDate.subtract(
-        Duration(days: state.timeframe == Enum$TimeQuery.Daily ? 7 : 180),
-      ),
+      startDate: newStart,
+      endDate: isDaily ? newStart : state.startDate,
     ));
     fetchEarningsDataset();
   }
 
   void nextTimeframe() {
+    final isDaily = state.timeframe == Enum$TimeQuery.Daily;
+    final newEnd = state.endDate.add(_windowFor(state.timeframe));
     emit(state.copyWith(
-      startDate: state.endDate,
-      endDate: state.endDate.add(
-        Duration(days: state.timeframe == Enum$TimeQuery.Daily ? 7 : 180),
-      ),
+      startDate: isDaily ? newEnd : state.endDate,
+      endDate: newEnd,
     ));
     fetchEarningsDataset();
   }
