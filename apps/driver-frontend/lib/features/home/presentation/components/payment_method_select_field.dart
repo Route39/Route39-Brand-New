@@ -35,9 +35,7 @@ class PaymentMethodSelectField extends StatelessWidget {
             SizedBox(width: 8),
             Expanded(
               child: Text(
-                order.paymentMethod.mode == Enum$PaymentMode.Cash
-                    ? context.translate.cash
-                    : context.translate.online,
+                "Amount",
                 style: context.labelMedium,
               ),
             ),

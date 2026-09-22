@@ -11,6 +11,7 @@ import {
   RiderEphemeralMessageType,
   TaxiOrderEntity,
   OrderStatus,
+  SharedOrderService,
 } from '@ridy/database';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -36,6 +37,7 @@ export class MainConsumer extends WorkerHost {
     private readonly pubsub: PubSubService,
     private readonly orderRedisService: RideOfferRedisService,
     private readonly riderRedisService: RiderRedisService,
+    private readonly sharedOrderService: SharedOrderService,
   ) {
     super();
   }
@@ -144,6 +146,21 @@ export class MainConsumer extends WorkerHost {
     this.logger.debug(
       `Processing dispatch job for order ${orderId} with strategy ${config.strategy}`,
     );
+
+    const order = await this.orderRepository.findOneOrFail({
+      where: { id: orderId },
+      relations: {
+        driver: true,
+        rider: {
+          wallets: true,
+        },
+        service: {
+          media: true,
+        },
+        options: true,
+      },
+    });
+    await this.sharedOrderService.createRideOfferAndAssignDriver(order);
 
     switch (config.strategy) {
       case DispatchStrategy.Broadcast:

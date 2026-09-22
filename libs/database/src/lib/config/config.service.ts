@@ -36,7 +36,7 @@ export class BetterConfigService {
         strategy: DispatchStrategy.Broadcast,
         requestTimeoutSeconds: 3000,
         maxSearchRadiusMeters: 20000,
-        preDispatchBufferMinutes: 30,
+        preDispatchBufferMinutes: 0,
         scoring: {
           distanceWeight: 1,
           driverRatingWeight: 0.5,

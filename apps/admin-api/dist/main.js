@@ -31993,7 +31993,7 @@ var BetterConfigService = /*#__PURE__*/ function() {
                                 strategy: DispatchStrategy.Broadcast,
                                 requestTimeoutSeconds: 3000,
                                 maxSearchRadiusMeters: 20000,
-                                preDispatchBufferMinutes: 30,
+                                preDispatchBufferMinutes: 0,
                                 scoring: {
                                     distanceWeight: 1,
                                     driverRatingWeight: 0.5,
@@ -32965,7 +32965,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             driverId: input.driverId,
                             savedPaymentMethodId: input.paymentMode == PaymentMode.SavedPaymentMethod ? input.paymentMethodId : undefined,
                             paymentGatewayId: input.paymentMode == PaymentMode.PaymentGateway ? input.paymentMethodId : undefined,
-                            status: shouldPrePay ? OrderStatus.WaitingForPrePay : input.intervalMinutes > 10 ? OrderStatus.Booked : OrderStatus.Requested,
+                            status: shouldPrePay ? OrderStatus.WaitingForPrePay : input.intervalMinutes > 0 ? OrderStatus.Booked : OrderStatus.Requested,
                             paidAmount: paidAmount,
                             costBest: cost,
                             costAfterCoupon: cost,
@@ -33061,7 +33061,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.dispatchRide = function dispatchRide(order) {
         return shared_order_service_async_to_generator(function() {
-            var _order_driverId, _order_rider_media, _order_rider_wallets_filter_, _order_rider_wallets, _order_service_media, now, config, _config_preDispatchBufferMinutes, preDispatchBufferMinutes, timeUntilScheduled, intervalMinutes, _order_service_gstPercent, _order_service_platformFee, _order_service_paymentGatewayFee, _order_service_cargoWaitingTimeMinutes, _order_rider_wallets_filter__balance, _order_service_media_address, _order_options;
+            var now, config, _config_preDispatchBufferMinutes, preDispatchBufferMinutes, timeUntilScheduled, intervalMinutes;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -33076,6 +33076,25 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         timeUntilScheduled = order.expectedTimestamp.getTime() - now;
                         intervalMinutes = Math.max(0, Math.floor(timeUntilScheduled / (60 * 1000)) - preDispatchBufferMinutes);
                         common_.Logger.log("Dispatching ride in " + intervalMinutes + " minutes (" + preDispatchBufferMinutes + " min pre-dispatch buffer applied). Scheduled pickup: " + order.expectedTimestamp, 'SharedOrderService.dispatchRide');
+                        this.dispatchMainQueue.add('dispatch', {
+                            orderId: order.id
+                        }, {
+                            jobId: "dispatch:" + order.id,
+                            delay: intervalMinutes * 60 * 1000
+                        });
+                        return [
+                            2
+                        ];
+                }
+            });
+        }).call(this);
+    };
+    _proto.createRideOfferAndAssignDriver = function createRideOfferAndAssignDriver(order) {
+        return shared_order_service_async_to_generator(function() {
+            var _order_driverId, _order_rider_media, _order_rider_wallets_filter_, _order_rider_wallets, _order_service_media, _order_service_gstPercent, _order_service_platformFee, _order_service_paymentGatewayFee, _order_service_cargoWaitingTimeMinutes, _order_rider_wallets_filter__balance, _order_service_media_address, _order_options;
+            return shared_order_service_ts_generator(this, function(_state) {
+                switch(_state.label){
+                    case 0:
                         return [
                             4,
                             this.rideOfferRedisService.createRideOffer({
@@ -33142,17 +33161,11 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 tripDirections: order.directions
                             })
                         ];
-                    case 2:
+                    case 1:
                         _state.sent();
                         if (order.driverId != null) {
                             this.assignOrderToDriver(order.id, order.driverId);
                         }
-                        this.dispatchMainQueue.add('dispatch', {
-                            orderId: order.id
-                        }, {
-                            jobId: "dispatch:" + order.id,
-                            delay: intervalMinutes * 60 * 1000
-                        });
                         return [
                             2
                         ];

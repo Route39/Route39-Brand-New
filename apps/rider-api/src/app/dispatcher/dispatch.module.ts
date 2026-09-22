@@ -7,6 +7,7 @@ import {
   BetterConfigModule,
   PubSubModule,
   RedisHelpersModule,
+  SharedOrderModule,
   TaxiOrderEntity,
   getRedisConnectionConfig,
 } from '@ridy/database';
@@ -23,6 +24,7 @@ import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
     TypeOrmModule.forFeature([TaxiOrderEntity]),
     BetterConfigModule,
     RedisHelpersModule,
+    SharedOrderModule,
     BullModule.registerQueue(
       { name: 'dispatch-main', connection: getRedisConnectionConfig() },
       {

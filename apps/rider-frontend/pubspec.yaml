@@ -24,7 +24,7 @@ dependencies:
   # Localization
   flutter_localizations:
     sdk: flutter
-  intl: any
+  intl: ^0.20.3
 
   # State management
   flutter_bloc: any

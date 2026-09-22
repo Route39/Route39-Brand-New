@@ -670,7 +670,7 @@ Logger.log(
           : undefined,
       status: shouldPrePay
         ? OrderStatus.WaitingForPrePay
-        : input.intervalMinutes > 10
+        : input.intervalMinutes > 0
           ? OrderStatus.Booked
           : OrderStatus.Requested,
       paidAmount: paidAmount,
@@ -755,6 +755,19 @@ Logger.log(
       `Dispatching ride in ${intervalMinutes} minutes (${preDispatchBufferMinutes} min pre-dispatch buffer applied). Scheduled pickup: ${order.expectedTimestamp}`,
       'SharedOrderService.dispatchRide',
     );
+    this.dispatchMainQueue.add(
+      'dispatch',
+      {
+        orderId: order.id,
+      },
+      {
+        jobId: `dispatch:${order.id}`,
+        delay: intervalMinutes * 60 * 1000,
+      },
+    );
+  }
+
+  async createRideOfferAndAssignDriver(order: TaxiOrderEntity) {
     await this.rideOfferRedisService.createRideOffer({
       status: order.status,
       currency: order.currency,
@@ -831,16 +844,6 @@ Logger.log(
     if (order.driverId != null) {
       this.assignOrderToDriver(order.id, order.driverId);
     }
-    this.dispatchMainQueue.add(
-      'dispatch',
-      {
-        orderId: order.id,
-      },
-      {
-        jobId: `dispatch:${order.id}`,
-        delay: intervalMinutes * 60 * 1000,
-      },
-    );
   }
 
   async processPrePay(orderId: number, authorizedAmount = 0) {

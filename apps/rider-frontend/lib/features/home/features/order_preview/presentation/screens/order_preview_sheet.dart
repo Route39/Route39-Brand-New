@@ -35,10 +35,16 @@ class _OrderPreviewSheetState extends State<OrderPreviewSheet> with TickerProvid
       value: locator<PaymentMethodsBloc>(),
       child: BlocConsumer<HomeBloc, HomeState>(
         listenWhen: (previous, current) =>
-            (previous.scheduledRidesResponse.data?.length ?? 0) > (current.scheduledRidesResponse.data?.length ?? 0),
+            (previous.scheduledRidesResponse.data?.length ?? 0) > (current.scheduledRidesResponse.data?.length ?? 0) ||
+            previous.createOrderResponse != current.createOrderResponse,
         listener: (context, state) {
           if (state.createOrderResponse.isLoaded) {
             showDialog(context: context, useSafeArea: false, builder: (context) => const ReserveSuccessDialog());
+          }
+          if (state.createOrderResponse case ApiResponseError(:final errorMessage)) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(errorMessage ?? 'Please select a service')),
+            );
           }
         },
         builder: (context, state) {
