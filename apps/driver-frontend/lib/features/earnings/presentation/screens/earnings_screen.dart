@@ -8,6 +8,7 @@ import 'package:ridy_driver/config/locator/locator.dart';
 import 'package:ridy_driver/core/extensions/extensions.dart';
 import 'package:flutter_common/core/theme/animation_duration.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/gestures.dart';
 
 import '../blocs/earnings.bloc.dart';
 import '../components/earnings_header.dart';
@@ -18,6 +19,16 @@ class EarningsScreen extends StatefulWidget {
 
   @override
   State<EarningsScreen> createState() => _EarningsScreenState();
+}
+
+class _AppScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+      };
 }
 
 class _EarningsScreenState extends State<EarningsScreen> {
@@ -58,49 +69,49 @@ class _EarningsScreenState extends State<EarningsScreen> {
             Expanded(
               child: BlocBuilder<EarningsBloc, EarningsState>(
                 builder: (context, state) {
-                  return Column(
-                    children: [
-                      EarningsHeader(
-                        dataset: switch (state.earningsState) {
-                          ApiResponseLoaded(:final data) => data,
-                          _ => null,
-                        },
-                      ),
-                      const SizedBox(
-                        height: 24,
-                      ),
-                      Expanded(
-                        child: AnimatedSwitcher(
+                  return ScrollConfiguration(
+                    behavior: _AppScrollBehavior(),
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                      children: [
+                        EarningsHeader(
+                          dataset: switch (state.earningsState) {
+                            ApiResponseLoaded(:final data) => data,
+                            _ => null,
+                          },
+                        ),
+                        const SizedBox(
+                          height: 24,
+                        ),
+                        AnimatedSwitcher(
                           duration: AnimationDuration.pageStateTransitionMobile,
                           child: switch (state.earningsState) {
                             ApiResponseInitial() => const SizedBox(),
-                            ApiResponseLoading() => Assets.lottie.loading.lottie(),
+                            ApiResponseLoading() => SizedBox(
+                                height: 300,
+                                child: Assets.lottie.loading.lottie(),
+                              ),
                             ApiResponseLoaded(:final data) => Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                ),
-                                child: SingleChildScrollView(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Center(
-                                        child: Container(
-                                          height: 300,
-                                          constraints: const BoxConstraints(maxWidth: 500),
-                                          child: BarChart(
-                                            data.barChartData,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+                                child: Center(
+                                  child: Container(
+                                    height: 340,
+                                    constraints: const BoxConstraints(maxWidth: 500),
+                                    child: BarChart(
+                                      data.barChartData,
+                                    ),
                                   ),
                                 ),
                               ),
                             ApiResponseError() => throw UnimplementedError(),
                           },
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 48),
+                      ],
+                    ),
+                    ),
                   );
                 },
               ),

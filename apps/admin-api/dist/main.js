@@ -33091,7 +33091,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.createRideOfferAndAssignDriver = function createRideOfferAndAssignDriver(order) {
         return shared_order_service_async_to_generator(function() {
-            var _order_driverId, _order_rider_media, _order_rider_wallets_filter_, _order_rider_wallets, _order_service_media, _order_service_gstPercent, _order_service_platformFee, _order_service_paymentGatewayFee, _order_service_cargoWaitingTimeMinutes, _order_rider_wallets_filter__balance, _order_service_media_address, _order_options;
+            var _order_driverId, _order_rider_media, _order_rider_wallets_filter_, _order_rider_wallets, _order_service_media, _order_providerShare, _order_service_gstPercent, _order_service_platformFee, _order_service_paymentGatewayFee, _order_service_cargoWaitingTimeMinutes, _order_rider_wallets_filter__balance, _order_service_media_address, _order_options;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -33114,14 +33114,12 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 scheduledAt: order.expectedTimestamp,
                                 pickupLocation: order.points[0],
                                 fleetId: order.fleetId,
-                                //costEstimateForRider: order.costAfterCoupon,
-                                //costEstimateForDriver: order.costBest - order.providerShare,
                                 // costAfterCoupon = costBest − couponDiscount already, so adding the
                                 // fee total here gives: (costBest + fees) − couponDiscount for the
                                 // rider, and (costBest + fees) − providerShare − couponDiscount for
                                 // the driver — matching the agreed fee-inclusive formula for both.
                                 costEstimateForRider: order.costAfterCoupon + order.gstAmount + order.platformFeeAmount + order.paymentGatewayFeeAmount,
-                                costEstimateForDriver: order.costAfterCoupon + order.gstAmount + order.platformFeeAmount + order.paymentGatewayFeeAmount,
+                                costEstimateForDriver: order.costAfterCoupon + order.gstAmount + order.platformFeeAmount + order.paymentGatewayFeeAmount - ((_order_providerShare = order.providerShare) != null ? _order_providerShare : 0),
                                 // Same value the rider side already computes (costBest − costAfterCoupon).
                                 // One coupon, one order — both apps must show the identical number.
                                 couponDiscount: order.costBest - order.costAfterCoupon,

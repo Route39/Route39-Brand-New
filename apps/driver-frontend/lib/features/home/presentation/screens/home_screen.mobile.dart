@@ -37,7 +37,22 @@ class SelectedTabNotifier extends ValueNotifier<int> {
   static final SelectedTabNotifier instance = SelectedTabNotifier._();
   SelectedTabNotifier._() : super(0);
 
-  void goToHome() => value = 0;
+  final List<int> _history = [];
+
+  void select(int index) {
+    if (index == value) return;
+    _history.add(value);
+    value = index;
+  }
+
+  void goBack() {
+    value = _history.isNotEmpty ? _history.removeLast() : 0;
+  }
+
+  void goToHome() {
+    _history.clear();
+    value = 0;
+  }
 }
 
 class HomeScreenMobile extends StatefulWidget {
@@ -87,12 +102,23 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
 
     if (state.orderRequests.isNotEmpty) {
       final request = state.orderRequests.first;
+      String? pickupAddress;
+      String? dropoffAddress;
+      for (final wp in request.waypoints) {
+        if (wp.role == Enum$WaypointRole.Pickup) {
+          pickupAddress = wp.address;
+        } else if (wp.role == Enum$WaypointRole.Dropoff) {
+          dropoffAddress = wp.address;
+        }
+      }
 
       await RideOverlayService.showOrderScreen(
         serviceName: request.serviceName,
         fare: request.fareEstimate.toStringAsFixed(0),
         distance: '${(request.distance / 1000).toStringAsFixed(1)} km',
         duration: '${(request.duration ~/ 60)} min',
+        pickupAddress: pickupAddress,
+        dropoffAddress: dropoffAddress,
       );
     } else {
       await RideOverlayService.showBubble();
@@ -167,31 +193,31 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
                   icon: Icons.home,
                   label: 'Home',
                   isSelected: _selectedTab == 0,
-                  onTap: () => SelectedTabNotifier.instance.value = 0,
+                  onTap: () => SelectedTabNotifier.instance.select(0),
                 ),
                 _navBarItem(
                   icon: Icons.bar_chart,
                   label: 'Earnings',
                   isSelected: _selectedTab == 1,
-                  onTap: () => SelectedTabNotifier.instance.value = 1,
+                  onTap: () => SelectedTabNotifier.instance.select(1),
                 ),
                 _navBarItem(
                   icon: Icons.receipt_long,
                   label: 'Orders',
                   isSelected: _selectedTab == 2,
-                  onTap: () => SelectedTabNotifier.instance.value = 2,
+                  onTap: () => SelectedTabNotifier.instance.select(2),
                 ),
                 _navBarItem(
                   icon: Icons.account_balance_wallet,
                   label: 'Wallet',
                   isSelected: _selectedTab == 3,
-                  onTap: () => SelectedTabNotifier.instance.value = 3,
+                  onTap: () => SelectedTabNotifier.instance.select(3),
                 ),
                 _navBarItem(
                   icon: Icons.person,
                   label: 'Profile',
                   isSelected: _selectedTab == 4,
-                  onTap: () => SelectedTabNotifier.instance.value = 4,
+                  onTap: () => SelectedTabNotifier.instance.select(4),
                 ),
               ],
             ),

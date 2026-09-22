@@ -8,24 +8,24 @@ import 'package:flutter_common/core/color_palette/color_palette.dart';
 
 extension EarningsdatasetX on Query$Earnings {
   double get totalEarnings => getStatsNew.dataset.fold(
-        0,
-        (previousValue, element) => previousValue + element.earning,
-      );
+    0,
+    (previousValue, element) => previousValue + element.earning,
+  );
 
   double get totalRides => getStatsNew.dataset.fold(
-        0,
-        (previousValue, element) => previousValue + element.count,
-      );
+    0,
+    (previousValue, element) => previousValue + element.count,
+  );
 
   double get totalTimeSpent => getStatsNew.dataset.fold(
-        0,
-        (previousValue, element) => previousValue + element.time,
-      );
+    0,
+    (previousValue, element) => previousValue + element.time,
+  );
 
   double get totalDistanceTraveled => getStatsNew.dataset.fold(
-        0,
-        (previousValue, element) => previousValue + element.distance,
-      );
+    0,
+    (previousValue, element) => previousValue + element.distance,
+  );
 
   BarChartData get barChartData {
     final barGroups = getStatsNew.dataset
@@ -44,9 +44,7 @@ extension EarningsdatasetX on Query$Earnings {
         .toList();
 
     return BarChartData(
-      barTouchData: BarTouchData(
-        enabled: false,
-      ),
+      barTouchData: BarTouchData(enabled: false),
       titlesData: FlTitlesData(
         show: true,
         bottomTitles: AxisTitles(
@@ -73,30 +71,31 @@ extension EarningsdatasetX on Query$Earnings {
           ),
         ),
         rightTitles: const AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: false,
-          ),
+          sideTitles: SideTitles(showTitles: false),
         ),
-        topTitles: const AxisTitles(
+        topTitles: AxisTitles(
           sideTitles: SideTitles(
-            showTitles: false,
+            showTitles: true,
+            reservedSize: 28,
+            getTitlesWidget: (value, meta) => const SizedBox.shrink(),
           ),
         ),
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            reservedSize: 56,
+            reservedSize: 42,
+            interval: 20,
             getTitlesWidget: (value, meta) {
               return Padding(
-                padding: const EdgeInsets.only(right: 4),
+                padding: const EdgeInsets.only(right: 2),
                 child: Text(
                   value.formatCurrency(getStatsNew.currency),
                   textAlign: TextAlign.right,
                   softWrap: false,
-                  overflow: TextOverflow.visible,
+                  overflow: TextOverflow.clip,
                   style: const TextStyle(
                     color: Color(0xFF73777F),
-                    fontSize: 10,
+                    fontSize: 9,
                     fontFamily: Fonts.secondary,
                     fontWeight: FontWeight.w400,
                   ),
@@ -107,9 +106,7 @@ extension EarningsdatasetX on Query$Earnings {
         ),
       ),
       gridData: const FlGridData(show: false),
-      borderData: FlBorderData(
-        show: false,
-      ),
+      borderData: FlBorderData(show: false),
       barGroups: barGroups,
     );
   }

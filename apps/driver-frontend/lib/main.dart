@@ -30,6 +30,8 @@ import 'features/home/presentation/blocs/home.bloc.dart';
 import 'firebase_options.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'dart:convert';
 import 'dart:async';
 
@@ -77,8 +79,23 @@ class _OverlayRideAppState extends State<OverlayRideApp> {
     });
   }
 
-  void _openApp() {
+  Future<void> _openApp() async {
+    // Send the message too, in case the main app is alive and listening
+    // (keeps it in step with the "accept" flow).
     FlutterOverlayWindow.shareData(jsonEncode({"action": "open_app"}));
+    // Directly bring the app forward from this overlay's own engine as
+    // well - this is the only path that works if the main app process
+    // was fully killed (no listener would exist to act on shareData).
+    try {
+      final packageName = (await PackageInfo.fromPlatform()).packageName;
+      final intent = AndroidIntent(
+        action: 'action_main',
+        category: 'android.intent.category.LAUNCHER',
+        package: packageName,
+        flags: const [268435456, 131072],
+      );
+      await intent.launch();
+    } catch (_) {}
   }
 
   void _startTimer() {
@@ -124,16 +141,16 @@ class _OverlayRideAppState extends State<OverlayRideApp> {
             onTap: _openApp,
             child: Center(
               child: Container(
-                width: 64,
-                height: 64,
+                width: 88,
+                height: 88,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFB30000), width: 2),
+                  border: Border.all(color: const Color(0xFFB30000), width: 3),
                   boxShadow: const [
-                    BoxShadow(color: Colors.black38, blurRadius: 8, offset: Offset(0, 2)),
+                    BoxShadow(color: Colors.black45, blurRadius: 12, offset: Offset(0, 3)),
                   ],
                   image: const DecorationImage(
-                    image: AssetImage('assets/images/logo.png'),
+                    image: AssetImage('assets/images/overlay_bubble_icon.png'),
                     fit: BoxFit.cover,
                   ),
                   color: Colors.white,
@@ -144,135 +161,204 @@ class _OverlayRideAppState extends State<OverlayRideApp> {
         ),
       );
     }
+    final pickupAddress = data?['pickupAddress']?.toString();
+    final dropoffAddress = data?['dropoffAddress']?.toString();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        backgroundColor: const Color(0xFFF7F7F7),
-        body: data == null
+      home: Material(
+        color: Colors.transparent,
+        child: data == null
             ? const SizedBox.shrink()
-            : SafeArea(
-                child: Column(
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-                      color: const Color(0xFFB30000),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.notifications, color: Colors.white, size: 28),
-                          const SizedBox(width: 12),
-                          const Expanded(
-                            child: Text(
-                              'NEW RIDE REQUEST',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            width: 46,
-                            height: 46,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Text(
-                              '$secondsLeft',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(18),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
+            // Bottom-anchored half-screen card, Rapido-style - not full screen.
+            : Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF7F7F7),
+                    borderRadius: BorderRadius.circular(22),
+                    boxShadow: const [
+                      BoxShadow(color: Color(0x33000000), blurRadius: 22, offset: Offset(0, 8)),
+                    ],
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.fromLTRB(20, 16, 16, 16),
+                        color: const Color(0xFFB30000),
+                        child: Row(
                           children: [
-                            const SizedBox(height: 10),
-                            const Text(
-                              'A customer is waiting for you',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              data['serviceName']?.toString() ?? '',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(fontSize: 15, color: Colors.grey, fontWeight: FontWeight.w600),
-                            ),
-                            const SizedBox(height: 22),
-                            Container(
-                              padding: const EdgeInsets.all(18),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: const [
-                                  BoxShadow(color: Color(0x16000000), blurRadius: 18, offset: Offset(0, 6)),
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: _InfoItem(
-                                      icon: Icons.currency_rupee,
-                                      title: 'ESTIMATED FARE',
-                                      value: data['fare']?.toString() ?? '',
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: _InfoItem(
-                                      icon: Icons.map_outlined,
-                                      title: 'DISTANCE',
-                                      value: data['distance']?.toString() ?? '',
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: _InfoItem(
-                                      icon: Icons.access_time,
-                                      title: 'DURATION',
-                                      value: data['duration']?.toString() ?? '',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            SizedBox(
-                              height: 58,
-                              child: ElevatedButton(
-                                onPressed: _accept,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFB30000),
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            const Icon(Icons.notifications, color: Colors.white, size: 24),
+                            const SizedBox(width: 10),
+                            const Expanded(
+                              child: Text(
+                                'NEW RIDE REQUEST',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.5,
                                 ),
-                                child: const Text('ACCEPT ORDER', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
                               ),
                             ),
-                            const SizedBox(height: 10),
-                            TextButton(
-                              onPressed: _decline,
-                              child: const Text('Decline', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600)),
+                            Container(
+                              width: 38,
+                              height: 38,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.15),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                '$secondsLeft',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ),
-                  ],
+                      Flexible(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                data['serviceName']?.toString() ?? '',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(fontSize: 15, color: Colors.grey, fontWeight: FontWeight.w600),
+                              ),
+                              const SizedBox(height: 14),
+                              Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: const [
+                                    BoxShadow(color: Color(0x16000000), blurRadius: 12, offset: Offset(0, 4)),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: _InfoItem(
+                                        icon: Icons.currency_rupee,
+                                        title: 'FARE',
+                                        value: data['fare']?.toString() ?? '',
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: _InfoItem(
+                                        icon: Icons.map_outlined,
+                                        title: 'DISTANCE',
+                                        value: data['distance']?.toString() ?? '',
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: _InfoItem(
+                                        icon: Icons.access_time,
+                                        title: 'DURATION',
+                                        value: data['duration']?.toString() ?? '',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (pickupAddress != null && pickupAddress.isNotEmpty) ...[
+                                const SizedBox(height: 12),
+                                _AddressRow(
+                                  icon: Icons.circle,
+                                  iconColor: const Color(0xFF00A651),
+                                  label: 'PICKUP',
+                                  address: pickupAddress,
+                                ),
+                              ],
+                              if (dropoffAddress != null && dropoffAddress.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                _AddressRow(
+                                  icon: Icons.location_on,
+                                  iconColor: const Color(0xFFB30000),
+                                  label: 'DROP',
+                                  address: dropoffAddress,
+                                ),
+                              ],
+                              const SizedBox(height: 18),
+                              SizedBox(
+                                height: 52,
+                                child: ElevatedButton(
+                                  onPressed: _accept,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFB30000),
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                  ),
+                                  child: const Text('ACCEPT ORDER', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              TextButton(
+                                onPressed: _decline,
+                                child: const Text('Decline', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
       ),
+    );
+  }
+}
+
+class _AddressRow extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String address;
+
+  const _AddressRow({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.address,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 3),
+          child: Icon(icon, size: 12, color: iconColor),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w700)),
+              Text(
+                address,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

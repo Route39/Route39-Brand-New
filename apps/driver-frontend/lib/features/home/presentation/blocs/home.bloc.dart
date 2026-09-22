@@ -9,6 +9,7 @@ import 'package:ridy_driver/core/graphql/fragments/profile.fragment.graphql.dart
 import 'package:ridy_driver/core/graphql/schema.gql.dart';
 import 'package:ridy_driver/core/repositories/firebase_repository.dart';
 import 'package:ridy_driver/features/home/domain/repositories/home_repository.dart';
+import 'package:ridy_driver/features/notifications/data/notification_history_repository.dart';
 import 'package:ridy_driver/gen/assets.gen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
@@ -30,6 +31,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final HomeRepository _repository;
   final FirebaseRepository _firebaseRepository;
   final LocationDatasource _locationDatasource;
+  final NotificationHistoryRepository _notificationHistoryRepository =
+      NotificationHistoryRepository();
 
   HomeBloc(this._repository, this._firebaseRepository, this._locationDatasource) : super(HomeState()) {
     on<HomeEvent>((event, emit) async {
@@ -101,6 +104,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
                 //debugPrint('HomeBloc.ephemeralMessages stream error: $error');
               }),
               onData: (data) {
+                _notificationHistoryRepository.saveNotifications(
+                  data
+                      .map((message) => Map<String, dynamic>.from(message.toJson()))
+                      .toList(),
+                );
                 return state.copyWith(ephemeralMessages: data);
               },
             ),

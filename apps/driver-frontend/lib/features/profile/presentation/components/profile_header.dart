@@ -36,15 +36,7 @@ class ProfileHeader extends StatelessWidget {
             child: Column(
               children: [
                 context.responsive(
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: AppBackButton(
-                      onPressed: () {
-                        SelectedTabNotifier.instance.goToHome();
-                        context.router.navigate(const HomeRoute());
-                      },
-                    ),
-                  ),
+                  const SizedBox(height: 8),
                   xl: const SizedBox(height: 36),
                 ),
                 UserInfoHero(

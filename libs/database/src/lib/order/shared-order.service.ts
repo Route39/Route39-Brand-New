@@ -785,8 +785,7 @@ Logger.log(
       scheduledAt: order.expectedTimestamp!,
       pickupLocation: order.points[0],
       fleetId: order.fleetId,
-      //costEstimateForRider: order.costAfterCoupon,
-      //costEstimateForDriver: order.costBest - order.providerShare,
+      
             // costAfterCoupon = costBest − couponDiscount already, so adding the
       // fee total here gives: (costBest + fees) − couponDiscount for the
       // rider, and (costBest + fees) − providerShare − couponDiscount for
@@ -800,7 +799,8 @@ Logger.log(
         order.costAfterCoupon +
         order.gstAmount +
         order.platformFeeAmount +
-        order.paymentGatewayFeeAmount,
+        order.paymentGatewayFeeAmount -
+        (order.providerShare ?? 0),
       // Same value the rider side already computes (costBest − costAfterCoupon).
       // One coupon, one order — both apps must show the identical number.
       couponDiscount: order.costBest - order.costAfterCoupon,

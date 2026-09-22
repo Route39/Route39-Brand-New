@@ -39,18 +39,7 @@ class WalletHeader extends StatelessWidget {
             child: Column(
               children: [
                 context.responsive(
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: AppBackButton(
-                      onPressed: () {
-                        if (context.router.canPop()) {
-                          context.router.maybePop();
-                        } else {
-                          SelectedTabNotifier.instance.goToHome();
-                        }
-                      },
-                    ),
-                  ),
+                  const SizedBox(height: 8),
                   xl: const SizedBox(
                     height: 84,
                   ),

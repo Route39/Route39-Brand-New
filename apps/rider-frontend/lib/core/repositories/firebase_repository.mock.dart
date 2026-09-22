@@ -6,4 +6,7 @@ import 'package:ridy/core/repositories/firebase_repository.dart';
 class FirebaseRepositoryMock implements FirebaseRepository {
   @override
   Future<void> retrieveAndUpdateFcmToken() async {}
+
+  @override
+  Future<void> initializeNotificationListener() async {}
 }

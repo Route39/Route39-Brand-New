@@ -41,11 +41,7 @@ class _RideHistoryScreenState extends State<RideHistoryScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               context.responsive(
-                AppBackButton(
-                  onPressed: () {
-                    SelectedTabNotifier.instance.goToHome();
-                  },
-                ),
+                const SizedBox.shrink(),
                 xl: const SizedBox.shrink(),
               ),
               SizedBox(height: context.responsive(16, xl: 84)),

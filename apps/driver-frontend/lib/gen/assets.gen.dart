@@ -2139,6 +2139,10 @@ class $AssetsImagesGen {
   AssetGenImage get orderRequestHeader =>
       const AssetGenImage('assets/images/order-request-header.png');
 
+  /// File path: assets/images/overlay_bubble_icon.png
+  AssetGenImage get overlayBubbleIcon =>
+      const AssetGenImage('assets/images/overlay_bubble_icon.png');
+
   /// File path: assets/images/passenger_auto.png
   AssetGenImage get passengerAuto =>
       const AssetGenImage('assets/images/passenger_auto.png');
@@ -2233,6 +2237,7 @@ class $AssetsImagesGen {
     onboarding2,
     openstreetPreview,
     orderRequestHeader,
+    overlayBubbleIcon,
     passengerAuto,
     paypal,
     profileHeaderBackground,

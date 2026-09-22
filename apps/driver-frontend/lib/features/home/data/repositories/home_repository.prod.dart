@@ -19,11 +19,15 @@ import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:ridy_driver/core/graphql/fragments/cancel_reason.fragment.graphql.dart';
 
+import 'package:ridy_driver/features/notifications/data/notification_history_repository.dart';
+
 import '../../domain/repositories/home_repository.dart';
 
 @prod
 @LazySingleton(as: HomeRepository)
 class HomeRepositoryImpl implements HomeRepository {
+  final NotificationHistoryRepository _notificationHistoryRepository =
+      NotificationHistoryRepository();
   // Streams
   @override
   Stream<List<Fragment$RideOffer>> get orderRequests => _orderRequests.stream;
@@ -413,6 +417,21 @@ startListeningToOrderUpdates() {
           );
           break;
         case Enum$DriverEventType.RideOfferRevoked:
+        final missedOffer = _orderRequests.value.firstWhereOrNull(
+            (e) => e.id == event.driverEvents.orderId,
+          );
+          if (missedOffer != null) {
+            _notificationHistoryRepository.saveNotifications([
+              {
+                'messageId': 'missed_${missedOffer.id}_${DateTime.now().millisecondsSinceEpoch}',
+                'type': 'RideOfferMissed',
+                'serviceName': missedOffer.serviceName,
+                'fareEstimate': missedOffer.fareEstimate.toStringAsFixed(0),
+                'currency': missedOffer.currency,
+                'createdAt': DateTime.now().toIso8601String(),
+              },
+            ]);
+          }
           _orderRequests.add(_orderRequests.value.where((e) => e.id != event.driverEvents.orderId).toList());
           break;
         case Enum$DriverEventType.ActiveOrderCompleted:

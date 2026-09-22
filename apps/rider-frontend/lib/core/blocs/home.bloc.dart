@@ -39,12 +39,18 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final FirebaseRepository firebaseRepository;
   final GeoDatasource geoDataSource;
 
-  HomeBloc(this.homeRepository, this.geoDatasource, this.orderRepository, this.firebaseRepository, this.geoDataSource)
-    : super(HomeState(waypoints: [null, null], driversAround: [])) {
+  HomeBloc(
+    this.homeRepository,
+    this.geoDatasource,
+    this.orderRepository,
+    this.firebaseRepository,
+    this.geoDataSource,
+  ) : super(HomeState(waypoints: [null, null], driversAround: [])) {
     on<HomeEvent>((event, emit) async {
       switch (event) {
         case HomeEvent$OnStarted(:final authenticated):
           if (authenticated) {
+            await firebaseRepository.initializeNotificationListener();
             orderRepository.startListeningToActiveOrders();
             orderRepository.refreshActiveOrders();
             orderRepository.getEphemeralMessages();
@@ -66,12 +72,21 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
               emit.forEach(
                 geoDatasource.currentAddress,
                 onData: (data) {
-                  if (state.waypoints.firstOrNull == null && data.data != null) {
-                    try { state.mapViewController?.moveCamera(data.data!.latLng, 14); } catch (_) {}
+                  if (state.waypoints.firstOrNull == null &&
+                      data.data != null) {
+                    try {
+                      state.mapViewController?.moveCamera(
+                        data.data!.latLng,
+                        14,
+                      );
+                    } catch (_) {}
                     return state.copyWith(
                       currentLocationResponse: data,
                       waypoints: state.waypoints
-                          .mapIndexed((index, e) => index == 0 && e == null ? data.data : e)
+                          .mapIndexed(
+                            (index, e) =>
+                                index == 0 && e == null ? data.data : e,
+                          )
                           .toList(),
                     );
                   } else {
@@ -98,41 +113,59 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
               orderSubmissionPage: OrderSubmissionPage.welcome,
             ),
           );
-          if (state.mapViewController != null && state.waypoints.firstOrNull != null) {
-            try { state.mapViewController!.moveCamera(state.waypoints.firstOrNull!.latLng, 16); } catch (_) {}
-            await _showDriversAround(waypoints: [state.waypoints.firstOrNull!, null], emitter: emit);
+          if (state.mapViewController != null &&
+              state.waypoints.firstOrNull != null) {
+            try {
+              state.mapViewController!.moveCamera(
+                state.waypoints.firstOrNull!.latLng,
+                16,
+              );
+            } catch (_) {}
+            await _showDriversAround(
+              waypoints: [state.waypoints.firstOrNull!, null],
+              emitter: emit,
+            );
           }
           break;
 
         case HomeEvent$ChangeOrderSubmissionPage(:final orderSubmissionPage):
           emit(state.copyWith(orderSubmissionPage: orderSubmissionPage));
-          if (orderSubmissionPage == OrderSubmissionPage.welcome && state.waypoints.firstOrNull != null) {
-            try { state.mapViewController?.moveCamera(state.waypoints.firstOrNull!.latLng, 16); } catch (_) {}
-            await _showDriversAround(waypoints: [state.waypoints.firstOrNull!, null], emitter: emit);
+          if (orderSubmissionPage == OrderSubmissionPage.welcome &&
+              state.waypoints.firstOrNull != null) {
+            try {
+              state.mapViewController?.moveCamera(
+                state.waypoints.firstOrNull!.latLng,
+                16,
+              );
+            } catch (_) {}
+            await _showDriversAround(
+              waypoints: [state.waypoints.firstOrNull!, null],
+              emitter: emit,
+            );
           }
           break;
 
         case HomeEvent$OnRideOptionSelected():
-  emit(
-    state.copyWith(
-      orderType: Enum$TaxiOrderType.Ride,
-      selectedServiceCategory: null,
-      selectedService: null,
-      ridePreviewFareResponse: ApiResponse.initial(),
-    ),
-  );
-  break;
+          emit(
+            state.copyWith(
+              orderType: Enum$TaxiOrderType.Ride,
+              selectedServiceCategory: null,
+              selectedService: null,
+              ridePreviewFareResponse: ApiResponse.initial(),
+            ),
+          );
+          break;
 
-case HomeEvent$OnDeliveryOptionSelected():
-  emit(
-    state.copyWith(
-      orderType: Enum$TaxiOrderType.ParcelDelivery,
-      selectedServiceCategory: null,
-      selectedService: null,
-      ridePreviewFareResponse: ApiResponse.initial(),
-    ),
-  );
-  break;
+        case HomeEvent$OnDeliveryOptionSelected():
+          emit(
+            state.copyWith(
+              orderType: Enum$TaxiOrderType.ParcelDelivery,
+              selectedServiceCategory: null,
+              selectedService: null,
+              ridePreviewFareResponse: ApiResponse.initial(),
+            ),
+          );
+          break;
 
         case HomeEvent$OnMapMoved(:final selectedLocation):
           switch (state.orderSubmissionPage) {
@@ -140,7 +173,9 @@ case HomeEvent$OnDeliveryOptionSelected():
               if (selectedLocation.data == null) return;
               await _showDriversAround(
                 waypoints: state.currentWaypoints
-                    .mapIndexed((index, e) => index == 0 ? selectedLocation.data : e)
+                    .mapIndexed(
+                      (index, e) => index == 0 ? selectedLocation.data : e,
+                    )
                     .toList(),
                 emitter: emit,
               );
@@ -156,7 +191,11 @@ case HomeEvent$OnDeliveryOptionSelected():
           break;
 
         case HomeEvent$OnAddStop():
-          emit(state.copyWith(waypoints: state.waypoints.followedBy([null]).toList()));
+          emit(
+            state.copyWith(
+              waypoints: state.waypoints.followedBy([null]).toList(),
+            ),
+          );
           break;
 
         case HomeEvent$FocusOnWaypoint(:final index):
@@ -171,7 +210,8 @@ case HomeEvent$OnDeliveryOptionSelected():
 
         case HomeEvent$OnWaypointConfirmed():
           final locations = [...state.waypoints];
-          locations[state.selectedWaypointIndex!] = state.selectedLocationResponse.data!;
+          locations[state.selectedWaypointIndex!] =
+              state.selectedLocationResponse.data!;
           emit(
             state.copyWith(
               waypoints: locations,
@@ -187,13 +227,15 @@ case HomeEvent$OnDeliveryOptionSelected():
               orderSubmissionPage: OrderSubmissionPage.confirmLocation,
             ),
           );
-          try { state.mapViewController?.moveCamera(selectedLocation.latLng, 16); } catch (_) {}
+          try {
+            state.mapViewController?.moveCamera(selectedLocation.latLng, 16);
+          } catch (_) {}
           break;
 
         case HomeEvent$OnCouponCodeUpdated(:final couponCode):
           emit(state.copyWith(couponCode: couponCode));
           break;
-          case HomeEvent$OnExitPreview():
+        case HomeEvent$OnExitPreview():
           emit(state.copyWith(ridePreviewFareResponse: ApiResponse.initial()));
           break;
 
@@ -207,118 +249,152 @@ case HomeEvent$OnDeliveryOptionSelected():
                   ),
                 ),
               );
-              emit(state.copyWith(ridePreviewFareResponse: ApiResponse.initial()));
+              emit(
+                state.copyWith(ridePreviewFareResponse: ApiResponse.initial()),
+              );
             }
-            emit(state.copyWith(waypoints: [state.waypoints.first, destination]));
+            emit(
+              state.copyWith(waypoints: [state.waypoints.first, destination]),
+            );
           }
           if (state.waypoints.nonNulls.length < 2) {
-            emit(state.copyWith(ridePreviewFareResponse: ApiResponse.error('Please select a destination')));
-            emit(state.copyWith(ridePreviewFareResponse: ApiResponse.initial()));
+            emit(
+              state.copyWith(
+                ridePreviewFareResponse: ApiResponse.error(
+                  'Please select a destination',
+                ),
+              ),
+            );
+            emit(
+              state.copyWith(ridePreviewFareResponse: ApiResponse.initial()),
+            );
             return;
           }
 
           emit(state.copyWith(ridePreviewFareResponse: ApiResponse.loading()));
           final result = await orderRepository.calculateFare(
-            args: Input$CalculateFareInput(points: state.waypoints.nonNulls.toList().toGql, orderType: state.orderType),
+            args: Input$CalculateFareInput(
+              points: state.waypoints.nonNulls.toList().toGql,
+              orderType: state.orderType,
+            ),
           );
           if (result.isLoaded) {
-  final fares = result.mapData((data) => data.getFares);
+            final fares = result.mapData((data) => data.getFares);
 
-  final desiredCategoryKey =
-      state.orderType == Enum$TaxiOrderType.ParcelDelivery
-          ? 'cargo'
-          : 'passengerauto';
+            final desiredCategoryKey =
+                state.orderType == Enum$TaxiOrderType.ParcelDelivery
+                ? 'cargo'
+                : 'passengerauto';
 
-  final selectedCategory = fares.data?.services.firstWhereOrNull(
-    (category) {
-      final categoryKey = category.name
-          .trim()
-          .toLowerCase()
-          .replaceAll(RegExp(r'[\s-]+'), '');
+            final selectedCategory = fares.data?.services.firstWhereOrNull((
+              category,
+            ) {
+              final categoryKey = category.name.trim().toLowerCase().replaceAll(
+                RegExp(r'[\s-]+'),
+                '',
+              );
 
-      return categoryKey == desiredCategoryKey;
-    },
-  );
+              return categoryKey == desiredCategoryKey;
+            });
 
-  final categoryToUse =
-      selectedCategory ?? fares.data?.services.firstOrNull;
+            final categoryToUse =
+                selectedCategory ?? fares.data?.services.firstOrNull;
 
-  final serviceToUse =
-      categoryToUse?.services.firstOrNull;
+            final serviceToUse = categoryToUse?.services.firstOrNull;
 
-  debugPrint(
-    '[Rider HomeBloc] Fare category selected: '
-    '${categoryToUse?.name}, '
-    'service: ${serviceToUse?.name}, '
-    'orderType: ${state.orderType}',
-  );
+            debugPrint(
+              '[Rider HomeBloc] Fare category selected: '
+              '${categoryToUse?.name}, '
+              'service: ${serviceToUse?.name}, '
+              'orderType: ${state.orderType}',
+            );
 
-  emit(
-    state.copyWith(
-      ridePreviewFareResponse: result,
-      selectedServiceCategory: categoryToUse,
-      selectedService: serviceToUse,
-      selectedDateTime: null,
-    ),
-  );
+            emit(
+              state.copyWith(
+                ridePreviewFareResponse: result,
+                selectedServiceCategory: categoryToUse,
+                selectedService: serviceToUse,
+                selectedDateTime: null,
+              ),
+            );
 
-  try {
-    state.mapViewController?.fitBounds(
-      state.waypoints.nonNulls.toList().latLngs,
-    );
-  } catch (_) {
-    // Map may already be disposed if full-screen booking summary is showing; ignore.
-  }
-}
+            try {
+              state.mapViewController?.fitBounds(
+                state.waypoints.nonNulls.toList().latLngs,
+              );
+            } catch (_) {
+              // Map may already be disposed if full-screen booking summary is showing; ignore.
+            }
+          }
           if (result.isError) {
             emit(
               state.copyWith(
                 orderSubmissionPage: OrderSubmissionPage.welcome,
                 waypoints: [state.waypoints.first, null],
                 driversAround: [],
-                ridePreviewFareResponse: ApiResponse.error(result.errorMessage ?? ''),
+                ridePreviewFareResponse: ApiResponse.error(
+                  result.errorMessage ?? '',
+                ),
               ),
             );
             if (state.waypoints.firstOrNull?.latLng != null) {
-              try { state.mapViewController?.moveCamera(state.waypoints.firstOrNull!.latLng, 16); } catch (_) {}
-              await _showDriversAround(waypoints: [state.waypoints.firstOrNull!, null], emitter: emit);
+              try {
+                state.mapViewController?.moveCamera(
+                  state.waypoints.firstOrNull!.latLng,
+                  16,
+                );
+              } catch (_) {}
+              await _showDriversAround(
+                waypoints: [state.waypoints.firstOrNull!, null],
+                emitter: emit,
+              );
             }
           }
 
           break;
 
         case HomeEvent$SubmitOrder(:final selectedDateTime):
-  firebaseRepository.retrieveAndUpdateFcmToken();
+          firebaseRepository.retrieveAndUpdateFcmToken();
 
-  final selectedService = state.selectedService;
+          final selectedService = state.selectedService;
 
-  if (selectedService == null) {
-    emit(state.copyWith(
-      createOrderResponse: ApiResponse.error('Please select a service'),
-    ));
-    return;
-  }
+          if (selectedService == null) {
+            emit(
+              state.copyWith(
+                createOrderResponse: ApiResponse.error(
+                  'Please select a service',
+                ),
+              ),
+            );
+            return;
+          }
 
-  final serviceId = int.tryParse(selectedService.id);
+          final serviceId = int.tryParse(selectedService.id);
 
-  if (serviceId == null) {
-    emit(state.copyWith(
-      createOrderResponse: ApiResponse.error('Invalid service selected'),
-    ));
-    return;
-  }
+          if (serviceId == null) {
+            emit(
+              state.copyWith(
+                createOrderResponse: ApiResponse.error(
+                  'Invalid service selected',
+                ),
+              ),
+            );
+            return;
+          }
 
-  debugPrint(
-    '[Rider HomeBloc] Submitting order with serviceId=$serviceId, '
-    'serviceName=${selectedService.name}',
-  );
+          debugPrint(
+            '[Rider HomeBloc] Submitting order with serviceId=$serviceId, '
+            'serviceName=${selectedService.name}',
+          );
 
-  emit(state.copyWith(
-    createOrderResponse: ApiResponse.loading(),
-    selectedDateTime: selectedDateTime,
-  ));
+          emit(
+            state.copyWith(
+              createOrderResponse: ApiResponse.loading(),
+              selectedDateTime: selectedDateTime,
+            ),
+          );
 
-  final result = await orderRepository.createOrder(
+          final result = await orderRepository.createOrder(
             args: Input$CreateOrderInput(
               waypoints: state.waypoints.nonNulls.toList().toWaypointInputGql,
               orderType: state.orderType,
@@ -328,31 +404,37 @@ case HomeEvent$OnDeliveryOptionSelected():
               couponCode: state.couponCode,
               twoWay: state.isTwoWayRide,
               waitTime: state.waitTime,
-              intervalMinutes: selectedDateTime != null ? selectedDateTime.difference(DateTime.now()).inMinutes : 0,
+              intervalMinutes: selectedDateTime != null
+                  ? selectedDateTime.difference(DateTime.now()).inMinutes
+                  : 0,
               optionIds: state.rideOptions.map((e) => e.id).toList(),
             ),
           );
           if (result.isLoaded) {
             // Order created successfully — update the active orders stream first so the
             // "Ride Requested" screen appears, then reset form fields.
-            emit(state.copyWith(
-              createOrderResponse: result,
-              currentOrdersResponse: result,
-            ));
+            emit(
+              state.copyWith(
+                createOrderResponse: result,
+                currentOrdersResponse: result,
+              ),
+            );
             // Small delay so the UI has one frame to react to the active order before
             // we clear the submission form state.
             await Future.delayed(const Duration(milliseconds: 100));
-            emit(state.copyWith(
-              createOrderResponse: ApiResponse.initial(),
-              ridePreviewFareResponse: ApiResponse.initial(),
-              selectedDateTime: null,
-              selectedService: null,
-              selectedServiceCategory: null,
-              senderContact: null,
-              receiverContact: null,
-              waypoints: [state.waypoints.firstOrNull, null],
-              orderSubmissionPage: OrderSubmissionPage.welcome,
-            ));
+            emit(
+              state.copyWith(
+                createOrderResponse: ApiResponse.initial(),
+                ridePreviewFareResponse: ApiResponse.initial(),
+                selectedDateTime: null,
+                selectedService: null,
+                selectedServiceCategory: null,
+                senderContact: null,
+                receiverContact: null,
+                waypoints: [state.waypoints.firstOrNull, null],
+                orderSubmissionPage: OrderSubmissionPage.welcome,
+              ),
+            );
           } else {
             // Order failed — show error, keep user on preview screen
             emit(state.copyWith(createOrderResponse: result));
@@ -364,14 +446,20 @@ case HomeEvent$OnDeliveryOptionSelected():
         case HomeEvent$ChangeTrackOrderPage():
           emit(state.copyWith(page: event.page));
           if (event.page == TrackOrderPage.overview) {
-            await orderRepository.updateLastSeenMessages(orderId: state.activeOrder!.id, lastSeenMessageId: null);
+            await orderRepository.updateLastSeenMessages(
+              orderId: state.activeOrder!.id,
+              lastSeenMessageId: null,
+            );
           }
           break;
 
         case HomeEvent$OnChatMessageSent(:final message):
           if (message.isNotEmpty) {
             emit(state.copyWith(sendMessageState: ApiResponse.loading()));
-            final result = await orderRepository.sendMessage(orderId: state.activeOrder!.id, message: message);
+            final result = await orderRepository.sendMessage(
+              orderId: state.activeOrder!.id,
+              message: message,
+            );
             emit(state.copyWith(sendMessageState: result));
             if (result.isLoaded) {
               emit(state.copyWith(sendMessageState: ApiResponse.initial()));
@@ -391,13 +479,26 @@ case HomeEvent$OnDeliveryOptionSelected():
             emit(state.copyWith(cancelOrderResponse: ApiResponse.initial()));
           }
           if (state.waypoints.firstOrNull?.latLng != null) {
-            try { state.mapViewController?.moveCamera(state.waypoints.firstOrNull!.latLng, 16); } catch (_) {}
-            await _showDriversAround(waypoints: [state.waypoints.firstOrNull!, null], emitter: emit);
+            try {
+              state.mapViewController?.moveCamera(
+                state.waypoints.firstOrNull!.latLng,
+                16,
+              );
+            } catch (_) {}
+            await _showDriversAround(
+              waypoints: [state.waypoints.firstOrNull!, null],
+              emitter: emit,
+            );
           }
           break;
 
         case HomeEvent$OnServiceCategorySelected(:final serviceCategory):
-          emit(state.copyWith(selectedServiceCategory: serviceCategory, selectedService: null));
+          emit(
+            state.copyWith(
+              selectedServiceCategory: serviceCategory,
+              selectedService: null,
+            ),
+          );
           break;
 
         case HomeEvent$OnServiceSelected(:final service, :final value):
@@ -412,8 +513,18 @@ case HomeEvent$OnDeliveryOptionSelected():
           emit(state.copyWith(selectedPaymentMethod: paymentMethod));
           break;
 
-        case HomeEvent$OnRidePreferencesUpdated(:final isTwoWayTrip, :final waitTime, :final rideOptions):
-          emit(state.copyWith(isTwoWayRide: isTwoWayTrip, waitTime: waitTime, rideOptions: rideOptions));
+        case HomeEvent$OnRidePreferencesUpdated(
+          :final isTwoWayTrip,
+          :final waitTime,
+          :final rideOptions,
+        ):
+          emit(
+            state.copyWith(
+              isTwoWayRide: isTwoWayTrip,
+              waitTime: waitTime,
+              rideOptions: rideOptions,
+            ),
+          );
           break;
 
         case HomeEvent$OnReviewSubmitted(
@@ -432,35 +543,69 @@ case HomeEvent$OnDeliveryOptionSelected():
             isFavorite: isFavorite,
           );
           emit(state.copyWith(reviewSubmissionState: result));
-          add(HomeEvent.initializeWelcome(pickupPoint: state.waypoints.firstOrNull));
+          add(
+            HomeEvent.initializeWelcome(
+              pickupPoint: state.waypoints.firstOrNull,
+            ),
+          );
           break;
 
         case HomeEvent$MarkEphemeralMessageAsSeen(:final ephemeralMessageId):
           emit(state.copyWith(reviewSubmissionState: ApiResponse.initial()));
-          orderRepository.markEphemeralMessageAsSeen(messageId: ephemeralMessageId);
-          add(HomeEvent.initializeWelcome(pickupPoint: state.waypoints.firstOrNull));
+          orderRepository.markEphemeralMessageAsSeen(
+            messageId: ephemeralMessageId,
+          );
+          add(
+            HomeEvent.initializeWelcome(
+              pickupPoint: state.waypoints.firstOrNull,
+            ),
+          );
           break;
       }
     });
   }
 
-  Future<void> _showDriversAround({required List<Place?> waypoints, required Emitter<HomeState> emitter}) async {
+  Future<void> _showDriversAround({
+    required List<Place?> waypoints,
+    required Emitter<HomeState> emitter,
+  }) async {
     if (waypoints.first == null) {
       emitter(state.copyWith(driversAround: []));
       return;
     }
-    final driversAround = await homeRepository.getDriversAround(waypoints.first!.latLng);
-    emitter(state.copyWith(driversAround: driversAround.data ?? [], waypoints: waypoints));
+    final driversAround = await homeRepository.getDriversAround(
+      waypoints.first!.latLng,
+    );
+    emitter(
+      state.copyWith(
+        driversAround: driversAround.data ?? [],
+        waypoints: waypoints,
+      ),
+    );
   }
 
-  void cancelRide({required String orderId, required String? cancelReasonId, required String? cancelReasonNote}) =>
-      add(HomeEvent.cancelRide(orderId: orderId, cancelReasonId: cancelReasonId, cancelReasonNote: cancelReasonNote));
+  void cancelRide({
+    required String orderId,
+    required String? cancelReasonId,
+    required String? cancelReasonNote,
+  }) => add(
+    HomeEvent.cancelRide(
+      orderId: orderId,
+      cancelReasonId: cancelReasonId,
+      cancelReasonNote: cancelReasonNote,
+    ),
+  );
 
   void onPaymentMethodSelected(PaymentMethodUnion paymentMethod) =>
       add(HomeEvent.onPaymentMethodSelected(paymentMethod: paymentMethod));
 
-  void onServiceCategorySelected(Fragment$ServiceCategory fragment$serviceCategory) =>
-      add(HomeEvent.onServiceCategorySelected(serviceCategory: fragment$serviceCategory));
+  void onServiceCategorySelected(
+    Fragment$ServiceCategory fragment$serviceCategory,
+  ) => add(
+    HomeEvent.onServiceCategorySelected(
+      serviceCategory: fragment$serviceCategory,
+    ),
+  );
 
   // @override
   // HomeState? fromJson(Map<String, dynamic> json) => HomeState.fromJson(json);
