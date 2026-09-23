@@ -44,7 +44,7 @@
 //   return 'Bearer $token';
 // },
 //     );
-//     final httpLink = HttpLink(url);
+//     final httpLink = HttpLink(url, httpClient: _TimeoutClient());
 //     final httpLinkWithAuth = authLink.concat(httpLink);
 //     final subscriptionUrl = url.replaceAll('http', 'ws');
 //     final websocketLink = AppSocketLink(subscriptionUrl);
@@ -85,6 +85,20 @@ import 'package:flutter/foundation.dart';
 
 import '../env.dart';
 
+import 'package:http/http.dart' as http;
+
+class _TimeoutClient extends http.BaseClient {
+  final http.Client _inner = http.Client();
+  final Duration timeout;
+
+  _TimeoutClient({this.timeout = const Duration(seconds: 15)});
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
+    return _inner.send(request).timeout(timeout);
+  }
+}
+
 final locator = GetIt.instance;
 
 @InjectableInit()
@@ -118,7 +132,7 @@ abstract class ServiceModule {
       },
     );
 
-    final httpLink = HttpLink(url);
+    final httpLink = HttpLink(url, httpClient: _TimeoutClient());
     final httpLinkWithAuth = authLink.concat(httpLink);
 
     final subscriptionUrl = url.replaceAll('http', 'ws');

@@ -101,7 +101,7 @@
 			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
 		<key>UIStatusBarHidden</key>
-		<true/>
+		<false/>
 		<key>NSMotionUsageDescription</key>
 		<string>The app will use your motion sensor data to accurately determine your current heading and show it to the user.</string>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
