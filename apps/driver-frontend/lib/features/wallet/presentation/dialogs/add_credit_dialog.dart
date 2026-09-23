@@ -55,9 +55,10 @@ class _AddCreditDialogState extends State<AddCreditDialog> {
     );
 
     // ignore: avoid_print
-    print('[PAY-DEBUG] orderResponse: \${orderResponse.data}, error: \${orderResponse is ApiResponseError ? (orderResponse as ApiResponseError).error : null}');
+    print('[PAY-DEBUG] orderResponse: ${orderResponse.data}, error: ${orderResponse is ApiResponseError ? (orderResponse as ApiResponseError).error : null}');
     final order = orderResponse.data?.createRazorpayTopUpOrder;
     if (order == null) {
+      _isProcessingPayment = false;
       if (context.mounted) {
         context.showSnackBar(message: 'Could not start payment');
       }
@@ -81,8 +82,8 @@ class _AddCreditDialogState extends State<AddCreditDialog> {
             ),
           ),
         );
-        if (verifyResponse.data?.verifyRazorpayTopUp == true) {
-          if (context.mounted) {
+        _isProcessingPayment = false;
+        if (verifyResponse.data?.verifyRazorpayTopUp == true) {          if (context.mounted) {
             context.router.maybePop();
             locator<WalletBloc>().fetchWalletData();
             context.showSnackBar(message: context.translate.topUpSuccess);
@@ -94,8 +95,9 @@ class _AddCreditDialogState extends State<AddCreditDialog> {
         }
       },
       onError: (reason) {
+        _isProcessingPayment = false;
         if (context.mounted) {
-          context.showSnackBar(message: 'Payment failed: \$reason');
+          context.showSnackBar(message: 'Payment failed: $reason');
         }
       },
     );

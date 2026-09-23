@@ -3025,6 +3025,7 @@ type Order {
   directions: [Point!]
   arrivedAt: DateTime
   waitingChargeAmount: Float
+  waitSeconds: Int
   complaintsAggregate(
     """Filter to find records to aggregate on"""
     filter: TaxiSupportRequestAggregateFilter
@@ -13997,6 +13998,12 @@ type OrderVolumeBucket {
   orderCount: Int!
 }
 
+type PublicLiveStats {
+  driversOnline: Int!
+  tripsToday: Int!
+  avgPickupMinutes: Float
+}
+
 type BroadcastConfig {
   """Number of drivers to notify in each wave"""
   waveSize: Int!
@@ -14305,6 +14312,7 @@ input DispatchConfigInput {
 type Query {
   platformKPI(input: PlatformKPIInput!): PlatformKPI!
   orderVolumeTimeSeries(period: KPIPeriod!): [OrderVolumeByApp!]!
+  publicLiveStats: PublicLiveStats!
   currentUserSessions: [OperatorSession!]!
   exportRiders(
     """Specify to filter the records returned."""
@@ -17720,7 +17728,7 @@ input ServiceInput {
   perMinuteWait: Float!
   prepayPercent: Float!
   minimumFee: Float!
-  searchRadius: Int!
+  searchRadius: Int
   paymentMethod: ServicePaymentMethod!
   cancellationTotalFee: Float!
   cancellationDriverShare: Float!

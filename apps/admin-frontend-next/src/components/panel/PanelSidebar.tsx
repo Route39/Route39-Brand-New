@@ -58,7 +58,7 @@ function NavLeafLink({ leaf, onClick }: { leaf: NavLeaf; onClick?: () => void })
       className={cn(
         "relative flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
         isActive &&
-          "bg-sidebar-accent text-sidebar-accent-foreground before:absolute before:top-1.5 before:bottom-1.5 before:-left-1 before:w-[2px] before:rounded-full before:bg-[#0037e7]",
+          "bg-sidebar-accent text-sidebar-accent-foreground before:absolute before:top-1.5 before:bottom-1.5 before:-left-1 before:w-[2px] before:rounded-full before:bg-[#c62828]",
       )}
     >
       {Icon ? <Icon className="size-4 shrink-0" /> : null}
@@ -129,23 +129,23 @@ export function PanelSidebarContent({ onNavigate }: { onNavigate?: () => void })
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex h-14 items-center gap-2.5 border-b border-sidebar-border/60 px-4">
-        <div className="relative">
-          <div
-            aria-hidden
-            className="absolute -inset-0.5 rounded-lg opacity-25 blur-md"
-            style={{ background: "linear-gradient(135deg,#0037e7,#0080ff)" }}
+      <div className="flex flex-col gap-1.5 border-b border-sidebar-border/60 px-4 py-2.5">
+        <div className="flex items-center gap-2.5">
+          <img
+            src={`${import.meta.env.BASE_URL}route39_logo.png`}
+            alt="Route39"
+            className="h-8 w-auto dark:hidden"
           />
           <img
-            src={`${import.meta.env.BASE_URL}icon.svg`}
-            alt=""
-            className="relative size-7 rounded-md ring-1 ring-sidebar-border"
+            src={`${import.meta.env.BASE_URL}route39_logo_dark.png`}
+            alt="Route39"
+            className="hidden h-8 w-auto dark:block"
           />
         </div>
-        <div className="min-w-0 leading-tight">
-          <div className="truncate text-sm font-semibold tracking-tight">Route39</div>
-          <div className="text-[0.6rem] font-medium uppercase tracking-[0.14em] text-sidebar-foreground/55">
-            Admin Console
+        <div className="text-[0.6rem] leading-tight text-muted-foreground">
+          <div className="uppercase tracking-wide">Powered by</div>
+          <div className="font-semibold uppercase tracking-wide text-foreground">
+            Attendy Technologies Private Limited
           </div>
         </div>
       </div>

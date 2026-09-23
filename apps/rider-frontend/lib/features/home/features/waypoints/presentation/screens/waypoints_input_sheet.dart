@@ -113,15 +113,15 @@ class _WaypointsInputSheetState extends State<WaypointsInputSheet> {
           BlocProvider.value(value: locator<DestinationSuggestionsCubit>()),
         ],
         child: SafeArea(
-          child: Column(
+          child: LayoutBuilder(
+            builder: (context, constraints) => Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 12),
               BlocBuilder<HomeBloc, HomeState>(
                 builder: (context, state) {
-                  final availableHeight = MediaQuery.of(context).size.height -
-                      MediaQuery.of(context).viewInsets.bottom;
+                  final availableHeight = constraints.maxHeight;
                   return ConstrainedBox(
                     constraints: BoxConstraints(
                       maxHeight: availableHeight * 0.55,
@@ -307,6 +307,7 @@ class _WaypointsInputSheetState extends State<WaypointsInputSheet> {
                 ),
               ),
             ],
+          ),
           ),
         ),
       ),

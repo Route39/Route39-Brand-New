@@ -1,5 +1,5 @@
+import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_common/core/entities/payment_method_union.dart';
 import 'package:flutter_common/core/enums/ride_option_icon.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
@@ -11,8 +11,6 @@ import 'package:flutter_common/core/presentation/waypoints_view/waypoints_view.d
 import 'package:ridy/core/graphql/fragments/active_order.extensions.dart';
 import 'package:ridy/core/graphql/fragments/active_order.fragment.graphql.dart';
 import 'package:ridy/core/graphql/fragments/point.extensions.dart';
-import 'package:ridy/features/scheduled_rides/presentation/components/payment_method_view.dart';
-import 'package:flutter_common/gen/assets.gen.dart';
 
 class ScheduledRidesListItem extends StatelessWidget {
   final Fragment$ActiveOrder entity;
@@ -33,10 +31,7 @@ class ScheduledRidesListItem extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          image: DecorationImage(
-            image: Assets.images.scheduledRidesHeaderBackground.provider(),
-            fit: BoxFit.cover,
-          ),
+          color: const Color(0xFFE53935),
         ),
         child: Column(
           children: [
@@ -54,10 +49,11 @@ class ScheduledRidesListItem extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     padding: const EdgeInsets.all(8),
-                    child: const Icon(
-                      Ionicons.car,
-                      color: ColorPalette.primary30,
-                      size: 28,
+                    child: Image.asset(
+                      'assets/images/ev_auto_icon_small.png',
+                      width: 28,
+                      height: 28,
+                      fit: BoxFit.contain,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -68,7 +64,7 @@ class ScheduledRidesListItem extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                entity.pickupEta?.formatDateTime ?? "-",
+                                entity.scheduledAt != null ? DateFormat('EEE, dd MMM • hh:mm a').format(entity.scheduledAt!.toLocal()) : (entity.pickupEta?.formatDateTime ?? "-"),
                                 style: context.labelLarge?.copyWith(
                                   color: ColorPalette.neutral99,
                                 ),
@@ -79,7 +75,7 @@ class ScheduledRidesListItem extends StatelessWidget {
                               style: context.labelLarge?.copyWith(
                                 color: ColorPalette.neutral99,
                               ),
-                            )
+                            ),
                           ],
                         ),
                         const SizedBox(height: 2),
@@ -94,16 +90,16 @@ class ScheduledRidesListItem extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              entity.paymentMethodUnion.name(context),
+                              "Amount",
                               style: context.bodyMedium?.copyWith(
                                 color: ColorPalette.neutralVariant90,
                               ),
                             ),
                           ],
-                        )
+                        ),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -112,32 +108,26 @@ class ScheduledRidesListItem extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 color: ColorPalette.neutral99,
-                border: Border.all(
-                  color: ColorPalette.primary95,
-                ),
+                border: Border.all(color: ColorPalette.primary95),
                 boxShadow: const [
                   BoxShadow(
                     color: Color(0x1464748B),
                     blurRadius: 8,
                     offset: Offset(2, 4),
-                  )
+                  ),
                 ],
               ),
               child: Column(
                 children: [
-                  PaymentMethodView(
-                    paymentMethod: entity.paymentMethodUnion,
-                  ),
-                  const SizedBox(height: 16),
                   WayPointsView(
                     waypoints: entity.waypoints.toPlaces,
                     startedAt: entity.pickupEta,
                     finishedAt: entity.dropoffEta,
                   ),
-                  if (entity.options.isNotEmpty || (entity.waitMinutes ?? 0) > 0 || entity.isTwoWay) ...[
-                    const SizedBox(
-                      height: 16,
-                    ),
+                  if (entity.options.isNotEmpty ||
+                      (entity.waitMinutes ?? 0) > 0 ||
+                      entity.isTwoWay) ...[
+                    const SizedBox(height: 16),
                     Row(
                       children: [
                         Text(
@@ -150,20 +140,25 @@ class ScheduledRidesListItem extends StatelessWidget {
                             spacing: 8,
                             children: entity.options
                                 .map(
-                              (e) => SquareIconChip(icon: e.icon.toEntity.icon),
-                            )
+                                  (e) => SquareIconChip(
+                                    icon: e.icon.toEntity.icon,
+                                  ),
+                                )
                                 .followedBy([
-                              if ((entity.waitMinutes ?? 0) > 0) const SquareIconChip(icon: Ionicons.time),
-                              if (entity.isTwoWay) const SquareIconChip(icon: Ionicons.repeat),
-                            ]).toList(),
+                                  if ((entity.waitMinutes ?? 0) > 0)
+                                    const SquareIconChip(icon: Ionicons.time),
+                                  if (entity.isTwoWay)
+                                    const SquareIconChip(icon: Ionicons.repeat),
+                                ])
+                                .toList(),
                           ),
-                        )
+                        ),
                       ],
                     ),
-                  ]
+                  ],
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),

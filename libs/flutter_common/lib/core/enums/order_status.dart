@@ -23,8 +23,8 @@ enum OrderStatus {
       OrderStatus.found => OrderStatusViewMode.looking,
       OrderStatus.waitingForPostPay || OrderStatus.waitingForPrePay => OrderStatusViewMode.waitingForPayment,
       OrderStatus.driverAccepted || OrderStatus.started || OrderStatus.arrived => OrderStatusViewMode.inProgress,
+      OrderStatus.booked => OrderStatusViewMode.scheduled,
       OrderStatus.waitingForReview ||
-      OrderStatus.booked ||
       OrderStatus.driverCanceled ||
       OrderStatus.riderCanceled ||
       OrderStatus.finished ||
@@ -33,4 +33,4 @@ enum OrderStatus {
   }
 }
 
-enum OrderStatusViewMode { looking, waitingForPayment, inProgress, finished }
+enum OrderStatusViewMode { looking, waitingForPayment, inProgress, scheduled, finished }

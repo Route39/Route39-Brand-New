@@ -253,7 +253,7 @@ if (selectedService != null)
                             const SizedBox(width: 16),
                             Expanded(
                               child: AppPrimaryButton(
-                                isDisabled: false,
+                                isDisabled: !state.canSubmitOrder,
                                 color: PrimaryButtonColor.error,
                                 onPressed: () {
                                   homeBloc.add(

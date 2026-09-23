@@ -100,7 +100,8 @@
 		"driver": {
 			"pendingVerification": "Driver Verification",
 			"all": "All Drivers",
-			"header": "Drivers"
+			"header": "Drivers",
+			"vehicles": "Vehicles"
 		},
 		"payouts": "Payouts",
 		"payoutMethods": "Payout Methods",
@@ -192,19 +193,16 @@
 		}
 	},
 	"requests": {
-		"expectedTime": "Expected Time",
-		"startTime": "Start Time",
-		"finishTime": "Finish Time",
-		"costAfterCoupon": "Cost After Coupon",
-		"estimatedCost": "Estimated Cost",
-		"header": "Request #",
-		"requestTIme": "Request Time",
-		"service": "Service",
-		"distance": "Distance",
-		"duration": "Duration",
-		"chats": "Chats",
-		"complaints": "Complaints",
-		"assign": "Assign Driver (Alpha)"
+		"list": {
+			"description": "All ride requests across the platform."
+		},
+		"filters": {
+			"today": "Today",
+			"thisWeek": "This week",
+			"last30": "Last 30",
+			"clear": "Clear filter",
+			"totalCollection": "Total collection"
+		}
 	},
 	"profile": {
 		"status": "Status",
@@ -297,19 +295,20 @@
 		"submittedBy": "Submitted By"
 	},
 	"complaint": {
-		"inscriptionTime": "Inscription Time",
-		"content": "Content"
+		"subject": "Subject",
+		"submittedBy": "Submitted by",
+		"relatedOrder": "Related order",
+		"submittedAt": "Submitted"
 	},
 	"driver": {
-		"profile": {
-			"changeStatus": "Update Status",
-			"lastSeenAt": "Last Seen At",
-			"rating": "Rating",
-			"details": "Details",
-			"orders": "Orders",
-			"financials": "Credit Records",
-			"reviews": "Reviews",
-			"documents": "Documents"
+		"name": "Name",
+		"carPlate": "Vehicle Number",
+		"rating": "Rating",
+		"registered": "Registered",
+		"lastSeen": "Last seen",
+		"singular": "Driver",
+		"list": {
+			"description": "All drivers registered on the platform."
 		}
 	},
 	"table": {
@@ -472,17 +471,6 @@
 	"home": {
 		"description": "Headline metrics for the last 30 days."
 	},
-	"driver": {
-		"name": "Name",
-		"carPlate": "Vehicle Number",
-		"rating": "Rating",
-		"registered": "Registered",
-		"lastSeen": "Last seen",
-		"singular": "Driver",
-		"list": {
-			"description": "All drivers registered on the platform."
-		}
-	},
 	"rider": {
 		"name": "Name",
 		"rating": "Rating",
@@ -498,24 +486,6 @@
 		"cost": "Cost",
 		"createdOn": "Created",
 		"route": "Route"
-	},
-	"requests": {
-		"list": {
-			"description": "All ride requests across the platform."
-		},
-		"filters": {
-			"today": "Today",
-			"thisWeek": "This week",
-			"last30": "Last 30",
-			"clear": "Clear filter",
-			"totalCollection": "Total collection"
-		}
-	},
-	"complaint": {
-		"subject": "Subject",
-		"submittedBy": "Submitted by",
-		"relatedOrder": "Related order",
-		"submittedAt": "Submitted"
 	},
 	"complaints": {
 		"list": {

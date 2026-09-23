@@ -92,8 +92,8 @@ sealed class HomeState with _$HomeState {
             id: 'me',
             position: LatLng(driverLocation!.lat, driverLocation!.lng),
             rotation: driverLocation?.heading ?? 0,
-            widget: Assets.images.carTopView.image(width: 50, height: 50, fit: BoxFit.cover),
-            fallbackAssetPath: Assets.images.carTopView.path,
+            widget: Assets.images.evAutoIcon.image(width: 50, height: 50, fit: BoxFit.cover),
+            fallbackAssetPath: Assets.images.evAutoIcon.path,
           );
 
     switch (driverStatus) {

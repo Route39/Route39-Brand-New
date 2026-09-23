@@ -16,18 +16,34 @@ class GraphqlDatasourceImpl implements GraphqlDatasource {
   @override
   Future<ApiResponse<TParsed>> mutate<TParsed>(MutationOptions<TParsed> options) async {
     try {
-      print(
-  '[HTTP-AUTH-DEBUG] mutate operation=${options.operationName}',
-);
+      print('[HTTP-AUTH-DEBUG] mutate operation=${options.operationName}');
+      print('[HTTP-AUTH-DEBUG] variables=${options.variables}');
 
-final result = await client.mutate(options);
+      final stopwatch = Stopwatch()..start();
+      final result = await client.mutate(options);
+      stopwatch.stop();
+
+      print('[HTTP-AUTH-DEBUG] response received in ${stopwatch.elapsedMilliseconds}ms');
+      print('[HTTP-AUTH-DEBUG] hasException=${result.hasException}');
+      print('[HTTP-AUTH-DEBUG] data=${result.data}');
+      print('[HTTP-AUTH-DEBUG] parsedData=${result.parsedData}');
+      print('[HTTP-AUTH-DEBUG] exception=${result.exception}');
+
       if (result.hasException) {
-        return ApiResponse.error(_parseOperationException(result.exception!).errorMessage);
+        return ApiResponse.error(
+          _parseOperationException(result.exception!).errorMessage,
+        );
       }
+
       return ApiResponse.loaded(result.parsedData as TParsed);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('[HTTP-AUTH-DEBUG] MUTATION ERROR: $e');
+      print('[HTTP-AUTH-DEBUG] STACK: $stackTrace');
       Logger().e(e);
-      return ApiResponse.error('Connection failed. Please check your internet connection.');
+
+      return ApiResponse.error(
+        'Connection failed. Please check your internet connection.',
+      );
     }
   }
 

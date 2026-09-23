@@ -35,12 +35,16 @@ class FiltersBox extends StatelessWidget {
                         onSelectionChanged: (value) => locator<EarningsBloc>().setTimeFrame(value.first!),
                         segments: [
                           ButtonSegment(
-                            value: Enum$TimeQuery.Monthly,
-                            label: Text(context.translate.monthly),
-                          ),
-                          ButtonSegment(
                             value: Enum$TimeQuery.Daily,
                             label: Text(context.translate.daily),
+                          ),
+                          ButtonSegment(
+                            value: Enum$TimeQuery.Weekly,
+                            label: Text(context.translate.weekly),
+                          ),
+                          ButtonSegment(
+                            value: Enum$TimeQuery.Monthly,
+                            label: Text(context.translate.monthly),
                           ),
                         ],
                         selected: {state.timeframe},
@@ -58,7 +62,9 @@ class FiltersBox extends StatelessWidget {
                           Column(
                             children: [
                               Text(
-                                "${state.startDate.formatDate(context)}-${state.endDate.formatDate(context)}",
+                                state.timeframe == Enum$TimeQuery.Daily
+                                    ? state.startDate.formatDate(context)
+                                    : "${state.startDate.formatDate(context)}-${state.endDate.formatDate(context)}",
                                 style: context.titleSmall,
                               ),
                               const SizedBox(

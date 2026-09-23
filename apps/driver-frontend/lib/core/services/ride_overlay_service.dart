@@ -28,8 +28,8 @@ class RideOverlayService {
     }
 
     await FlutterOverlayWindow.showOverlay(
-      height: 64,
-      width: 64,
+      height: 96,
+      width: 96,
       alignment: OverlayAlignment.centerRight,
       flag: OverlayFlag.defaultFlag,
       visibility: NotificationVisibility.visibilityPublic,
@@ -46,15 +46,18 @@ class RideOverlayService {
     required String fare,
     required String distance,
     required String duration,
+    String? pickupAddress,
+    String? dropoffAddress,
   }) async {
     final hasPermission = await FlutterOverlayWindow.isPermissionGranted();
     if (!hasPermission) return;
 
     await _close();
+    // Half-screen bottom card (Rapido-style), not full screen.
     await FlutterOverlayWindow.showOverlay(
-      height: WindowSize.matchParent,
+      height: 520,
       width: WindowSize.matchParent,
-      alignment: OverlayAlignment.center,
+      alignment: OverlayAlignment.bottomCenter,
       flag: OverlayFlag.defaultFlag,
       visibility: NotificationVisibility.visibilityPublic,
       overlayTitle: "Route39 Pilot",
@@ -68,6 +71,8 @@ class RideOverlayService {
       "fare": fare,
       "distance": distance,
       "duration": duration,
+      "pickupAddress": pickupAddress,
+      "dropoffAddress": dropoffAddress,
     }));
   }
 

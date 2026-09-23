@@ -12,8 +12,15 @@ import '../components/waiting_time_button.dart';
 
 class PickupOtpDialog extends StatefulWidget {
   final String orderId;
+  final bool isCargo;
+  final DateTime? arrivedAt;
 
-  const PickupOtpDialog({super.key, required this.orderId});
+  const PickupOtpDialog({
+    super.key,
+    required this.orderId,
+    this.isCargo = false,
+    this.arrivedAt,
+  });
 
   @override
   State<PickupOtpDialog> createState() => _PickupOtpDialogState();
@@ -52,8 +59,15 @@ class _PickupOtpDialogState extends State<PickupOtpDialog> {
       setState(() => _errorMessage = 'Enter the 4-digit OTP');
       return;
     }
+    final cargoWaitSeconds = widget.isCargo && widget.arrivedAt != null
+        ? DateTime.now().difference(widget.arrivedAt!).inSeconds
+        : null;
     locator<HomeBloc>().add(
-      HomeEvent.onVerifyPickupOtp(orderId: widget.orderId, otp: _otp),
+      HomeEvent.onVerifyPickupOtp(
+        orderId: widget.orderId,
+        otp: _otp,
+        waitSeconds: cargoWaitSeconds,
+      ),
     );
   }
 

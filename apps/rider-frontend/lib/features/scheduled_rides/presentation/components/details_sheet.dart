@@ -1,5 +1,5 @@
+import 'package:intl/intl.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_common/core/enums/ride_option_icon.dart';
 import 'package:generic_map/generic_map.dart';
@@ -16,7 +16,6 @@ import 'package:ridy/core/graphql/fragments/active_order.extensions.dart';
 import 'package:ridy/core/graphql/fragments/active_order.fragment.graphql.dart';
 import 'package:ridy/core/graphql/fragments/point.extensions.dart';
 import 'package:ridy/core/presentation/app_generic_map.dart';
-import 'package:ridy/features/scheduled_rides/presentation/components/payment_method_view.dart';
 import 'package:ridy/features/scheduled_rides/presentation/dialogs/cancel_scheduled_ride_dialog.dart';
 
 class ScheduledRidesDetailsSheet extends StatelessWidget {
@@ -59,14 +58,14 @@ class ScheduledRidesDetailsSheet extends StatelessWidget {
                                 child: const Icon(Ionicons.calendar, color: ColorPalette.primary30),
                               ),
                               const SizedBox(width: 16),
-                              Expanded(child: Text(entity.pickupEta?.formatDateTime ?? "-", style: context.labelLarge)),
+                              Expanded(child: Text(entity.scheduledAt != null ? DateFormat('EEE, dd MMM • hh:mm a').format(entity.scheduledAt!.toLocal()) : (entity.pickupEta?.formatDateTime ?? "-"), style: context.labelLarge)),
                             ],
                           ),
                         ),
                         const Divider(height: 0),
                         Padding(
                           padding: const EdgeInsets.all(12),
-                          child: PaymentMethodView(paymentMethod: entity.paymentMethodUnion),
+                          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text("Amount", style: context.labelLarge), Text(entity.totalCost.formatCurrency(entity.currency), style: context.labelLarge?.copyWith(color: ColorPalette.primary40))]),
                         ),
                       ],
                     ),
@@ -80,11 +79,11 @@ class ScheduledRidesDetailsSheet extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        CachedNetworkImage(
-                          imageUrl: entity.serviceImageAddress,
+                        Image.asset(
+                          'assets/images/ev_auto_icon_small.png',
                           width: 48,
                           height: 48,
-                          errorWidget: (context, url, error) => const Icon(Icons.image_outlined, size: 48),
+                          fit: BoxFit.contain,
                         ),
                         const SizedBox(width: 12),
                         Expanded(

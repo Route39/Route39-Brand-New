@@ -8,6 +8,8 @@ import 'package:ridy_driver/core/graphql/fragments/media.fragment.graphql.dart';
 import '../blocs/login.bloc.dart';
 import 'package:ridy_driver/features/auth/domain/repositories/auth_repository.dart';
 
+enum DocSlot { rcFront, rcBack, vehicleFront, vehicleBack, vehicleLeft, vehicleRight }
+
 class VehicleRCScreen extends StatefulWidget {
   final String? initialOwnership;
   final String? initialVehicleNumber;
@@ -29,14 +31,32 @@ class VehicleRCScreen extends StatefulWidget {
 class _VehicleRCScreenState extends State<VehicleRCScreen> {
   static const List<String> ownershipOptions = ['Self Owned'];
 
+  // driver_document table IDs (bettersuite DB)
+  static const Map<DocSlot, int> _documentIds = {
+    DocSlot.rcFront: 6,
+    DocSlot.rcBack: 7,
+    DocSlot.vehicleFront: 8,
+    DocSlot.vehicleBack: 9,
+    DocSlot.vehicleLeft: 10,
+    DocSlot.vehicleRight: 11,
+  };
+
+  static const Map<DocSlot, String> _labels = {
+    DocSlot.rcFront: 'RC Front',
+    DocSlot.rcBack: 'RC Back',
+    DocSlot.vehicleFront: 'Vehicle Front',
+    DocSlot.vehicleBack: 'Vehicle Back',
+    DocSlot.vehicleLeft: 'Vehicle Left',
+    DocSlot.vehicleRight: 'Vehicle Right',
+  };
+
   String? ownership;
   late final TextEditingController vehicleNumberController;
-  Uint8List? frontImageBytes;
-  Uint8List? backImageBytes;
-  Fragment$Media? frontMedia;
-  Fragment$Media? backMedia;
-  bool uploadingFront = false;
-  bool uploadingBack = false;
+
+  final Map<DocSlot, Uint8List> _previews = {};
+  final Map<DocSlot, Fragment$Media> _medias = {};
+  final Set<DocSlot> _uploading = {};
+
   bool submitting = false;
   final ImagePicker _picker = ImagePicker();
 
@@ -57,11 +77,12 @@ class _VehicleRCScreenState extends State<VehicleRCScreen> {
 
   bool get canSubmit =>
       ownership != null &&
-      frontMedia != null && backMedia != null &&
+      DocSlot.values.every((s) => _medias.containsKey(s)) &&
+      _uploading.isEmpty &&
       (!vehicleNumberRequired || vehicleNumberController.text.trim().isNotEmpty) &&
       !submitting;
 
-  Future<void> _pickImage({required bool isFront}) async {
+  Future<void> _pickImage(DocSlot slot) async {
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       isScrollControlled: true,
@@ -88,7 +109,7 @@ class _VehicleRCScreenState extends State<VehicleRCScreen> {
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        isFront ? 'Upload front side of RC' : 'Upload back side of RC',
+                        'Upload ${_labels[slot]}',
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black),
                       ),
                     ),
@@ -130,60 +151,39 @@ class _VehicleRCScreenState extends State<VehicleRCScreen> {
 
     final bytes = await picked.readAsBytes();
     setState(() {
-      if (isFront) {
-        frontImageBytes = bytes;
-        uploadingFront = true;
-      } else {
-        backImageBytes = bytes;
-        uploadingBack = true;
-      }
+      _previews[slot] = bytes;
+      _uploading.add(slot);
     });
 
     try {
       final media = await locator<UploadDatasource>().uploadDocument(picked.name, bytes);
       await locator<AuthRepository>().attachDriverDocument(
-        driverDocumentId: 4,
+        driverDocumentId: _documentIds[slot]!,
         mediaId: int.parse(media.id),
       );
       if (!mounted) return;
       setState(() {
-        if (isFront) {
-          frontMedia = media;
-          uploadingFront = false;
-        } else {
-          backMedia = media;
-          uploadingBack = false;
-        }
+        _medias[slot] = media;
+        _uploading.remove(slot);
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        if (isFront) {
-          frontImageBytes = null;
-          uploadingFront = false;
-        } else {
-          backImageBytes = null;
-          uploadingBack = false;
-        }
+        _previews.remove(slot);
+        _uploading.remove(slot);
       });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Upload failed. Please try again.')),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Upload failed. Please try again.')),
+      );
     }
   }
 
-  Widget _rcUploadTile({
-    required String label,
-    required Uint8List? imageBytes,
-    required bool uploading,
-    required VoidCallback onTap,
-  }) {
-    final uploaded = imageBytes != null;
+  Widget _uploadTile(DocSlot slot) {
+    final bytes = _previews[slot];
+    final uploading = _uploading.contains(slot);
     return Expanded(
       child: InkWell(
-        onTap: uploading ? null : onTap,
+        onTap: uploading ? null : () => _pickImage(slot),
         borderRadius: BorderRadius.circular(12),
         child: Container(
           height: 90,
@@ -194,10 +194,10 @@ class _VehicleRCScreenState extends State<VehicleRCScreen> {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              uploaded
+              bytes != null
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.memory(imageBytes, fit: BoxFit.cover, width: double.infinity, height: double.infinity),
+                      child: Image.memory(bytes, fit: BoxFit.cover, width: double.infinity, height: double.infinity),
                     )
                   : Center(
                       child: Column(
@@ -205,7 +205,10 @@ class _VehicleRCScreenState extends State<VehicleRCScreen> {
                         children: [
                           Icon(Icons.add_photo_alternate_outlined, color: ColorPalette.primary40),
                           const SizedBox(height: 4),
-                          Text(label, style: TextStyle(color: ColorPalette.primary40, fontWeight: FontWeight.w600, fontSize: 13)),
+                          Text(
+                            _labels[slot]!,
+                            style: TextStyle(color: ColorPalette.primary40, fontWeight: FontWeight.w600, fontSize: 13),
+                          ),
                         ],
                       ),
                     ),
@@ -221,6 +224,26 @@ class _VehicleRCScreenState extends State<VehicleRCScreen> {
     );
   }
 
+  Widget _tileRow(DocSlot a, DocSlot b) {
+    return Row(children: [_uploadTile(a), const SizedBox(width: 12), _uploadTile(b)]);
+  }
+
+  InputDecoration _inputDecoration({Widget? suffixIcon}) {
+    OutlineInputBorder border(Color c) => OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: c),
+        );
+    return InputDecoration(
+      suffixIcon: suffixIcon,
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: border(Colors.black26),
+      enabledBorder: border(Colors.black26),
+      focusedBorder: border(ColorPalette.primary40),
+    );
+  }
+
   Future<void> _handleSubmit() async {
     setState(() => submitting = true);
     final loginBloc = locator<LoginBloc>();
@@ -228,7 +251,7 @@ class _VehicleRCScreenState extends State<VehicleRCScreen> {
     if (vehicleNumber != null) {
       loginBloc.onPlateNumberChanged(vehicleNumber);
     }
-    final newDocs = [if (frontMedia != null) frontMedia!, if (backMedia != null) backMedia!];
+    final newDocs = DocSlot.values.map((s) => _medias[s]).whereType<Fragment$Media>().toList();
     if (newDocs.isNotEmpty) {
       loginBloc.setDocuments([...loginBloc.state.documents, ...newDocs]);
     }
@@ -236,6 +259,7 @@ class _VehicleRCScreenState extends State<VehicleRCScreen> {
   }
 
   Widget _buildBody(BuildContext context) {
+    const sectionStyle = TextStyle(fontSize: 14, color: Colors.black54);
     return Column(
       mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -246,33 +270,15 @@ class _VehicleRCScreenState extends State<VehicleRCScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 8),
-                const Text('Vehicle Ownership', style: TextStyle(fontSize: 14, color: Colors.black54)),
+                const Text('Vehicle Ownership', style: sectionStyle),
                 const SizedBox(height: 6),
                 DropdownButtonFormField<String>(
                   initialValue: ownership,
                   isExpanded: true,
                   hint: const Text('Select ownership', style: TextStyle(color: Colors.black38)),
                   icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.black26),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.black26),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: ColorPalette.primary40),
-                    ),
-                  ),
-                  items: ownershipOptions
-                      .map((o) => DropdownMenuItem(value: o, child: Text(o)))
-                      .toList(),
+                  decoration: _inputDecoration(),
+                  items: ownershipOptions.map((o) => DropdownMenuItem(value: o, child: Text(o))).toList(),
                   onChanged: (value) {
                     setState(() => ownership = value);
                     widget.onDraftChanged?.call(ownership: value);
@@ -281,7 +287,7 @@ class _VehicleRCScreenState extends State<VehicleRCScreen> {
                 const SizedBox(height: 20),
                 Text(
                   vehicleNumberRequired ? 'Enter vehicle number' : 'Enter vehicle number (optional)',
-                  style: const TextStyle(fontSize: 14, color: Colors.black54),
+                  style: sectionStyle,
                 ),
                 const SizedBox(height: 6),
                 TextField(
@@ -290,45 +296,20 @@ class _VehicleRCScreenState extends State<VehicleRCScreen> {
                     setState(() {});
                     widget.onDraftChanged?.call(vehicleNumber: value);
                   },
-                  decoration: InputDecoration(
+                  decoration: _inputDecoration(
                     suffixIcon: const Icon(Icons.info_outline, color: Colors.blue),
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.black26),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Colors.black26),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: ColorPalette.primary40),
-                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text('Upload RC Images (Required)', style: TextStyle(fontSize: 14, color: Colors.black54)),
+                const Text('Upload RC (Required)', style: sectionStyle),
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    _rcUploadTile(
-                      label: 'Front',
-                      imageBytes: frontImageBytes,
-                      uploading: uploadingFront,
-                      onTap: () => _pickImage(isFront: true),
-                    ),
-                    const SizedBox(width: 12),
-                    _rcUploadTile(
-                      label: 'Back',
-                      imageBytes: backImageBytes,
-                      uploading: uploadingBack,
-                      onTap: () => _pickImage(isFront: false),
-                    ),
-                  ],
-                ),
+                _tileRow(DocSlot.rcFront, DocSlot.rcBack),
+                const SizedBox(height: 20),
+                const Text('Upload Vehicle Images (Required)', style: sectionStyle),
+                const SizedBox(height: 8),
+                _tileRow(DocSlot.vehicleFront, DocSlot.vehicleBack),
+                const SizedBox(height: 12),
+                _tileRow(DocSlot.vehicleLeft, DocSlot.vehicleRight),
               ],
             ),
           ),

@@ -49,7 +49,7 @@ abstract class HomeRepository {
 
   Future<ApiResponse<Fragment$ActiveOrder?>> startTrip({required String orderId});
 
-  Future<ApiResponse<void>> verifyPickupOtp({required String orderId, required String otp});
+  Future<ApiResponse<void>> verifyPickupOtp({required String orderId, required String otp, int? waitSeconds});
 
   Future<ApiResponse<void>> submitReview({required String orderId, required int rating, required String? review});
 

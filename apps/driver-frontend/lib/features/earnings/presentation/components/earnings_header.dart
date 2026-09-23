@@ -39,14 +39,7 @@ class EarningsHeader extends StatelessWidget {
             child: Column(
               children: [
                 context.responsive(
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: AppBackButton(
-                      onPressed: () {
-                        SelectedTabNotifier.instance.goToHome();
-                      },
-                    ),
-                  ),
+                  const SizedBox(height: 8),
                   xl: const SizedBox(
                     height: 36,
                   ),

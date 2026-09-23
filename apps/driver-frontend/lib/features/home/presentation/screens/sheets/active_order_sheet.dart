@@ -1,6 +1,8 @@
 import 'package:ridy_driver/config/locator/locator.dart';
 import 'package:ridy_driver/core/datasources/graphql_datasource.dart';
 import 'package:ridy_driver/core/graphql/documents/track_order.graphql.dart';
+import 'package:ridy_driver/core/graphql/fragments/current_order.fragment.graphql.dart';
+import 'package:ridy_driver/core/graphql/schema.gql.dart';
 import 'package:ridy_driver/core/enums/order_status.prod.dart';
 import 'package:ridy_driver/core/extensions/extensions.dart';
 import 'package:ridy_driver/core/graphql/fragments/coordinate.extensions.dart';
@@ -249,7 +251,11 @@ class ActiveOrderSheet extends StatelessWidget {
                                             context: context,
                                             useSafeArea: false,
                                             builder: (context) =>
-                                                PickupOtpDialog(orderId: order.id),
+PickupOtpDialog(
+                                                  orderId: order.id,
+                                                  isCargo: order.type == Enum$TaxiOrderType.ParcelDelivery,
+                                                  arrivedAt: order.arrivedAt,
+                                                ),
                                           );
                                         }
                                       },

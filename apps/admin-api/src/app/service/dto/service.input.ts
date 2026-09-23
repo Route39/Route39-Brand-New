@@ -46,8 +46,8 @@ export class ServiceInput {
   prepayPercent!: number;
   @Field(() => Float, { nullable: false })
   minimumFee!: number;
-  @Field(() => Int, { nullable: false })
-  searchRadius!: number;
+  @Field(() => Int, { nullable: true })
+  searchRadius?: number;
   @Field(() => ServicePaymentMethod, { nullable: false })
   paymentMethod!: ServicePaymentMethod;
   @Field(() => Float, { nullable: false })

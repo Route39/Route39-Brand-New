@@ -21,8 +21,8 @@ interface Single {
   lng: number;
 }
 
-const DEFAULT_CENTER = { lat: 20, lng: 0 };
-const DEFAULT_ZOOM = 2;
+const DEFAULT_CENTER = { lat: 12.0, lng: 78.8 }; // Bangalore / Tiruppur / Coimbatore / Chennai
+const DEFAULT_ZOOM = 7;
 const REFETCH_DEBOUNCE_MS = 250;
 
 /**

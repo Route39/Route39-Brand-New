@@ -74,8 +74,13 @@ export function DriverInvoiceDialog({
   onClose,
 }: DriverInvoiceDialogProps) {
   const filter: Record<string, Record<string, unknown>> = { driverId: { eq: driverId } };
-  if (dateFrom) filter.createdOn = { ...(filter.createdOn ?? {}), gte: dayStartISO(dateFrom) };
-  if (dateTo) filter.createdOn = { ...(filter.createdOn ?? {}), lte: dayEndISO(dateTo) };
+  if (dateFrom && dateTo) {
+    filter.createdOn = { between: { lower: dayStartISO(dateFrom), upper: dayEndISO(dateTo) } };
+  } else if (dateFrom) {
+    filter.createdOn = { gte: dayStartISO(dateFrom) };
+  } else if (dateTo) {
+    filter.createdOn = { lte: dayEndISO(dateTo) };
+  }
 
   const { data, loading } = useQuery(DRIVER_TRIP_DETAILS_QUERY, {
     variables: {
@@ -94,21 +99,38 @@ export function DriverInvoiceDialog({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl print:max-w-none print:border-0 print:shadow-none">
+      <DialogContent className="flex max-h-[85vh] w-full max-w-6xl flex-col gap-0 p-0 print:max-h-none print:max-w-none print:overflow-visible print:border-0 print:shadow-none">
         <style>{`
           @media print {
+            @page { size: A4 portrait; margin: 12mm; }
             body * { visibility: hidden; }
             #driver-invoice-print, #driver-invoice-print * { visibility: visible; }
-            #driver-invoice-print { position: fixed; inset: 0; padding: 24px; }
+            #driver-invoice-print {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100%;
+              padding: 0;
+            }
+            #driver-invoice-print table {
+              width: 100%;
+              table-layout: fixed;
+              font-size: 11px;
+            }
+            #driver-invoice-print td,
+            #driver-invoice-print th {
+              word-break: break-word;
+              white-space: normal !important;
+            }
           }
         `}</style>
-        <div id="driver-invoice-print">
-          <DialogHeader>
+        <div id="driver-invoice-print" className="flex min-h-0 flex-1 flex-col print:block">
+          <DialogHeader className="shrink-0 border-b border-border px-6 py-4">
             <DialogTitle>Auto Driver Daily Collection Bill</DialogTitle>
             <DialogDescription>Route39 fleet management services</DialogDescription>
           </DialogHeader>
 
-          <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+          <div className="grid shrink-0 grid-cols-2 gap-4 border-b border-border px-6 py-4 text-sm">
             <div className="space-y-1">
               <div>
                 <span className="text-muted-foreground">Driver Name: </span>
@@ -141,41 +163,53 @@ export function DriverInvoiceDialog({
             </div>
           </div>
 
-          <div className="mt-4 rounded-lg border border-border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>S.No</TableHead>
-                  <TableHead>Trip Date</TableHead>
-                  <TableHead>Trip Start Time</TableHead>
-                  <TableHead>Pickup &amp; Drop Location</TableHead>
-                  <TableHead className="text-right">Collected Amount</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {trips.map((trip, i) => (
-                  <TableRow key={trip.id}>
-                    <TableCell>{i + 1}</TableCell>
-                    <TableCell>{formatDate(trip.createdOn)}</TableCell>
-                    <TableCell>{formatTime(trip.startTimestamp ?? trip.createdOn)}</TableCell>
-                    <TableCell className="max-w-xs truncate">
-                      {trip.addresses.length > 0
-                        ? `${trip.addresses[0]} → ${trip.addresses[trip.addresses.length - 1]}`
-                        : "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatCurrency(tripAmount(trip), trip.currency)}
-                    </TableCell>
+          <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4 print:overflow-visible">
+            <div className="rounded-lg border border-border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="whitespace-nowrap">S.No</TableHead>
+                    <TableHead className="whitespace-nowrap">Trip Date &amp; Time</TableHead>
+                    <TableHead>Pickup &amp; Drop Location</TableHead>
+                    <TableHead className="whitespace-nowrap text-right">Collected Amount</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            {!loading && trips.length === 0 ? (
-              <TableEmpty>No trips found for this driver in the selected period.</TableEmpty>
-            ) : null}
+                </TableHeader>
+                <TableBody>
+                  {trips.map((trip, i) => (
+                    <TableRow key={trip.id}>
+                      <TableCell>{i + 1}</TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {formatDate(trip.createdOn)}{" "}
+                        <span className="text-muted-foreground">
+                          {formatTime(trip.startTimestamp ?? trip.createdOn)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="max-w-xs">
+                        {trip.addresses.length > 0 ? (
+                          <div className="space-y-0.5 text-xs leading-tight">
+                            <div className="break-words">{trip.addresses[0]}</div>
+                            <div className="break-words text-muted-foreground">
+                              ↓ {trip.addresses[trip.addresses.length - 1]}
+                            </div>
+                          </div>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-right">
+                        {formatCurrency(tripAmount(trip), trip.currency)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {!loading && trips.length === 0 ? (
+                <TableEmpty>No trips found for this driver in the selected period.</TableEmpty>
+              ) : null}
+            </div>
           </div>
 
-          <div className="mt-4 flex justify-end text-sm">
+          <div className="flex shrink-0 justify-end border-t border-border px-6 py-3 text-sm">
             <div className="text-right">
               <div className="text-muted-foreground">Total Collected</div>
               <div className="text-lg font-semibold">{formatCurrency(total, currency)}</div>
@@ -183,7 +217,7 @@ export function DriverInvoiceDialog({
           </div>
         </div>
 
-        <DialogFooter className="print:hidden">
+        <DialogFooter className="shrink-0 border-t border-border px-6 py-4 print:hidden">
           <Button type="button" variant="outline" onClick={onClose}>
             Close
           </Button>

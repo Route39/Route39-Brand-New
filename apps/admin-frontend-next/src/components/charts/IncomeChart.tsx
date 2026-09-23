@@ -17,6 +17,7 @@ import {
   type Timeframe,
 } from "@/components/charts/TimeframeSelector";
 import { INCOME_CHART_QUERY } from "@/lib/graphql/documents/overview";
+import { formatCurrency } from "@/lib/format";
 
 export function IncomeChart() {
   const [timeframe, setTimeframe] = useState<Timeframe>("Monthly");
@@ -59,6 +60,7 @@ export function IncomeChart() {
               fontSize: "0.8rem",
             }}
             labelFormatter={(value) => formatChartTime(value, timeframe, "tooltip")}
+            formatter={(value: number) => [formatCurrency(value, "INR"), "Income"]}
           />
           <Area
             type="monotone"

@@ -51,8 +51,8 @@ mutation initiateRide($id: ID!) {
   }
 }
 
-mutation verifyPickupOtp($id: ID!, $otp: String!) {
-  verifyPickupOtp(orderId: $id, otp: $otp) {
+mutation verifyPickupOtp($id: ID!, $otp: String!, $waitSeconds: Int) {
+  verifyPickupOtp(orderId: $id, otp: $otp, waitSeconds: $waitSeconds) {
     ...UpdateStatus
   }
 }

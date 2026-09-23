@@ -370,6 +370,7 @@ export class OrderService {
     // OTP has already been verified via verifyPickupOtp().
     const orderEntityForGuard = await this.orderRepository.findOne({
       where: { id: input.orderId },
+      relations: { service: true },
     });
     if (!orderEntityForGuard) {
       throw new ForbiddenError('ORDER_NOT_FOUND');

@@ -37,7 +37,7 @@ class AppTheme {
               return ColorPalette.primary40;
             }
           }),
-          padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 24, vertical: 20)),
+          padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 24, vertical: 14)),
           iconColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.disabled)) {
               return lightColorScheme.onSurface.withValues(alpha: 0.12);

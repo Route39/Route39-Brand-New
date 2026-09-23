@@ -19262,7 +19262,7 @@ DatabaseModule = database_module_ts_decorate([
                                         migrationsRun: false,
                                         synchronize: configService.get('NODE_ENV') === 'dev' || configService.get('FORCE_SYNC_DB', false) || currentTables[0].count < 10,
                                         // logging: configService.get('NODE_ENV') === 'dev',
-                                        logging: true
+                                        logging: false
                                     };
                                     logger.log('Database connection configured');
                                     return [
@@ -31887,7 +31887,7 @@ var BetterConfigService = /*#__PURE__*/ function() {
                                 strategy: DispatchStrategy.Broadcast,
                                 requestTimeoutSeconds: 3000,
                                 maxSearchRadiusMeters: 20000,
-                                preDispatchBufferMinutes: 30,
+                                preDispatchBufferMinutes: 0,
                                 scoring: {
                                     distanceWeight: 1,
                                     driverRatingWeight: 0.5,
@@ -32859,7 +32859,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             driverId: input.driverId,
                             savedPaymentMethodId: input.paymentMode == PaymentMode.SavedPaymentMethod ? input.paymentMethodId : undefined,
                             paymentGatewayId: input.paymentMode == PaymentMode.PaymentGateway ? input.paymentMethodId : undefined,
-                            status: shouldPrePay ? OrderStatus.WaitingForPrePay : input.intervalMinutes > 10 ? OrderStatus.Booked : OrderStatus.Requested,
+                            status: shouldPrePay ? OrderStatus.WaitingForPrePay : input.intervalMinutes > 0 ? OrderStatus.Booked : OrderStatus.Requested,
                             paidAmount: paidAmount,
                             costBest: cost,
                             costAfterCoupon: cost,
@@ -32955,7 +32955,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.dispatchRide = function dispatchRide(order) {
         return shared_order_service_async_to_generator(function() {
-            var _order_driverId, _order_rider_media, _order_rider_wallets_filter_, _order_rider_wallets, _order_service_media, now, config, _config_preDispatchBufferMinutes, preDispatchBufferMinutes, timeUntilScheduled, intervalMinutes, _order_service_gstPercent, _order_service_platformFee, _order_service_paymentGatewayFee, _order_service_cargoWaitingTimeMinutes, _order_rider_wallets_filter__balance, _order_service_media_address, _order_options;
+            var now, config, _config_preDispatchBufferMinutes, preDispatchBufferMinutes, timeUntilScheduled, intervalMinutes;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32970,6 +32970,25 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         timeUntilScheduled = order.expectedTimestamp.getTime() - now;
                         intervalMinutes = Math.max(0, Math.floor(timeUntilScheduled / (60 * 1000)) - preDispatchBufferMinutes);
                         common_.Logger.log("Dispatching ride in " + intervalMinutes + " minutes (" + preDispatchBufferMinutes + " min pre-dispatch buffer applied). Scheduled pickup: " + order.expectedTimestamp, 'SharedOrderService.dispatchRide');
+                        this.dispatchMainQueue.add('dispatch', {
+                            orderId: order.id
+                        }, {
+                            jobId: "dispatch:" + order.id,
+                            delay: intervalMinutes * 60 * 1000
+                        });
+                        return [
+                            2
+                        ];
+                }
+            });
+        }).call(this);
+    };
+    _proto.createRideOfferAndAssignDriver = function createRideOfferAndAssignDriver(order) {
+        return shared_order_service_async_to_generator(function() {
+            var _order_driverId, _order_rider_media, _order_rider_wallets_filter_, _order_rider_wallets, _order_service_media, _order_providerShare, _order_service_gstPercent, _order_service_platformFee, _order_service_paymentGatewayFee, _order_service_cargoWaitingTimeMinutes, _order_rider_wallets_filter__balance, _order_service_media_address, _order_options;
+            return shared_order_service_ts_generator(this, function(_state) {
+                switch(_state.label){
+                    case 0:
                         return [
                             4,
                             this.rideOfferRedisService.createRideOffer({
@@ -32989,14 +33008,12 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 scheduledAt: order.expectedTimestamp,
                                 pickupLocation: order.points[0],
                                 fleetId: order.fleetId,
-                                //costEstimateForRider: order.costAfterCoupon,
-                                //costEstimateForDriver: order.costBest - order.providerShare,
                                 // costAfterCoupon = costBest − couponDiscount already, so adding the
                                 // fee total here gives: (costBest + fees) − couponDiscount for the
                                 // rider, and (costBest + fees) − providerShare − couponDiscount for
                                 // the driver — matching the agreed fee-inclusive formula for both.
                                 costEstimateForRider: order.costAfterCoupon + order.gstAmount + order.platformFeeAmount + order.paymentGatewayFeeAmount,
-                                costEstimateForDriver: order.costAfterCoupon + order.gstAmount + order.platformFeeAmount + order.paymentGatewayFeeAmount,
+                                costEstimateForDriver: order.costAfterCoupon + order.gstAmount + order.platformFeeAmount + order.paymentGatewayFeeAmount - ((_order_providerShare = order.providerShare) != null ? _order_providerShare : 0),
                                 // Same value the rider side already computes (costBest − costAfterCoupon).
                                 // One coupon, one order — both apps must show the identical number.
                                 couponDiscount: order.costBest - order.costAfterCoupon,
@@ -33036,17 +33053,11 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 tripDirections: order.directions
                             })
                         ];
-                    case 2:
+                    case 1:
                         _state.sent();
                         if (order.driverId != null) {
                             this.assignOrderToDriver(order.id, order.driverId);
                         }
-                        this.dispatchMainQueue.add('dispatch', {
-                            orderId: order.id
-                        }, {
-                            jobId: "dispatch:" + order.id,
-                            delay: intervalMinutes * 60 * 1000
-                        });
                         return [
                             2
                         ];
@@ -49442,6 +49453,7 @@ DispatchModule = _ts_decorate._([
             ]),
             _database.BetterConfigModule,
             _database.RedisHelpersModule,
+            _database.SharedOrderModule,
             _bullmq.BullModule.registerQueue({
                 name: 'dispatch-main',
                 connection: (0, _database.getRedisConnectionConfig)()
@@ -49748,8 +49760,8 @@ const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _typeorm1 = __webpack_require__(13);
 let MainConsumer = class MainConsumer extends _bullmq.WorkerHost {
-    constructor(mainQueue, sequentialDispatchQueue, broadcastDispatchQueue, orderRepository, configService, pubsub, orderRedisService, riderRedisService){
-        super(), this.mainQueue = mainQueue, this.sequentialDispatchQueue = sequentialDispatchQueue, this.broadcastDispatchQueue = broadcastDispatchQueue, this.orderRepository = orderRepository, this.configService = configService, this.pubsub = pubsub, this.orderRedisService = orderRedisService, this.riderRedisService = riderRedisService, this.logger = new _common.Logger(MainConsumer.name);
+    constructor(mainQueue, sequentialDispatchQueue, broadcastDispatchQueue, orderRepository, configService, pubsub, orderRedisService, riderRedisService, sharedOrderService){
+        super(), this.mainQueue = mainQueue, this.sequentialDispatchQueue = sequentialDispatchQueue, this.broadcastDispatchQueue = broadcastDispatchQueue, this.orderRepository = orderRepository, this.configService = configService, this.pubsub = pubsub, this.orderRedisService = orderRedisService, this.riderRedisService = riderRedisService, this.sharedOrderService = sharedOrderService, this.logger = new _common.Logger(MainConsumer.name);
     }
     async process(job) {
         const { orderId } = job.data;
@@ -49832,6 +49844,22 @@ let MainConsumer = class MainConsumer extends _bullmq.WorkerHost {
         const { orderId } = job.data;
         const config = await this.configService.getDispatchConfig();
         this.logger.debug(`Processing dispatch job for order ${orderId} with strategy ${config.strategy}`);
+        const order = await this.orderRepository.findOneOrFail({
+            where: {
+                id: orderId
+            },
+            relations: {
+                driver: true,
+                rider: {
+                    wallets: true
+                },
+                service: {
+                    media: true
+                },
+                options: true
+            }
+        });
+        await this.sharedOrderService.createRideOfferAndAssignDriver(order);
         switch(config.strategy){
             case _database.DispatchStrategy.Broadcast:
                 this.logger.debug(`Adding broadcast dispatch job for order ${orderId}`);
@@ -49880,7 +49908,8 @@ MainConsumer = _ts_decorate._([
         typeof _database.BetterConfigService === "undefined" ? Object : _database.BetterConfigService,
         typeof _database.PubSubService === "undefined" ? Object : _database.PubSubService,
         typeof _database.RideOfferRedisService === "undefined" ? Object : _database.RideOfferRedisService,
-        typeof _database.RiderRedisService === "undefined" ? Object : _database.RiderRedisService
+        typeof _database.RiderRedisService === "undefined" ? Object : _database.RiderRedisService,
+        typeof _database.SharedOrderService === "undefined" ? Object : _database.SharedOrderService
     ])
 ], MainConsumer);
 

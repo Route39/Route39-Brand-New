@@ -55,6 +55,7 @@ import {
 import { ComplaintModule } from './taxi-support-request/taxi-support-request.module';
 import { NotificationModule } from './notification/notification.module';
 import { PlatformOverviewModule } from './platform-overview/platform-overview.module';
+import { PublicStatsModule } from './public-stats/public-stats.module';
 import { SentryGlobalFilter, SentryModule } from '@sentry/nestjs/setup';
 import { APP_FILTER } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config/dist/config.module';
@@ -83,6 +84,7 @@ export class AdminAPIModule implements OnModuleInit {
           DatabaseModule,
           LicenseVerifyModule,
           PlatformOverviewModule,
+          PublicStatsModule,
           GraphQLModule.forRoot<ApolloDriverConfig>({
             driver: ApolloDriver,
             context: ({ req, res, extra }) => {

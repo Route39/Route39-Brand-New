@@ -670,7 +670,7 @@ Logger.log(
           : undefined,
       status: shouldPrePay
         ? OrderStatus.WaitingForPrePay
-        : input.intervalMinutes > 10
+        : input.intervalMinutes > 0
           ? OrderStatus.Booked
           : OrderStatus.Requested,
       paidAmount: paidAmount,
@@ -755,6 +755,19 @@ Logger.log(
       `Dispatching ride in ${intervalMinutes} minutes (${preDispatchBufferMinutes} min pre-dispatch buffer applied). Scheduled pickup: ${order.expectedTimestamp}`,
       'SharedOrderService.dispatchRide',
     );
+    this.dispatchMainQueue.add(
+      'dispatch',
+      {
+        orderId: order.id,
+      },
+      {
+        jobId: `dispatch:${order.id}`,
+        delay: intervalMinutes * 60 * 1000,
+      },
+    );
+  }
+
+  async createRideOfferAndAssignDriver(order: TaxiOrderEntity) {
     await this.rideOfferRedisService.createRideOffer({
       status: order.status,
       currency: order.currency,
@@ -772,8 +785,7 @@ Logger.log(
       scheduledAt: order.expectedTimestamp!,
       pickupLocation: order.points[0],
       fleetId: order.fleetId,
-      //costEstimateForRider: order.costAfterCoupon,
-      //costEstimateForDriver: order.costBest - order.providerShare,
+      
             // costAfterCoupon = costBest − couponDiscount already, so adding the
       // fee total here gives: (costBest + fees) − couponDiscount for the
       // rider, and (costBest + fees) − providerShare − couponDiscount for
@@ -787,7 +799,8 @@ Logger.log(
         order.costAfterCoupon +
         order.gstAmount +
         order.platformFeeAmount +
-        order.paymentGatewayFeeAmount,
+        order.paymentGatewayFeeAmount -
+        (order.providerShare ?? 0),
       // Same value the rider side already computes (costBest − costAfterCoupon).
       // One coupon, one order — both apps must show the identical number.
       couponDiscount: order.costBest - order.costAfterCoupon,
@@ -831,16 +844,6 @@ Logger.log(
     if (order.driverId != null) {
       this.assignOrderToDriver(order.id, order.driverId);
     }
-    this.dispatchMainQueue.add(
-      'dispatch',
-      {
-        orderId: order.id,
-      },
-      {
-        jobId: `dispatch:${order.id}`,
-        delay: intervalMinutes * 60 * 1000,
-      },
-    );
   }
 
   async processPrePay(orderId: number, authorizedAmount = 0) {

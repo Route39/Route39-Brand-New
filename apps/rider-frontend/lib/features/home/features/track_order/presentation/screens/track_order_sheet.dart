@@ -12,6 +12,7 @@ import 'package:ridy/features/home/features/track_order/presentation/screens/cha
 import 'package:ridy/features/home/features/track_order/presentation/screens/looking_for_driver_sheet.dart';
 import 'package:ridy/features/home/features/track_order/presentation/screens/pay_for_ride_sheet.dart';
 import 'order_in_progress_sheet.dart';
+import 'ride_scheduled_sheet.dart';
 
 class TrackOrderSheet extends StatefulWidget {
   final Fragment$ActiveOrder order;
@@ -44,6 +45,7 @@ class _TrackOrderSheetState extends State<TrackOrderSheet> {
             duration: AnimationDuration.pageStateTransitionMobile,
             child: switch (state.activeOrder!.status.toEntity.viewMode) {
               OrderStatusViewMode.looking => SizedBox.expand(child: LookingForDriverSheet()),
+              OrderStatusViewMode.scheduled => SizedBox.expand(child: RideScheduledSheet(order: state.activeOrder!)),
               OrderStatusViewMode.inProgress => switch (state.page) {
                 TrackOrderPage.overview => OrderInProgressSheet(order: state.activeOrder!),
                 TrackOrderPage.chat => ChatSheet(),

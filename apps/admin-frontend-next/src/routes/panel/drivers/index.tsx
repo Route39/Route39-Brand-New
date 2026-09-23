@@ -1,5 +1,5 @@
 import { useQuery } from "@apollo/client";
-import { Plus, Star } from "lucide-react";
+import { Calendar, Plus, Star } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -23,9 +23,60 @@ import {
   buildOffsetPaging,
   buildSortInput,
   usePageState,
+  type FilterEntry,
 } from "@/lib/panel/page-state";
 import { driverStatusVariant } from "@/lib/panel/status-styles";
 import { formatDateTime, formatName } from "@/lib/format";
+
+type QuickRange = "today" | "week" | "last30";
+
+function pad(n: number): string {
+  return String(n).padStart(2, "0");
+}
+
+function toDateInput(d: Date): string {
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function startOfWeek(d: Date): Date {
+  const day = d.getDay();
+  const diffToMonday = (day + 6) % 7;
+  const start = new Date(d);
+  start.setDate(d.getDate() - diffToMonday);
+  return start;
+}
+
+function presetRange(range: QuickRange): { from: string; to: string } {
+  const now = new Date();
+  const to = toDateInput(now);
+  if (range === "today") return { from: to, to };
+  if (range === "week") return { from: toDateInput(startOfWeek(now)), to };
+  const from = new Date(now);
+  from.setDate(now.getDate() - 29);
+  return { from: toDateInput(from), to };
+}
+
+function activeQuickRange(from: string, to: string): QuickRange | "custom" | null {
+  if (!from && !to) return null;
+  if (from === presetRange("today").from && to === presetRange("today").to) return "today";
+  if (from === presetRange("week").from && to === presetRange("week").to) return "week";
+  if (from === presetRange("last30").from && to === presetRange("last30").to) return "last30";
+  return "custom";
+}
+
+function dayStartISO(dateStr: string): string {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return new Date(year, month - 1, day, 0, 0, 0, 0).toISOString();
+}
+
+function dayEndISO(dateStr: string): string {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return new Date(year, month - 1, day, 23, 59, 59, 999).toISOString();
+}
+
+function toDatePart(value: string): string {
+  return value.length > 10 ? value.slice(0, 10) : value;
+}
 
 type DriverRow = {
   id: string;
@@ -45,7 +96,32 @@ type DriverRow = {
 export default function DriversListPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { page, pageSize, sort, filters } = usePageState();
+  const { page, pageSize, sort, filters, setFilters } = usePageState();
+
+  const dateFrom = toDatePart(
+    filters.find((f) => f.field === "registrationTimestamp" && f.operator === "gte")?.value ?? "",
+  );
+  const dateTo = toDatePart(
+    filters.find((f) => f.field === "registrationTimestamp" && f.operator === "lte")?.value ?? "",
+  );
+  const activeRange = activeQuickRange(dateFrom, dateTo);
+
+  function applyDateRange(from: string, to: string) {
+    const without = filters.filter((f) => f.field !== "registrationTimestamp");
+    const next: FilterEntry[] = [...without];
+    if (from) next.push({ field: "registrationTimestamp", operator: "gte", value: dayStartISO(from) });
+    if (to) next.push({ field: "registrationTimestamp", operator: "lte", value: dayEndISO(to) });
+    setFilters(next);
+  }
+
+  function handleQuickRange(range: QuickRange) {
+    const { from, to } = presetRange(range);
+    applyDateRange(from, to);
+  }
+
+  function handleClearDateRange() {
+    setFilters(filters.filter((f) => f.field !== "registrationTimestamp"));
+  }
 
   const { data, loading, error } = useQuery(DRIVERS_LIST_QUERY, {
     variables: {
@@ -156,6 +232,60 @@ export default function DriversListPage() {
           </div>
         }
       />
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3">
+        <Button
+          type="button"
+          size="sm"
+          variant={activeRange === "today" ? "default" : "outline"}
+          className="rounded-full"
+          onClick={() => handleQuickRange("today")}
+        >
+          Today
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={activeRange === "week" ? "default" : "outline"}
+          className="rounded-full"
+          onClick={() => handleQuickRange("week")}
+        >
+          This week
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={activeRange === "last30" ? "default" : "outline"}
+          className="rounded-full"
+          onClick={() => handleQuickRange("last30")}
+        >
+          Last 30
+        </Button>
+        <div className="flex items-center gap-1.5 rounded-full border border-input bg-background px-3 py-1.5">
+          <Calendar className="size-3.5 text-muted-foreground" />
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => applyDateRange(e.target.value, dateTo)}
+            className="bg-transparent text-sm outline-none"
+          />
+          <span className="text-muted-foreground">→</span>
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => applyDateRange(dateFrom, e.target.value)}
+            className="bg-transparent text-sm outline-none"
+          />
+        </div>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          disabled={!dateFrom && !dateTo}
+          onClick={handleClearDateRange}
+        >
+          Clear filter
+        </Button>
+      </div>
       <TableToolbar>
         <FilterText field="lastName" placeholder="Search by last name" />
         <FilterText field="mobileNumber" placeholder="Phone number" />

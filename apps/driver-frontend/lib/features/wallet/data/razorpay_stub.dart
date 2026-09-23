@@ -25,7 +25,12 @@ void openRazorpayCheckout({
   });
 
   razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, (PaymentFailureResponse response) {
-    onError(response.message ?? 'Payment failed');
+    final message = response.message?.trim();
+    final isCancelled = response.code == Razorpay.PAYMENT_CANCELLED ||
+        message == null ||
+        message.isEmpty ||
+        message.toLowerCase() == 'undefined';
+    onError(isCancelled ? 'Payment cancelled' : message!);
     razorpay.clear();
   });
 
@@ -43,6 +48,17 @@ void openRazorpayCheckout({
     'name': name,
     'description': description,
     'order_id': orderId,
+    'theme': {
+      'color': '#B71C1C',
+    },
+    'method': {
+      'netbanking': false,
+      'card': false,
+      'wallet': false,
+      'emi': false,
+      'paylater': false,
+      'upi': true,
+    },
   };
 
   razorpay.open(options);

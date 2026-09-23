@@ -123,7 +123,7 @@ export default function DriverReviewPage() {
     if (total < 2) return doc;
     const index = docSeen.get(title) ?? 0;
     docSeen.set(title, index + 1);
-    const suffix = index === 0 ? "Front" : index === 1 ? "Back" : `#${index + 1}`;
+    const suffixLabels = ["Front", "Back", "Left Side", "Right Side"]; const suffix = suffixLabels[index] ?? `#${index + 1}`;
     return {
       ...doc,
       driverDocument: { ...doc.driverDocument, title: `${title} - ${suffix}` },

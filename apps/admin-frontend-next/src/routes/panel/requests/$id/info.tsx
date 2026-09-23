@@ -19,6 +19,12 @@ export default function OrderInfoTab() {
     { variables: { orderId: order.id } },
   );
 
+  const isCargo = order.type === "ParcelDelivery";
+  const waitMinutes =
+    isCargo && order.waitSeconds != null
+      ? order.waitSeconds / 60
+      : order.waitMinutes ?? 0;
+
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <Card>
@@ -36,7 +42,7 @@ export default function OrderInfoTab() {
               { label: "Expected", value: formatDateTime(order.expectedTimestamp) },
               { label: "Distance (m)", value: order.distanceBest.toLocaleString() },
               { label: "Duration (s)", value: order.durationBest.toLocaleString() },
-              { label: "Wait (min)", value: order.waitMinutes.toFixed(1) },
+              { label: "Wait (min)", value: waitMinutes.toFixed(1) },
             ]}
           />
         </CardContent>

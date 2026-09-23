@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:ridy/core/extensions/extensions.dart';
-import 'package:flutter_common/core/presentation/buttons/app_primary_button.dart';
 import 'package:flutter_common/core/presentation/responsive_dialog/app_responsive_dialog.dart';
 class ReserveTimeDialog extends StatefulWidget {
   const ReserveTimeDialog({super.key});
@@ -21,19 +20,16 @@ class _ReserveTimeDialogState extends State<ReserveTimeDialog> {
         context.translate.reserveRide,
         context.translate.reserveRideMessage,
       ),
-      primaryButton: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            padding: const EdgeInsets.symmetric(vertical: 14),
-          ),
-          onPressed: () {
-            context.router.maybePop(selectedDate);
-          },
-          child: Text(context.translate.confirmReservation, style: const TextStyle(color: Colors.white)),
+      primaryButton: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.red,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         ),
+        onPressed: () {
+          context.router.maybePop(selectedDate);
+        },
+        child: Text(context.translate.confirmReservation, style: const TextStyle(color: Colors.white)),
       ),
       secondaryButton: CupertinoButton(
         onPressed: () => context.router.maybePop(),
@@ -43,6 +39,7 @@ class _ReserveTimeDialogState extends State<ReserveTimeDialog> {
         children: [
           SizedBox(
             height: 300,
+            width: double.infinity,
             child: Localizations.override(
               context: context,
               locale: const Locale('en', 'US'),

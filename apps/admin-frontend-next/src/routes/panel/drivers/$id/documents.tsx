@@ -51,7 +51,7 @@ export default function DriverDocumentsTab() {
     if (total < 2) return doc;
     const index = seenCounts.get(title) ?? 0;
     seenCounts.set(title, index + 1);
-    const suffix = index === 0 ? "Front" : index === 1 ? "Back" : `#${index + 1}`;
+    const suffixLabels = ["Front", "Back", "Left Side", "Right Side"]; const suffix = suffixLabels[index] ?? `#${index + 1}`;
     return {
       ...doc,
       driverDocument: { ...doc.driverDocument, title: `${title} - ${suffix}` },

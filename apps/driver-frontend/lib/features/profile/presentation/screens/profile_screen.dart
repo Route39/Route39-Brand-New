@@ -81,68 +81,71 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           },
                         ),
                         const SizedBox(height: 24),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              AppMenuItem(
-                                icon: Ionicons.person,
-                                title: context.translate.profileInfo,
-                                onPressed: () {
-                                  context.router.push(const ProfileInfoRoute());
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              AppMenuItem(
-                                icon: Ionicons.business,
-                                title: context.translate.payoutMethods,
-                                onPressed: () {
-                                  context.router.pushAll([
-                                    const PayoutAccountsRoute(),
-                                  ]);
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              AppMenuItem(
-                                icon: Ionicons.wallet,
-                                title: context.translate.wallet,
-                                onPressed: () {
-                                  context.router.push(const WalletParentRoute());
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              AppMenuItem(
-                                icon: Ionicons.card,
-                                title: context.translate.paymentMethods,
-                                onPressed: () {
-                                  context.router.pushAll([
-                                    const WalletParentRoute(),
-                                    const PaymentMethodsRoute(),
-                                  ]);
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              AppMenuItem(
-                                icon: Ionicons.settings,
-                                title: context.translate.appSettings,
-                                onPressed: () {
-                                  context.router.push(const SettingsParentRoute());
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              AppMenuItem(
-                                icon: Icons.logout,
-                                title: context.translate.logout,
-                                onPressed: () => NavItem.logout.onPressed(context),
-                              ),
-                              const SizedBox(height: 16),
-                              AppMenuItem(
-                                icon: Icons.delete_forever,
-                                title: 'Delete Account',
-                                onPressed: () => _confirmAndDeleteAccount(context),
-                              ),
-                            ],
+                        Expanded(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                AppMenuItem(
+                                  icon: Ionicons.person,
+                                  title: context.translate.profileInfo,
+                                  onPressed: () {
+                                    context.router.push(const ProfileInfoRoute());
+                                  },
+                                ),
+                                const SizedBox(height: 16),
+                                AppMenuItem(
+                                  icon: Ionicons.business,
+                                  title: context.translate.payoutMethods,
+                                  onPressed: () {
+                                    context.router.pushAll([
+                                      const PayoutAccountsRoute(),
+                                    ]);
+                                  },
+                                ),
+                                const SizedBox(height: 16),
+                                AppMenuItem(
+                                  icon: Ionicons.wallet,
+                                  title: context.translate.wallet,
+                                  onPressed: () {
+                                    context.router.push(const WalletParentRoute());
+                                  },
+                                ),
+                                const SizedBox(height: 16),
+                                AppMenuItem(
+                                  icon: Ionicons.card,
+                                  title: context.translate.paymentMethods,
+                                  onPressed: () {
+                                    context.router.pushAll([
+                                      const WalletParentRoute(),
+                                      const PaymentMethodsRoute(),
+                                    ]);
+                                  },
+                                ),
+                                const SizedBox(height: 16),
+                                AppMenuItem(
+                                  icon: Ionicons.settings,
+                                  title: context.translate.appSettings,
+                                  onPressed: () {
+                                    context.router.push(const SettingsParentRoute());
+                                  },
+                                ),
+                                const SizedBox(height: 16),
+                                AppMenuItem(
+                                  icon: Icons.logout,
+                                  title: context.translate.logout,
+                                  onPressed: () => NavItem.logout.onPressed(context),
+                                ),
+                                const SizedBox(height: 16),
+                                AppMenuItem(
+                                  icon: Icons.delete_forever,
+                                  title: 'Delete Account',
+                                  onPressed: () => _confirmAndDeleteAccount(context),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                            ),
                           ),
                         ),
                       ],
