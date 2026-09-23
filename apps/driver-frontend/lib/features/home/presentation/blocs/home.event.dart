@@ -39,6 +39,7 @@ sealed class HomeEvent with _$HomeEvent {
   const factory HomeEvent.onVerifyPickupOtp({
     required String orderId,
     required String otp,
+    int? waitSeconds,
   }) = HomeEvent$OnVerifyPickupOtp;
 
   const factory HomeEvent.onArrivedToDestination({

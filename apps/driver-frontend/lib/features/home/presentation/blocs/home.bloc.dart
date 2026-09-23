@@ -290,8 +290,8 @@ if (response.isLoaded && response.data != null) {
           ));
           break;
 
-        case HomeEvent$OnVerifyPickupOtp(:final orderId, :final otp):
-          final response = await _repository.verifyPickupOtp(orderId: orderId, otp: otp);
+        case HomeEvent$OnVerifyPickupOtp(:final orderId, :final otp, :final waitSeconds):
+          final response = await _repository.verifyPickupOtp(orderId: orderId, otp: otp, waitSeconds: waitSeconds);
           emit(state.copyWith(updateStatusResponse: response));
 
           break;

@@ -99,12 +99,29 @@ export function DriverInvoiceDialog({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="flex max-h-[85vh] w-full max-w-2xl flex-col gap-0 p-0 print:max-h-none print:max-w-none print:overflow-visible print:border-0 print:shadow-none">
+      <DialogContent className="flex max-h-[85vh] w-full max-w-6xl flex-col gap-0 p-0 print:max-h-none print:max-w-none print:overflow-visible print:border-0 print:shadow-none">
         <style>{`
           @media print {
+            @page { size: A4 portrait; margin: 12mm; }
             body * { visibility: hidden; }
             #driver-invoice-print, #driver-invoice-print * { visibility: visible; }
-            #driver-invoice-print { position: fixed; inset: 0; padding: 24px; }
+            #driver-invoice-print {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100%;
+              padding: 0;
+            }
+            #driver-invoice-print table {
+              width: 100%;
+              table-layout: fixed;
+              font-size: 11px;
+            }
+            #driver-invoice-print td,
+            #driver-invoice-print th {
+              word-break: break-word;
+              white-space: normal !important;
+            }
           }
         `}</style>
         <div id="driver-invoice-print" className="flex min-h-0 flex-1 flex-col print:block">
@@ -167,10 +184,17 @@ export function DriverInvoiceDialog({
                           {formatTime(trip.startTimestamp ?? trip.createdOn)}
                         </span>
                       </TableCell>
-                      <TableCell className="max-w-xs truncate">
-                        {trip.addresses.length > 0
-                          ? `${trip.addresses[0]} → ${trip.addresses[trip.addresses.length - 1]}`
-                          : "—"}
+                      <TableCell className="max-w-xs">
+                        {trip.addresses.length > 0 ? (
+                          <div className="space-y-0.5 text-xs leading-tight">
+                            <div className="break-words">{trip.addresses[0]}</div>
+                            <div className="break-words text-muted-foreground">
+                              ↓ {trip.addresses[trip.addresses.length - 1]}
+                            </div>
+                          </div>
+                        ) : (
+                          "—"
+                        )}
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-right">
                         {formatCurrency(tripAmount(trip), trip.currency)}

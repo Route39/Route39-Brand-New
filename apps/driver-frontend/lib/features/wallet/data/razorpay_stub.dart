@@ -43,6 +43,17 @@ void openRazorpayCheckout({
     'name': name,
     'description': description,
     'order_id': orderId,
+    'theme': {
+      'color': '#B71C1C',
+    },
+    'method': {
+      'netbanking': false,
+      'card': false,
+      'wallet': false,
+      'emi': false,
+      'paylater': false,
+      'upi': true,
+    },
   };
 
   razorpay.open(options);

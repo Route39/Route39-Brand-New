@@ -21,12 +21,9 @@ export default function OrderInfoTab() {
 
   const isCargo = order.type === "ParcelDelivery";
   const waitMinutes =
-    // isCargo && order.waitSeconds != null
-    //   ? order.waitSeconds / 60
-    //   : order.waitMinutes;
-    isCargo && order.waitMinutes != null
-      ? order.waitMinutes
-      : order.waitMinutes;
+    isCargo && order.waitSeconds != null
+      ? order.waitSeconds / 60
+      : order.waitMinutes ?? 0;
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">

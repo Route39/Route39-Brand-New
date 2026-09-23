@@ -43,6 +43,7 @@ export const ORDER_DETAIL_QUERY = graphql(`
       arrivedAt
       waitingChargeAmount
       waitCost
+      waitSeconds
       service {
         id
         cargoWaitingTimeMinutes

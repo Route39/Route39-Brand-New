@@ -609,11 +609,11 @@ Future<ApiResponse<Fragment$ActiveOrder>> acceptOrderRequest({
   }
 
   @override
-  Future<ApiResponse<void>> verifyPickupOtp({required String orderId, required String otp}) async {
+  Future<ApiResponse<void>> verifyPickupOtp({required String orderId, required String otp, int? waitSeconds}) async {
     final updateResponse = await graphQLDatasource.mutate(
       Options$Mutation$verifyPickupOtp(
         fetchPolicy: FetchPolicy.noCache,
-        variables: Variables$Mutation$verifyPickupOtp(id: orderId, otp: otp),
+        variables: Variables$Mutation$verifyPickupOtp(id: orderId, otp: otp, waitSeconds: waitSeconds),
       ),
     );
     return _updateOrderStatus(updateResponse.mapData((r) => r.verifyPickupOtp));

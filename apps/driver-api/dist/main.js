@@ -47375,6 +47375,9 @@ let OrderService = class OrderService {
         const orderEntityForGuard = await this.orderRepository.findOne({
             where: {
                 id: input.orderId
+            },
+            relations: {
+                service: true
             }
         });
         if (!orderEntityForGuard) {

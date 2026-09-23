@@ -44,23 +44,16 @@ void openRazorpayCheckout({
     'name': name,
     'description': description,
     'order_id': orderId,
-    'config': {
-      'display': {
-        'blocks': {
-          'upi_block': {
-            'name': 'Pay via UPI',
-            'instruments': [
-              {
-                'method': 'upi',
-              },
-            ],
-          },
-        },
-        'sequence': ['block.upi_block'],
-        'preferences': {
-          'show_default_blocks': true,
-        },
-      },
+    'theme': {
+      'color': '#B71C1C',
+    },
+    'method': {
+      'netbanking': false,
+      'card': false,
+      'wallet': false,
+      'emi': false,
+      'paylater': false,
+      'upi': true,
     },
   };
 
