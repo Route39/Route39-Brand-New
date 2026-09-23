@@ -20,6 +20,12 @@
       "languageVersion": "3.9"
     },
     {
+      "name": "android_intent_plus",
+      "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/android_intent_plus-5.3.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
       "name": "ansicolor",
       "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/ansicolor-2.0.3",
       "packageUri": "lib/",
@@ -512,6 +518,36 @@
       "languageVersion": "3.1"
     },
     {
+      "name": "flutter_local_notifications",
+      "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/flutter_local_notifications-22.3.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.10"
+    },
+    {
+      "name": "flutter_local_notifications_linux",
+      "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/flutter_local_notifications_linux-8.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.10"
+    },
+    {
+      "name": "flutter_local_notifications_platform_interface",
+      "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/flutter_local_notifications_platform_interface-12.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.10"
+    },
+    {
+      "name": "flutter_local_notifications_web",
+      "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/flutter_local_notifications_web-1.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.10"
+    },
+    {
+      "name": "flutter_local_notifications_windows",
+      "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/flutter_local_notifications_windows-3.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.10"
+    },
+    {
       "name": "flutter_localizations",
       "rootUri": "file:///Users/admin/flutter/packages/flutter_localizations",
       "packageUri": "lib/",
@@ -564,6 +600,12 @@
       "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/flutter_native_splash-2.4.4",
       "packageUri": "lib/",
       "languageVersion": "3.0"
+    },
+    {
+      "name": "flutter_overlay_window",
+      "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/flutter_overlay_window-0.4.5",
+      "packageUri": "lib/",
+      "languageVersion": "2.16"
     },
     {
       "name": "flutter_plugin_android_lifecycle",
@@ -1616,6 +1658,12 @@
       "languageVersion": "2.12"
     },
     {
+      "name": "timezone",
+      "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/timezone-0.11.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.10"
+    },
+    {
       "name": "turf",
       "rootUri": "file:///Users/admin/.pub-cache/hosted/pub.dev/turf-0.0.12",
       "packageUri": "lib/",
@@ -1839,8 +1887,8 @@
     }
   ],
   "generator": "pub",
-  "generatorVersion": "3.14.0-95.2.beta",
+  "generatorVersion": "3.13.1",
   "flutterRoot": "file:///Users/admin/flutter",
-  "flutterVersion": "3.48.0-0.2.pre",
+  "flutterVersion": "3.47.1",
   "pubCache": "file:///Users/admin/.pub-cache"
 }

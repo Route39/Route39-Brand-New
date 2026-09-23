@@ -169,7 +169,14 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
           RideOverlayService.showBubble();
         }
       },
-      child: Scaffold(
+      child: PopScope(
+        canPop: _selectedTab == 0,
+        onPopInvokedWithResult: (didPop, result) {
+          if (!didPop) {
+            SelectedTabNotifier.instance.goBack();
+          }
+        },
+        child: Scaffold(
         key: scaffoldKey,
         drawer: AppDrawer(showHeader: false, scaffoldKey: scaffoldKey),
         extendBody: true,
@@ -256,6 +263,7 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

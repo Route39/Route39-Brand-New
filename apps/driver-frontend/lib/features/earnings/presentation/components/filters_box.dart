@@ -21,7 +21,7 @@ class FiltersBox extends StatelessWidget {
         Center(
           child: Container(
               margin: const EdgeInsets.only(top: 40),
-              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(20),
@@ -36,15 +36,36 @@ class FiltersBox extends StatelessWidget {
                         segments: [
                           ButtonSegment(
                             value: Enum$TimeQuery.Daily,
-                            label: Text(context.translate.daily),
+                            label: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                context.translate.daily,
+                                maxLines: 1,
+                                softWrap: false,
+                              ),
+                            ),
                           ),
                           ButtonSegment(
                             value: Enum$TimeQuery.Weekly,
-                            label: Text(context.translate.weekly),
+                            label: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                context.translate.weekly,
+                                maxLines: 1,
+                                softWrap: false,
+                              ),
+                            ),
                           ),
                           ButtonSegment(
                             value: Enum$TimeQuery.Monthly,
-                            label: Text(context.translate.monthly),
+                            label: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                context.translate.monthly,
+                                maxLines: 1,
+                                softWrap: false,
+                              ),
+                            ),
                           ),
                         ],
                         selected: {state.timeframe},

@@ -92,7 +92,7 @@ sealed class HomeState with _$HomeState {
             id: 'me',
             position: LatLng(driverLocation!.lat, driverLocation!.lng),
             rotation: driverLocation?.heading ?? 0,
-            widget: Assets.images.evAutoIcon.image(width: 50, height: 50, fit: BoxFit.cover),
+            widget: Assets.images.evAutoIcon.image(width: 50, height: 50, fit: BoxFit.contain),
             fallbackAssetPath: Assets.images.evAutoIcon.path,
           );
 

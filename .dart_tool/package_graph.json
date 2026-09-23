@@ -119,6 +119,7 @@
         "graphql",
         "hive",
         "hive_flutter",
+        "http",
         "hydrated_bloc",
         "image_faker",
         "injectable",
@@ -757,6 +758,16 @@
       ]
     },
     {
+      "name": "http",
+      "version": "1.6.0",
+      "dependencies": [
+        "async",
+        "http_parser",
+        "meta",
+        "web"
+      ]
+    },
+    {
       "name": "flutter_local_notifications",
       "version": "22.3.1",
       "dependencies": [
@@ -1230,16 +1241,6 @@
         "flat_buffers",
         "meta",
         "path"
-      ]
-    },
-    {
-      "name": "http",
-      "version": "1.6.0",
-      "dependencies": [
-        "async",
-        "http_parser",
-        "meta",
-        "web"
       ]
     },
     {
@@ -2018,6 +2019,16 @@
       "dependencies": []
     },
     {
+      "name": "http_parser",
+      "version": "4.0.2",
+      "dependencies": [
+        "collection",
+        "source_span",
+        "string_scanner",
+        "typed_data"
+      ]
+    },
+    {
       "name": "timezone",
       "version": "0.11.1",
       "dependencies": [
@@ -2624,16 +2635,6 @@
         "ffi",
         "meta",
         "path"
-      ]
-    },
-    {
-      "name": "http_parser",
-      "version": "4.0.2",
-      "dependencies": [
-        "collection",
-        "source_span",
-        "string_scanner",
-        "typed_data"
       ]
     },
     {
