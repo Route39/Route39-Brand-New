@@ -74,7 +74,7 @@ class _RideRequestOverlayCardState extends State<RideRequestOverlayCard> {
         category: 'android.intent.category.LAUNCHER',
         package: 'com.route39.pilot',
         componentName: 'com.ridy.taxi.driver_flutter.MainActivity',
-        flags: [0x10000000, 0x00020000],
+        flags: [0x10000000, 0x04000000],
       ).launch();
       debugPrint('R39_OVERLAY_LAUNCHED');
       await Future.delayed(const Duration(milliseconds: 300));
