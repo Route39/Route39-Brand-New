@@ -477,65 +477,6 @@ class OrderInProgressSheet extends StatelessWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-//                               TextButton.icon(
-//                                 style: TextButton.styleFrom(
-//                                   padding: EdgeInsets.zero,
-//                                   minimumSize: const Size(0, 0),
-//                                 ),
-//                                 onPressed: () {
-//                                   showModalBottomSheet(
-//                                     context: context,
-//                                     useSafeArea: true,
-//                                     builder: (context) => _WaitTimePicker(
-//                                       currentWaitTime: order.waitMinutes ?? 0,
-//                                     ),
-//                                   );
-//                                 },
-//                                 icon: Icon(
-//                                   Ionicons.time,
-//                                   size: 15,
-//                                   color: ColorPalette.error40,
-//                                 ),
-//                                 label: Text(
-//                                   'Wait time',
-//                                   style: context.bodySmall?.copyWith(
-//                                     color: ColorPalette.error40,
-//                                   ),
-//                                 ),
-//                               ),
-                              const Spacer(),
-                              TextButton.icon(
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.zero,
-                                  minimumSize: const Size(0, 0),
-                                ),
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    useSafeArea: false,
-                                    builder: (context) =>
-                                        CancelRideReasonDialog(
-                                          orderId: order.id,
-                                        ),
-                                  );
-                                },
-                                icon: Icon(
-                                  Icons.cancel,
-                                  size: 15,
-                                  color: ColorPalette.error40,
-                                ),
-                                label: Text(
-                                  context.translate.cancelRide,
-                                  style: context.bodySmall?.copyWith(
-                                    color: ColorPalette.error40,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
                         ],
                       ],
                     ),

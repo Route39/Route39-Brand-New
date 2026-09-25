@@ -47266,15 +47266,26 @@ let OrderService = class OrderService {
             }
             const rider = await this.riderRedisService.getOnlineRider(orderMetadata.riderId);
             // Calculate ETAs with Google Services
-            const driverTravelMetrics = driver?.location != null ? await this.googleServices.getSumDistanceAndDuration([
-                driver.location,
-                orderMetadata.waypoints[0].location
-            ]) : {
+            // Keep accept fast: cap the driver->pickup Google call, reuse trip estimate.
+            const fallbackMetrics = {
+                distance: 0,
+                duration: 300,
+                directions: []
+            };
+            const driverTravelMetrics = driver?.location != null ? await Promise.race([
+                this.googleServices.getSumDistanceAndDuration([
+                    driver.location,
+                    orderMetadata.waypoints[0].location
+                ]),
+                new Promise((resolve)=>setTimeout(()=>resolve(fallbackMetrics), 1000))
+            ]).catch(()=>fallbackMetrics) : {
                 distance: 0,
                 duration: 0,
                 directions: []
             };
-            const tripTravelMetrics = await this.googleServices.getSumDistanceAndDuration(orderMetadata.waypoints.map((w)=>w.location));
+            const tripTravelMetrics = {
+                duration: orderMetadata.estimatedDuration ?? 0
+            };
             const pickupEta = new Date(new Date().getTime() + driverTravelMetrics.duration * 1000);
             const dropoffEta = new Date(pickupEta.getTime() + tripTravelMetrics.duration * 1000);
             // Generate 4-digit pickup OTP
@@ -47287,11 +47298,8 @@ let OrderService = class OrderService {
             const pickupOtp = otpRequired ? existingOrderForOtp?.pickupOtp ?? Math.floor(1000 + Math.random() * 9000).toString() : undefined;
             // Send pickup OTP via SMS only on first generation
             if (!existingOrderForOtp?.pickupOtp && rider?.mobileNumber) {
-                try {
-                    await this.smsService.sendSMS(rider.mobileNumber, `Your Route39 ride pickup OTP is ${pickupOtp}. Share this with your driver only.`);
-                } catch (err) {
-                    _common.Logger.warn(`Failed to send pickup OTP SMS for order ${input.orderId}`, err);
-                }
+                // Fire-and-forget: don't block ride acceptance on the SMS provider.
+                this.smsService.sendSMS(rider.mobileNumber, `Your Route39 ride pickup OTP is ${pickupOtp}. Share this with your driver only.`).catch((err)=>_common.Logger.warn(`Failed to send pickup OTP SMS for order ${input.orderId}`, err));
             }
             // Accept offer in Redis
             await this.rideOfferRedisService.acceptOfferByDriver({

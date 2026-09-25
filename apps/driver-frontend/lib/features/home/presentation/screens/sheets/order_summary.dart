@@ -26,7 +26,6 @@ class OrderSummary extends StatelessWidget {
     return Container(
       color: ColorPalette.neutralVariant99,
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AnimatedContainer(
@@ -82,39 +81,54 @@ class OrderSummary extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 16),
-          Center(
-            child: Padding(
-              // items: [
-                //   ("Service fee", order.totalCost),
-                //   ("Discount", -(order.couponDiscount ?? 0)),
-                // ],
-              padding: const EdgeInsets.all(16),
-              child: Invoice(
-                currency: order.currency,
-                // order.totalCost already has providerShare subtracted on the
-                // backend (costAfterCoupon − providerShare + fees). Adding it
-                // back here gives costAfterCoupon + fees, without needing any
-                // backend change.
-                total: order.totalCost,
-                items: [
-                  ("Ride Amount", order.costBest),
-                  ("GST ${order.gstPercent ?? 0}%", order.gstAmount),
-                  ("Platform Fee ${order.platformFee ?? 0}", order.platformFeeAmount),
-                  if ((order.waitingChargeAmount ?? 0) > 0)
-                    ("Waiting Charges", order.waitingChargeAmount ?? 0),
-                  if (order.paymentMethod.mode == Enum$PaymentMode.PaymentGateway ||
-                      order.paymentMethod.mode == Enum$PaymentMode.SavedPaymentMethod)
-                    (
-                      "Payment Gateway ${order.paymentGatewayFeePercent ?? 0}%",
-                      order.paymentGatewayFeeAmount,
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 16),
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Invoice(
+                        currency: order.currency,
+                        total: order.costBest +
+                            order.gstAmount +
+                            order.platformFeeAmount +
+                            (order.waitingChargeAmount ?? 0) +
+                            ((order.paymentMethod.mode ==
+                                        Enum$PaymentMode.PaymentGateway ||
+                                    order.paymentMethod.mode ==
+                                        Enum$PaymentMode.SavedPaymentMethod)
+                                ? order.paymentGatewayFeeAmount
+                                : 0) -
+                            (order.couponDiscount ?? 0),
+                        items: [
+                          ("Ride Amount", order.costBest),
+                          ("GST ${order.gstPercent ?? 0}%", order.gstAmount),
+                          (
+                            "Platform Fee ${order.platformFee ?? 0}",
+                            order.platformFeeAmount,
+                          ),
+                          if ((order.waitingChargeAmount ?? 0) > 0)
+                            ("Waiting Charges", order.waitingChargeAmount ?? 0),
+                          if (order.paymentMethod.mode ==
+                                  Enum$PaymentMode.PaymentGateway ||
+                              order.paymentMethod.mode ==
+                                  Enum$PaymentMode.SavedPaymentMethod)
+                            (
+                              "Payment Gateway ${order.paymentGatewayFeePercent ?? 0}%",
+                              order.paymentGatewayFeeAmount,
+                            ),
+                          ("Discount", -(order.couponDiscount ?? 0)),
+                        ],
+                      ),
                     ),
-                  ("Discount", -(order.couponDiscount ?? 0)),
+                  ),
                 ],
               ),
             ),
           ),
-          const Spacer(),
           Padding(
             padding: const EdgeInsets.all(16),
             child: AppPrimaryButton(

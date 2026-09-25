@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:ui' as ui;
+import 'package:flutter/widgets.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
 class RideOverlayService {
@@ -13,12 +14,15 @@ class RideOverlayService {
   static Future<void> _close() async {
     final isActive = await FlutterOverlayWindow.isActive();
     if (isActive) {
+      FlutterOverlayWindow.shareData(jsonEncode({"type": "none"}));
+      await Future.delayed(const Duration(milliseconds: 50));
       await FlutterOverlayWindow.closeOverlay();
       await Future.delayed(const Duration(milliseconds: 200));
     }
   }
 
   static Future<void> showBubble() async {
+    if (WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) return;
     final hasPermission = await FlutterOverlayWindow.isPermissionGranted();
     if (!hasPermission) return;
 
@@ -46,6 +50,7 @@ class RideOverlayService {
     String? pickupAddress,
     String? dropoffAddress,
   }) async {
+    if (WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) return;
     final hasPermission = await FlutterOverlayWindow.isPermissionGranted();
     if (!hasPermission) return;
 
