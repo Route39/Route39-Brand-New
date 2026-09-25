@@ -43,6 +43,17 @@ extension EarningsdatasetX on Query$Earnings {
         )
         .toList();
 
+    final maxEarning = barGroups.isEmpty
+        ? 0.0
+        : barGroups
+              .map((g) => g.barRods.first.toY)
+              .reduce((a, b) => a > b ? a : b);
+    // Aim for ~5 labels on the Y axis regardless of the data's scale,
+    // instead of a fixed interval that produces far too many labels
+    // (and garbled, overlapping text) once earnings run into the
+    // hundreds or thousands.
+    final leftInterval = maxEarning <= 0 ? 1.0 : (maxEarning / 5).ceilToDouble();
+
     return BarChartData(
       barTouchData: BarTouchData(enabled: false),
       titlesData: FlTitlesData(
@@ -83,8 +94,8 @@ extension EarningsdatasetX on Query$Earnings {
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            reservedSize: 42,
-            interval: 20,
+            reservedSize: 52,
+            interval: leftInterval,
             getTitlesWidget: (value, meta) {
               return Padding(
                 padding: const EdgeInsets.only(right: 2),
