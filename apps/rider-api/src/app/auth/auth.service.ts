@@ -49,6 +49,8 @@ export class AuthService {
     const code =
       input.phoneNumber === '447700900000'
         ? '839274'
+        : input.phoneNumber === '911234567890'
+          ? '123456'
         : process.env.DEMO_MODE?.toLowerCase() === 'true'
           ? Math.floor(100000 + Math.random() * 900000).toString()
           : await this.smsService.sendVerificationCodeSms(input.phoneNumber);

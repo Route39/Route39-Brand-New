@@ -34,10 +34,14 @@ import 'package:android_intent_plus/android_intent.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'dart:convert';
 import 'dart:async';
+import 'package:ridy_driver/features/home/presentation/overlay/ride_request_overlay.dart' as ovl;
 
 @pragma("vm:entry-point")
 void overlayMain() {
-  runApp(const OverlayRideApp());
+  runApp(const MaterialApp(
+    debugShowCheckedModeBanner: false,
+    home: ovl.RideRequestOverlayCard(),
+  ));
 }
 
 class OverlayRideApp extends StatefulWidget {

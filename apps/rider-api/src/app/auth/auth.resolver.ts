@@ -122,15 +122,21 @@ export class AuthResolver {
     const phoneUtil = PhoneNumberUtil.getInstance();
     const number = phoneUtil.parseAndKeepRawInput(mobileNumber, countryIso);
     // Allow test number +447700900000 to bypass validation
+    const isReviewNumber =
+      mobileNumber === '1234567890' ||
+      mobileNumber === '+911234567890' ||
+      mobileNumber === '911234567890';
     const isTestNumber =
       mobileNumber === '+447700900000' ||
       mobileNumber === '7700900000' ||
       mobileNumber == '447700900000';
-    if (!isTestNumber && !phoneUtil.isValidNumber(number))
+    if (!isTestNumber && !isReviewNumber && !phoneUtil.isValidNumber(number))
       throw new ForbiddenError('INVALID_NUMBER');
-    let formattedNumber = isTestNumber
-      ? '+447700900000'
-      : phoneUtil.format(number, PhoneNumberFormat.E164);
+    let formattedNumber = isReviewNumber
+      ? '+911234567890'
+      : isTestNumber
+        ? '+447700900000'
+        : phoneUtil.format(number, PhoneNumberFormat.E164);
     // Remove the leading '+' sign
     formattedNumber = formattedNumber.substring(1);
     const rider = await this.sharedRiderService.findWithDeleted({

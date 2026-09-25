@@ -65,7 +65,7 @@ export class RideOfferRedisService {
       expiresAt: orderMetadata.expireAt,
       distance: orderMetadata.estimatedDistance,
       duration: orderMetadata.estimatedDuration,
-      fareEstimate: orderMetadata.costEstimateForDriver,
+      fareEstimate: orderMetadata.costEstimateForRider ?? orderMetadata.costBest,
       directions: [],
       options: orderMetadata.options ?? [],
       passenger: {

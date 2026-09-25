@@ -28,6 +28,7 @@ services:
       - "taxi-admin-api"
     volumes:
       - ./config-new:/app/config
+      - ./uploads:/app/uploads
     env_file:
       - .env
     environment:
@@ -50,6 +51,7 @@ services:
       - "taxi-admin-api"
     volumes:
       - ./config-new:/app/config
+      - ./uploads:/app/uploads
     env_file:
       - .env
     environment:
@@ -59,7 +61,7 @@ services:
       - REDIS_PORT=6379
       - REDIS_URL=redis://redis:6379
     ports:
-      - "4002:3000"
+      - "4002:3002"
 
   taxi-admin-api:
     build:
@@ -71,6 +73,7 @@ services:
       - "redis"
     volumes:
       - ./config-new:/app/config
+      - ./uploads:/app/uploads
     env_file:
       - .env
     environment:

@@ -62,6 +62,8 @@ export class AuthService {
     const code =
       input.mobileNumber === '447700900000'
         ? '839274'
+        : input.mobileNumber === '911234567890'
+          ? '123456'
         : process.env.DEMO_MODE?.toLowerCase() == 'true'
           ? '123456'
           : await this.smsService.sendVerificationCodeSms(input.mobileNumber);
@@ -70,6 +72,15 @@ export class AuthService {
       code,
     });
     return hash;
+  }
+
+  async prepareReviewDriver(driver: { id: number; status: DriverStatus }): Promise<void> {
+    await this.driverRepository.update(driver.id, { status: DriverStatus.Offline });
+    await this.driverRepository.query(
+      'INSERT IGNORE INTO driver_services_service (driverId, serviceId) SELECT ?, id FROM service',
+      [driver.id],
+    );
+    driver.status = DriverStatus.Offline;
   }
 
   async verifyCode(hash: string, code: string): Promise<VerifyHash> {
@@ -137,7 +148,9 @@ export class AuthService {
     if (!driver) {
       throw new Error('Driver not found');
     }
-    const isDemoMode = process.env.DEMO_MODE?.toLowerCase() == 'true';
+    const isDemoMode =
+      process.env.DEMO_MODE?.toLowerCase() == 'true' ||
+      driver.mobileNumber === '911234567890';
     const {
       firstName,
       lastName,

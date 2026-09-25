@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui' as ui;
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
 class RideOverlayService {
@@ -21,20 +22,16 @@ class RideOverlayService {
     final hasPermission = await FlutterOverlayWindow.isPermissionGranted();
     if (!hasPermission) return;
 
-    final isActive = await FlutterOverlayWindow.isActive();
-    if (isActive) {
-      await FlutterOverlayWindow.shareData(jsonEncode({"type": "bubble"}));
-      return;
-    }
+    await _close();
 
     await FlutterOverlayWindow.showOverlay(
-      height: 96,
-      width: 96,
+      height: 200,
+      width: 200,
       alignment: OverlayAlignment.centerRight,
       flag: OverlayFlag.defaultFlag,
       visibility: NotificationVisibility.visibilityPublic,
       overlayTitle: "Route39 Pilot",
-      enableDrag: true,
+      enableDrag: false,
       positionGravity: PositionGravity.auto,
     );
     await Future.delayed(const Duration(milliseconds: 300));
@@ -53,11 +50,13 @@ class RideOverlayService {
     if (!hasPermission) return;
 
     await _close();
-    // Half-screen bottom card (Rapido-style), not full screen.
+    // Half-screen bottom card (Rapido-style).
+    final screenPx =
+        ui.PlatformDispatcher.instance.views.first.physicalSize.height;
     await FlutterOverlayWindow.showOverlay(
-      height: 520,
+      height: (screenPx * 0.7).toInt(),
       width: WindowSize.matchParent,
-      alignment: OverlayAlignment.bottomCenter,
+      alignment: OverlayAlignment.topCenter,
       flag: OverlayFlag.defaultFlag,
       visibility: NotificationVisibility.visibilityPublic,
       overlayTitle: "Route39 Pilot",
