@@ -39,9 +39,20 @@ class OrderRepositoryImpl implements OrderRepository {
 
   StreamSubscription? orderUpdatedSubscription;
 
+  // Guards against a stale refreshActiveOrders() response (e.g. delayed by a slow
+  // or reconnecting web connection) overwriting a more recent update — such as the
+  // list returned immediately after creating a new order.
+  int _ordersVersion = 0;
+
   @override
   void refreshActiveOrders() async {
+    final requestVersion = ++_ordersVersion;
     final activeOrders = await graphqlDatasource.query(Options$Query$CurrentOrder());
+    if (requestVersion != _ordersVersion) {
+      // A newer refresh or order creation happened while this request was in
+      // flight; this response is stale, so discard it.
+      return;
+    }
     _activeOrdersStream.add(activeOrders.mapData((data) => data.activeOrders));
   }
 
@@ -73,6 +84,9 @@ class OrderRepositoryImpl implements OrderRepository {
     if (orderResponse.data == null) {
       return orderResponse.mapData((data) => data.createOrder);
     }
+    // Bump the version so any in-flight refreshActiveOrders() request is treated
+    // as stale and won't clobber this freshly created order.
+    _ordersVersion++;
     _activeOrdersStream.add(ApiResponse.loaded(orderResponse.data?.createOrder ?? []));
     return orderResponse.mapData((data) => data.createOrder);
   }

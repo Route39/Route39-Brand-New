@@ -133,6 +133,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 AppMenuItem(
+                                  icon: Icons.privacy_tip_outlined,
+                                  title: 'Privacy Policy',
+                                  onPressed: () {
+                                    context.router.push(const PrivacyPolicyRoute());
+                                  },
+                                ),
+                                const SizedBox(height: 16),
+                                AppMenuItem(
+                                  icon: Icons.description_outlined,
+                                  title: 'Terms & Conditions',
+                                  onPressed: () {
+                                    context.router.push(const TermsConditionsRoute());
+                                  },
+                                ),
+                                const SizedBox(height: 16),
+                                AppMenuItem(
                                   icon: Icons.logout,
                                   title: context.translate.logout,
                                   onPressed: () => NavItem.logout.onPressed(context),

@@ -38,7 +38,7 @@ class _OrderPreviewSheetState extends State<OrderPreviewSheet> with TickerProvid
             (previous.scheduledRidesResponse.data?.length ?? 0) > (current.scheduledRidesResponse.data?.length ?? 0) ||
             previous.createOrderResponse != current.createOrderResponse,
         listener: (context, state) {
-          if (state.createOrderResponse.isLoaded) {
+          if (state.createOrderResponse.isLoaded && state.selectedDateTime != null) {
             showDialog(context: context, useSafeArea: false, builder: (context) => const ReserveSuccessDialog());
           }
           if (state.createOrderResponse case ApiResponseError(:final errorMessage)) {

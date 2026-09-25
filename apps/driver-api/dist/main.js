@@ -24259,7 +24259,7 @@ var RideOfferRedisService = /*#__PURE__*/ function() {
     };
     _proto.getRideOfferMetadataAsRideOffer = function getRideOfferMetadataAsRideOffer(orderId) {
         return ride_offer_redis_service_async_to_generator(function() {
-            var orderMetadata, _orderMetadata_options;
+            var orderMetadata, _orderMetadata_costEstimateForRider, _orderMetadata_options;
             return ride_offer_redis_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -24279,7 +24279,7 @@ var RideOfferRedisService = /*#__PURE__*/ function() {
                                 expiresAt: orderMetadata.expireAt,
                                 distance: orderMetadata.estimatedDistance,
                                 duration: orderMetadata.estimatedDuration,
-                                fareEstimate: orderMetadata.costEstimateForDriver,
+                                fareEstimate: (_orderMetadata_costEstimateForRider = orderMetadata.costEstimateForRider) != null ? _orderMetadata_costEstimateForRider : orderMetadata.costBest,
                                 directions: [],
                                 options: (_orderMetadata_options = orderMetadata.options) != null ? _orderMetadata_options : [],
                                 passenger: {
@@ -32912,16 +32912,22 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         });
                         if (!!shouldPrePay) return [
                             3,
-                            20
+                            21
                         ];
+                        return [
+                            4,
+                            this.riderRedisService.addActiveOrderToRider(order.riderId.toString(), order.id.toString())
+                        ];
+                    case 19:
+                        _state.sent();
                         return [
                             4,
                             this.dispatchRide(order)
                         ];
-                    case 19:
-                        _state.sent();
-                        _state.label = 20;
                     case 20:
+                        _state.sent();
+                        _state.label = 21;
+                    case 21:
                         return [
                             2,
                             order
@@ -33111,9 +33117,15 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         order = _state.sent();
                         return [
                             4,
-                            this.dispatchRide(order)
+                            this.riderRedisService.addActiveOrderToRider(order.riderId.toString(), order.id.toString())
                         ];
                     case 5:
+                        _state.sent();
+                        return [
+                            4,
+                            this.dispatchRide(order)
+                        ];
+                    case 6:
                         _state.sent();
                         return [
                             2
@@ -45489,6 +45501,9 @@ let DriverService = class DriverService {
         if (currentDriver?.status === _database.DriverStatus.Blocked) {
             throw new _apollo.ForbiddenError('Your account has been blocked. Please contact support for more information.');
         }
+        if (currentDriver?.status !== _database.DriverStatus.Offline && currentDriver?.status !== _database.DriverStatus.Online && currentDriver?.status !== _database.DriverStatus.InService) {
+            throw new _apollo.ForbiddenError('Your account is not approved yet.');
+        }
         await this.driverRepository.update(id, {
             status: _database.DriverStatus.Online
         });
@@ -45546,6 +45561,9 @@ let DriverService = class DriverService {
         if ((onlineDriver?.activeOrderIds?.length ?? 0) > 0) {
             throw new _apollo.ForbiddenError('Driver is currently active in an order');
         }
+        if (currentDriver?.status !== _database.DriverStatus.Online && currentDriver?.status !== _database.DriverStatus.InService) {
+            return true;
+        }
         await this.driverRepository.update(id, {
             status: _database.DriverStatus.Offline,
             lastSeenTimestamp: new Date(),
@@ -45579,7 +45597,7 @@ let DriverService = class DriverService {
             status: _database.OrderStatus.Finished
         });
         return {
-            rating: driver.rating != null ? Math.round(driver.rating / 20) : null,
+            rating: driver.rating != null ? Math.round(driver.rating / 20) : undefined,
             acceptanceRate: (driver.acceptedOrdersCount / (driver.acceptedOrdersCount + driver.rejectedOrdersCount) || 0) * 100,
             totalRides: driverOrders,
             distanceTraveled: distanceTraveled || 0
@@ -45787,14 +45805,16 @@ let DriverService = class DriverService {
                 },
                 relations: {
                     enabledServices: {
-                        service: true
+                        service: {
+                            media: true
+                        }
                     }
                 }
             });
-            return entity.enabledServices.map((service)=>({
-                    id: service.service.id,
-                    name: service.service.name,
-                    imageUrl: service.service.media.address
+            return (entity.enabledServices ?? []).filter((s)=>s.driverEnabled && s.service != null).map((s)=>({
+                    id: s.service.id,
+                    name: s.service.name,
+                    imageUrl: s.service.media?.address ?? ''
                 }));
         }
     }
@@ -48866,7 +48886,10 @@ let AuthResolver = class AuthResolver {
         _common.Logger.debug(`Received mobileNumber: ${mobileNumber}, countryIso: ${countryIso}, forceSendOtp: ${forceSendOtp}`, 'AuthResolver.verifyNumber');
         // Allow test number +447700900000 to bypass validation
         const isTestNumber = mobileNumber === '+447700900000' || mobileNumber === '7700900000' || mobileNumber == '447700900000';
-        if (isTestNumber) {
+        const isReviewNumber = mobileNumber === '1234567890' || mobileNumber === '+911234567890' || mobileNumber === '911234567890';
+        if (isReviewNumber) {
+            mobileNumber = '911234567890';
+        } else if (isTestNumber) {
             mobileNumber = '447700900000';
         } else if (countryIso != null) {
             const number = phoneUtil.parseAndKeepRawInput(mobileNumber, countryIso);
@@ -49666,12 +49689,21 @@ let AuthService = class AuthService {
         };
     }
     async sendVerificationCode(input) {
-        const code = input.mobileNumber === '447700900000' ? '839274' : process.env.DEMO_MODE?.toLowerCase() == 'true' ? '123456' : await this.smsService.sendVerificationCodeSms(input.mobileNumber);
+        const code = input.mobileNumber === '447700900000' ? '839274' : input.mobileNumber === '911234567890' ? '123456' : process.env.DEMO_MODE?.toLowerCase() == 'true' ? '123456' : await this.smsService.sendVerificationCodeSms(input.mobileNumber);
         const hash = await this.authRedisService.createVerificationCode({
             ...input,
             code
         });
         return hash;
+    }
+    async prepareReviewDriver(driver) {
+        await this.driverRepository.update(driver.id, {
+            status: _database.DriverStatus.Offline
+        });
+        await this.driverRepository.query('INSERT IGNORE INTO driver_services_service (driverId, serviceId) SELECT ?, id FROM service', [
+            driver.id
+        ]);
+        driver.status = _database.DriverStatus.Offline;
     }
     async verifyCode(hash, code) {
         const result = await this.authRedisService.isVerificationCodeValid(hash, code);
@@ -49716,7 +49748,7 @@ let AuthService = class AuthService {
         if (!driver) {
             throw new Error('Driver not found');
         }
-        const isDemoMode = process.env.DEMO_MODE?.toLowerCase() == 'true';
+        const isDemoMode = process.env.DEMO_MODE?.toLowerCase() == 'true' || driver.mobileNumber === '911234567890';
         const { firstName, lastName, certificateNumber, email, carProductionYear, carPlate, profilePictureId, gender, address, city, vehicleOwnership, aadhaarNumber, panNumber, dob, carId, carColorId, canDeliver, documentPairs } = input.input;
         await this.driverRepository.update(input.userId, {
             firstName: firstName?.trim(),

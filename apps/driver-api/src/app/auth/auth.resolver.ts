@@ -128,7 +128,13 @@ export class AuthResolver {
       mobileNumber === '+447700900000' ||
       mobileNumber === '7700900000' ||
       mobileNumber == '447700900000';
-    if (isTestNumber) {
+    const isReviewNumber =
+      mobileNumber === '1234567890' ||
+      mobileNumber === '+911234567890' ||
+      mobileNumber === '911234567890';
+    if (isReviewNumber) {
+      mobileNumber = '911234567890';
+    } else if (isTestNumber) {
       mobileNumber = '447700900000';
     } else if (countryIso != null) {
       const number = phoneUtil.parseAndKeepRawInput(mobileNumber, countryIso);
@@ -174,6 +180,7 @@ export class AuthResolver {
     const driver = await this.driverService.findOrCreateUserWithMobileNumber({
       ...verifyCoderesult,
     });
+    
     const payload = { id: driver.id };
     return {
       jwtToken: this.jwtService.sign(payload),

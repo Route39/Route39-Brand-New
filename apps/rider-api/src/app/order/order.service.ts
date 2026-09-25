@@ -390,19 +390,32 @@ export class RiderOrderService {
       return [];
     }
 
-    const orderIds = riderMetaData.activeOrderIds;
+    const orderIds = [...new Set(riderMetaData.activeOrderIds)];
     Logger.debug(
       `Active orderIds for riderId=${riderId}: ${JSON.stringify(orderIds)}`,
       'RiderOrderService',
     );
 
     // Fetch both sources
-    const [activeOrders, rideOffers] = await Promise.all([
-      this.activeOrderRedisService.getActiveOrders(orderIds),
-      this.rideOfferRedisService.getRideOffers(
-        orderIds.map((id) => id.toString()),
-      ),
-    ]);
+    const fetchSources = () =>
+      Promise.all([
+        this.activeOrderRedisService.getActiveOrders(orderIds),
+        this.rideOfferRedisService.getRideOffers(
+          orderIds.map((id) => id.toString()),
+        ),
+      ]);
+    // A just-created order may not be in Redis yet (dispatch job runs
+    // async), so retry briefly before treating it as missing.
+    let [activeOrders, rideOffers] = await fetchSources();
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const found = new Set([
+        ...activeOrders.map((o) => o.id),
+        ...rideOffers.map((o) => o.id),
+      ]);
+      if (orderIds.every((id) => found.has(id))) break;
+      await new Promise((r) => setTimeout(r, 500));
+      [activeOrders, rideOffers] = await fetchSources();
+    }
     Logger.debug(
       `Fetched activeOrders=${activeOrders?.length ?? 0}, rideOffers=${rideOffers?.length ?? 0} for riderId=${riderId}`,
       'RiderOrderService',

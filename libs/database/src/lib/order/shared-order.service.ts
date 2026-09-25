@@ -735,6 +735,7 @@ Logger.log(
     });
 
     if (!shouldPrePay) {
+      await this.riderRedisService.addActiveOrderToRider(order.riderId!.toString(), order.id.toString());
       await this.dispatchRide(order);
     }
     return order;
@@ -891,6 +892,7 @@ Logger.log(
         savedPaymentMethod: true,
       },
     });
+    await this.riderRedisService.addActiveOrderToRider(order.riderId!.toString(), order.id.toString());
     await this.dispatchRide(order);
   }
 

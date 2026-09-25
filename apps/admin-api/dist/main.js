@@ -24388,7 +24388,7 @@ var RideOfferRedisService = /*#__PURE__*/ function() {
     };
     _proto.getRideOfferMetadataAsRideOffer = function getRideOfferMetadataAsRideOffer(orderId) {
         return ride_offer_redis_service_async_to_generator(function() {
-            var orderMetadata, _orderMetadata_options;
+            var orderMetadata, _orderMetadata_costEstimateForRider, _orderMetadata_options;
             return ride_offer_redis_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -24408,7 +24408,7 @@ var RideOfferRedisService = /*#__PURE__*/ function() {
                                 expiresAt: orderMetadata.expireAt,
                                 distance: orderMetadata.estimatedDistance,
                                 duration: orderMetadata.estimatedDuration,
-                                fareEstimate: orderMetadata.costEstimateForDriver,
+                                fareEstimate: (_orderMetadata_costEstimateForRider = orderMetadata.costEstimateForRider) != null ? _orderMetadata_costEstimateForRider : orderMetadata.costBest,
                                 directions: [],
                                 options: (_orderMetadata_options = orderMetadata.options) != null ? _orderMetadata_options : [],
                                 passenger: {
@@ -33041,16 +33041,22 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         });
                         if (!!shouldPrePay) return [
                             3,
-                            20
+                            21
                         ];
+                        return [
+                            4,
+                            this.riderRedisService.addActiveOrderToRider(order.riderId.toString(), order.id.toString())
+                        ];
+                    case 19:
+                        _state.sent();
                         return [
                             4,
                             this.dispatchRide(order)
                         ];
-                    case 19:
-                        _state.sent();
-                        _state.label = 20;
                     case 20:
+                        _state.sent();
+                        _state.label = 21;
+                    case 21:
                         return [
                             2,
                             order
@@ -33240,9 +33246,15 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         order = _state.sent();
                         return [
                             4,
-                            this.dispatchRide(order)
+                            this.riderRedisService.addActiveOrderToRider(order.riderId.toString(), order.id.toString())
                         ];
                     case 5:
+                        _state.sent();
+                        return [
+                            4,
+                            this.dispatchRide(order)
+                        ];
+                    case 6:
                         _state.sent();
                         return [
                             2

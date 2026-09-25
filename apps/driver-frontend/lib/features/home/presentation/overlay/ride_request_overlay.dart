@@ -4,17 +4,8 @@ import 'dart:convert';
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
-import 'package:ionicons/ionicons.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-/// Entry point for the overlay's own, separate Flutter engine.
-///
-/// `flutter_overlay_window` renders overlay content in an isolated engine,
-/// so this cannot see the main app's DI container, blocs, theme, etc. - it
-/// only knows what's sent to it via [FlutterOverlayWindow.shareData].
-///
-/// Must stay top-level and keep this exact `@pragma`, or the overlay
-/// process (started natively by Android) won't find it.
 @pragma('vm:entry-point')
 void overlayMain() {
   runApp(const MaterialApp(
@@ -23,206 +14,207 @@ void overlayMain() {
   ));
 }
 
-/// The heads-up card the driver sees, anchored to the top of the screen,
-/// while online but outside the app (home screen or another app open).
-/// Tapping it brings the driver app to the foreground; the close button
-/// just dismisses the overlay.
 class RideRequestOverlayCard extends StatefulWidget {
   const RideRequestOverlayCard({super.key});
-
   @override
   State<RideRequestOverlayCard> createState() => _RideRequestOverlayCardState();
 }
 
 class _RideRequestOverlayCardState extends State<RideRequestOverlayCard> {
-  static const _fallbackSecondsToRespond = 15;
-  static const _brandRed = Color(0xFFB30000);
+  static const _total = 15;
+  static const _red = Color(0xFFB30000);
 
-  StreamSubscription? _dataSubscription;
-  Timer? _countdownTimer;
-
-  Map<String, dynamic>? _rideData;
-  int _secondsLeft = _fallbackSecondsToRespond;
+  StreamSubscription? _sub;
+  Timer? _timer;
+  Map<String, dynamic> _data = const {};
+  int _left = _total;
 
   @override
   void initState() {
     super.initState();
-    _dataSubscription = FlutterOverlayWindow.overlayListener.listen(_onData);
+    _sub = FlutterOverlayWindow.overlayListener.listen(_onData);
   }
 
   @override
   void dispose() {
-    _dataSubscription?.cancel();
-    _countdownTimer?.cancel();
+    _sub?.cancel();
+    _timer?.cancel();
     super.dispose();
   }
 
-  void _onData(dynamic event) {
-    if (event is! String) return;
+  void _onData(dynamic e) {
+    if (e is! String) return;
     try {
-      final decoded = jsonDecode(event) as Map<String, dynamic>;
-      setState(() => _rideData = decoded);
-      _startCountdown(decoded['expiresAt'] as String?);
-    } catch (_) {
-      // Not JSON meant for us - ignore.
-    }
+      final d = jsonDecode(e) as Map<String, dynamic>;
+      setState(() => _data = d);
+      if (d['type'] == 'new_order') _startTimer();
+    } catch (_) {}
   }
 
-  void _startCountdown(String? expiresAtIso) {
-    _countdownTimer?.cancel();
-
-    var secondsLeft = _fallbackSecondsToRespond;
-    final expiresAt = expiresAtIso != null ? DateTime.tryParse(expiresAtIso) : null;
-    if (expiresAt != null) {
-      final diff = expiresAt.difference(DateTime.now()).inSeconds;
-      if (diff > 0) secondsLeft = diff;
-    }
-    setState(() => _secondsLeft = secondsLeft);
-
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_secondsLeft <= 1) {
-        timer.cancel();
+  void _startTimer() {
+    _timer?.cancel();
+    setState(() => _left = _total);
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (_left <= 1) {
+        t.cancel();
         FlutterOverlayWindow.closeOverlay();
         return;
       }
-      setState(() => _secondsLeft--);
+      setState(() => _left--);
     });
   }
 
-  Future<void> _openApp() async {
-    _countdownTimer?.cancel();
+  Future<void> _send(String action) async {
+    _timer?.cancel();
     try {
-      final packageName = (await PackageInfo.fromPlatform()).packageName;
-      final intent = AndroidIntent(
-        action: 'action_main',
+      FlutterOverlayWindow.shareData(jsonEncode({'action': action}));
+      debugPrint('R39_OVERLAY_SENT $action');
+      await AndroidIntent(
+        action: 'android.intent.action.MAIN',
         category: 'android.intent.category.LAUNCHER',
-        package: packageName,
-        flags: [
-  0x10000000, // FLAG_ACTIVITY_NEW_TASK
-  0x00020000, // FLAG_ACTIVITY_REORDER_TO_FRONT
-],
-      );
-      await intent.launch();
+        package: 'com.route39.pilot',
+        componentName: 'com.ridy.taxi.driver_flutter.MainActivity',
+        flags: [0x10000000, 0x04000000],
+      ).launch();
+      debugPrint('R39_OVERLAY_LAUNCHED');
+      await Future.delayed(const Duration(milliseconds: 300));
+    } catch (e) {
+      debugPrint('R39_OVERLAY_SEND_ERROR: \$e');
     } finally {
       await FlutterOverlayWindow.closeOverlay();
     }
   }
 
+  Future<void> _openApp() { debugPrint("R39_BUBBLE_TAP"); return _send("open_app"); }
+  Future<void> _accept() { debugPrint("R39_ACCEPT_TAP"); return _send("accept"); }
+
+  void _decline() {
+    _timer?.cancel();
+    FlutterOverlayWindow.closeOverlay();
+  }
+
+  String _s(String k) => (_data[k] ?? '').toString();
+
   @override
   Widget build(BuildContext context) {
-    final data = _rideData ?? const {};
-    final fare = data['fareEstimate'] as String?;
-    final currency = data['currency'] as String? ?? '';
-    final serviceName = data['serviceName'] as String? ?? '';
-    final pickupAddress = data['pickupAddress'] as String?;
+    final type = _data['type'];
+    if (type == 'new_order') return _card();
+    if (type == 'bubble') return _bubble();
+    return const SizedBox.shrink();
+  }
 
-    return Material(
-      color: Colors.transparent,
-      child: SafeArea(
+  Widget _bubble() => Material(
+        color: Colors.transparent,
         child: GestureDetector(
           onTap: _openApp,
           child: Container(
-            margin: const EdgeInsets.fromLTRB(14, 12, 14, 0),
+            margin: const EdgeInsets.all(6),
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              color: _red,
+              shape: BoxShape.circle,
+              boxShadow: [BoxShadow(color: Color(0x55000000), blurRadius: 8)],
+            ),
+            child: ClipOval(
+              child: Image.asset('assets/images/bubble_app_icon.png', fit: BoxFit.cover),
+            ),
+          ),
+        ),
+      );
+
+  Widget _stop(IconData icon, Color c, String label, String addr) => Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Padding(padding: const EdgeInsets.only(top: 3), child: Icon(icon, size: 14, color: c)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(label,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600)),
+              Text(addr.isEmpty ? '-' : addr,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+            ]),
+          ),
+        ]),
+      );
+
+  Widget _card() {
+    final fare = _s('fare');
+    final fareText = fare.contains('₹') ? fare : '₹$fare';
+    return Material(
+      color: Colors.transparent,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: SingleChildScrollView(
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(12, 160, 12, 0),
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(20),
               boxShadow: const [
-                BoxShadow(color: Color(0x33000000), blurRadius: 22, offset: Offset(0, 8)),
+                BoxShadow(color: Color(0x33000000), blurRadius: 20, offset: Offset(0, -4)),
               ],
             ),
-            clipBehavior: Clip.antiAlias,
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(18, 14, 10, 14),
-                  color: _brandRed,
-                  child: Row(
-                    children: [
-                      const Icon(Ionicons.notifications, color: Colors.white, size: 22),
-                      const SizedBox(width: 10),
-                      const Expanded(
-                        child: Text(
-                          'NEW RIDE REQUEST',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.4,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        width: 32,
-                        height: 32,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.18),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Text(
-                          '$_secondsLeft',
-                          style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w800),
-                        ),
-                      ),
-                      IconButton(
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        icon: const Icon(Ionicons.close, color: Colors.white, size: 20),
-                        onPressed: () {
-                          _countdownTimer?.cancel();
-                          FlutterOverlayWindow.closeOverlay();
-                        },
-                      ),
-                    ],
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF2F2F2),
+                    borderRadius: BorderRadius.circular(8),
                   ),
+                  child: Text(_s('serviceName').isEmpty ? 'Auto' : _s('serviceName'),
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(18),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        fare != null && fare.isNotEmpty ? '$currency $fare' : 'A customer is waiting for you',
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
-                      ),
-                      if (serviceName.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          serviceName,
-                          style: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                      if (pickupAddress != null && pickupAddress.isNotEmpty) ...[
-                        const SizedBox(height: 12),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(Ionicons.locationOutline, size: 18, color: _brandRed),
-                            const SizedBox(width: 6),
-                            Expanded(
-                              child: Text(
-                                pickupAddress,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                      const SizedBox(height: 14),
-                      const Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          'Tap to open  →',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _brandRed),
+                const SizedBox(height: 10),
+                Text(fareText,
+                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w900)),
+                Text('${_s('distance')}  •  ${_s('duration')}',
+                    style: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 16),
+                _stop(Icons.circle, Colors.green, 'Pickup', _s('pickupAddress')),
+                _stop(Icons.arrow_downward, _red, 'Drop', _s('dropoffAddress')),
+                const SizedBox(height: 6),
+                Row(children: [
+                  SizedBox(
+                    width: 56,
+                    height: 56,
+                    child: Stack(alignment: Alignment.center, children: [
+                      SizedBox(
+                        width: 56,
+                        height: 56,
+                        child: CircularProgressIndicator(
+                          value: _left / _total,
+                          strokeWidth: 3,
+                          color: _red,
+                          backgroundColor: const Color(0xFFEEEEEE),
                         ),
                       ),
-                    ],
+                      IconButton(icon: const Icon(Icons.close), onPressed: _decline),
+                    ]),
                   ),
-                ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: SizedBox(
+                      height: 56,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _red,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                        ),
+                        onPressed: _accept,
+                        child: const Text('Accept',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                      ),
+                    ),
+                  ),
+                ]),
               ],
             ),
           ),

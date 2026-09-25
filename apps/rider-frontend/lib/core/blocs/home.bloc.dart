@@ -58,6 +58,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
               emit.forEach(
                 orderRepository.activeOrdersStream,
                 onData: (data) {
+                  // Ignore transient error/non-loaded emissions (e.g. from websocket
+                  // reconnects) so a flaky connection doesn't wipe out a just-created
+                  // active order and kick the rider back to the home screen.
+                  if (!data.isLoaded) {
+                    return state;
+                  }
                   return state.copyWith(currentOrdersResponse: data);
                 },
                 onError: (error, stackTrace) => state,
