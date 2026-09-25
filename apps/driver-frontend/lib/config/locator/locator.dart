@@ -149,6 +149,7 @@ abstract class ServiceModule {
     );
 
     return GraphQLClient(
+      queryRequestTimeout: const Duration(seconds: 30),
       link: link,
       defaultPolicies: DefaultPolicies(
         query: Policies(

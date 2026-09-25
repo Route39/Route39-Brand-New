@@ -57,7 +57,6 @@ class _RideRequestOverlayCardState extends State<RideRequestOverlayCard> {
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (_left <= 1) {
         t.cancel();
-        FlutterOverlayWindow.closeOverlay();
         return;
       }
       setState(() => _left--);
