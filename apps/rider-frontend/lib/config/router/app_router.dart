@@ -29,6 +29,8 @@ import 'package:ridy/features/settings/presentation/screens/language_settings_sc
 import 'package:ridy/features/settings/presentation/screens/map_settings_screen.dart';
 import 'package:ridy/features/settings/presentation/screens/settings_parent_screen.dart';
 import 'package:ridy/features/settings/presentation/screens/settings_screen.dart';
+import 'package:ridy/features/settings/presentation/screens/privacy_policy_screen.dart';
+import 'package:ridy/features/settings/presentation/screens/terms_conditions_screen.dart';
 import 'package:ridy/features/wallet/presentation/screens/wallet_parent_screen.dart';
 import 'package:ridy/features/wallet/presentation/screens/wallet_screen.dart';
 
@@ -42,6 +44,8 @@ class AppRouter extends RootStackRouter {
   @override
   List<AutoRoute> get routes => [
         AutoRoute(page: AuthRoute.page, path: '/auth'),
+                AutoRoute(page: PrivacyPolicyRoute.page, path: '/privacy-policy'),
+        AutoRoute(page: TermsConditionsRoute.page, path: '/terms-conditions'),
         AutoRoute(
           path: '/',
           page: NavigationRoute.page,

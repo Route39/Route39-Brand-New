@@ -23,6 +23,8 @@ import 'package:ridy_driver/features/settings/presentation/screens/language_sett
 import 'package:ridy_driver/features/settings/presentation/screens/map_settings_screen.dart';
 import 'package:ridy_driver/features/settings/presentation/screens/settings_parent_screen.dart';
 import 'package:ridy_driver/features/settings/presentation/screens/settings_screen.dart';
+import 'package:ridy_driver/features/settings/presentation/screens/privacy_policy_screen.dart';
+import 'package:ridy_driver/features/settings/presentation/screens/terms_conditions_screen.dart';
 import 'package:ridy_driver/features/wallet/presentation/screens/wallet_parent_screen.dart';
 import 'package:ridy_driver/features/wallet/presentation/screens/wallet_screen.dart';
 import 'package:flutter/material.dart';
@@ -36,6 +38,8 @@ class AppRouter extends RootStackRouter {
   @override
   List<AutoRoute> get routes => [
     AutoRoute(page: AuthRoute.page, path: '/auth'),
+    AutoRoute(page: PrivacyPolicyRoute.page, path: '/privacy-policy'),
+    AutoRoute(page: TermsConditionsRoute.page, path: '/terms-conditions'),
     AutoRoute(
       path: '/',
       page: NavigationRoute.page,

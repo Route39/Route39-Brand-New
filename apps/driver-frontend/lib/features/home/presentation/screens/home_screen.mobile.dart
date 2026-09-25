@@ -73,6 +73,10 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
     super.initState();
     SelectedTabNotifier.instance.addListener(_onTabChanged);
     _initializeRideOverlay();
+    AppLifecycleListener(
+      onHide: () => _initializeRideOverlay(),
+      onShow: () => RideOverlayService.closeOverlay(),
+    );
     _overlayActionSub = FlutterOverlayWindow.overlayListener.listen((event) {
       try {
         final data = jsonDecode(event.toString());
@@ -116,7 +120,7 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
         serviceName: request.serviceName,
         fare: request.fareEstimate.toStringAsFixed(0),
         distance: '${(request.distance / 1000).toStringAsFixed(1)} km',
-        duration: '${(request.duration ~/ 60)} min',
+        duration: '${(request.duration / 60).ceil()} min',
         pickupAddress: pickupAddress,
         dropoffAddress: dropoffAddress,
       );
@@ -130,9 +134,11 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
       action: 'android.intent.action.MAIN',
       category: 'android.intent.category.LAUNCHER',
       package: 'com.route39.pilot',
+      componentName: 'com.ridy.taxi.driver_flutter.MainActivity',
       flags: [268435456, 131072],
     );
-    intent.launch();
+    debugPrint('R39_BRING_FG called');
+    intent.launch().catchError((e) => debugPrint('R39_BRING_FG_ERROR: $e'));
   }
 
   @override
@@ -163,7 +169,15 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
             serviceName: request.serviceName,
             fare: request.fareEstimate.toStringAsFixed(0),
             distance: '${(request.distance / 1000).toStringAsFixed(1)} km',
-            duration: '${(request.duration ~/ 60)} min',
+            duration: '${(request.duration / 60).ceil()} min',
+            pickupAddress: request.waypoints
+                .where((w) => w.role == Enum$WaypointRole.Pickup)
+                .map((w) => w.address)
+                .firstOrNull,
+            dropoffAddress: request.waypoints
+                .where((w) => w.role == Enum$WaypointRole.Dropoff)
+                .map((w) => w.address)
+                .firstOrNull,
           );
         } else {
           RideOverlayService.showBubble();

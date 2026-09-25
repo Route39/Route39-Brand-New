@@ -24282,7 +24282,7 @@ var RideOfferRedisService = /*#__PURE__*/ function() {
     };
     _proto.getRideOfferMetadataAsRideOffer = function getRideOfferMetadataAsRideOffer(orderId) {
         return ride_offer_redis_service_async_to_generator(function() {
-            var orderMetadata, _orderMetadata_options;
+            var orderMetadata, _orderMetadata_costEstimateForRider, _orderMetadata_options;
             return ride_offer_redis_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -24302,7 +24302,7 @@ var RideOfferRedisService = /*#__PURE__*/ function() {
                                 expiresAt: orderMetadata.expireAt,
                                 distance: orderMetadata.estimatedDistance,
                                 duration: orderMetadata.estimatedDuration,
-                                fareEstimate: orderMetadata.costEstimateForDriver,
+                                fareEstimate: (_orderMetadata_costEstimateForRider = orderMetadata.costEstimateForRider) != null ? _orderMetadata_costEstimateForRider : orderMetadata.costBest,
                                 directions: [],
                                 options: (_orderMetadata_options = orderMetadata.options) != null ? _orderMetadata_options : [],
                                 passenger: {
@@ -32935,16 +32935,22 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         });
                         if (!!shouldPrePay) return [
                             3,
-                            20
+                            21
                         ];
+                        return [
+                            4,
+                            this.riderRedisService.addActiveOrderToRider(order.riderId.toString(), order.id.toString())
+                        ];
+                    case 19:
+                        _state.sent();
                         return [
                             4,
                             this.dispatchRide(order)
                         ];
-                    case 19:
-                        _state.sent();
-                        _state.label = 20;
                     case 20:
+                        _state.sent();
+                        _state.label = 21;
+                    case 21:
                         return [
                             2,
                             order
@@ -33134,9 +33140,15 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         order = _state.sent();
                         return [
                             4,
-                            this.dispatchRide(order)
+                            this.riderRedisService.addActiveOrderToRider(order.riderId.toString(), order.id.toString())
                         ];
                     case 5:
+                        _state.sent();
+                        return [
+                            4,
+                            this.dispatchRide(order)
+                        ];
+                    case 6:
                         _state.sent();
                         return [
                             2
@@ -46090,9 +46102,10 @@ let AuthResolver = class AuthResolver {
         const phoneUtil = _googlelibphonenumber.PhoneNumberUtil.getInstance();
         const number = phoneUtil.parseAndKeepRawInput(mobileNumber, countryIso);
         // Allow test number +447700900000 to bypass validation
+        const isReviewNumber = mobileNumber === '1234567890' || mobileNumber === '+911234567890' || mobileNumber === '911234567890';
         const isTestNumber = mobileNumber === '+447700900000' || mobileNumber === '7700900000' || mobileNumber == '447700900000';
-        if (!isTestNumber && !phoneUtil.isValidNumber(number)) throw new _apollo.ForbiddenError('INVALID_NUMBER');
-        let formattedNumber = isTestNumber ? '+447700900000' : phoneUtil.format(number, _googlelibphonenumber.PhoneNumberFormat.E164);
+        if (!isTestNumber && !isReviewNumber && !phoneUtil.isValidNumber(number)) throw new _apollo.ForbiddenError('INVALID_NUMBER');
+        let formattedNumber = isReviewNumber ? '+911234567890' : isTestNumber ? '+447700900000' : phoneUtil.format(number, _googlelibphonenumber.PhoneNumberFormat.E164);
         // Remove the leading '+' sign
         formattedNumber = formattedNumber.substring(1);
         const rider = await this.sharedRiderService.findWithDeleted({
@@ -46633,7 +46646,7 @@ let AuthService = class AuthService {
         };
     }
     async sendVerificationCode(input) {
-        const code = input.phoneNumber === '447700900000' ? '839274' : process.env.DEMO_MODE?.toLowerCase() === 'true' ? Math.floor(100000 + Math.random() * 900000).toString() : await this.smsService.sendVerificationCodeSms(input.phoneNumber);
+        const code = input.phoneNumber === '447700900000' ? '839274' : input.phoneNumber === '911234567890' ? '123456' : process.env.DEMO_MODE?.toLowerCase() === 'true' ? Math.floor(100000 + Math.random() * 900000).toString() : await this.smsService.sendVerificationCodeSms(input.phoneNumber);
         if (process.env.DEMO_MODE?.toLowerCase() === 'true') {
             this.logger.log(`[DEMO_MODE] Verification code for ${input.phoneNumber}: ${code}`);
         }
@@ -48724,13 +48737,27 @@ let RiderOrderService = class RiderOrderService {
             _common.Logger.debug(`No activeOrderIds for riderId=${riderId}`, 'RiderOrderService');
             return [];
         }
-        const orderIds = riderMetaData.activeOrderIds;
+        const orderIds = [
+            ...new Set(riderMetaData.activeOrderIds)
+        ];
         _common.Logger.debug(`Active orderIds for riderId=${riderId}: ${JSON.stringify(orderIds)}`, 'RiderOrderService');
         // Fetch both sources
-        const [activeOrders, rideOffers] = await Promise.all([
-            this.activeOrderRedisService.getActiveOrders(orderIds),
-            this.rideOfferRedisService.getRideOffers(orderIds.map((id)=>id.toString()))
-        ]);
+        const fetchSources = ()=>Promise.all([
+                this.activeOrderRedisService.getActiveOrders(orderIds),
+                this.rideOfferRedisService.getRideOffers(orderIds.map((id)=>id.toString()))
+            ]);
+        // A just-created order may not be in Redis yet (dispatch job runs
+        // async), so retry briefly before treating it as missing.
+        let [activeOrders, rideOffers] = await fetchSources();
+        for(let attempt = 0; attempt < 4; attempt++){
+            const found = new Set([
+                ...activeOrders.map((o)=>o.id),
+                ...rideOffers.map((o)=>o.id)
+            ]);
+            if (orderIds.every((id)=>found.has(id))) break;
+            await new Promise((r)=>setTimeout(r, 500));
+            [activeOrders, rideOffers] = await fetchSources();
+        }
         _common.Logger.debug(`Fetched activeOrders=${activeOrders?.length ?? 0}, rideOffers=${rideOffers?.length ?? 0} for riderId=${riderId}`, 'RiderOrderService');
         // Build quick lookup maps
         const activeById = new Map(activeOrders.map((o)=>[

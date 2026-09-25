@@ -67,9 +67,9 @@ class _RideRequestOverlayCardState extends State<RideRequestOverlayCard> {
   Future<void> _send(String action) async {
     _timer?.cancel();
     try {
-      await FlutterOverlayWindow.shareData(jsonEncode({'action': action}));
+      FlutterOverlayWindow.shareData(jsonEncode({'action': action}));
       debugPrint('R39_OVERLAY_SENT $action');
-      await const AndroidIntent(
+      await AndroidIntent(
         action: 'android.intent.action.MAIN',
         category: 'android.intent.category.LAUNCHER',
         package: 'com.route39.pilot',
@@ -85,8 +85,8 @@ class _RideRequestOverlayCardState extends State<RideRequestOverlayCard> {
     }
   }
 
-  Future<void> _openApp() => _send('open_app');
-  Future<void> _accept() => _send('accept');
+  Future<void> _openApp() { debugPrint("R39_BUBBLE_TAP"); return _send("open_app"); }
+  Future<void> _accept() { debugPrint("R39_ACCEPT_TAP"); return _send("accept"); }
 
   void _decline() {
     _timer?.cancel();

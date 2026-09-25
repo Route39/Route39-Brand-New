@@ -184,6 +184,13 @@ export class DriverService {
         'Your account has been blocked. Please contact support for more information.',
       );
     }
+    if (
+      currentDriver?.status !== DriverStatus.Offline &&
+      currentDriver?.status !== DriverStatus.Online &&
+      currentDriver?.status !== DriverStatus.InService
+    ) {
+      throw new ForbiddenError('Your account is not approved yet.');
+    }
     await this.driverRepository.update(id, { status: DriverStatus.Online });
     const driver = await this.driverRepository.findOneOrFail({
       where: { id },
@@ -242,6 +249,12 @@ export class DriverService {
     if ((onlineDriver?.activeOrderIds?.length ?? 0) > 0) {
       throw new ForbiddenError('Driver is currently active in an order');
     }
+    if (
+      currentDriver?.status !== DriverStatus.Online &&
+      currentDriver?.status !== DriverStatus.InService
+    ) {
+      return true;
+    }
     await this.driverRepository.update(id, {
       status: DriverStatus.Offline,
       lastSeenTimestamp: new Date(),
@@ -270,7 +283,7 @@ export class DriverService {
       },
     );
     return {
-      rating: driver.rating != null ? Math.round(driver.rating / 20) : null,
+      rating: driver.rating != null ? Math.round(driver.rating / 20) : undefined,
       acceptanceRate:
         (driver.acceptedOrdersCount /
           (driver.acceptedOrdersCount + driver.rejectedOrdersCount) || 0) * 100,
@@ -528,15 +541,17 @@ export class DriverService {
         where: { id: driverId },
         relations: {
           enabledServices: {
-            service: true,
+            service: { media: true },
           },
         },
       });
-      return entity.enabledServices!.map((service) => ({
-        id: service!.service!.id!,
-        name: service!.service!.name!,
-        imageUrl: service!.service!.media!.address!,
-      }));
+      return (entity.enabledServices ?? [])
+        .filter((s) => s.driverEnabled && s.service != null)
+        .map((s) => ({
+          id: s.service!.id,
+          name: s.service!.name,
+          imageUrl: s.service!.media?.address ?? '',
+        }));
     }
   }
 

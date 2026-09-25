@@ -74,6 +74,7 @@ sealed class HomeState with _$HomeState {
   }
 
   HomeMode get mode {
+    debugPrint("[HomeMode] activeOrder=${activeOrder?.id} status=${activeOrder?.status} currentOrdersCount=${currentOrdersResponse.data?.length} ridePreviewLoaded=${ridePreviewFareResponse.isLoaded}");
     if (activeOrder != null) {
       return HomeMode.rideInProgress;
     }
