@@ -28,9 +28,8 @@ class RideHistoryItem extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          image: DecorationImage(
-            image: Assets.images.historyRidesHeaderBackground.provider(),
-            fit: BoxFit.cover,
+          gradient: const LinearGradient(
+            colors: [Color(0xFFB30000), Color(0xFFE00000), Color(0xFFFF4B4B)],
           ),
         ),
         child: Column(
@@ -52,26 +51,7 @@ class RideHistoryItem extends StatelessWidget {
                     ),
                     clipBehavior: Clip.antiAlias,
                     padding: const EdgeInsets.all(6),
-                    child: entity.serviceImageAddress.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: entity.serviceImageAddress,
-                            fit: BoxFit.contain,
-                            placeholder: (context, url) => const Icon(
-                              Ionicons.car,
-                              color: ColorPalette.primary30,
-                              size: 28,
-                            ),
-                            errorWidget: (context, url, error) => const Icon(
-                              Ionicons.car,
-                              color: ColorPalette.primary30,
-                              size: 28,
-                            ),
-                          )
-                        : const Icon(
-                            Ionicons.car,
-                            color: ColorPalette.primary30,
-                            size: 28,
-                          ),
+                    child: Image.asset('assets/images/ev_auto_icon.png', fit: BoxFit.contain),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -137,9 +117,7 @@ class RideHistoryItem extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 color: ColorPalette.neutral99,
-                border: Border.all(
-                  color: ColorPalette.primary95,
-                ),
+                border: Border.all(color: const Color(0xFFFFE5E5)),
                 boxShadow: const [
                   BoxShadow(
                     color: Color(0x1464748B),

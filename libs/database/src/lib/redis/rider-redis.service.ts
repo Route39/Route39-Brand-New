@@ -56,7 +56,48 @@ export class RiderRedisService {
   async addActiveOrderToRider(riderId: string, orderId: string) {
     const key = `rider:${riderId}`;
     const path = '$.activeOrderIds';
-    await this.redisClient.json.arrAppend(key, path, orderId);
+    try {
+      await this.redisClient.json.arrAppend(key, path, orderId);
+    } catch (error) {
+      // The rider's redis record disappeared between the "online rider"
+      // check and this append (evicted/expired/race condition). Self-heal
+      // by recreating a minimal valid record instead of failing the order.
+      Logger.warn(
+        `addActiveOrderToRider: ${key} missing during arrAppend, recreating. ${error}`,
+      );
+      const minimalSnapshot: RiderRedisSnapshot = {
+        id: riderId,
+        firstName: null,
+        lastName: null,
+        mobileNumber: '-',
+        countryIso: null,
+        email: null,
+        emailVerified: null,
+        gender: null,
+        profileImageUrl: null,
+        fcmTokens: [],
+        activeOrderIds: [orderId],
+        walletCredit: 0,
+        currency: process.env.DEFAULT_CURRENCY || 'USD',
+      };
+      await this.redisClient.json.set(
+        key,
+        '$',
+        instanceToPlain(minimalSnapshot),
+        { NX: true },
+      );
+      // If the key was recreated by a concurrent request in the meantime,
+      // make sure our orderId still ends up in the array.
+      const current = await this.redisClient.json.get(key, {
+        path: '$.activeOrderIds',
+      });
+      const currentIds = Array.isArray(current)
+        ? ((current[0] ?? []) as string[])
+        : [];
+      if (!currentIds.includes(orderId)) {
+        await this.redisClient.json.arrAppend(key, path, orderId);
+      }
+    }
   }
 
   async removeActiveOrderFromRider(riderId: string, orderId: string) {

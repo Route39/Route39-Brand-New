@@ -1,6 +1,7 @@
 import 'package:ridy_driver/core/graphql/fragments/driver_transactions.fragment.graphql.dart';
 import 'package:ridy_driver/core/graphql/fragments/wallet.extensions.dart';
 import 'package:flutter/material.dart';
+import 'package:ionicons/ionicons.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
 import 'package:ridy_driver/core/extensions/extensions.dart';
 
@@ -32,10 +33,16 @@ class WalletTransactionItem extends StatelessWidget {
                   color: ColorPalette.neutral90,
                 ),
               ),
-              child: Icon(
-                transaction.icon,
-                color: transaction.deductType == null ? ColorPalette.tertiary60 : ColorPalette.primary30,
-              ),
+              child: transaction.icon == Ionicons.car
+                  ? SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: Image.asset('assets/images/ev_auto_icon.png', fit: BoxFit.contain),
+                    )
+                  : Icon(
+                      transaction.icon,
+                      color: transaction.deductType == null ? ColorPalette.tertiary60 : ColorPalette.primary30,
+                    ),
             ),
             const SizedBox(width: 16),
             Expanded(

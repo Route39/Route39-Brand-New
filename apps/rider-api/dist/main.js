@@ -22561,18 +22561,87 @@ var RiderRedisService = /*#__PURE__*/ function() {
     };
     _proto.addActiveOrderToRider = function addActiveOrderToRider(riderId, orderId) {
         return rider_redis_service_async_to_generator(function() {
-            var key, path;
+            var key, path, error, minimalSnapshot, current, _current_, currentIds;
             return rider_redis_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
                         key = "rider:" + riderId;
                         path = '$.activeOrderIds';
+                        _state.label = 1;
+                    case 1:
+                        _state.trys.push([
+                            1,
+                            3,
+                            ,
+                            8
+                        ]);
                         return [
                             4,
                             this.redisClient.json.arrAppend(key, path, orderId)
                         ];
-                    case 1:
+                    case 2:
                         _state.sent();
+                        return [
+                            3,
+                            8
+                        ];
+                    case 3:
+                        error = _state.sent();
+                        // The rider's redis record disappeared between the "online rider"
+                        // check and this append (evicted/expired/race condition). Self-heal
+                        // by recreating a minimal valid record instead of failing the order.
+                        common_.Logger.warn("addActiveOrderToRider: " + key + " missing during arrAppend, recreating. " + error);
+                        minimalSnapshot = {
+                            id: riderId,
+                            firstName: null,
+                            lastName: null,
+                            mobileNumber: '-',
+                            countryIso: null,
+                            email: null,
+                            emailVerified: null,
+                            gender: null,
+                            profileImageUrl: null,
+                            fcmTokens: [],
+                            activeOrderIds: [
+                                orderId
+                            ],
+                            walletCredit: 0,
+                            currency: process.env.DEFAULT_CURRENCY || 'USD'
+                        };
+                        return [
+                            4,
+                            this.redisClient.json.set(key, '$', (0,external_class_transformer_.instanceToPlain)(minimalSnapshot), {
+                                NX: true
+                            })
+                        ];
+                    case 4:
+                        _state.sent();
+                        return [
+                            4,
+                            this.redisClient.json.get(key, {
+                                path: '$.activeOrderIds'
+                            })
+                        ];
+                    case 5:
+                        current = _state.sent();
+                        currentIds = Array.isArray(current) ? (_current_ = current[0]) != null ? _current_ : [] : [];
+                        if (!!currentIds.includes(orderId)) return [
+                            3,
+                            7
+                        ];
+                        return [
+                            4,
+                            this.redisClient.json.arrAppend(key, path, orderId)
+                        ];
+                    case 6:
+                        _state.sent();
+                        _state.label = 7;
+                    case 7:
+                        return [
+                            3,
+                            8
+                        ];
+                    case 8:
                         return [
                             2
                         ];
