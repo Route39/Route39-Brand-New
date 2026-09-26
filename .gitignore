@@ -44,3 +44,4 @@ dist/
 
 .env*
 pm2_jlist.json
+.dart_tool/
