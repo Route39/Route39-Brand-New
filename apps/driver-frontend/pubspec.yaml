@@ -2,7 +2,7 @@ name: ridy_driver
 description: Driver app for ride-sharing
 publish_to: "none"
 
-version: 4.0.0+312
+version: 4.0.1+313
 
 environment:
   sdk: ">=3.9.0 <4.0.0"
