@@ -15,6 +15,31 @@
       "oauth_client": [],
       "api_key": [
         {
+          "current_key": "AIzaSyAChNpWAPc08JWjQDUzyTbQqcA4cUxuto8"
+        },
+        {
+          "current_key": "AIzaSyBP78zsF1LbtnZ8KX6IV0OxbIH4C8VHJs4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1058539772543:android:cce42b28e88839b403fd4a",
+        "android_client_info": {
+          "package_name": "com.route39.pilot"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAChNpWAPc08JWjQDUzyTbQqcA4cUxuto8"
+        },
+        {
           "current_key": "AIzaSyBP78zsF1LbtnZ8KX6IV0OxbIH4C8VHJs4"
         }
       ],
@@ -33,6 +58,9 @@
       },
       "oauth_client": [],
       "api_key": [
+        {
+          "current_key": "AIzaSyAChNpWAPc08JWjQDUzyTbQqcA4cUxuto8"
+        },
         {
           "current_key": "AIzaSyBP78zsF1LbtnZ8KX6IV0OxbIH4C8VHJs4"
         }

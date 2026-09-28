@@ -216,7 +216,7 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  Text('Popular Places', style: context.titleMedium),
+                  Text('Popular Places 🚀', style: context.titleMedium),
                   const SizedBox(height: 12),
                   Row(
                     children: [

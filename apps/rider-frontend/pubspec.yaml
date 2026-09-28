@@ -108,6 +108,7 @@ flutter:
     - assets/lottie/
     - assets/notification.mp3
     - assets/countries/
+    - shorebird.yaml
 
   fonts:
     - family: GeneralSans
