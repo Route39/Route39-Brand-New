@@ -45,3 +45,8 @@ dist/
 .env*
 pm2_jlist.json
 .dart_tool/
+
+# Signing secrets
+apps/*/android/key.properties
+apps/*/android/keystore/
+*.jks
