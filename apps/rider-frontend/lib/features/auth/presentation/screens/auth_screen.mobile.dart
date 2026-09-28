@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
 import 'package:ridy/config/locator/locator.dart';
 import 'package:ridy/features/auth/presentation/widgets/login_form_builder.dart';
+import 'package:ridy/features/auth/presentation/blocs/onboarding_cubit.dart';
+import 'package:ridy/features/auth/presentation/screens/onboarding_screen.mobile.dart';
 
 import '../blocs/login.bloc.dart';
 

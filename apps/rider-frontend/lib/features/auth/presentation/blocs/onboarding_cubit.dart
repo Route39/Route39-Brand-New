@@ -3,7 +3,7 @@ import 'package:injectable/injectable.dart';
 
 @singleton
 class OnboardingCubit extends HydratedCubit<int> {
-  OnboardingCubit() : super(1);
+    OnboardingCubit() : super(0);
 
   void nextPage() => emit(state + 1);
 

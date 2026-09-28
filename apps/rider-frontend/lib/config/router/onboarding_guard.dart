@@ -8,10 +8,9 @@ import 'package:ridy/features/auth/presentation/blocs/onboarding_cubit.dart';
 class OnboardingGuard extends AutoRouteGuard {
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) {
-    final onboardingDone = locator<OnboardingCubit>().isDone;
-    final isAuthenticated = locator<AuthBloc>().state is AuthState$Authenticated;
+        final isAuthenticated = locator<AuthBloc>().state is AuthState$Authenticated;
 
-    if (onboardingDone && isAuthenticated) {
+    if (isAuthenticated) {
       // onboarding seen AND user is logged in — continue to home
       resolver.next(true);
     } else {

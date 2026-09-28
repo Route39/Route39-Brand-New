@@ -10,6 +10,7 @@ import 'package:ridy/features/auth/presentation/blocs/onboarding_cubit.dart';
 import 'package:ridy/features/auth/presentation/screens/auth_screen.desktop.dart';
 import 'package:ridy/features/auth/presentation/screens/auth_screen.mobile.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
+import 'package:ridy/features/auth/presentation/screens/onboarding_screen.mobile.dart';
 
 
 @RoutePage()
@@ -58,9 +59,18 @@ class AuthScreen extends StatelessWidget {
                 break;
             }
           },
-          child: context.responsive(
-            const AuthScreenMobile(),
-            xl: const AuthScreenDesktop(),
+                    child: BlocBuilder<OnboardingCubit, int>(
+            builder: (context, onboardingState) {
+              if (onboardingState != 1) {
+                return const Center(
+                  child: SizedBox(width: 480, child: OnboardingScreen()),
+                );
+              }
+              return context.responsive(
+                const AuthScreenMobile(),
+                xl: const AuthScreenDesktop(),
+              );
+            },
           ),
         ),
       ),
