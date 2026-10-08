@@ -49877,19 +49877,23 @@ let AuthService = class AuthService {
                     mediaId: pair.mediaId
                 })));
         }
-        if (input.input.legacyDocumentIds) {
-        // No need to do anything as assignment automatically happen on upload
-        // const legacyIds = input.input.legacyDocumentIds;
-        // const medias = await this.mediaRepository
-        //   .createQueryBuilder('media')
-        //   .where('media.id IN (:...ids)', { ids: legacyIds })
-        //   .getMany();
-        // if (medias.length) {
-        //   for (const media of medias) {
-        //     (media as MediaEntity).driverDocumentId = input.userId;
-        //   }
-        //   await this.mediaRepository.save(medias);
-        // }
+        if (input.input.legacyDocumentIds?.length && !input.input.documentPairs?.length) {
+            const [fallback] = await this.driverToDocumentRepository.manager.getRepository('DriverDocumentEntity').find({
+                order: {
+                    id: 'ASC'
+                },
+                take: 1
+            });
+            if (fallback) {
+                await this.driverToDocumentRepository.delete({
+                    driverId: input.userId
+                });
+                await this.driverToDocumentRepository.save(input.input.legacyDocumentIds.map((mediaId)=>({
+                        driverId: input.userId,
+                        driverDocumentId: fallback.id,
+                        mediaId: parseInt(mediaId)
+                    })));
+            }
         }
         driver = await this.driverRepository.findOneOrFail({
             where: {
@@ -50983,6 +50987,10 @@ let DriverAPIController = class DriverAPIController {
         const doc = this.driverDocumentRepository.create();
         doc.driverId = req.user.id;
         doc.driverDocumentId = parseInt(req.body.requestedDocumentId);
+        doc.mediaId = insert.id;
+        if (!isNaN(doc.driverDocumentId)) {
+            await this.driverDocumentRepository.save(doc);
+        }
         res.send({
             __typename: 'Media',
             id: insert.id.toString(),

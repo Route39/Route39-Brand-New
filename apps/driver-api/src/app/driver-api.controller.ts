@@ -119,6 +119,10 @@ export class DriverAPIController {
     const doc = this.driverDocumentRepository.create();
     doc.driverId = (req as unknown as any).user.id;
     doc.driverDocumentId = parseInt(req.body.requestedDocumentId);
+    doc.mediaId = insert.id;
+    if (!isNaN(doc.driverDocumentId)) {
+      await this.driverDocumentRepository.save(doc);
+    }
     res.send({
       __typename: 'Media',
       id: insert.id.toString(),
