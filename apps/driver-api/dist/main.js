@@ -49878,21 +49878,26 @@ let AuthService = class AuthService {
                 })));
         }
         if (input.input.legacyDocumentIds?.length && !input.input.documentPairs?.length) {
-            const [fallback] = await this.driverToDocumentRepository.manager.getRepository('DriverDocumentEntity').find({
-                order: {
-                    id: 'ASC'
-                },
-                take: 1
+            const fallback = await this.driverToDocumentRepository.manager.getRepository('DriverDocumentEntity').findOne({
+                where: {
+                    title: 'Other Documents'
+                }
             });
             if (fallback) {
-                await this.driverToDocumentRepository.delete({
-                    driverId: input.userId
+                const existing = await this.driverToDocumentRepository.find({
+                    where: {
+                        driverId: input.userId
+                    }
                 });
-                await this.driverToDocumentRepository.save(input.input.legacyDocumentIds.map((mediaId)=>({
-                        driverId: input.userId,
-                        driverDocumentId: fallback.id,
-                        mediaId: parseInt(mediaId)
-                    })));
+                const linked = new Set(existing.map((e)=>Number(e.mediaId)));
+                const missing = input.input.legacyDocumentIds.map((id)=>parseInt(id)).filter((id)=>!isNaN(id) && !linked.has(id));
+                if (missing.length) {
+                    await this.driverToDocumentRepository.save(missing.map((mediaId)=>({
+                            driverId: input.userId,
+                            driverDocumentId: fallback.id,
+                            mediaId
+                        })));
+                }
             }
         }
         driver = await this.driverRepository.findOneOrFail({
