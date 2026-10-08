@@ -228,18 +228,26 @@ export class AuthService {
       input.input.legacyDocumentIds?.length &&
       !input.input.documentPairs?.length
     ) {
-      const [fallback] = await this.driverToDocumentRepository.manager
+      const fallback = await this.driverToDocumentRepository.manager
         .getRepository('DriverDocumentEntity')
-        .find({ order: { id: 'ASC' }, take: 1 });
+        .findOne({ where: { title: 'Other Documents' } });
       if (fallback) {
-        await this.driverToDocumentRepository.delete({ driverId: input.userId });
-        await this.driverToDocumentRepository.save(
-          input.input.legacyDocumentIds.map((mediaId) => ({
-            driverId: input.userId,
-            driverDocumentId: (fallback as any).id,
-            mediaId: parseInt(mediaId as any),
-          })),
-        );
+        const existing = await this.driverToDocumentRepository.find({
+          where: { driverId: input.userId },
+        });
+        const linked = new Set(existing.map((e) => Number(e.mediaId)));
+        const missing = input.input.legacyDocumentIds
+          .map((id) => parseInt(id as any))
+          .filter((id) => !isNaN(id) && !linked.has(id));
+        if (missing.length) {
+          await this.driverToDocumentRepository.save(
+            missing.map((mediaId) => ({
+              driverId: input.userId,
+              driverDocumentId: (fallback as any).id,
+              mediaId,
+            })),
+          );
+        }
       }
     }
     driver = await this.driverRepository.findOneOrFail({
