@@ -75,8 +75,8 @@ export default function DriverReviewPage() {
         const wantsCargo = data.driver.canDeliver;
         const match = svcData.services.find((s) =>
           wantsCargo
-            ? s.name.toLowerCase() === "cargo"
-            : s.name.toLowerCase() === "passenger",
+            ? s.name.toLowerCase().startsWith("cargo")
+            : s.name.toLowerCase().startsWith("passenger"),
         );
         if (match) enabled.add(match.id);
       }
