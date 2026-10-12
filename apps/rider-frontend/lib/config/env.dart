@@ -13,7 +13,7 @@ class Env {
   static String companyName = dotenv.maybeGet('COMPANY_NAME') ?? "BetterSuite";
   static String firebaseMessagingVapidKey =
       dotenv.maybeGet('FIREBASE_MESSAGING_VAPID_KEY') ?? "";
-  static String defaultCurrency = dotenv.maybeGet('DEFAULT_CURRENCY') ?? "USD";
+  static String defaultCurrency = dotenv.maybeGet('DEFAULT_CURRENCY') ?? "INR";
   static CountryCode defaultCountry =
       CountryCode.parseByIso(dotenv.maybeGet('DEFAULT_COUNTRY')) ??
           CountryCode.parseByIso("US")!;
