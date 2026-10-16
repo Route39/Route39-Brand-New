@@ -33,6 +33,7 @@ import { HttpService } from '@nestjs/axios';
 import { WalletService } from './wallet.service';
 import { DriverEntity } from '@ridy/database';
 import { RazorpayService } from '@ridy/database';
+import { DriverTransactionEntity } from '@ridy/database';
 import { SharedDriverService } from '@ridy/database';
 import { RazorpayOrderDTO } from './dto/razorpay-order.dto';
 import {
@@ -105,6 +106,22 @@ export class WalletResolver {
     if (!isValid) {
       throw new Error('INVALID_PAYMENT_SIGNATURE');
     }
+    const rzpOrder = await this.razorpayService.fetchOrder(razorpayOrderId);
+    const driverId = this.context.req.user.id;
+    if (!String(rzpOrder.receipt ?? '').startsWith(`topup_${driverId}_`)) {
+      throw new Error('ORDER_NOT_BELONG_TO_DRIVER');
+    }
+    if (rzpOrder.status !== 'paid') {
+      throw new Error('ORDER_NOT_PAID');
+    }
+    const alreadyCredited = await this.driverRepo.manager.findOne(
+      DriverTransactionEntity,
+      { where: { refrenceNumber: razorpayPaymentId } },
+    );
+    if (alreadyCredited) {
+      return true;
+    }
+    amount = Number(rzpOrder.amount_paid) / 100;
     await this.sharedDriverService.rechargeWallet({
       status: TransactionStatus.Done,
       driverId: this.context.req.user.id,

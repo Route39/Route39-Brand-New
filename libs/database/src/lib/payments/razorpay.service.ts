@@ -22,6 +22,10 @@ export class RazorpayService {
     });
   }
 
+  async fetchOrder(orderId: string): Promise<any> {
+    return this.client.orders.fetch(orderId);
+  }
+
   verifySignature(orderId: string, paymentId: string, signature: string): boolean {
     const generated = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
