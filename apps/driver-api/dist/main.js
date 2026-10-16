@@ -47423,6 +47423,7 @@ let OrderService = class OrderService {
                 orderId: input.orderId,
                 status: _database.OrderStatus.DriverAccepted,
                 driverLocation: driver.location,
+                pickupOtp: pickupOtp,
                 pickupEta: pickupEta,
                 directions: tripTravelMetrics.directions,
                 riderId: parseInt(rider.id)
