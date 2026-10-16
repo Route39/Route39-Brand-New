@@ -21,7 +21,7 @@ export class EarningsService {
     );
     if (q.length < 1) {
       return {
-        currency: 'USD',
+        currency: 'INR',
         sumOfCurrentPeriod: 0,
         dataset: [],
       };
@@ -70,7 +70,7 @@ export class EarningsService {
     );
     if (q.length < 1) {
       return {
-        currency: 'USD',
+        currency: 'INR',
         sumOfCurrentPeriod: 0,
         dataset: [],
       };
