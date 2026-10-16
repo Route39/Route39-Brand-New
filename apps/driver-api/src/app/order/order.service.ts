@@ -174,6 +174,10 @@ export class OrderService {
         throw new ForbiddenError(`Driver with ID ${input.driverId} not found`);
       }
 
+      if (driver.activeOrderIds && driver.activeOrderIds.length > 0) {
+        throw new ForbiddenError('DRIVER_ALREADY_ON_TRIP');
+      }
+
       const rider = await this.riderRedisService.getOnlineRider(
         orderMetadata.riderId,
       );

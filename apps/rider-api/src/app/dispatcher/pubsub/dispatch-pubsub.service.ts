@@ -35,7 +35,7 @@ export class DispatchPubSubService {
       );
       const hasPendingOffers = driver?.rideOfferIds && driver.rideOfferIds.length > 0;
       const hasActiveOrders = driver?.activeOrderIds && driver.activeOrderIds.length > 0;
-      if (driver && !hasPendingOffers && !hasActiveOrders) {
+      if (driver && !hasActiveOrders) {
         availableDriverIds.push(driverId);
       }
     }
