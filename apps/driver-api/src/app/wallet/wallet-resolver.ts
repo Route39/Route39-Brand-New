@@ -158,7 +158,7 @@ export class WalletResolver {
         ? user.wallet!.reduce((prev, current) => {
             return prev.balance > current.balance ? prev : current;
           })
-        : { balance: 0, currency: 'USD' };
+        : { balance: 0, currency: 'INR' };
     const obj: SetupSavedPaymentMethodDecryptedBody = {
       gatewayId: gatewayId.toString(),
       userType: 'driver',
