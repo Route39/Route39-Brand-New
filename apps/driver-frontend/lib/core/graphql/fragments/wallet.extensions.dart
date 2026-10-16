@@ -15,7 +15,7 @@ extension WalletX on Fragment$Wallet {
 }
 
 extension WalletTransActionX on Fragment$DriverTransacion {
-  String get formattedPrice => NumberFormat.simpleCurrency(name: currency).format(amount);
+  String get formattedPrice => NumberFormat.simpleCurrency(name: currency.isEmpty ? 'INR' : currency).format(amount);
   String get formattedDatetime => createdAt.formatDateTime;
   String get formattedTime => createdAt.formatTime;
   IconData get icon => deductType?.icon ?? rechargeType!.icon;

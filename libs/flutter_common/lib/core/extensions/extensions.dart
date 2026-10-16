@@ -90,7 +90,7 @@ extension Responsive on BuildContext {
 
 extension DoubleX on double {
   String formatCurrency(String currency) =>
-      intl.NumberFormat.simpleCurrency(name: currency).format(this);
+      intl.NumberFormat.simpleCurrency(name: currency.isEmpty ? 'INR' : currency).format(this);
 }
 
 extension Translator on BuildContext {

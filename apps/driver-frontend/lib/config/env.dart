@@ -11,7 +11,7 @@ class Env {
   static bool isDemoMode = dotenv.maybeGet('DEMO_MODE') == 'true';
   static String appName = dotenv.maybeGet('APP_NAME') ?? "Ridy Driver";
   static String companyName = dotenv.maybeGet('COMPANY_NAME') ?? "BetterSuite";
-  static String defaultCurrency = dotenv.maybeGet('DEFAULT_CURRENCY') ?? "USD";
+  static String defaultCurrency = dotenv.maybeGet('DEFAULT_CURRENCY') ?? "INR";
   static CountryCode defaultCountry =
       CountryCode.parseByIso(dotenv.maybeGet('DEFAULT_COUNTRY')) ??
           CountryCode.parseByIso("US")!;
