@@ -158,7 +158,7 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
   Widget build(BuildContext context) {
     return BlocListener<HomeBloc, HomeState>(
       listenWhen: (previous, current) =>
-          previous.orderRequests.isEmpty != current.orderRequests.isEmpty ||
+          previous.orderRequests.firstOrNull?.id != current.orderRequests.firstOrNull?.id ||
           previous.driverStatus != current.driverStatus,
       listener: (context, state) {
         if (state.driverStatus != HomeStateDriverStatus.online) {

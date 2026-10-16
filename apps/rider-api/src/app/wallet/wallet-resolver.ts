@@ -120,8 +120,8 @@ async createRazorpayWalletOrder(
   };
 }
 
-  @Mutation(() => Boolean)
-  async verifyRazorpayRidePayment(
+  @Mutation(() => Boolean, { name: 'verifyRazorpayRidePaymentLegacy' })
+  async verifyRazorpayRidePaymentLegacy(
     @Args('orderId', { type: () => ID }) orderId: number,
     @Args('razorpayOrderId', { type: () => String }) razorpayOrderId: string,
     @Args('razorpayPaymentId', { type: () => String }) razorpayPaymentId: string,

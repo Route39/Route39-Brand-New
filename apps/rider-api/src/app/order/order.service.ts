@@ -1078,8 +1078,11 @@ if (existingPayment) {
     razorpayPaymentId: string;
     razorpaySignature: string;
   }): Promise<TopUpWalletStatus> {
+    const paymentByRzp = await this.paymentRepo.findOne({
+      where: { userType: 'rider', userId: input.riderId.toString(), transactionNumber: input.razorpayOrderId },
+    });
     const activeOrder = await this.activeOrderRedisService.getActiveOrder(
-      input.orderId.toString(),
+      paymentByRzp?.orderNumber ?? input.orderId.toString(),
     );
 
     if (activeOrder == null) {
