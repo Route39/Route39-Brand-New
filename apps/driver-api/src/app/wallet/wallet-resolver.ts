@@ -179,7 +179,7 @@ export class WalletResolver {
     const obj: SetupSavedPaymentMethodDecryptedBody = {
       gatewayId: gatewayId.toString(),
       userType: 'driver',
-      currency: walletsLargestBalance.currency ?? 'USD',
+      currency: walletsLargestBalance.currency ?? 'INR',
       userId: this.context.req.user.id.toString(),
       returnUrl: `${
         process.env.DRIVER_APPLICATION_ID ?? 'default.driver.redirection'

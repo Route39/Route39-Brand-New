@@ -1,3 +1,4 @@
+import 'package:graphql/client.dart';
 import 'package:api_response/api_response.dart';
 import 'package:ridy_driver/core/datasources/graphql_datasource.dart';
 import 'package:ridy_driver/core/enums/payment_mode.prod.dart';
@@ -20,7 +21,7 @@ class WalletRepositoryImpl implements WalletRepository {
   @override
   Future<ApiResponse<Query$Wallet>> getWalletData() async {
     final walletDataResponse = await graphQLDatasource.query(
-      Options$Query$Wallet(),
+      Options$Query$Wallet(fetchPolicy: FetchPolicy.networkOnly),
     );
     return walletDataResponse;
   }

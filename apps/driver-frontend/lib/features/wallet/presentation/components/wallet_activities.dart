@@ -43,6 +43,7 @@ class WalletActivities extends StatelessWidget {
                           const SizedBox(height: 16),
                           Expanded(
                             child: SingleChildScrollView(
+                              padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 96),
                               child: Column(
                                 children: data.driverTransacions.edges
                                     .map(
