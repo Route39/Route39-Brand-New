@@ -113,9 +113,9 @@
 			"rewards": "Rewards & Referrals"
 		},
 		"accounting": {
-			"admin": "Admin",
+			"admin": "Provider Wallet",
 			"fleets": "Fleets",
-			"drivers": "Drivers",
+			"drivers": "Drivers Wallet",
 			"riders": "Riders",
 			"header": "Accounting"
 		},
