@@ -4,6 +4,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -22,35 +23,31 @@ export function RequestsChart() {
   const [timeframe, setTimeframe] = useState<Timeframe>("Monthly");
   const { data, loading } = useQuery(REQUEST_CHART_QUERY, { variables: { timeframe } });
 
-  // Aggregate by time bucket and stack by status.
+  // Aggregate by time bucket and stack by simplified status group.
   const points = useMemo(() => {
     const map = new Map<string, Record<string, number | string>>();
     for (const p of data?.requestChart ?? []) {
-      const row = map.get(p.time) ?? { time: p.time };
-      (row as Record<string, number | string>)[p.status] = p.count;
-      map.set(p.time, row);
+      const key = String(p.time);
+      const row = map.get(key) ?? { time: Number(p.time), Completed: 0, Cancelled: 0, "No driver": 0, Ongoing: 0 };
+      const group = statusGroup(p.status);
+      row[group] = (Number(row[group]) || 0) + Number(p.count);
+      map.set(key, row);
     }
-    return Array.from(map.values());
+    return Array.from(map.values()).sort((a, b) => Number(a.time) - Number(b.time));
   }, [data?.requestChart]);
 
-  const statuses = useMemo(() => {
-    const set = new Set<string>();
-    for (const p of data?.requestChart ?? []) set.add(p.status);
-    return Array.from(set);
-  }, [data?.requestChart]);
-
-  const colors = [
-    "var(--color-chart-1)",
-    "var(--color-chart-2)",
-    "var(--color-chart-3)",
-    "var(--color-chart-4)",
-    "var(--color-chart-5)",
-  ];
+  const statuses = ["Completed", "Cancelled", "No driver", "Ongoing"];
+  const colors: Record<string, string> = {
+    Completed: "#10b981",
+    Cancelled: "#ef4444",
+    "No driver": "#f59e0b",
+    Ongoing: "#3b82f6",
+  };
 
   return (
     <ChartCard
       title="Requests"
-      description="Order volume grouped by status"
+      description="Ride requests: completed, cancelled, no driver, ongoing"
       loading={loading && points.length === 0}
       empty={!loading && points.length === 0}
       actions={<TimeframeSelector value={timeframe} onChange={setTimeframe} />}
@@ -74,11 +71,19 @@ export function RequestsChart() {
             }}
             labelFormatter={(value) => formatChartTime(value, timeframe, "tooltip")}
           />
-          {statuses.map((status, i) => (
-            <Bar key={status} dataKey={status} stackId="status" fill={colors[i % colors.length]} />
+          <Legend wrapperStyle={{ fontSize: "0.75rem" }} />
+          {statuses.map((status) => (
+            <Bar key={status} dataKey={status} stackId="status" fill={colors[status]} />
           ))}
         </BarChart>
       </ResponsiveContainer>
     </ChartCard>
   );
+}
+
+function statusGroup(status: string): string {
+  if (status === "Finished" || status === "WaitingForReview") return "Completed";
+  if (status === "RiderCanceled" || status === "DriverCanceled") return "Cancelled";
+  if (status === "NotFound" || status === "NoCloseFound" || status === "Expired") return "No driver";
+  return "Ongoing";
 }

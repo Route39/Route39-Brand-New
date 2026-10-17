@@ -60,63 +60,67 @@ export class AccountingService {
   ) {}
 
   incomeChart(timeframe: ChartTimeframe): Promise<IncomeResultItem[]> {
-    const vars = this.getQueryVars(timeframe, 'transactionTime');
+    const v = this.getQueryVars(timeframe, 'transactionTime');
     return this.providerTransactionRepository.query(
-      `SELECT currency, SUM(amount) as sum, UNIX_TIMESTAMP(ANY_VALUE(transactionTime)) * 1000 AS time from admin_transaction WHERE ${vars.query} GROUP BY currency, ${vars.groupBy}`,
+      `SELECT currency, SUM(amount) AS sum, ${v.time} AS time FROM admin_transaction WHERE ${v.query} GROUP BY currency, time ORDER BY time`,
     );
   }
 
   requestsChart(timeframe: ChartTimeframe): Promise<RequestResultItem[]> {
-    const vars = this.getQueryVars(timeframe, 'requestTimestamp');
+    const v = this.getQueryVars(timeframe, 'requestTimestamp');
     return this.providerTransactionRepository.query(
-      `SELECT COUNT(status) as count, status, UNIX_TIMESTAMP(ANY_VALUE(requestTimestamp)) * 1000 AS time from \`request\` WHERE ${vars.query} GROUP BY ${vars.groupBy}, status`,
+      `SELECT COUNT(id) AS count, status, ${v.time} AS time FROM \`request\` WHERE ${v.query} GROUP BY time, status ORDER BY time`,
     );
   }
 
   driverRegistrations(
     timeframe: ChartTimeframe,
   ): Promise<RegistrationResultItemDto[]> {
-    const vars = this.getQueryVars(timeframe, 'registrationTimestamp');
+    const v = this.getQueryVars(timeframe, 'registrationTimestamp');
     return this.driverRepository.query(
-      `SELECT COUNT(id) as count, UNIX_TIMESTAMP(ANY_VALUE(registrationTimestamp)) * 1000 AS time from driver WHERE ${vars.query} GROUP BY ${vars.groupBy}`,
+      `SELECT COUNT(id) AS count, ${v.time} AS time FROM driver WHERE ${v.query} GROUP BY time ORDER BY time`,
     );
   }
 
   riderRegistrations(
     timeframe: ChartTimeframe,
   ): Promise<RegistrationResultItemDto[]> {
-    const vars = this.getQueryVars(timeframe, 'registrationTimestamp');
+    const v = this.getQueryVars(timeframe, 'registrationTimestamp');
     return this.riderRepository.query(
-      `SELECT COUNT(id) as count, UNIX_TIMESTAMP(ANY_VALUE(registrationTimestamp)) * 1000 AS time from rider WHERE ${vars.query} GROUP BY ${vars.groupBy}`,
+      `SELECT COUNT(id) AS count, ${v.time} AS time FROM rider WHERE ${v.query} GROUP BY time ORDER BY time`,
     );
   }
 
+  // Buckets are computed in IST (UTC+05:30); stored timestamps are UTC.
   private getQueryVars(
-    query: ChartTimeframe,
+    timeframe: ChartTimeframe,
     timeField: string,
-  ): { groupBy: string; query: string } {
-    switch (query) {
+  ): { time: string; query: string } {
+    const local = `DATE_ADD(${timeField}, INTERVAL 330 MINUTE)`;
+    const nowLocal = `DATE_ADD(UTC_TIMESTAMP(), INTERVAL 330 MINUTE)`;
+    let bucket: string;
+    let query: string;
+    switch (timeframe) {
       case ChartTimeframe.Daily:
-        return {
-          groupBy: `DATE(${timeField}),TIME(${timeField})`,
-          query: `DATE(${timeField}) = CURDATE()`,
-        };
-      case ChartTimeframe.Monthly:
-        return {
-          groupBy: `DAYOFYEAR(${timeField}),YEAR(${timeField})`,
-          query: `${timeField} > CURDATE() - INTERVAL 2 MONTH`,
-        };
+        bucket = `DATE_FORMAT(${local}, '%Y-%m-%d %H:00:00')`;
+        query = `DATE(${local}) = DATE(${nowLocal})`;
+        break;
       case ChartTimeframe.Weekly:
-        return {
-          groupBy: `WEEKOFYEAR(${timeField}),YEAR(${timeField})`,
-          query: `${timeField} > CURDATE() - INTERVAL 6 MONTH`,
-        };
+        bucket = `DATE_SUB(DATE(${local}), INTERVAL WEEKDAY(${local}) DAY)`;
+        query = `${local} >= DATE(${nowLocal}) - INTERVAL 6 MONTH`;
+        break;
       case ChartTimeframe.Yearly:
-        return {
-          groupBy: `MONTH(${timeField}),YEAR(${timeField})`,
-          query: `${timeField} > CURDATE() - INTERVAL 12 MONTH`,
-        };
+        bucket = `DATE_FORMAT(${local}, '%Y-%m-01')`;
+        query = `${local} >= DATE(${nowLocal}) - INTERVAL 12 MONTH`;
+        break;
+      case ChartTimeframe.Monthly:
+      default:
+        bucket = `DATE(${local})`;
+        query = `${local} >= DATE(${nowLocal}) - INTERVAL 2 MONTH`;
+        break;
     }
+    const time = `((TIMESTAMPDIFF(SECOND, '1970-01-01 00:00:00', ${bucket}) - 19800) * 1000)`;
+    return { time, query };
   }
 
   async exportTable(input: ExportArgsDTO) {

@@ -31,7 +31,7 @@ export function IncomeChart() {
   return (
     <ChartCard
       title="Income"
-      description="Total revenue across all currencies"
+      description="Route39 commission earned (Provider Wallet)"
       loading={loading && points.length === 0}
       empty={!loading && points.length === 0}
       actions={<TimeframeSelector value={timeframe} onChange={setTimeframe} />}
