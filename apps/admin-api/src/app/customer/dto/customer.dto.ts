@@ -45,7 +45,7 @@ export class CustomerDTO {
   lastActivityAt?: Date;
   @FilterableField(() => String, { middleware: [numberMasker] })
   mobileNumber: string;
-  @Field(() => GraphQLISODateTime, { nullable: false })
+  @FilterableField(() => GraphQLISODateTime, { nullable: false })
   registrationTimestamp: Date;
   @Field(() => String, { nullable: true })
   email?: string;

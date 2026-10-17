@@ -89,9 +89,9 @@ export class DriverDTO {
   rating?: number;
   @FilterableField(() => Int)
   reviewCount!: number;
-  @Field(() => GraphQLISODateTime, { nullable: false })
+  @FilterableField(() => GraphQLISODateTime, { nullable: false })
   registrationTimestamp!: Date;
-  @Field(() => GraphQLISODateTime, { nullable: true })
+  @FilterableField(() => GraphQLISODateTime, { nullable: true })
   lastSeenTimestamp?: Date;
   @Field(() => String, { nullable: true })
   accountNumber?: string;
