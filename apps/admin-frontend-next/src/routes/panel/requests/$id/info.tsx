@@ -1,4 +1,18 @@
-import { useQuery } from "@apollo/client";
+import { gql, useQuery } from "@apollo/client";
+
+const ORDER_RIDER_QUERY = gql`
+  query OrderRiderInfo($id: ID!) {
+    order(id: $id) {
+      id
+      rider {
+        id
+        firstName
+        lastName
+        mobileNumber
+      }
+    }
+  }
+`;
 import { Link, useOutletContext } from "react-router-dom";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +32,10 @@ export default function OrderInfoTab() {
     ORDER_NOTES_QUERY,
     { variables: { orderId: order.id } },
   );
+
+  const { data: riderData } = useQuery<any>(ORDER_RIDER_QUERY, { variables: { id: order.id } });
+  const rider = riderData?.order?.rider;
+  const riderName = [rider?.firstName, rider?.lastName].filter(Boolean).join(" ");
 
   const isCargo = order.type === "ParcelDelivery";
   const waitMinutes =
@@ -55,14 +73,18 @@ export default function OrderInfoTab() {
         <CardContent>
           <KeyValueList
             items={[
-              // {
-              //   label: "Rider",
-              //   value: (
-              //     <Link to={`/riders/${order.riderId}`} className="underline-offset-2 hover:underline">
-              //       #{order.riderId}
-              //     </Link>
-              //   ),
-              // },
+              {
+                label: "Customer",
+                value: order.riderId ? riderName || `#${order.riderId}` : null,
+              },
+              {
+                label: "Customer mobile",
+                value: rider?.mobileNumber ? (
+                  <a href={`tel:+${String(rider.mobileNumber).replace(/^\+/, "")}`} className="underline-offset-2 hover:underline">
+                    +{String(rider.mobileNumber).replace(/^\+/, "")}
+                  </a>
+                ) : null,
+              },
               {
   label: "Driver",
   value: order.driverId ? (
