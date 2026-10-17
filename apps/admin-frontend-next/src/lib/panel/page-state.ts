@@ -179,7 +179,7 @@ export function buildOffsetPaging({ page, pageSize }: { page: number; pageSize: 
 }
 
 export function buildSortInput(sort: SortEntry | null) {
-  return sort ? [{ field: sort.field, direction: sort.direction }] : [];
+  return sort ? [{ field: sort.field, direction: sort.direction }] : [{ field: "id", direction: "DESC" }];
 }
 
 /** Converts FilterEntry[] into the nestjs-query filter shape. */
