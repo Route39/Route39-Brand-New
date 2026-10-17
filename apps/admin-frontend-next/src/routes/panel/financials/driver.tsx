@@ -1,10 +1,17 @@
-import { useQuery } from "@apollo/client";
+import { gql, useQuery } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 
 import { DataTable, type DataTableColumn } from "@/components/tables/DataTable";
 import { WalletExportButton } from "@/components/tables/WalletExportButton";
 import { PageHeader } from "@/components/panel/PageHeader";
-import { DRIVER_WALLETS_LIST_QUERY } from "@/lib/graphql/documents/payouts";
+const DRIVER_WALLETS_WITH_NAME_QUERY = gql`
+  query DriverWalletsWithName($paging: OffsetPaging!, $filter: DriverWalletFilter!, $sorting: [DriverWalletSort!]!) {
+    driverWallets(paging: $paging, filter: $filter, sorting: $sorting) {
+      totalCount
+      nodes { id balance currency driverId driver { firstName lastName mobileNumber } }
+    }
+  }
+`;
 import {
   buildFilterInput,
   buildOffsetPaging,
@@ -13,12 +20,12 @@ import {
 } from "@/lib/panel/page-state";
 import { formatCurrency } from "@/lib/format";
 
-type Row = { id: string; balance: number; currency: string; driverId: string };
+type Row = { id: string; balance: number; currency: string; driverId: string; driver?: { firstName?: string | null; lastName?: string | null; mobileNumber?: string | null } | null };
 
 export default function DriverFinancialsPage() {
   const navigate = useNavigate();
   const { page, pageSize, sort, filters } = usePageState();
-  const { data, loading, error } = useQuery(DRIVER_WALLETS_LIST_QUERY, {
+  const { data, loading, error } = useQuery<any>(DRIVER_WALLETS_WITH_NAME_QUERY, {
     variables: {
       paging: buildOffsetPaging({ page, pageSize }),
       sorting: buildSortInput(sort) as never,
@@ -28,7 +35,15 @@ export default function DriverFinancialsPage() {
 
   const rows = (data?.driverWallets.nodes ?? []) as Row[];
   const columns: DataTableColumn<Row>[] = [
-    { key: "driverId", header: "Driver", cell: (r) => <span className="font-mono text-xs">#{r.driverId}</span> },
+    { key: "driverId", header: "Driver", cell: (r) => {
+      const name = `${r.driver?.firstName ?? ""} ${r.driver?.lastName ?? ""}`.trim();
+      return (
+        <div>
+          <div className="font-medium">{name || `Driver #${r.driverId}`}</div>
+          <div className="text-xs text-muted-foreground">#{r.driverId}{r.driver?.mobileNumber ? ` · ${r.driver.mobileNumber}` : ""}</div>
+        </div>
+      );
+    } },
     { key: "currency", header: "Currency" },
     { key: "balance", header: "Balance", align: "right", cell: (r) => formatCurrency(r.balance, r.currency) },
   ];
