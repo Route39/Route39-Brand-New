@@ -19,8 +19,9 @@ function useClock() {
 
 function lastMonthRange() {
   const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate(), 0, 0, 0, 0);
-  return { start: start.toISOString(), end: now.toISOString() };
+  const start = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0, 0);
+  const end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+  return { start: start.toISOString(), end: end.toISOString() };
 }
 
 function todayRange() {
@@ -52,10 +53,10 @@ export function CommandCenterHeader() {
   const { start: tdStart, end: tdEnd } = todayRange();
 
   const { data: lastMonthData } = useQuery(ORDERS_AGGREGATE_QUERY, {
-    variables: { filter: { createdOn: { gte: lmStart, lte: lmEnd } } as never },
+    variables: { filter: { status: { in: ["Finished", "WaitingForReview"] }, createdOn: { gte: lmStart, lte: lmEnd } } as never },
   });
   const { data: todayData } = useQuery(ORDERS_AGGREGATE_QUERY, {
-    variables: { filter: { createdOn: { gte: tdStart, lte: tdEnd } } as never },
+    variables: { filter: { status: { in: ["Finished", "WaitingForReview"] }, createdOn: { gte: tdStart, lte: tdEnd } } as never },
   });
   const { data: onlineData } = useQuery(TOTAL_ONLINE_DRIVERS_QUERY, {
     variables: { filter: { status: { eq: "Online" } } as never },

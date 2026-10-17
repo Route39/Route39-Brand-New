@@ -23,9 +23,9 @@ export function CityCollectionTable() {
 
   const { data: ordersData, loading: ordersLoading } = useQuery(CITY_ORDERS_TODAY_QUERY, {
     variables: {
-      filter: { createdOn: { gte: start, lte: end } } as never,
+      filter: { status: { in: ["Finished", "WaitingForReview"] }, createdOn: { gte: start, lte: end } } as never,
       cashFilter: {
-        createdOn: { gte: start, lte: end },
+        status: { in: ["Finished", "WaitingForReview"] }, createdOn: { gte: start, lte: end },
         paymentMode: { eq: "Cash" },
       } as never,
     },
