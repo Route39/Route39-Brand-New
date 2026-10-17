@@ -26,7 +26,7 @@ export class SOSDTO {
   comment?: string;
   @Field(() => Point, { nullable: true })
   location?: Point;
-  @Field(() => Boolean, { nullable: false })
+  @FilterableField(() => Boolean, { nullable: false })
   submittedByRider!: boolean;
   @Field(() => ID)
   requestId!: number;
