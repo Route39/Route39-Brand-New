@@ -261,11 +261,10 @@ function clusterIcon(count: number): google.maps.Icon {
 }
 
 function singleIcon(): google.maps.Icon {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="#10b981" fill-opacity="0.3"/><circle cx="8" cy="8" r="4" fill="#10b981" stroke="#ffffff" stroke-width="1.5"/></svg>`;
   return {
-    url: `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`,
-    scaledSize: new google.maps.Size(16, 16),
-    anchor: new google.maps.Point(8, 8),
+    url: "/ev_auto_marker.png",
+    scaledSize: new google.maps.Size(44, 28),
+    anchor: new google.maps.Point(22, 14),
   };
 }
 
