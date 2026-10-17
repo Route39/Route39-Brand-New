@@ -6,6 +6,7 @@ import 'package:ridy_driver/features/wallet/presentation/components/wallet_trans
 import 'package:ridy_driver/gen/assets.gen.dart';
 
 import '../blocs/wallet.bloc.dart';
+import 'package:ridy_driver/core/graphql/schema.gql.dart';
 
 class WalletActivities extends StatelessWidget {
   const WalletActivities({super.key});
@@ -23,7 +24,7 @@ class WalletActivities extends StatelessWidget {
                   .lottie(height: 300, width: double.infinity),
               ApiResponseError(:final message) => Text(message),
               ApiResponseLoaded(:final data) =>
-                data.driverTransacions.edges.isEmpty
+                data.driverTransacions.edges.where((e) => e.node.rechargeType != Enum$DriverRechargeTransactionType.OrderFee).isEmpty
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -45,7 +46,7 @@ class WalletActivities extends StatelessWidget {
                             child: SingleChildScrollView(
                               padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + 96),
                               child: Column(
-                                children: data.driverTransacions.edges
+                                children: data.driverTransacions.edges.where((e) => e.node.rechargeType != Enum$DriverRechargeTransactionType.OrderFee)
                                     .map(
                                       (e) => Padding(
                                         padding:

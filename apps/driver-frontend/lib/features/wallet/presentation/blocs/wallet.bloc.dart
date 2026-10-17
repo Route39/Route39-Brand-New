@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import '../../domain/repositories/wallet_repository.dart';
+import 'package:ridy_driver/config/locator/locator.dart';
+import 'package:ridy_driver/core/blocs/auth_bloc.dart';
 
 part 'wallet.state.dart';
 part 'wallet.bloc.freezed.dart';
@@ -21,6 +23,7 @@ class WalletBloc extends Cubit<WalletState> {
       ),
     );
     final walletDataResponse = await walletRepository.getWalletData();
+    await locator<AuthBloc>().refreshProfileSilently();
 
     emit(
       state.copyWith(

@@ -397,10 +397,15 @@ export class DriverService {
     const driverMetaData =
       await this.driverRedisService.getOnlineDriverMetaData(id.toString());
     if (driverMetaData) {
-      return this.createDTOFromSnapshot(driverMetaData);
+      const dto = this.createDTOFromSnapshot(driverMetaData);
+      const wEntity = await this.driverRepository.findOne({ where: { id }, relations: { wallet: true } });
+      const w = wEntity?.wallet?.sort((a, b) => a.id - b.id)[0];
+      if (w) { dto.walletCredit = w.balance; dto.currency = w.currency; }
+      return dto;
     } else {
       const entity = await this.driverRepository.findOne({
         where: { id },
+        relations: { wallet: true },
       });
       if (entity == null) {
         throw new ForbiddenError(
