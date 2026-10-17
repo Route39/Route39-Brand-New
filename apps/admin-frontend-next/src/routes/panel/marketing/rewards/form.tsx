@@ -65,7 +65,7 @@ export function RewardForm({ mode, id, initialValues }: Props) {
       beneficiary: "Rider",
       event: "Registration",
       creditGift: "0",
-      creditCurrency: "USD",
+      creditCurrency: "INR",
       tripFeePercentGift: "",
       startDate: "",
       endDate: "",

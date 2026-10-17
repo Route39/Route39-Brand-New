@@ -35,7 +35,7 @@ const ACTION_OPTIONS = [
   { value: "Deduct", label: "Deduct (debit)" },
 ];
 
-export function AdjustWalletDialog({ variant, userId, defaultCurrency = "USD", trigger, onSaved }: Props) {
+export function AdjustWalletDialog({ variant, userId, defaultCurrency = "INR", trigger, onSaved }: Props) {
   const [open, setOpen] = useState(false);
   const [action, setAction] = useState<"Recharge" | "Deduct">("Recharge");
   const [amount, setAmount] = useState("");

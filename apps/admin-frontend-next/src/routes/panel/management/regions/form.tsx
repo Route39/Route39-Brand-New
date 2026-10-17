@@ -64,7 +64,7 @@ export function RegionForm({ mode, id, initialValues }: Props) {
     resolver: zodResolver(schema),
     defaultValues: initialValues ?? {
       name: "",
-      currency: "USD",
+      currency: "INR",
       enabled: true,
       boundary: [[]],
     },
@@ -120,7 +120,7 @@ export function RegionForm({ mode, id, initialValues }: Props) {
             <Input id="name" {...register("name")} placeholder="e.g. Manhattan" />
           </Field>
           <Field label="Currency" htmlFor="currency" error={errors.currency?.message} required>
-            <Input id="currency" {...register("currency")} placeholder="USD" />
+            <Input id="currency" {...register("currency")} placeholder="INR" />
           </Field>
         </FormGrid>
         <Controller

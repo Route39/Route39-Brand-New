@@ -58,7 +58,7 @@ export default function NewPayoutSessionPage() {
     defaultValues: {
       payoutMethodIds: [],
       minimumAmount: "10",
-      currency: "USD",
+      currency: "INR",
       description: "",
     },
   });

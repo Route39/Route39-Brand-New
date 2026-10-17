@@ -81,7 +81,7 @@ export default function DriverFinancialTab() {
         <AdjustWalletDialog
           variant="driver"
           userId={driver.id}
-          defaultCurrency={wallets[0]?.currency ?? "USD"}
+          defaultCurrency={wallets[0]?.currency ?? "INR"}
           onSaved={() => refetchWallets()}
           trigger={
             <Button type="button" variant="outline" size="sm">

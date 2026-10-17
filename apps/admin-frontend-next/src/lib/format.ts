@@ -22,10 +22,10 @@ export function formatDate(value: string | Date | null | undefined): string {
   });
 }
 
-export function formatCurrency(value: number | null | undefined, currency = "USD"): string {
+export function formatCurrency(value: number | null | undefined, currency = "INR"): string {
   if (value == null) return "—";
   try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(value);
+    return new Intl.NumberFormat("en-IN", { style: "currency", currency }).format(value);
   } catch {
     return value.toFixed(2);
   }

@@ -62,7 +62,7 @@ export default function RiderFinancialsTab() {
         <AdjustWalletDialog
           variant="rider"
           userId={rider.id}
-          defaultCurrency={wallets[0]?.currency ?? "USD"}
+          defaultCurrency={wallets[0]?.currency ?? "INR"}
           onSaved={() => refetchWallets()}
           trigger={
             <Button type="button" variant="outline" size="sm">

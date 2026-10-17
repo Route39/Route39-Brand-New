@@ -87,7 +87,7 @@ export function PayoutMethodForm({ mode, id, initialValues }: Props) {
     defaultValues: initialValues ?? {
       name: "",
       description: "",
-      currency: "USD",
+      currency: "INR",
       type: "Stripe",
       enabled: true,
       publicKey: "",

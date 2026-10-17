@@ -38,7 +38,7 @@ export default function NewGiftBatchPage() {
     resolver: zodResolver(schema),
     defaultValues: {
       name: "",
-      currency: "USD",
+      currency: "INR",
       amount: "10",
       quantity: "100",
       availableFrom: "",
