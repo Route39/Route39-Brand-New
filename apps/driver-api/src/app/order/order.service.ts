@@ -304,7 +304,7 @@ export class OrderService {
       const activeOrder = await this.activeOrderRedisService.getActiveOrder(
         input.orderId.toString(),
       );
-      const dto = this.convertToActiveOrderDTO(activeOrder, rider);
+      const dto = this.convertToActiveOrderDTO(activeOrder, await this.withRiderContact(activeOrder.riderId, rider));
       return dto;
     } finally {
       // Release lock (only if we still own it)
@@ -837,9 +837,21 @@ export class OrderService {
         const rider = await this.riderRedisService.getOnlineRider(
           order.riderId.toString(),
         );
-        return this.convertToActiveOrderDTO(order, rider);
+        return this.convertToActiveOrderDTO(order, await this.withRiderContact(order.riderId, rider));
       }),
     );
+  }
+
+  private async withRiderContact(riderId: any, rider: any): Promise<any> {
+    const num = rider?.mobileNumber;
+    if (num && num !== '-' && /\d/.test(num)) return rider;
+    const dbRider = await this.riderRepository.findOne({ where: { id: Number(riderId) } as any });
+    if (!dbRider) return rider;
+    return {
+      ...(rider ?? {}),
+      firstName: rider?.firstName ?? dbRider.firstName,
+      mobileNumber: dbRider.mobileNumber,
+    };
   }
 
   private convertToActiveOrderDTO(
