@@ -26,16 +26,11 @@ export class DriverNotificationService {
         apns: {
           payload: {
             aps: {
-              sound: {
-                critical: true,
-                name: process.env.REQUEST_SOUND ?? 'default',
-                volume: 1.0,
-              },
+              sound: process.env.REQUEST_SOUND ?? 'default',
               badge: 1,
-              contentAvailable: true,
               alert: {
-                titleLocKey: 'notification_new_request_title',
-                subtitleLocKey: 'notification_new_request_body',
+                title: 'New ride request',
+                body: 'Tap to view the request',
               },
             },
           },
