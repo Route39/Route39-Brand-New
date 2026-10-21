@@ -60,7 +60,7 @@ class _ChatSheetState extends State<ChatSheet> {
                     AppIconButton(
                       icon: Ionicons.call,
                       onPressed: () {
-                        launchUrlString("tel://+${order.rider?.mobileNumber}");
+                        launchUrlString("tel:+${order.rider?.mobileNumber}");
                       },
                     ),
                   ],

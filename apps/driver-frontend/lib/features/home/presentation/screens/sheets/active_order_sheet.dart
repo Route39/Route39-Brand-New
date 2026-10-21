@@ -145,10 +145,13 @@ class ActiveOrderSheet extends StatelessWidget {
                             AppIconButton(
                               icon: Ionicons.call,
                               onPressed: () async {
-                                final number = order.rider?.mobileNumber;
-                                if (number != null && number.isNotEmpty) {
-                                  await launchUrlString('tel:$number');
+                                final raw = order.rider?.mobileNumber ?? '';
+                                var digits = raw.replaceAll(RegExp(r'[^0-9+]'), '');
+                                if (digits.isEmpty) return;
+                                if (!digits.startsWith('+')) {
+                                  digits = digits.length == 10 ? '+91$digits' : '+$digits';
                                 }
+                                await launchUrlString(Uri(scheme: 'tel', path: digits).toString());
                               },
                             ),
                           ],

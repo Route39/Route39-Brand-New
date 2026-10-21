@@ -162,7 +162,7 @@ class OrderSummary extends StatelessWidget {
                   const SizedBox(height: 16),
                   AppBorderedButton(
                     onPressed: () {
-                      launchUrlString("tel://+${order.rider?.mobileNumber}");
+                      launchUrlString("tel:+${order.rider?.mobileNumber}");
                     },
                     icon: Icons.call,
                     title: "Call the rider",
