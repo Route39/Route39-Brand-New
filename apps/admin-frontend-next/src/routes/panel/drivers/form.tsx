@@ -1,7 +1,7 @@
 import { useMutation } from "@apollo/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -42,6 +42,11 @@ const baseShape = {
   address: z.string().optional(),
   accountNumber: z.string().optional(),
   bankName: z.string().optional(),
+  city: z.string().optional(),
+  countryIso: z.string().optional(),
+  gender: z.string().optional(),
+  aadhaarNumber: z.string().optional(),
+  panNumber: z.string().optional(),
 };
 
 const createSchema = z.object({
@@ -61,9 +66,10 @@ interface Props {
   id?: string;
   initialValues?: Partial<Values>;
   redirectTo?: string;
+  children?: ReactNode;
 }
 
-export function DriverForm({ mode, id, initialValues, redirectTo }: Props) {
+export function DriverForm({ mode, id, initialValues, redirectTo, children }: Props) {
   const confirm = useConfirm();
   const navigate = useNavigate();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -93,6 +99,11 @@ export function DriverForm({ mode, id, initialValues, redirectTo }: Props) {
       address: "",
       accountNumber: "",
       bankName: "",
+      city: "",
+      countryIso: "",
+      gender: "",
+      aadhaarNumber: "",
+      panNumber: "",
       password: "",
       ...initialValues,
     },
@@ -118,6 +129,11 @@ export function DriverForm({ mode, id, initialValues, redirectTo }: Props) {
       address: values.address || null,
       accountNumber: values.accountNumber || null,
       bankName: values.bankName || null,
+      city: values.city || null,
+      countryIso: values.countryIso || null,
+      gender: values.gender || null,
+      aadhaarNumber: values.aadhaarNumber || null,
+      panNumber: values.panNumber || null,
     };
     if (values.password) input.password = values.password;
     try {
@@ -177,6 +193,39 @@ export function DriverForm({ mode, id, initialValues, redirectTo }: Props) {
         <Field label="Address" htmlFor="address">
           <Input id="address" {...register("address")} />
         </Field>
+        <FormGrid>
+          <Field label="City" htmlFor="city">
+            <Input id="city" {...register("city")} />
+          </Field>
+          <Field label="Country (ISO)" htmlFor="countryIso">
+            <Input id="countryIso" {...register("countryIso")} />
+          </Field>
+        </FormGrid>
+        <FormGrid>
+          <Field label="Gender" htmlFor="gender">
+            <Controller
+              control={control}
+              name="gender"
+              render={({ field }) => (
+                <Select value={field.value || undefined} onValueChange={field.onChange}>
+                  <SelectTrigger id="gender"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Male">Male</SelectItem>
+                    <SelectItem value="Female">Female</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                    <SelectItem value="Unknown">Unknown</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </Field>
+          <Field label="Aadhaar number" htmlFor="aadhaarNumber">
+            <Input id="aadhaarNumber" {...register("aadhaarNumber")} />
+          </Field>
+        </FormGrid>
+        <Field label="PAN number" htmlFor="panNumber">
+          <Input id="panNumber" {...register("panNumber")} />
+        </Field>
       </FormSection>
 
       <FormSection title="Account" description="Driver state and credentials.">
@@ -215,7 +264,7 @@ export function DriverForm({ mode, id, initialValues, redirectTo }: Props) {
           <Field label="Plate" htmlFor="carPlate">
             <Input id="carPlate" {...register("carPlate")} />
           </Field>
-          <Field label="Certificate number" htmlFor="certificateNumber">
+          <Field label="Driving license number" htmlFor="certificateNumber">
             <Input id="certificateNumber" {...register("certificateNumber")} />
           </Field>
         </FormGrid>
@@ -239,6 +288,7 @@ export function DriverForm({ mode, id, initialValues, redirectTo }: Props) {
         </FormGrid>
       </FormSection>
 
+      {children}
       <FormActions>
         {mode === "edit" ? (
           <Button

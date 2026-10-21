@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/panel/PageHeader";
 import { DRIVER_DETAIL_QUERY } from "@/lib/graphql/documents/driver-detail";
 import { formatName } from "@/lib/format";
 import { DriverForm } from "../form";
+import { DriverMediaEditor } from "@/components/panel/DriverMediaEditor";
 
 export default function EditDriverPage() {
   const { id } = useParams();
@@ -37,8 +38,15 @@ export default function EditDriverPage() {
           address: d.address ?? "",
           accountNumber: d.accountNumber ?? "",
           bankName: d.bankName ?? "",
+          city: d.city ?? "",
+          countryIso: d.countryIso ?? "",
+          gender: d.gender ?? "",
+          aadhaarNumber: d.aadhaarNumber ?? "",
+          panNumber: d.panNumber ?? "",
         }}
-      />
+      >
+        <DriverMediaEditor driverId={d.id} profileAddress={d.media?.address} />
+      </DriverForm>
     </div>
   );
 }

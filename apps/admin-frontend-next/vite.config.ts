@@ -83,6 +83,11 @@ export default defineConfig(({ mode }) => {
           ws: true,
           rewrite: () => "",
         },
+        "/api/admin_upload_media": {
+          target: uploadsTarget,
+          changeOrigin: true,
+          rewrite: () => "/admin_upload_media",
+        },
         "/uploads": {
           target: uploadsTarget,
           changeOrigin: true,

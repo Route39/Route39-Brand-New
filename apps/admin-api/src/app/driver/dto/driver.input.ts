@@ -49,4 +49,12 @@ export class UpdateDriverInput {
   softRejectionNote?: string;
   @Field(() => ID, { nullable: true })
   mediaId?: number;
+  @Field(() => String, { nullable: true })
+  city?: string;
+  @Field(() => String, { nullable: true })
+  countryIso?: string;
+  @Field(() => String, { nullable: true })
+  aadhaarNumber?: string;
+  @Field(() => String, { nullable: true })
+  panNumber?: string;
 }
