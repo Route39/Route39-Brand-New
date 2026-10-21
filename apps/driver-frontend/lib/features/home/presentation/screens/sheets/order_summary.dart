@@ -139,7 +139,7 @@ class OrderSummary extends StatelessWidget {
                   useSafeArea: false,
                   builder: (context) => ConfirmCashPayment(
                     orderId: order.id,
-                    amount: order.totalCost,
+                    amount: order.costBest + order.gstAmount + order.platformFeeAmount + (order.waitingChargeAmount ?? 0) + ((order.paymentMethod.mode == Enum$PaymentMode.PaymentGateway || order.paymentMethod.mode == Enum$PaymentMode.SavedPaymentMethod) ? order.paymentGatewayFeeAmount : 0) - (order.couponDiscount ?? 0),
                     currency: order.currency,
                   ),
                 );

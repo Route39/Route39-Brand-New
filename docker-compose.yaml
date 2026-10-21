@@ -38,7 +38,7 @@ services:
       - REDIS_PORT=6379
       - REDIS_URL=redis://redis:6379
     ports:
-      - "4000:3000"
+      - "4000:3001"
 
   taxi-driver-api:
     build:
