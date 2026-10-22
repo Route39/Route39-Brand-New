@@ -33,8 +33,15 @@ export class AdminUploadController {
     const insert = await this.mediaRepository.save({ address: file.filename });
     const driverId = parseInt(req.body?.driverId);
     const docRowId = parseInt(req.body?.driverDocumentRowId);
+    const docTypeId = parseInt(req.body?.driverDocumentTypeId);
     if (!isNaN(docRowId)) {
       await this.driverDocumentRepository.update(docRowId, { mediaId: insert.id });
+    } else if (!isNaN(docTypeId) && !isNaN(driverId)) {
+      await this.driverDocumentRepository.save({
+        driverId,
+        driverDocumentId: docTypeId,
+        mediaId: insert.id,
+      });
     } else if (!isNaN(driverId)) {
       await this.driverRepository.update(driverId, { mediaId: insert.id });
     }

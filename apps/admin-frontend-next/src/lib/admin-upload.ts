@@ -6,11 +6,12 @@ export function mediaUrl(address: string) {
 
 export async function adminUploadMedia(
   file: File,
-  target: { driverId?: string; driverDocumentRowId?: string },
+  target: { driverId?: string; driverDocumentRowId?: string; driverDocumentTypeId?: string },
 ) {
   const fd = new FormData();
   if (target.driverId) fd.append("driverId", target.driverId);
   if (target.driverDocumentRowId) fd.append("driverDocumentRowId", target.driverDocumentRowId);
+  if (target.driverDocumentTypeId) fd.append("driverDocumentTypeId", target.driverDocumentTypeId);
   fd.append("file", file);
   const token = getAccessToken();
   const res = await fetch(import.meta.env.VITE_UPLOAD_URL ?? "/api/admin_upload_media", {
