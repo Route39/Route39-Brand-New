@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:generic_map/interfaces/place.dart';
 import 'package:ridy/config/locator/locator.dart';
 import 'package:ridy/core/blocs/home.bloc.dart';
+import 'package:ridy/core/graphql/fragments/service_category.fragment.graphql.dart';
+import 'package:ridy/features/home/features/welcome/presentation/premium_notifier.dart';
 import 'package:ridy/core/blocs/payment_methods.bloc.dart';
 import 'package:ridy/core/graphql/fragments/payment_method.extensions.dart';
 import 'package:ridy/features/home/features/order_preview/presentation/dialogs/reserve_success_dialog.dart';
@@ -61,7 +63,16 @@ class _OrderPreviewSheetState extends State<OrderPreviewSheet> with TickerProvid
                   builder: (context, statePaymentMethod) {
                     return ServicesSelectionSheet(
                       paymentMethods: statePaymentMethod.paymentMethods.mapData((data) => data.entities).data ?? [],
-                      serviceCategories: data.getFares.services,
+                      serviceCategories: data.getFares.services
+                          .map((c) => Fragment$ServiceCategory.fromJson({
+                            ...c.toJson(),
+                            'services': c.services
+                                .where((x) => x.name.toLowerCase().contains('premium') == premiumSelectedNotifier.value)
+                                .map((x) => x.toJson())
+                                .toList(),
+                          }))
+                          .where((c) => c.services.isNotEmpty)
+                          .toList(),
                       currency: data.getFares.currency,
                       walletCredit: data.riderWallets
                               .firstWhereOrNull(

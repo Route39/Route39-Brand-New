@@ -1,3 +1,4 @@
+import 'package:ridy/features/home/features/welcome/presentation/premium_notifier.dart';
 import 'package:collection/collection.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 //import 'package:latlong2/latlong.dart';
@@ -118,7 +119,7 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
       isFullScreen: true,
       child: BlocBuilder<HomeBloc, HomeState>(
         builder: (context, state) {
-          final selectedCategory = state.selectedServiceCategory ??
+          final selectedCategory = widget.serviceCategories.firstWhereOrNull((c) => c.id == state.selectedServiceCategory?.id) ??
     widget.serviceCategories.firstWhereOrNull(
       (category) {
         final categoryKey = category.name
@@ -136,8 +137,9 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
     ) ??
     widget.serviceCategories.firstOrNull;
 
-final selectedService = state.selectedService ??
-    selectedCategory?.services.firstOrNull;
+final dynamic selectedService = (selectedCategory?.services.any((x) => x.id == state.selectedService?.id) ?? false)
+    ? state.selectedService
+    : selectedCategory?.services.firstOrNull;
 
 final pickup =
     state.waypoints.firstOrNull ??
@@ -413,7 +415,7 @@ if (selectedService != null)
             child: Text(
     (categoryName?.trim().toLowerCase() == 'cargo')
         ? 'Route39 Cargo'
-        : 'Route39 Passenger-Auto',
+        : (premiumSelectedNotifier.value ? 'Route39 Passenger-Auto Premium' : 'Route39 Passenger-Auto Economy'),
     style: context.titleMedium?.copyWith(
       fontWeight: FontWeight.bold,
     ),

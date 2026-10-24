@@ -6,6 +6,9 @@ export class PolygonTransformer implements ValueTransformer {
         if(value == null) return null;
         const str = value.map((x: Point[]) => {
             const ar = x.map((y: Point) => `${y.lng} ${y.lat}`);
+            if (x.length > 0 && (x[0].lat !== x[x.length - 1].lat || x[0].lng !== x[x.length - 1].lng)) {
+                ar.push(`${x[0].lng} ${x[0].lat}`);
+            }
             return ar.join(',');
         }).join('),(');
         return `POLYGON((${str}))`;

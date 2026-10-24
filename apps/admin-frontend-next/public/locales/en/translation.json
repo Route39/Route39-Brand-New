@@ -129,6 +129,8 @@
 			"serviceOptions": "Service Options",
 			"fleets": "Fleets",
 			"zonePrices": "Zone Prices",
+			"surgeZones": "Surge Zones",
+			"surgeSettings": "Surge Settings",
 			"orderCancelReasons": "Cancel Reasons",
 			"reviewParameters": "Review Parameters",
 			"driverShiftRules": "Driver Shift Rules",

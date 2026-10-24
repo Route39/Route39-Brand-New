@@ -1122,6 +1122,7 @@ type Query {
   feedbacksSummary: FeedbacksSummary!
   getSupportedPayoutMethods: [PayoutMethod!]!
   getPayoutLinkUrl(input: GetPayoutLinkUrlInput!): TopUpWalletResponse!
+  liveSurgeZones: [LiveSurgeZone!]!
   me: Driver!
   driverPerformance: DriverPerformance!
   activeServices: [Service!]!
@@ -1560,4 +1561,16 @@ input ComplaintInput {
 
 type Subscription {
   driverEvents: DriverEventPayload!
+}
+
+type LiveSurgeZone {
+  id: ID!
+  name: String!
+  percent: Float!
+  centerLat: Float!
+  centerLng: Float!
+  radiusMeters: Int!
+  rainMm: Float!
+  type: String!
+  reason: String
 }

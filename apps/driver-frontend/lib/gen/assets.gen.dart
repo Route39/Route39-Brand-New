@@ -2053,6 +2053,10 @@ class $AssetsImagesGen {
   AssetGenImage get blueArrow =>
       const AssetGenImage('assets/images/blue-arrow.png');
 
+  /// File path: assets/images/bubble_app_icon.png
+  AssetGenImage get bubbleAppIcon =>
+      const AssetGenImage('assets/images/bubble_app_icon.png');
+
   /// File path: assets/images/car-top-view.png
   AssetGenImage get carTopView =>
       const AssetGenImage('assets/images/car-top-view.png');
@@ -2215,6 +2219,7 @@ class $AssetsImagesGen {
     backgroundAnnouncements,
     backgroundDotted,
     blueArrow,
+    bubbleAppIcon,
     carTopView,
     car,
     cardBackground1,
@@ -2287,9 +2292,10 @@ abstract final class Assets {
   static const $AssetsImagesGen images = $AssetsImagesGen();
   static const $AssetsLottieGen lottie = $AssetsLottieGen();
   static const String notification = 'assets/notification.mp3';
+  static const String shorebird = 'shorebird.yaml';
 
   /// List of all assets
-  static List<String> get values => [notification];
+  static List<String> get values => [notification, shorebird];
 }
 
 class AssetGenImage {

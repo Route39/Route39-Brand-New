@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Icons, Colors, BoxFit, Image, FilterQuality;
+import 'package:flutter/material.dart'
+    show Icons, Colors, BoxFit, Image, FilterQuality;
 import 'package:ridy/core/extensions/extensions.dart';
 
 class WhereAreYouGoingButton extends StatelessWidget {
@@ -26,7 +27,11 @@ class WhereAreYouGoingButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: context
-                .theme.inputDecorationTheme.enabledBorder!.borderSide.color,
+                .theme
+                .inputDecorationTheme
+                .enabledBorder!
+                .borderSide
+                .color,
           ),
         ),
         child: Row(
@@ -40,11 +45,13 @@ class WhereAreYouGoingButton extends StatelessWidget {
             ),
             const SizedBox(width: 16),
             Expanded(
-                child: Text(
-              'Where do you want to go?',
-              style: context.bodyLarge
-                  ?.copyWith(color: context.theme.colorScheme.onSurfaceVariant),
-            )),
+              child: Text(
+                'Where do you want to go?',
+                style: context.bodyLarge?.copyWith(
+                  color: context.theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
             Container(
               width: 36,
               height: 36,
@@ -53,7 +60,11 @@ class WhereAreYouGoingButton extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: Color(0xFFBA1A1A),
               ),
-              child: const Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+              child: const Icon(
+                Icons.arrow_forward,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ],
         ),

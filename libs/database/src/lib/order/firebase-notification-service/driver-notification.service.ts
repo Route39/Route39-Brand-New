@@ -42,6 +42,47 @@ export class DriverNotificationService {
     }
   }
 
+  async surge(
+    tokens: string[],
+    title: string,
+    body: string,
+    data: Record<string, string> = {},
+  ) {
+    tokens = tokens.filter((t) => (t?.length ?? 0) > 0);
+    if (tokens.length < 1) return 0;
+    try {
+      const result = await messaging().sendEachForMulticast({
+        tokens,
+        data: { type: 'surge', ...data },
+        notification: { title, body },
+        webpush: { notification: { title, body, icon: '/icons/Icon-192.png' } },
+        android: {
+          priority: 'high',
+          notification: {
+            sound: 'default',
+            title,
+            body,
+            channelId: 'tripEvents',
+            icon: 'notification_icon',
+          },
+        },
+        apns: {
+          payload: {
+            aps: { sound: 'default', alert: { title, body } },
+          },
+        },
+      });
+      Logger.log(
+        `surge sent: ${result.successCount}/${tokens.length}`,
+        'DriverNotificationService.surge',
+      );
+      return result.successCount;
+    } catch (error) {
+      Logger.error(error);
+      return 0;
+    }
+  }
+
   canceled(fcmToken: string | undefined) {
     this.sendNotification(
       fcmToken,

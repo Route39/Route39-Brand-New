@@ -1,3 +1,4 @@
+import 'package:ridy_driver/core/graphql/documents/surge.graphql.dart';
 import 'package:api_response/api_response.dart';
 import 'package:ridy_driver/core/graphql/fragments/ephemeral_message.fragment.graphql.dart';
 import 'package:ridy_driver/core/graphql/fragments/profile.fragment.graphql.dart';
@@ -182,6 +183,9 @@ class HomeRepositoryMock implements HomeRepository {
   void refreshActiveOrders() {
     _activeOrders.add([mockCurrentOrder1]);
   }
+
+  @override
+  Future<List<Query$LiveSurgeZones$liveSurgeZones>> getLiveSurgeZones() async => [];
 
   @override
   Future<ApiResponse<void>> getEphemeralMessages() async {

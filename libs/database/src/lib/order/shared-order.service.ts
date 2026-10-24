@@ -17,6 +17,7 @@ import { PaymentEntity } from '../entities/payment.entity';
 import { RequestActivityEntity } from '../entities/taxi/request-activity.entity';
 import { ServiceOptionEntity } from '../entities/taxi/service-option.entity';
 import { ZonePriceEntity } from '../entities/taxi/zone-price.entity';
+import { SurgeSettingEntity } from '../entities/taxi/surge-setting.entity';
 import { In, Repository } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
 import { InjectQueue } from '@nestjs/bullmq';
@@ -129,6 +130,69 @@ export class SharedOrderService {
       });
     }
     return true;
+  }
+
+  async getSurgeContext(point: Point): Promise<{
+    zoneId: number;
+    type: string;
+    commissionPercent: number;
+    maxPercent: number;
+    stacking: string;
+    zones: { id: number; type: string; percent: number; flat: number; commissionPercent: number }[];
+  } | null> {
+    try {
+      const settingRepo = this.orderRepository.manager.getRepository(SurgeSettingEntity);
+      let settings = (await settingRepo.find({ order: { id: 'ASC' }, take: 1 }))[0];
+      if (!settings) settings = await settingRepo.save(settingRepo.create({}));
+      if (!settings.isEnabled) return null;
+      const rows: any[] = await this.orderRepository.manager.query(
+        "SELECT id, type, surgePercent, surgeFlat, commissionPercent, startTime, endTime FROM surge_zone WHERE (status = 'Active' OR (status = 'Auto' AND autoLive = 1)) AND ST_Within(st_geomfromtext('POINT(? ?)'), area)",
+        [point.lng, point.lat],
+      );
+      const hhmm = new Date(Date.now() + 330 * 60000).toISOString().substring(11, 16); // IST
+      const zones = rows
+        .filter(
+          (z) =>
+            !z.startTime || !z.endTime ||
+            (z.startTime <= z.endTime
+              ? hhmm >= z.startTime && hhmm < z.endTime
+              : hhmm >= z.startTime || hhmm < z.endTime),
+        )
+        .map((z) => {
+          const hasFlat = z.surgeFlat != null && Number(z.surgeFlat) > 0;
+          return {
+            id: Number(z.id),
+            type: z.type ?? 'Peak',
+            flat: hasFlat ? Number(z.surgeFlat) : 0,
+            percent: hasFlat ? 0 : Number(z.surgePercent ?? settings.defaultSurgePercent ?? 0),
+            commissionPercent: Number(z.commissionPercent ?? settings.commissionPercent ?? 0),
+          };
+        });
+      if (zones.length === 0) return null;
+      const top = [...zones].sort((x, y) => (y.flat || y.percent) - (x.flat || x.percent))[0];
+      return {
+        zoneId: top.id,
+        type: top.type,
+        commissionPercent: top.commissionPercent,
+        maxPercent: Number(settings.maxSurgePercent ?? 0),
+        stacking: settings.stackingMode ?? 'highest',
+        zones,
+      };
+    } catch (e) {
+      Logger.warn(`surge lookup failed: ${e}`, 'SharedOrderService.surge');
+      return null;
+    }
+  }
+
+  computeSurgeAmount(
+    baseCost: number,
+    ctx: { maxPercent: number; stacking: string; zones: { percent: number; flat: number }[] } | null,
+  ): number {
+    if (!ctx || baseCost <= 0 || ctx.zones.length === 0) return 0;
+    const parts = ctx.zones.map((z) => (z.flat > 0 ? z.flat : (baseCost * z.percent) / 100));
+    let amt = ctx.stacking === 'add' ? parts.reduce((a, b) => a + b, 0) : Math.max(...parts);
+    if (ctx.maxPercent > 0) amt = Math.min(amt, (baseCost * ctx.maxPercent) / 100);
+    return Math.round(amt * 100) / 100;
   }
 
   async getZonePricingsForPoints(
@@ -282,6 +346,7 @@ export class SharedOrderService {
       );
     }
 
+    const surgeCtx = await this.getSurgeContext(input.points[0]);
     const _cats = cats
   .map((cat) => {
     const { services, ..._cat } = cat;
@@ -328,6 +393,16 @@ costResult = this.servicesService.calculateCost(
 );
 
 cost = costResult.cost;
+const estSurge = this.computeSurgeAmount(cost, surgeCtx);
+if (estSurge > 0) {
+  cost += estSurge;
+  costResult = {
+    ...costResult,
+    cost,
+    min: costResult.min != null ? costResult.min + estSurge : costResult.min,
+    max: costResult.max != null ? costResult.max + estSurge : costResult.max,
+  };
+}
 
 Logger.log(
   {
@@ -580,6 +655,12 @@ Logger.log(
   },
   'SharedOrderService.createOrder.finalCost',
 );
+    const orderSurgeCtx = await this.getSurgeContext(input.waypoints[0].point);
+    const surgeAmount = this.computeSurgeAmount(cost, orderSurgeCtx);
+    const baseCostBeforeSurge = cost;
+    cost += surgeAmount;
+    const surgeCommission =
+      Math.round(surgeAmount * (orderSurgeCtx?.commissionPercent ?? 0)) / 100;
 
     const regions = await this.regionService.getRegionWithPoint(
       input.waypoints[0].point,
@@ -687,7 +768,12 @@ Logger.log(
       rideOptionsCost: optionFee,
       fleetId: input.fleetId,
       providerShare:
-        service.providerShareFlat + (service.providerSharePercent * cost) / 100,
+        service.providerShareFlat +
+        (service.providerSharePercent * baseCostBeforeSurge) / 100 +
+        surgeCommission,
+      surgeAmount,
+      surgeZoneId: orderSurgeCtx?.zoneId ?? null,
+      surgeCommission,
         gstAmount,
       platformFeeAmount,
       paymentGatewayFeeAmount,

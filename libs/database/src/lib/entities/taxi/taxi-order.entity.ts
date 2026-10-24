@@ -194,6 +194,15 @@ export class TaxiOrderEntity {
     scale: 2,
   })
   providerShare?: number;
+
+  @Column('float', { default: '0.00', precision: 10, scale: 2 })
+  surgeAmount!: number;
+
+  @Column('int', { nullable: true })
+  surgeZoneId?: number | null;
+
+  @Column('float', { default: '0.00', precision: 10, scale: 2 })
+  surgeCommission!: number;
     @Column('float', {
     precision: 10,
     default: 0,

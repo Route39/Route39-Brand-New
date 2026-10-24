@@ -1,0 +1,13 @@
+query LiveSurgeZones {
+  liveSurgeZones {
+    id
+    name
+    percent
+    centerLat
+    centerLng
+    radiusMeters
+    rainMm
+    type
+    reason
+  }
+}

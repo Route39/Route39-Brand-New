@@ -11,17 +11,13 @@ import '../../../welcome/domain/repositories/new_order_repository.dart';
 class NewOrderRepositoryImpl implements NewOrderRepository {
   final GraphqlDatasource graphQLDatasource;
 
-  NewOrderRepositoryImpl(
-    this.graphQLDatasource,
-  );
+  NewOrderRepositoryImpl(this.graphQLDatasource);
 
   @override
   Future<ApiResponse<Query$DestinationSuggesions>>
-      getDestinationSuggestions() async {
+  getDestinationSuggestions() async {
     final destinationSuggestionsResponse = await graphQLDatasource.query(
-      Options$Query$DestinationSuggesions(
-        fetchPolicy: FetchPolicy.noCache,
-      ),
+      Options$Query$DestinationSuggesions(fetchPolicy: FetchPolicy.noCache),
     );
     return destinationSuggestionsResponse;
   }

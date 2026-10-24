@@ -7,6 +7,9 @@ sealed class HomeState with _$HomeState {
     Fragment$Coordinate? driverLocation,
     DateTime? lastLocationUpdate,
 
+    // Live surge zones
+    @Default([]) List<Query$LiveSurgeZones$liveSurgeZones> surgeZones,
+
     // Online state
     @Default([]) List<Fragment$RideOffer> orderRequests,
     Fragment$RideOffer? currentOrderRequest,
@@ -85,6 +88,68 @@ sealed class HomeState with _$HomeState {
     }
   }
 
+  Color _surgeColor(double percent) =>
+      percent >= 30 ? Colors.red : (percent >= 15 ? Colors.deepOrange : Colors.amber.shade700);
+
+  double _rainOf(Query$LiveSurgeZones$liveSurgeZones z) => _debugFakeRainMm > 0 ? _debugFakeRainMm : z.rainMm;
+
+  String _rainLabel(double mm) => mm >= 7.6 ? 'Heavy' : (mm >= 2.5 ? 'Rain' : 'Light');
+
+  String _short(String t) => t.length > 14 ? '${t.substring(0, 13)}…' : t;
+
+  (Color, IconData, String)? _reasonTag(Query$LiveSurgeZones$liveSurgeZones z) => switch (z.type) {
+    'Festival' => (Colors.purple.shade600, Icons.celebration, _short(z.name)),
+    'Night' => (Colors.indigo.shade600, Icons.nightlight_round, 'Night'),
+    'Event' => (Colors.green.shade700, Icons.event, _short(z.name)),
+    _ => null,
+  };
+
+  List<CustomMarker> get _surgeBadgeMarkers => surgeZones.map((z) {
+    final label = z.percent % 1 == 0 ? z.percent.toStringAsFixed(0) : z.percent.toStringAsFixed(1);
+    final rain = _rainOf(z);
+    final tag = _reasonTag(z);
+    Widget pill(Color color, IconData icon, String text) => Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white, width: 2),
+        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(0, 2))],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white, size: 16),
+          const SizedBox(width: 2),
+          Text(text, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+        ],
+      ),
+    );
+    return CustomMarker(
+      id: 'surge_badge_${z.id}',
+      position: LatLng(z.centerLat, z.centerLng),
+      width: 92.0 + (rain > 0 ? 108 : 0) + (tag != null ? 130 : 0),
+      height: 34,
+      widget: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            pill(_surgeColor(z.percent), Icons.local_fire_department, '+$label%'),
+            if (rain > 0) ...[
+              const SizedBox(width: 6),
+              pill(Colors.blue.shade700, Icons.water_drop, _rainLabel(rain)),
+            ],
+            if (tag != null) ...[
+              const SizedBox(width: 6),
+              pill(tag.$1, tag.$2, tag.$3),
+            ],
+          ],
+        ),
+      ),
+    );
+  }).toList();
+
   List<CustomMarker> get markers {
     final driverMarker = driverLocation == null
         ? null
@@ -106,6 +171,7 @@ sealed class HomeState with _$HomeState {
           if (waypointsMarkers != null) ...waypointsMarkers,
           if (driverMarker != null) driverMarker,
           ...directionsCapMarkers,
+          ..._surgeBadgeMarkers,
         ];
 
       case HomeStateDriverStatus.onTrip:
@@ -123,7 +189,7 @@ sealed class HomeState with _$HomeState {
         return [...waypointsMarkers, ...(directionsCapMarkers ?? []), if (driverMarker != null) driverMarker];
 
       case HomeStateDriverStatus.offline:
-        return [if (driverMarker != null) driverMarker];
+        return [if (driverMarker != null) driverMarker, ..._surgeBadgeMarkers];
 
       default:
         return [];
@@ -143,7 +209,53 @@ sealed class HomeState with _$HomeState {
     _ => [],
   };
 
-  List<CircleMarker> circleMarkers(int? radius) => switch (driverStatus) {
+  List<CircleMarker> circleMarkers(int? radius) {
+    final surgeCircles = switch (driverStatus) {
+      HomeStateDriverStatus.online || HomeStateDriverStatus.offline =>
+        surgeZones.expand((z) {
+          final base = z.percent >= 30
+              ? Colors.red
+              : (z.percent >= 15 ? Colors.deepOrange : Colors.amber);
+          final r = z.radiusMeters.toDouble();
+          final c = LatLng(z.centerLat, z.centerLng);
+          const steps = 7;
+          return List.generate(steps, (i) {
+            final f = 1.0 - i / steps;
+            return CircleMarker(
+              id: 'surge_${z.id}_h$i',
+              position: c,
+              radius: r * f,
+              color: base.withValues(alpha: 0.07),
+              borderColor: base.withValues(alpha: i == 0 ? 0.35 : 0.0),
+              borderWidth: i == 0 ? 1 : 0,
+            );
+          });
+        }).toList(),
+      _ => <CircleMarker>[],
+    };
+    final rainCircles = switch (driverStatus) {
+      HomeStateDriverStatus.online || HomeStateDriverStatus.offline =>
+        surgeZones.where((z) => _rainOf(z) > 0).expand((z) {
+          final c = LatLng(z.centerLat, z.centerLng);
+          final r = z.radiusMeters.toDouble() * 0.7;
+          const steps = 6;
+          return List.generate(steps, (i) {
+            return CircleMarker(
+              id: 'rain_${z.id}_h$i',
+              position: c,
+              radius: r * (1.0 - i / steps),
+              color: Colors.blue.withValues(alpha: _rainOf(z) >= 7.6 ? 0.10 : 0.07),
+              borderColor: Colors.blue.withValues(alpha: i == 0 ? 0.35 : 0.0),
+              borderWidth: i == 0 ? 1 : 0,
+            );
+          });
+        }).toList(),
+      _ => <CircleMarker>[],
+    };
+    return [...surgeCircles, ...rainCircles, ..._searchRadiusCircles(radius)];
+  }
+
+  List<CircleMarker> _searchRadiusCircles(int? radius) => switch (driverStatus) {
     HomeStateDriverStatus.online when radius != null && driverLocation != null => [
       CircleMarker(
         id: 'search_radius',
@@ -157,6 +269,9 @@ sealed class HomeState with _$HomeState {
     _ => [],
   };
 }
+
+// Set to e.g. 3.0 to preview the rain overlay without real rain. Keep 0 for real data.
+const double _debugFakeRainMm = 3;
 
 enum OnTripPage { overview, chat }
 

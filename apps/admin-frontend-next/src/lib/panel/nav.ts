@@ -141,6 +141,8 @@ export const NAV: NavEntry[] = [
       { label: "menu.management.services", to: "/management/services", icon: Compass, perm: ["Services_View"] },
       { label: "menu.management.serviceOptions", to: "/management/service-options", icon: Ticket, perm: ["Services_View"] },
       { label: "menu.management.zonePrices", to: "/management/zone-prices", icon: Tag, perm: ["Services_View"] },
+      { label: "menu.management.surgeZones", to: "/management/surge-zones", icon: Tag, perm: ["Services_View"] },
+      { label: "menu.management.surgeSettings", to: "/management/surge-settings", icon: Tag, perm: ["Services_View"] },
       { label: "menu.management.orderCancelReasons", to: "/management/order-cancel-reasons", icon: AlertTriangle, perm: ["Services_View"] },
       { label: "menu.management.reviewParameters", to: "/management/review-parameters", icon: Ticket, perm: ["ReviewParameter_Edit"] },
       { label: "menu.management.driverShiftRules", to: "/management/driver-shift-rules", icon: AlertTriangle, perm: ["Drivers_Edit"] },

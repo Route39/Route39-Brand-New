@@ -7,6 +7,7 @@ import 'package:ridy_driver/core/graphql/fragments/coordinate.fragment.graphql.d
 import 'package:ridy_driver/core/graphql/fragments/ephemeral_message.fragment.graphql.dart';
 import 'package:ridy_driver/core/graphql/fragments/profile.fragment.graphql.dart';
 import 'package:ridy_driver/core/graphql/schema.gql.dart';
+import 'package:ridy_driver/core/graphql/documents/surge.graphql.dart';
 import 'package:ridy_driver/core/repositories/firebase_repository.dart';
 import 'package:ridy_driver/features/home/domain/repositories/home_repository.dart';
 import 'package:ridy_driver/features/notifications/data/notification_history_repository.dart';
@@ -34,6 +35,23 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final NotificationHistoryRepository _notificationHistoryRepository =
       NotificationHistoryRepository();
 
+  bool _surgeLoopRunning = false;
+
+  Future<void> _surgeZonesLoop(Emitter<HomeState> emit) async {
+    if (_surgeLoopRunning) return;
+    _surgeLoopRunning = true;
+    try {
+      while (!emit.isDone) {
+        final zones = await _repository.getLiveSurgeZones();
+        if (emit.isDone) break;
+        emit(state.copyWith(surgeZones: zones));
+        await Future.delayed(const Duration(seconds: 60));
+      }
+    } finally {
+      _surgeLoopRunning = false;
+    }
+  }
+
   HomeBloc(this._repository, this._firebaseRepository, this._locationDatasource) : super(HomeState()) {
     on<HomeEvent>((event, emit) async {
       switch (event) {
@@ -44,6 +62,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           _repository.getEphemeralMessages();
           add(HomeEvent.requestUpdatedOrderRequests());
           await Future.wait([
+            _surgeZonesLoop(emit),
             emit.forEach(
               _repository.orderRequests.handleError((error, stack) {
                 //debugPrint('HomeBloc.orderRequests stream error: $error');

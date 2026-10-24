@@ -37,6 +37,8 @@ import { SOSEntity } from './entities/taxi/sos.entity';
 import { SOSActivityEntity } from './entities/taxi/sos-activity.entity';
 import { AnnouncementEntity } from './entities/announcement.entity';
 import { ZonePriceEntity } from './entities/taxi/zone-price.entity';
+import { SurgeZoneEntity } from './entities/taxi/surge-zone.entity';
+import { SurgeSettingEntity } from './entities/taxi/surge-setting.entity';
 import { GatewayToUserEntity } from './entities/gateway-to-user.entity';
 import { OrderCancelReasonEntity } from './entities/taxi/order-cancel-reason.entity';
 import { SavedPaymentMethodEntity } from './entities/saved-payment-method.entity';
@@ -279,6 +281,8 @@ export const entities = [
   SOSActivityEntity,
   AnnouncementEntity,
   ZonePriceEntity,
+  SurgeZoneEntity,
+  SurgeSettingEntity,
   GatewayToUserEntity,
   SavedPaymentMethodEntity,
   RiderReviewEntity,

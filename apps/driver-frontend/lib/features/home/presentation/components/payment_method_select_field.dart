@@ -40,7 +40,16 @@ class PaymentMethodSelectField extends StatelessWidget {
               ),
             ),
             Text(
-              order.totalCost.formatCurrency(order.currency),
+              (order.costBest +
+                      order.gstAmount +
+                      order.platformFeeAmount +
+                      (order.waitingChargeAmount ?? 0) +
+                      ((order.paymentMethod.mode.name == 'PaymentGateway' ||
+                              order.paymentMethod.mode.name == 'SavedPaymentMethod')
+                          ? order.paymentGatewayFeeAmount
+                          : 0) -
+                      (order.couponDiscount ?? 0))
+                  .formatCurrency(order.currency),
               style: context.labelMedium?.copyWith(
                 color: const Color(0xFFE00000),
               ),

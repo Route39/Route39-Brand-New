@@ -63,6 +63,10 @@ const FleetZonePricesTab = lazy(() => import("@/routes/panel/management/fleets/$
 const ZonePricesListPage = lazy(() => import("@/routes/panel/management/zone-prices"));
 const NewZonePricePage = lazy(() => import("@/routes/panel/management/zone-prices/new"));
 const EditZonePricePage = lazy(() => import("@/routes/panel/management/zone-prices/$id"));
+const SurgeZonesListPage = lazy(() => import("@/routes/panel/management/surge-zones"));
+const NewSurgeZonePage = lazy(() => import("@/routes/panel/management/surge-zones/new"));
+const EditSurgeZonePage = lazy(() => import("@/routes/panel/management/surge-zones/$id"));
+const SurgeSettingsPage = lazy(() => import("@/routes/panel/management/surge-settings"));
 const OrderCancelReasonsListPage = lazy(() => import("@/routes/panel/management/order-cancel-reasons"));
 const NewOrderCancelReasonPage = lazy(() => import("@/routes/panel/management/order-cancel-reasons/new"));
 const EditOrderCancelReasonPage = lazy(() => import("@/routes/panel/management/order-cancel-reasons/$id"));
@@ -249,6 +253,10 @@ export const router = createBrowserRouter(
       { path: "management/zone-prices", Component: ZonePricesListPage },
       { path: "management/zone-prices/new", Component: NewZonePricePage },
       { path: "management/zone-prices/:id", Component: EditZonePricePage },
+      { path: "management/surge-zones", Component: SurgeZonesListPage },
+      { path: "management/surge-zones/new", Component: NewSurgeZonePage },
+      { path: "management/surge-zones/:id", Component: EditSurgeZonePage },
+      { path: "management/surge-settings", Component: SurgeSettingsPage },
       { path: "management/order-cancel-reasons", Component: OrderCancelReasonsListPage },
       { path: "management/order-cancel-reasons/new", Component: NewOrderCancelReasonPage },
       { path: "management/order-cancel-reasons/:id", Component: EditOrderCancelReasonPage },

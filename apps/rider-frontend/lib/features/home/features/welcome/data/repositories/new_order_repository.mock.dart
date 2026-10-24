@@ -8,9 +8,13 @@ import 'package:injectable/injectable.dart';
 @LazySingleton(as: NewOrderRepository)
 class NewOrderRepositoryMock implements NewOrderRepository {
   @override
-  Future<ApiResponse<Query$DestinationSuggesions>> getDestinationSuggestions() async {
+  Future<ApiResponse<Query$DestinationSuggesions>>
+  getDestinationSuggestions() async {
     return ApiResponse.loaded(
-      Query$DestinationSuggesions(favoriteLocations: mockFavoriteLocations, recentDestinations: []),
+      Query$DestinationSuggesions(
+        favoriteLocations: mockFavoriteLocations,
+        recentDestinations: [],
+      ),
     );
   }
 }

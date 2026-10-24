@@ -1,3 +1,4 @@
+import 'package:ridy_driver/core/graphql/documents/surge.graphql.dart';
 import 'package:ridy_driver/core/graphql/fragments/cancel_reason.fragment.graphql.dart';
 import 'package:ridy_driver/core/graphql/fragments/chat_message.fragment.graphql.dart';
 import 'package:ridy_driver/core/graphql/fragments/current_order.fragment.graphql.dart';
@@ -64,6 +65,8 @@ abstract class HomeRepository {
   Future<ApiResponse<void>> updateLastSeenMessagesAt({required String orderId});
 
   Future<ApiResponse<List<Fragment$Service>>> getActiveServices();
+
+  Future<List<Query$LiveSurgeZones$liveSurgeZones>> getLiveSurgeZones();
 
   Future<ApiResponse<void>> getEphemeralMessages();
 

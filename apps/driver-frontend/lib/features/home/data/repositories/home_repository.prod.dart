@@ -1,3 +1,4 @@
+import 'package:ridy_driver/core/graphql/documents/surge.graphql.dart';
 import 'dart:async';
 
 import 'package:collection/collection.dart';
@@ -781,6 +782,16 @@ Future<ApiResponse<Fragment$ActiveOrder>> acceptOrderRequest({
       if (retry.isLoaded) {
         _activeOrders.add(retry.data?.activeOrders ?? []);
       }
+    }
+  }
+
+  @override
+  Future<List<Query$LiveSurgeZones$liveSurgeZones>> getLiveSurgeZones() async {
+    try {
+      final response = await graphQLDatasource.query(Options$Query$LiveSurgeZones(fetchPolicy: FetchPolicy.noCache));
+      return response.data?.liveSurgeZones ?? [];
+    } catch (_) {
+      return [];
     }
   }
 

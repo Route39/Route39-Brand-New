@@ -3,6 +3,7 @@ import { HttpModule } from '@nestjs/axios';
 import { DynamicModule, Logger, Module, OnModuleInit } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 import {
   BetterConfigModule,
   CallMaskingModule,
@@ -44,6 +45,7 @@ import { ShopModule } from './shop/shop.module';
 import { ParkingModule } from './parking/parking.module';
 import { InsightsModule } from './insights/insights.module';
 import { ZonePriceModule } from './zone_price/zone-price.module';
+import { SurgeModule } from './surge/surge.module';
 import { DriverDocumentModule } from './driver-document/driver-document.module';
 import { DriverShiftRuleModule } from './driver-shift-rule/driver-shift-rule.module';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
@@ -82,6 +84,7 @@ export class AdminAPIModule implements OnModuleInit {
         module: AdminAPIModule,
         imports: [
           DatabaseModule,
+          ScheduleModule.forRoot(),
           LicenseVerifyModule,
           PlatformOverviewModule,
           PublicStatsModule,
@@ -170,6 +173,7 @@ export class AdminAPIModule implements OnModuleInit {
           SMSProviderModule,
           EmailProviderModule,
           ZonePriceModule,
+          SurgeModule,
           NotificationModule,
           CallMaskingModule,
           SupportWebhookModule,

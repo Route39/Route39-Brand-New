@@ -140,7 +140,7 @@ export function RegionForm({ mode, id, initialValues }: Props) {
           name="boundary"
           render={({ field }) => (
             <div className="space-y-1.5">
-              <MultiPolygonEditor
+              <MultiPolygonEditor autoFill defaultFill="boundary"
                 value={field.value as LatLng[][]}
                 onChange={field.onChange as (next: LatLng[][]) => void}
               />

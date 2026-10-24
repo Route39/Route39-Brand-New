@@ -23,14 +23,12 @@ import 'package:ridy/gen/assets.gen.dart';
 import '../../../../presentation/blocs/destination_suggestions.bloc.dart';
 import '../components/where_are_you_going_button.dart';
 import '../popular_search_notifier.dart';
+import '../premium_notifier.dart';
 
 class WhereAreYouGoingSheet extends StatefulWidget {
   final List<Place?> waypoints;
 
-  const WhereAreYouGoingSheet({
-    super.key,
-    required this.waypoints,
-  });
+  const WhereAreYouGoingSheet({super.key, required this.waypoints});
 
   @override
   State<WhereAreYouGoingSheet> createState() => _WhereAreYouGoingSheetState();
@@ -58,7 +56,10 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
 
   String? extractDistrictFromAddress(String? address) {
     if (address == null) return null;
-    final match = RegExp(r',\s*([A-Za-z\s]+?),\s*Tamil\s*Nadu', caseSensitive: false).firstMatch(address);
+    final match = RegExp(
+      r',\s*([A-Za-z\s]+?),\s*Tamil\s*Nadu',
+      caseSensitive: false,
+    ).firstMatch(address);
     return match?.group(1)?.trim();
   }
 
@@ -68,7 +69,9 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
     final settingsState = locator<SettingsCubit>().state;
     final locationState = locator<LocationCubit>().state;
     final district = extractDistrictFromAddress(locationState.place?.address);
-    final biasedQuery = district != null && district.isNotEmpty ? '$query $district' : query;
+    final biasedQuery = district != null && district.isNotEmpty
+        ? '$query $district'
+        : query;
     placeLookupBloc.add(
       PlaceLookupEvent.onQueryChanged(
         query: biasedQuery,
@@ -81,7 +84,8 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
   }
 
   void selectDestination(Place place) {
-    final pickupLocation = widget.waypoints.firstOrNull ?? locator<LocationCubit>().state.place;
+    final pickupLocation =
+        widget.waypoints.firstOrNull ?? locator<LocationCubit>().state.place;
     if (pickupLocation == null) {
       context.showSnackBar(message: context.translate.pickupLocationNotFound);
       return;
@@ -132,7 +136,8 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                   BlocBuilder<HomeBloc, HomeState>(
                     bloc: locator<HomeBloc>(),
                     builder: (context, homeState) {
-                      final isRide = homeState.orderType == Enum$TaxiOrderType.Ride;
+                      final isRide =
+                          homeState.orderType == Enum$TaxiOrderType.Ride;
                       Widget optionCard({
                         required String label,
                         required String assetPath,
@@ -142,14 +147,19 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                         return GestureDetector(
                           onTap: onTap,
                           child: Container(
-                            height: 92,
-                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                            height: 104,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 4,
+                            ),
                             margin: const EdgeInsets.only(right: 12),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: selected ? Colors.red : Colors.grey.shade300,
+                                color: selected
+                                    ? Colors.red
+                                    : Colors.grey.shade300,
                                 width: selected ? 2 : 1,
                               ),
                             ),
@@ -157,16 +167,38 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                               mainAxisSize: MainAxisSize.min,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Image.asset(assetPath, height: 40, fit: BoxFit.contain),
+                                Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    Image.asset(
+                                      assetPath,
+                                      height: 40,
+                                      fit: BoxFit.contain,
+                                    ),
+                                    if (label.contains('Premium'))
+                                      const Positioned(
+                                        right: -8,
+                                        top: -6,
+                                        child: Icon(
+                                          Icons.workspace_premium,
+                                          color: Color(0xFFD4A017),
+                                          size: 22,
+                                        ),
+                                      ),
+                                  ],
+                                ),
                                 const SizedBox(height: 6),
                                 Text(
                                   label,
-                                  maxLines: 1,
+                                  maxLines: 2,
+                                  textAlign: TextAlign.center,
                                   overflow: TextOverflow.ellipsis,
                                   style: context.bodySmall?.copyWith(
                                     fontWeight: FontWeight.w600,
                                     fontSize: 12,
-                                    color: selected ? Colors.black : Colors.black54,
+                                    color: selected
+                                        ? Colors.black
+                                        : Colors.black54,
                                   ),
                                 ),
                               ],
@@ -175,42 +207,75 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                         );
                       }
 
-                      return Row(
-                        children: [
-                          Expanded(
-                            child: optionCard(
-                              label: 'Passenger',
-                              assetPath: 'assets/images/ev_auto_icon.png',
-                              selected: isRide,
-                              onTap: () => locator<HomeBloc>().add(const HomeEvent.onRideOptionSelected()),
+                      return ValueListenableBuilder<bool>(
+                        valueListenable: premiumSelectedNotifier,
+                        builder: (context, premium, _) => Row(
+                          children: [
+                            Expanded(
+                              child: optionCard(
+                                label: 'Passenger Auto Economy',
+                                assetPath: 'assets/images/ev_auto_icon.png',
+                                selected: isRide && premium == false,
+                                onTap: () {
+                                  premiumSelectedNotifier.value = false;
+                                  locator<HomeBloc>().add(
+                                    const HomeEvent.onRideOptionSelected(),
+                                  );
+                                },
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: optionCard(
-                              label: 'Cargo',
-                              assetPath: 'assets/images/route39_cargo_icon.png',
-                              selected: !isRide,
-                              onTap: () => locator<HomeBloc>().add(const HomeEvent.onDeliveryOptionSelected()),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: optionCard(
+                                label: 'Passenger Auto Premium',
+                                assetPath: 'assets/images/ev_auto_icon.png',
+                                selected: isRide && premium,
+                                onTap: () {
+                                  premiumSelectedNotifier.value = true;
+                                  locator<HomeBloc>().add(
+                                    const HomeEvent.onRideOptionSelected(),
+                                  );
+                                },
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: optionCard(
+                                label: 'Cargo',
+                                assetPath:
+                                    'assets/images/route39_cargo_icon.png',
+                                selected: isRide == false,
+                                onTap: () {
+                                  premiumSelectedNotifier.value = false;
+                                  locator<HomeBloc>().add(
+                                    const HomeEvent.onDeliveryOptionSelected(),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                       );
+                      ;
                     },
                   ),
                   const SizedBox(height: 16),
                   BlocBuilder<HomeBloc, HomeState>(
                     bloc: locator<HomeBloc>(),
                     builder: (context, homeState) {
-                      final isRideNow = homeState.orderType == Enum$TaxiOrderType.Ride;
+                      final isRideNow =
+                          homeState.orderType == Enum$TaxiOrderType.Ride;
                       return WhereAreYouGoingButton(
                         assetPath: isRideNow
                             ? 'assets/images/ev_auto_icon_small.png'
                             : 'assets/images/cargo_truck_icon.png',
                         onPressed: () {
-                          locator<HomeBloc>().add(HomeEvent.changeOrderSubmissionPage(
-                            orderSubmissionPage: OrderSubmissionPage.rideWaypointsInput,
-                          ));
+                          locator<HomeBloc>().add(
+                            HomeEvent.changeOrderSubmissionPage(
+                              orderSubmissionPage:
+                                  OrderSubmissionPage.rideWaypointsInput,
+                            ),
+                          );
                         },
                       );
                     },
@@ -224,7 +289,8 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                         child: _PopularPlaceCard(
                           title: 'Bus Stand',
                           assetPath: 'assets/images/popular_bus_stand.jpg',
-                          isActive: activePopularSearchNotifier.value == 'Bus Stand',
+                          isActive:
+                              activePopularSearchNotifier.value == 'Bus Stand',
                           onTap: () => searchPopularPlace('Bus Stand'),
                         ),
                       ),
@@ -232,8 +298,11 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                       Expanded(
                         child: _PopularPlaceCard(
                           title: 'Railway station',
-                          assetPath: 'assets/images/popular_railway_station.jpg',
-                          isActive: activePopularSearchNotifier.value == 'Railway station',
+                          assetPath:
+                              'assets/images/popular_railway_station.jpg',
+                          isActive:
+                              activePopularSearchNotifier.value ==
+                              'Railway station',
                           onTap: () => searchPopularPlace('Railway station'),
                         ),
                       ),
@@ -249,35 +318,65 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                             final places = [...state.places];
                             double parseKm(String? label) {
                               if (label == null) return double.infinity;
-                              final match = RegExp(r'([0-9]+\.?[0-9]*)\s*(km|m)').firstMatch(label.toLowerCase());
+                              final match = RegExp(
+                                r'([0-9]+\.?[0-9]*)\s*(km|m)',
+                              ).firstMatch(label.toLowerCase());
                               if (match == null) return double.infinity;
-                              final value = double.tryParse(match.group(1) ?? '') ?? double.infinity;
-                              return match.group(2) == 'm' ? value / 1000 : value;
+                              final value =
+                                  double.tryParse(match.group(1) ?? '') ??
+                                  double.infinity;
+                              return match.group(2) == 'm'
+                                  ? value / 1000
+                                  : value;
                             }
 
-                            final currentAddress = locator<LocationCubit>().state.place?.address;
-                            final currentDistrict = extractDistrictFromAddress(currentAddress);
+                            final currentAddress =
+                                locator<LocationCubit>().state.place?.address;
+                            final currentDistrict = extractDistrictFromAddress(
+                              currentAddress,
+                            );
 
                             var filteredPlaces = places;
-                            if (currentDistrict != null && currentDistrict.isNotEmpty) {
+                            if (currentDistrict != null &&
+                                currentDistrict.isNotEmpty) {
                               filteredPlaces = places
-                                  .where((p) => (p.address ?? '').toLowerCase().contains(currentDistrict.toLowerCase()))
+                                  .where(
+                                    (p) => (p.address ?? '')
+                                        .toLowerCase()
+                                        .contains(
+                                          currentDistrict.toLowerCase(),
+                                        ),
+                                  )
                                   .toList();
                             }
 
                             filteredPlaces.sort((a, b) {
-                              final da = parseKm(locator<LocationCubit>().state.distanceTo(a.latLng, context));
-                              final db = parseKm(locator<LocationCubit>().state.distanceTo(b.latLng, context));
+                              final da = parseKm(
+                                locator<LocationCubit>().state.distanceTo(
+                                  a.latLng,
+                                  context,
+                                ),
+                              );
+                              final db = parseKm(
+                                locator<LocationCubit>().state.distanceTo(
+                                  b.latLng,
+                                  context,
+                                ),
+                              );
                               return da.compareTo(db);
                             });
                             final nearby = filteredPlaces.take(5).toList();
 
                             if (nearby.isEmpty) {
                               return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                                 child: Text(
                                   'No results found in ${currentDistrict ?? "your area"}',
-                                  style: context.bodyMedium?.copyWith(color: ColorPalette.neutralVariant50),
+                                  style: context.bodyMedium?.copyWith(
+                                    color: ColorPalette.neutralVariant50,
+                                  ),
                                 ),
                               );
                             }
@@ -289,10 +388,17 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                                       onPressed: () => selectDestination(place),
                                       title: place.title,
                                       subtitle: place.address,
-                                      trailing: locator<LocationCubit>().state.distanceTo(place.latLng, context),
+                                      trailing: locator<LocationCubit>().state
+                                          .distanceTo(place.latLng, context),
                                     ),
                                   )
-                                  .separated(const Divider(thickness: 0.3, indent: 48, height: 16)),
+                                  .separated(
+                                    const Divider(
+                                      thickness: 0.3,
+                                      indent: 48,
+                                      height: 16,
+                                    ),
+                                  ),
                             );
                           }
                           return PlaceLookupStateView(
@@ -307,57 +413,86 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                   const SizedBox(height: 16),
                   AnimatedCrossFade(
                     duration: AnimationDuration.pageStateTransitionMobile,
-                    crossFadeState: isExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+                    crossFadeState: isExpanded
+                        ? CrossFadeState.showFirst
+                        : CrossFadeState.showSecond,
                     secondChild: const SizedBox.shrink(),
-                    firstChild: BlocBuilder<DestinationSuggestionsCubit, DestinationSuggestionsState>(
-                      builder: (context, state) => AnimatedSwitcher(
-                          duration: AnimationDuration.pageStateTransitionMobile,
-                          child: switch (state.destinationSuggesionsState) {
-                            ApiResponseInitial() => const SizedBox.shrink(),
-                            ApiResponseLoading() => Center(child: Assets.lottie.loading.lottie(width: 100, height: 100)),
-                            ApiResponseLoaded() => Column(
+                    firstChild:
+                        BlocBuilder<
+                          DestinationSuggestionsCubit,
+                          DestinationSuggestionsState
+                        >(
+                          builder: (context, state) => AnimatedSwitcher(
+                            duration:
+                                AnimationDuration.pageStateTransitionMobile,
+                            child: switch (state.destinationSuggesionsState) {
+                              ApiResponseInitial() => const SizedBox.shrink(),
+                              ApiResponseLoading() => Center(
+                                child: Assets.lottie.loading.lottie(
+                                  width: 100,
+                                  height: 100,
+                                ),
+                              ),
+                              ApiResponseLoaded() => Column(
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   Container(
-                                    constraints: const BoxConstraints(maxHeight: 100),
+                                    constraints: const BoxConstraints(
+                                      maxHeight: 100,
+                                    ),
                                     child: ListView.separated(
                                       shrinkWrap: true,
                                       padding: EdgeInsets.zero,
                                       itemBuilder: (context, index) {
-                                        final item = state.destinationSuggestions!.$2[index];
+                                        final item = state
+                                            .destinationSuggestions!
+                                            .$2[index];
 
                                         return PlaceResultItem(
-                                            subtitle: item.address,
-                                            title: item.title,
-                                            isRecent: true,
-                                            onPressed: () {
-                                              final pickupLocation =
-                                                  widget.waypoints.firstOrNull ?? locator<LocationCubit>().state.place;
-                                              if (pickupLocation == null) {
-                                                context.showSnackBar(
-                                                  message: context.translate.pickupLocationNotFound,
-                                                );
-                                                return;
-                                              }
-                                              locator<HomeBloc>().add(HomeEvent.showPreview(
+                                          subtitle: item.address,
+                                          title: item.title,
+                                          isRecent: true,
+                                          onPressed: () {
+                                            final pickupLocation =
+                                                widget.waypoints.firstOrNull ??
+                                                locator<LocationCubit>()
+                                                    .state
+                                                    .place;
+                                            if (pickupLocation == null) {
+                                              context.showSnackBar(
+                                                message: context
+                                                    .translate
+                                                    .pickupLocationNotFound,
+                                              );
+                                              return;
+                                            }
+                                            locator<HomeBloc>().add(
+                                              HomeEvent.showPreview(
                                                 destination: Place(
                                                   item.latLng,
                                                   item.address,
                                                   item.title,
                                                 ),
-                                              ));
-                                            });
+                                              ),
+                                            );
+                                          },
+                                        );
                                       },
-                                      separatorBuilder: (context, index) => const Divider(indent: 42),
-                                      itemCount: state.destinationSuggestions!.$2.length,
+                                      separatorBuilder: (context, index) =>
+                                          const Divider(indent: 42),
+                                      itemCount: state
+                                          .destinationSuggestions!
+                                          .$2
+                                          .length,
                                     ),
                                   ),
                                 ],
                               ),
-                            ApiResponseError(:final message) => Text(message),
-                          }),
-                    ),
+                              ApiResponseError(:final message) => Text(message),
+                            },
+                          ),
+                        ),
                   ),
                 ],
               ),
@@ -406,11 +541,17 @@ class _PopularPlaceCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       title,
-                      style: context.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
+                      style: context.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  Icon(Icons.chevron_right, color: isActive ? Colors.red : Colors.black45, size: 18),
+                  Icon(
+                    Icons.chevron_right,
+                    color: isActive ? Colors.red : Colors.black45,
+                    size: 18,
+                  ),
                 ],
               ),
             ),
@@ -421,7 +562,10 @@ class _PopularPlaceCard extends StatelessWidget {
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => Container(
                   color: Colors.grey.shade200,
-                  child: const Icon(Icons.image_not_supported_outlined, color: Colors.grey),
+                  child: const Icon(
+                    Icons.image_not_supported_outlined,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
             ),

@@ -52,24 +52,24 @@ const _setup = __webpack_require__(26);
 const _apollo = __webpack_require__(17);
 const _announcementsmodule = __webpack_require__(27);
 const _authmodule = __webpack_require__(32);
-const _jwtstrategy = __webpack_require__(73);
-const _chatmodule = __webpack_require__(76);
-const _complaintmodule = __webpack_require__(79);
-const _driverapisetupnotfoundcontroller = __webpack_require__(82);
-const _driverapicontroller = __webpack_require__(83);
+const _jwtstrategy = __webpack_require__(74);
+const _chatmodule = __webpack_require__(77);
+const _complaintmodule = __webpack_require__(80);
+const _driverapisetupnotfoundcontroller = __webpack_require__(83);
+const _driverapicontroller = __webpack_require__(84);
 const _drivermodule = __webpack_require__(35);
-const _feedbacksmodule = __webpack_require__(87);
-const _ordermodule = __webpack_require__(50);
-const _payoutmodule = __webpack_require__(92);
-const _sosmodule = __webpack_require__(112);
+const _feedbacksmodule = __webpack_require__(88);
+const _ordermodule = __webpack_require__(51);
+const _payoutmodule = __webpack_require__(93);
+const _sosmodule = __webpack_require__(113);
 const _uploadmodule = __webpack_require__(38);
-const _walletmodule = __webpack_require__(103);
+const _walletmodule = __webpack_require__(104);
 const _core = __webpack_require__(3);
-const _nestjsprometheus = __webpack_require__(116);
+const _nestjsprometheus = __webpack_require__(117);
 const _licenseverify = __webpack_require__(15);
-const _notificationmodule = __webpack_require__(117);
-const _ephemeralmessagesmodule = __webpack_require__(120);
-const _supportmodule = __webpack_require__(124);
+const _notificationmodule = __webpack_require__(118);
+const _ephemeralmessagesmodule = __webpack_require__(121);
+const _supportmodule = __webpack_require__(125);
 let DriverAPIModule = class DriverAPIModule {
     constructor(licenseService){
         this.licenseService = licenseService;
@@ -579,6 +579,8 @@ __webpack_require__.d(__webpack_exports__, {
   ShopWalletEntity: () => (/* reexport */ ShopWalletEntity),
   ShopWaypoint: () => (/* reexport */ ShopWaypoint),
   StorageModule: () => (/* reexport */ StorageModule),
+  SurgeSettingEntity: () => (/* reexport */ SurgeSettingEntity),
+  SurgeZoneEntity: () => (/* reexport */ SurgeZoneEntity),
   TaxiOrderDriverStatusEntity: () => (/* reexport */ TaxiOrderDriverStatusEntity),
   TaxiOrderEntity: () => (/* reexport */ TaxiOrderEntity),
   TaxiOrderNoteEntity: () => (/* reexport */ TaxiOrderNoteEntity),
@@ -4329,6 +4331,9 @@ var PolygonTransformer = /*#__PURE__*/ function() {
             var ar = x.map(function(y) {
                 return y.lng + " " + y.lat;
             });
+            if (x.length > 0 && (x[0].lat !== x[x.length - 1].lat || x[0].lng !== x[x.length - 1].lng)) {
+                ar.push(x[0].lng + " " + x[0].lat);
+            }
             return ar.join(',');
         }).join('),(');
         return "POLYGON((" + str + "))";
@@ -15309,6 +15314,279 @@ DriverWalletEntity = driver_wallet_entity_ts_decorate([
     (0,external_typeorm_.Entity)('driver_wallet')
 ], DriverWalletEntity);
 
+;// ../../libs/database/src/lib/entities/taxi/surge-zone.entity.ts
+function surge_zone_entity_ts_decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+function surge_zone_entity_ts_metadata(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+}
+
+
+var SurgeZoneEntity = function SurgeZoneEntity() {
+    "use strict";
+};
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.PrimaryGeneratedColumn)(),
+    surge_zone_entity_ts_metadata("design:type", Number)
+], SurgeZoneEntity.prototype, "id", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar'),
+    surge_zone_entity_ts_metadata("design:type", String)
+], SurgeZoneEntity.prototype, "name", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('polygon', {
+        transformer: new PolygonTransformer()
+    }),
+    surge_zone_entity_ts_metadata("design:type", Array)
+], SurgeZoneEntity.prototype, "area", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar', {
+        default: 'Off'
+    }),
+    surge_zone_entity_ts_metadata("design:type", String)
+], SurgeZoneEntity.prototype, "status", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: false
+    }),
+    surge_zone_entity_ts_metadata("design:type", Boolean)
+], SurgeZoneEntity.prototype, "autoLive", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar', {
+        nullable: true
+    }),
+    surge_zone_entity_ts_metadata("design:type", Object)
+], SurgeZoneEntity.prototype, "autoReason", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: false
+    }),
+    surge_zone_entity_ts_metadata("design:type", Boolean)
+], SurgeZoneEntity.prototype, "autoCreated", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('int', {
+        nullable: true
+    }),
+    surge_zone_entity_ts_metadata("design:type", Object)
+], SurgeZoneEntity.prototype, "regionId", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar', {
+        default: 'Peak'
+    }),
+    surge_zone_entity_ts_metadata("design:type", String)
+], SurgeZoneEntity.prototype, "type", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        nullable: true,
+        precision: 10,
+        scale: 2
+    }),
+    surge_zone_entity_ts_metadata("design:type", Object)
+], SurgeZoneEntity.prototype, "surgePercent", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        nullable: true,
+        precision: 10,
+        scale: 2
+    }),
+    surge_zone_entity_ts_metadata("design:type", Object)
+], SurgeZoneEntity.prototype, "surgeFlat", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        nullable: true,
+        precision: 10,
+        scale: 2
+    }),
+    surge_zone_entity_ts_metadata("design:type", Object)
+], SurgeZoneEntity.prototype, "commissionPercent", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar', {
+        nullable: true,
+        length: 5
+    }),
+    surge_zone_entity_ts_metadata("design:type", Object)
+], SurgeZoneEntity.prototype, "startTime", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar', {
+        nullable: true,
+        length: 5
+    }),
+    surge_zone_entity_ts_metadata("design:type", Object)
+], SurgeZoneEntity.prototype, "endTime", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar', {
+        nullable: true,
+        length: 10
+    }),
+    surge_zone_entity_ts_metadata("design:type", Object)
+], SurgeZoneEntity.prototype, "startDate", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar', {
+        nullable: true,
+        length: 10
+    }),
+    surge_zone_entity_ts_metadata("design:type", Object)
+], SurgeZoneEntity.prototype, "endDate", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.CreateDateColumn)(),
+    surge_zone_entity_ts_metadata("design:type", typeof Date === "undefined" ? Object : Date)
+], SurgeZoneEntity.prototype, "createdAt", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.UpdateDateColumn)(),
+    surge_zone_entity_ts_metadata("design:type", typeof Date === "undefined" ? Object : Date)
+], SurgeZoneEntity.prototype, "updatedAt", void 0);
+SurgeZoneEntity = surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Entity)('surge_zone')
+], SurgeZoneEntity);
+
+;// ../../libs/database/src/lib/entities/taxi/surge-setting.entity.ts
+function surge_setting_entity_ts_decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+function surge_setting_entity_ts_metadata(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+}
+
+var SurgeSettingEntity = function SurgeSettingEntity() {
+    "use strict";
+};
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.PrimaryGeneratedColumn)(),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "id", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: false
+    }),
+    surge_setting_entity_ts_metadata("design:type", Boolean)
+], SurgeSettingEntity.prototype, "isEnabled", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: false
+    }),
+    surge_setting_entity_ts_metadata("design:type", Boolean)
+], SurgeSettingEntity.prototype, "autoSurgeEnabled", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 20,
+        precision: 10,
+        scale: 2
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "defaultSurgePercent", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 50,
+        precision: 10,
+        scale: 2
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "maxSurgePercent", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 0,
+        precision: 10,
+        scale: 2
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "commissionPercent", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 3,
+        precision: 10,
+        scale: 2
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "autoDemandRatio", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('int', {
+        default: 15
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "autoWindowMinutes", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: true
+    }),
+    surge_setting_entity_ts_metadata("design:type", Boolean)
+], SurgeSettingEntity.prototype, "notifyDrivers", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar', {
+        default: 'highest'
+    }),
+    surge_setting_entity_ts_metadata("design:type", String)
+], SurgeSettingEntity.prototype, "stackingMode", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('int', {
+        default: 5000
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "notifyRadiusMeters", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: false
+    }),
+    surge_setting_entity_ts_metadata("design:type", Boolean)
+], SurgeSettingEntity.prototype, "gridEnabled", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('int', {
+        default: 2000
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "gridSizeMeters", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 2
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "tierLowRatio", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 3
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "tierMidRatio", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 5
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "tierHighRatio", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 10
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "tierLowPercent", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 20
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "tierMidPercent", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 30
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "tierHighPercent", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 10
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "rainExtraPercent", void 0);
+SurgeSettingEntity = surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Entity)('surge_setting')
+], SurgeSettingEntity);
+
 ;// ../../libs/database/src/lib/entities/taxi/driver-timesheet.entity.ts
 function driver_timesheet_entity_defineProperties(target, props) {
     for(var i = 0; i < props.length; i++){
@@ -15665,6 +15943,8 @@ AuthVerificationConfigEntity = auth_verification_config_entity_ts_decorate([
 ], AuthVerificationConfigEntity);
 
 ;// ../../libs/database/src/lib/entities/index.ts
+
+
 
 
 
@@ -17051,6 +17331,28 @@ taxi_order_entity_ts_decorate([
     }),
     taxi_order_entity_ts_metadata("design:type", Number)
 ], TaxiOrderEntity.prototype, "providerShare", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: '0.00',
+        precision: 10,
+        scale: 2
+    }),
+    taxi_order_entity_ts_metadata("design:type", Number)
+], TaxiOrderEntity.prototype, "surgeAmount", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)('int', {
+        nullable: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", Object)
+], TaxiOrderEntity.prototype, "surgeZoneId", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: '0.00',
+        precision: 10,
+        scale: 2
+    }),
+    taxi_order_entity_ts_metadata("design:type", Number)
+], TaxiOrderEntity.prototype, "surgeCommission", void 0);
 taxi_order_entity_ts_decorate([
     (0,external_typeorm_.Column)('float', {
         precision: 10,
@@ -19068,6 +19370,8 @@ function database_module_ts_metadata(k, v) {
 
 
 
+
+
 var DatabaseModule = /*#__PURE__*/ function() {
     "use strict";
     function DatabaseModule(dataSource) {
@@ -19305,6 +19609,8 @@ var entities = [
     SOSActivityEntity,
     AnnouncementEntity,
     ZonePriceEntity,
+    SurgeZoneEntity,
+    SurgeSettingEntity,
     GatewayToUserEntity,
     SavedPaymentMethodEntity,
     RiderReviewEntity,
@@ -28402,16 +28708,11 @@ var DriverNotificationService = /*#__PURE__*/ function() {
                                 apns: {
                                     payload: {
                                         aps: {
-                                            sound: {
-                                                critical: true,
-                                                name: (_process_env_REQUEST_SOUND = process.env.REQUEST_SOUND) != null ? _process_env_REQUEST_SOUND : 'default',
-                                                volume: 1.0
-                                            },
+                                            sound: (_process_env_REQUEST_SOUND = process.env.REQUEST_SOUND) != null ? _process_env_REQUEST_SOUND : 'default',
                                             badge: 1,
-                                            contentAvailable: true,
                                             alert: {
-                                                titleLocKey: 'notification_new_request_title',
-                                                subtitleLocKey: 'notification_new_request_body'
+                                                title: 'New ride request',
+                                                body: 'Tap to view the request'
                                             }
                                         }
                                     }
@@ -28431,6 +28732,92 @@ var DriverNotificationService = /*#__PURE__*/ function() {
                         return [
                             3,
                             4
+                        ];
+                    case 4:
+                        return [
+                            2
+                        ];
+                }
+            });
+        }).apply(this, arguments);
+    };
+    _proto.surge = function surge() {
+        return driver_notification_service_async_to_generator(function(tokens, title, body, data) {
+            var result, error;
+            return driver_notification_service_ts_generator(this, function(_state) {
+                switch(_state.label){
+                    case 0:
+                        if (data === void 0) data = {};
+                        tokens = tokens.filter(function(t) {
+                            var _t_length;
+                            return ((_t_length = t == null ? void 0 : t.length) != null ? _t_length : 0) > 0;
+                        });
+                        if (tokens.length < 1) return [
+                            2,
+                            0
+                        ];
+                        _state.label = 1;
+                    case 1:
+                        _state.trys.push([
+                            1,
+                            3,
+                            ,
+                            4
+                        ]);
+                        return [
+                            4,
+                            (0,external_firebase_admin_.messaging)().sendEachForMulticast({
+                                tokens: tokens,
+                                data: driver_notification_service_extends({
+                                    type: 'surge'
+                                }, data),
+                                notification: {
+                                    title: title,
+                                    body: body
+                                },
+                                webpush: {
+                                    notification: {
+                                        title: title,
+                                        body: body,
+                                        icon: '/icons/Icon-192.png'
+                                    }
+                                },
+                                android: {
+                                    priority: 'high',
+                                    notification: {
+                                        sound: 'default',
+                                        title: title,
+                                        body: body,
+                                        channelId: 'tripEvents',
+                                        icon: 'notification_icon'
+                                    }
+                                },
+                                apns: {
+                                    payload: {
+                                        aps: {
+                                            sound: 'default',
+                                            alert: {
+                                                title: title,
+                                                body: body
+                                            }
+                                        }
+                                    }
+                                }
+                            })
+                        ];
+                    case 2:
+                        result = _state.sent();
+                        common_.Logger.log("surge sent: " + result.successCount + "/" + tokens.length, 'DriverNotificationService.surge');
+                        return [
+                            2,
+                            result.successCount
+                        ];
+                    case 3:
+                        error = _state.sent();
+                        common_.Logger.error(error);
+                        return [
+                            2,
+                            0
                         ];
                     case 4:
                         return [
@@ -32248,6 +32635,7 @@ function shared_order_service_ts_param(paramIndex, decorator) {
 
 
 
+
 var SharedOrderService = /*#__PURE__*/ function() {
     "use strict";
     function SharedOrderService(orderRepository, activityRepository, regionService, serviceCategoryRepository, serviceOptionRepository, zonePriceRepository, paymentRepository, messageRepository, googleServices, servicesService, riderService, sharedRiderWalletService, driverRedisService, riderRedisService, rideOfferRedisService, activeOrderRedisService, driverService, sharedProviderService, sharedFleetService, commonCouponService, driverNotificationService, riderNotificationService, httpService, dispatchMainQueue, pubsubService, configService) {
@@ -32339,6 +32727,114 @@ var SharedOrderService = /*#__PURE__*/ function() {
             });
         }).call(this);
     };
+    _proto.getSurgeContext = function getSurgeContext(point) {
+        return shared_order_service_async_to_generator(function() {
+            var settingRepo, settings, rows, hhmm, zones, top, _settings_maxSurgePercent, _settings_stackingMode, e;
+            return shared_order_service_ts_generator(this, function(_state) {
+                switch(_state.label){
+                    case 0:
+                        _state.trys.push([
+                            0,
+                            5,
+                            ,
+                            6
+                        ]);
+                        settingRepo = this.orderRepository.manager.getRepository(SurgeSettingEntity);
+                        return [
+                            4,
+                            settingRepo.find({
+                                order: {
+                                    id: 'ASC'
+                                },
+                                take: 1
+                            })
+                        ];
+                    case 1:
+                        settings = _state.sent()[0];
+                        if (!!settings) return [
+                            3,
+                            3
+                        ];
+                        return [
+                            4,
+                            settingRepo.save(settingRepo.create({}))
+                        ];
+                    case 2:
+                        settings = _state.sent();
+                        _state.label = 3;
+                    case 3:
+                        if (!settings.isEnabled) return [
+                            2,
+                            null
+                        ];
+                        return [
+                            4,
+                            this.orderRepository.manager.query("SELECT id, type, surgePercent, surgeFlat, commissionPercent, startTime, endTime FROM surge_zone WHERE (status = 'Active' OR (status = 'Auto' AND autoLive = 1)) AND ST_Within(st_geomfromtext('POINT(? ?)'), area)", [
+                                point.lng,
+                                point.lat
+                            ])
+                        ];
+                    case 4:
+                        rows = _state.sent();
+                        hhmm = new Date(Date.now() + 330 * 60000).toISOString().substring(11, 16); // IST
+                        zones = rows.filter(function(z) {
+                            return !z.startTime || !z.endTime || (z.startTime <= z.endTime ? hhmm >= z.startTime && hhmm < z.endTime : hhmm >= z.startTime || hhmm < z.endTime);
+                        }).map(function(z) {
+                            var hasFlat = z.surgeFlat != null && Number(z.surgeFlat) > 0;
+                            var _z_type, _z_surgePercent, _ref, _z_commissionPercent, _ref1;
+                            return {
+                                id: Number(z.id),
+                                type: (_z_type = z.type) != null ? _z_type : 'Peak',
+                                flat: hasFlat ? Number(z.surgeFlat) : 0,
+                                percent: hasFlat ? 0 : Number((_ref = (_z_surgePercent = z.surgePercent) != null ? _z_surgePercent : settings.defaultSurgePercent) != null ? _ref : 0),
+                                commissionPercent: Number((_ref1 = (_z_commissionPercent = z.commissionPercent) != null ? _z_commissionPercent : settings.commissionPercent) != null ? _ref1 : 0)
+                            };
+                        });
+                        if (zones.length === 0) return [
+                            2,
+                            null
+                        ];
+                        top = [].concat(zones).sort(function(x, y) {
+                            return (y.flat || y.percent) - (x.flat || x.percent);
+                        })[0];
+                        return [
+                            2,
+                            {
+                                zoneId: top.id,
+                                type: top.type,
+                                commissionPercent: top.commissionPercent,
+                                maxPercent: Number((_settings_maxSurgePercent = settings.maxSurgePercent) != null ? _settings_maxSurgePercent : 0),
+                                stacking: (_settings_stackingMode = settings.stackingMode) != null ? _settings_stackingMode : 'highest',
+                                zones: zones
+                            }
+                        ];
+                    case 5:
+                        e = _state.sent();
+                        common_.Logger.warn("surge lookup failed: " + e, 'SharedOrderService.surge');
+                        return [
+                            2,
+                            null
+                        ];
+                    case 6:
+                        return [
+                            2
+                        ];
+                }
+            });
+        }).call(this);
+    };
+    _proto.computeSurgeAmount = function computeSurgeAmount(baseCost, ctx) {
+        var _Math;
+        if (!ctx || baseCost <= 0 || ctx.zones.length === 0) return 0;
+        var parts = ctx.zones.map(function(z) {
+            return z.flat > 0 ? z.flat : baseCost * z.percent / 100;
+        });
+        var amt = ctx.stacking === 'add' ? parts.reduce(function(a, b) {
+            return a + b;
+        }, 0) : (_Math = Math).max.apply(_Math, [].concat(parts));
+        if (ctx.maxPercent > 0) amt = Math.min(amt, baseCost * ctx.maxPercent / 100);
+        return Math.round(amt * 100) / 100;
+    };
     _proto.getZonePricingsForPoints = function getZonePricingsForPoints(from, to) {
         return shared_order_service_async_to_generator(function() {
             var pricings;
@@ -32408,7 +32904,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.calculateFare = function calculateFare(input) {
         return shared_order_service_async_to_generator(function() {
-            var _this, distances, totalDistance, zonePricings, regions, servicesInRegion, unrestrictedServices, fareCurrency, _input_twoWay, metrics, cats, feeMultiplier, optionFee, options, paidOptions, _cats;
+            var _this, distances, totalDistance, zonePricings, regions, servicesInRegion, unrestrictedServices, fareCurrency, _input_twoWay, metrics, cats, feeMultiplier, optionFee, options, paidOptions, surgeCtx, _cats;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32551,6 +33047,12 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         common_.Logger.log("Calculated option fee: " + optionFee + " from " + paidOptions.length + " paid options", 'SharedOrderService.calculateFare');
                         _state.label = 11;
                     case 11:
+                        return [
+                            4,
+                            this.getSurgeContext(input.points[0])
+                        ];
+                    case 12:
+                        surgeCtx = _state.sent();
                         _cats = cats.map(function(cat) {
                             var services = cat.services, _cat = _object_without_properties_loose(cat, [
                                 "services"
@@ -32572,6 +33074,15 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 var _input_waitTime;
                                 costResult = _this.servicesService.calculateCost(service, metrics.distance, metrics.duration, timestamp, feeMultiplier, (_input_waitTime = input.waitTime) != null ? _input_waitTime : 0, optionFee);
                                 cost = costResult.cost;
+                                var estSurge = _this.computeSurgeAmount(cost, surgeCtx);
+                                if (estSurge > 0) {
+                                    cost += estSurge;
+                                    costResult = shared_order_service_extends({}, costResult, {
+                                        cost: cost,
+                                        min: costResult.min != null ? costResult.min + estSurge : costResult.min,
+                                        max: costResult.max != null ? costResult.max + estSurge : costResult.max
+                                    });
+                                }
                                 var _input_waitTime1;
                                 common_.Logger.log({
                                     serviceId: service.id,
@@ -32680,7 +33191,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.createOrder = function createOrder(input) {
         return shared_order_service_async_to_generator(function() {
-            var _this, _regions_, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, regions, _regions__currency, orderCurrency, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, isOnlinePayment, _service_gstPercent, gstAmount, _service_platformFee, platformFeeAmount, _service_paymentGatewayFee, paymentGatewayFeeAmount, _input_waitMinutes2, _input_waitMinutes3, orderObject, order, couponResult, activityType;
+            var _this, _regions_, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, orderSurgeCtx, surgeAmount, baseCostBeforeSurge, _orderSurgeCtx_commissionPercent, surgeCommission, regions, _regions__currency, orderCurrency, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, isOnlinePayment, _service_gstPercent, gstAmount, _service_platformFee, platformFeeAmount, _service_paymentGatewayFee, paymentGatewayFeeAmount, _input_waitMinutes2, _input_waitMinutes3, _orderSurgeCtx_zoneId, orderObject, order, couponResult, activityType;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32820,9 +33331,19 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         }, 'SharedOrderService.createOrder.finalCost');
                         return [
                             4,
-                            this.regionService.getRegionWithPoint(input.waypoints[0].point)
+                            this.getSurgeContext(input.waypoints[0].point)
                         ];
                     case 12:
+                        orderSurgeCtx = _state.sent();
+                        surgeAmount = this.computeSurgeAmount(cost, orderSurgeCtx);
+                        baseCostBeforeSurge = cost;
+                        cost += surgeAmount;
+                        surgeCommission = Math.round(surgeAmount * ((_orderSurgeCtx_commissionPercent = orderSurgeCtx == null ? void 0 : orderSurgeCtx.commissionPercent) != null ? _orderSurgeCtx_commissionPercent : 0)) / 100;
+                        return [
+                            4,
+                            this.regionService.getRegionWithPoint(input.waypoints[0].point)
+                        ];
+                    case 13:
                         regions = _state.sent();
                         common_.Logger.log(regions, 'SharedOrderService.createOrder.regions');
                         if (regions.length === 0 && !this.regionService.isPointInIndia(input.waypoints[0].point)) {
@@ -32841,13 +33362,13 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         paidAmount = 0;
                         if (!(service.prepayPercent > 0)) return [
                             3,
-                            14
+                            15
                         ];
                         return [
                             4,
                             this.sharedRiderWalletService.getRiderCreditInCurrency(input.riderId, orderCurrency)
                         ];
-                    case 13:
+                    case 14:
                         balance = _state.sent();
                         amountNeedsToBePrePaid = cost * service.prepayPercent / 100;
                         switch(input.paymentMode){
@@ -32865,8 +33386,8 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 shouldPrePay = true;
                                 break;
                         }
-                        _state.label = 14;
-                    case 14:
+                        _state.label = 15;
+                    case 15:
                         // GST and Platform Fee apply to every order; Payment Gateway Fee only
                         // applies when the rider is actually paying through a gateway (a saved
                         // card or a fresh gateway payment) — not for cash or wallet.
@@ -32919,7 +33440,10 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             waitCost: service.perMinuteWait * ((_input_waitMinutes3 = input.waitMinutes) != null ? _input_waitMinutes3 : 0),
                             rideOptionsCost: optionFee,
                             fleetId: input.fleetId,
-                            providerShare: service.providerShareFlat + service.providerSharePercent * cost / 100,
+                            providerShare: service.providerShareFlat + service.providerSharePercent * baseCostBeforeSurge / 100 + surgeCommission,
+                            surgeAmount: surgeAmount,
+                            surgeZoneId: (_orderSurgeCtx_zoneId = orderSurgeCtx == null ? void 0 : orderSurgeCtx.zoneId) != null ? _orderSurgeCtx_zoneId : null,
+                            surgeCommission: surgeCommission,
                             gstAmount: gstAmount,
                             platformFeeAmount: platformFeeAmount,
                             paymentGatewayFeeAmount: paymentGatewayFeeAmount,
@@ -32929,7 +33453,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             4,
                             this.orderRepository.save(orderObject)
                         ];
-                    case 15:
+                    case 16:
                         order = _state.sent();
                         return [
                             4,
@@ -32950,22 +33474,22 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 }
                             })
                         ];
-                    case 16:
+                    case 17:
                         order = _state.sent();
                         if (!(input.couponCode != null && input.couponCode != '' && rider != null)) return [
                             3,
-                            18
+                            19
                         ];
                         return [
                             4,
                             this.commonCouponService.applyCoupon(input.couponCode, order.id, rider.id)
                         ];
-                    case 17:
+                    case 18:
                         couponResult = _state.sent();
                         // Only take costAfterCoupon from the result; keep our fully-loaded order
                         order.costAfterCoupon = couponResult.costAfterCoupon;
-                        _state.label = 18;
-                    case 18:
+                        _state.label = 19;
+                    case 19:
                         activityType = RequestActivityType.RequestedByRider;
                         if (input.intervalMinutes > 0) {
                             activityType = input.operatorId == null ? activityType = RequestActivityType.BookedByRider : RequestActivityType.BookedByOperator;
@@ -32981,22 +33505,22 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         });
                         if (!!shouldPrePay) return [
                             3,
-                            21
+                            22
                         ];
                         return [
                             4,
                             this.riderRedisService.addActiveOrderToRider(order.riderId.toString(), order.id.toString())
                         ];
-                    case 19:
+                    case 20:
                         _state.sent();
                         return [
                             4,
                             this.dispatchRide(order)
                         ];
-                    case 20:
-                        _state.sent();
-                        _state.label = 21;
                     case 21:
+                        _state.sent();
+                        _state.label = 22;
+                    case 22:
                         return [
                             2,
                             order
@@ -44918,6 +45442,16 @@ var RazorpayService = /*#__PURE__*/ function() {
             });
         }).call(this);
     };
+    _proto.fetchOrder = function fetchOrder(orderId) {
+        return razorpay_service_async_to_generator(function() {
+            return razorpay_service_ts_generator(this, function(_state) {
+                return [
+                    2,
+                    this.client.orders.fetch(orderId)
+                ];
+            });
+        }).call(this);
+    };
     _proto.verifySignature = function verifySignature(orderId, paymentId, signature) {
         var generated = external_crypto_.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET).update(orderId + "|" + paymentId).digest('hex');
         return generated === signature;
@@ -45300,10 +45834,10 @@ const _common = __webpack_require__(2);
 const _jwt = __webpack_require__(33);
 const _passport = __webpack_require__(34);
 const _drivermodule = __webpack_require__(35);
-const _ordermodule = __webpack_require__(50);
-const _authresolver = __webpack_require__(59);
-const _authservice = __webpack_require__(66);
-const _jwtstrategy = __webpack_require__(73);
+const _ordermodule = __webpack_require__(51);
+const _authresolver = __webpack_require__(60);
+const _authservice = __webpack_require__(67);
+const _jwtstrategy = __webpack_require__(74);
 const _database = __webpack_require__(12);
 const _licenseverify = __webpack_require__(15);
 const _typeorm = __webpack_require__(11);
@@ -45387,7 +45921,7 @@ const _driverservice = __webpack_require__(36);
 const _uploadmodule = __webpack_require__(38);
 const _timesheetmodule = __webpack_require__(41);
 const _driverresolver = __webpack_require__(42);
-const _cronjobservice = __webpack_require__(49);
+const _cronjobservice = __webpack_require__(50);
 let DriverModule = class DriverModule {
 };
 DriverModule = _ts_decorate._([
@@ -45401,7 +45935,8 @@ DriverModule = _ts_decorate._([
             _typeorm.TypeOrmModule.forFeature([
                 _database.DriverEntity,
                 _database.TaxiOrderEntity,
-                _database.DriverToDriverDocumentEntity
+                _database.DriverToDriverDocumentEntity,
+                _database.SurgeZoneEntity
             ])
         ],
         providers: [
@@ -45766,11 +46301,28 @@ let DriverService = class DriverService {
     async getDriver(id) {
         const driverMetaData = await this.driverRedisService.getOnlineDriverMetaData(id.toString());
         if (driverMetaData) {
-            return this.createDTOFromSnapshot(driverMetaData);
+            const dto = this.createDTOFromSnapshot(driverMetaData);
+            const wEntity = await this.driverRepository.findOne({
+                where: {
+                    id
+                },
+                relations: {
+                    wallet: true
+                }
+            });
+            const w = wEntity?.wallet?.sort((a, b)=>a.id - b.id)[0];
+            if (w) {
+                dto.walletCredit = w.balance;
+                dto.currency = w.currency;
+            }
+            return dto;
         } else {
             const entity = await this.driverRepository.findOne({
                 where: {
                     id
+                },
+                relations: {
+                    wallet: true
                 }
             });
             if (entity == null) {
@@ -46186,11 +46738,68 @@ const _driverperformancedto = __webpack_require__(45);
 const _driverdto = __webpack_require__(46);
 const _updatedriverofferfilterinput = __webpack_require__(47);
 const _servicedto = __webpack_require__(48);
+const _typeorm = __webpack_require__(11);
+const _typeorm1 = __webpack_require__(13);
+const _surgezonelivedto = __webpack_require__(49);
+// Rain lookup via Open-Meteo (no API key). Cached 10 min per ~1 km cell.
+// Module-level on purpose: the resolver is request-scoped, so an instance cache would never hit.
+const rainCache = new Map();
+async function getRainMm(lat, lng) {
+    const key = `${lat.toFixed(2)},${lng.toFixed(2)}`;
+    const hit = rainCache.get(key);
+    if (hit && Date.now() - hit.at < 10 * 60 * 1000) return hit.mm;
+    let mm = hit?.mm ?? 0;
+    try {
+        const res = await Promise.race([
+            globalThis.fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=precipitation`),
+            new Promise((_, reject)=>setTimeout(()=>reject(new Error('timeout')), 2500))
+        ]);
+        const json = await res.json();
+        mm = Number(json?.current?.precipitation ?? 0) || 0;
+    } catch (_) {
+    // weather API slow or down: keep the last known value (or 0)
+    }
+    rainCache.set(key, {
+        at: Date.now(),
+        mm
+    });
+    return mm;
+}
 let DriverResolver = class DriverResolver {
-    constructor(context, driverService, callMaskingService){
+    constructor(context, driverService, callMaskingService, surgeZoneRepo){
         this.context = context;
         this.driverService = driverService;
         this.callMaskingService = callMaskingService;
+        this.surgeZoneRepo = surgeZoneRepo;
+    }
+    async liveSurgeZones() {
+        const zones = await this.surgeZoneRepo.find();
+        const out = [];
+        for (const z of zones){
+            const live = z.status === 'Active' || z.status === 'Auto' && z.autoLive;
+            const ring = z.area?.[0];
+            if (!live || !ring || ring.length === 0) continue;
+            const lats = ring.map((p)=>p.lat);
+            const lngs = ring.map((p)=>p.lng);
+            const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+            const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+            const centerLat = (minLat + maxLat) / 2;
+            const centerLng = (minLng + maxLng) / 2;
+            const halfLat = (maxLat - minLat) / 2 * 111320;
+            const halfLng = (maxLng - minLng) / 2 * 111320 * Math.cos(centerLat * Math.PI / 180);
+            out.push({
+                id: z.id,
+                name: z.name,
+                percent: Number(z.surgePercent ?? 0),
+                centerLat,
+                centerLng,
+                radiusMeters: Math.round(Math.max(halfLat, halfLng)),
+                rainMm: await getRainMm(centerLat, centerLng),
+                type: z.type ?? 'Peak',
+                reason: z.autoReason ?? null
+            });
+        }
+        return out;
     }
     async me() {
         return this.driverService.getDriver(this.context.req.user.id);
@@ -46247,6 +46856,14 @@ let DriverResolver = class DriverResolver {
         return this.driverService.attachDriverDocument(this.context.req.user.id, driverDocumentId, mediaId);
     }
 };
+_ts_decorate._([
+    (0, _graphql.Query)(()=>[
+            _surgezonelivedto.LiveSurgeZoneDTO
+        ]),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", []),
+    _ts_metadata._("design:returntype", Promise)
+], DriverResolver.prototype, "liveSurgeZones", null);
 _ts_decorate._([
     (0, _graphql.Query)(()=>_driverdto.DriverDTO),
     _ts_metadata._("design:type", Function),
@@ -46370,11 +46987,13 @@ DriverResolver = _ts_decorate._([
     (0, _graphql.Resolver)(),
     (0, _common.UseGuards)(_jwtgqlauthguard.GqlAuthGuard),
     _ts_param._(0, (0, _common.Inject)(_graphql.CONTEXT)),
+    _ts_param._(3, (0, _typeorm.InjectRepository)(_database.SurgeZoneEntity)),
     _ts_metadata._("design:type", Function),
     _ts_metadata._("design:paramtypes", [
         typeof _authenticateduser.UserContext === "undefined" ? Object : _authenticateduser.UserContext,
         typeof _driverservice.DriverService === "undefined" ? Object : _driverservice.DriverService,
-        typeof _database.CallMaskingService === "undefined" ? Object : _database.CallMaskingService
+        typeof _database.CallMaskingService === "undefined" ? Object : _database.CallMaskingService,
+        typeof _typeorm1.Repository === "undefined" ? Object : _typeorm1.Repository
     ])
 ], DriverResolver);
 
@@ -46726,6 +47345,68 @@ ServiceDTO = _ts_decorate._([
 Object.defineProperty(exports, "__esModule", ({
     value: true
 }));
+Object.defineProperty(exports, "LiveSurgeZoneDTO", ({
+    enumerable: true,
+    get: function() {
+        return LiveSurgeZoneDTO;
+    }
+}));
+const _ts_decorate = __webpack_require__(6);
+const _ts_metadata = __webpack_require__(7);
+const _graphql = __webpack_require__(9);
+let LiveSurgeZoneDTO = class LiveSurgeZoneDTO {
+};
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.ID),
+    _ts_metadata._("design:type", Number)
+], LiveSurgeZoneDTO.prototype, "id", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(),
+    _ts_metadata._("design:type", String)
+], LiveSurgeZoneDTO.prototype, "name", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float),
+    _ts_metadata._("design:type", Number)
+], LiveSurgeZoneDTO.prototype, "percent", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float),
+    _ts_metadata._("design:type", Number)
+], LiveSurgeZoneDTO.prototype, "centerLat", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float),
+    _ts_metadata._("design:type", Number)
+], LiveSurgeZoneDTO.prototype, "centerLng", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Int),
+    _ts_metadata._("design:type", Number)
+], LiveSurgeZoneDTO.prototype, "radiusMeters", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float),
+    _ts_metadata._("design:type", Number)
+], LiveSurgeZoneDTO.prototype, "rainMm", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(),
+    _ts_metadata._("design:type", String)
+], LiveSurgeZoneDTO.prototype, "type", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Object)
+], LiveSurgeZoneDTO.prototype, "reason", void 0);
+LiveSurgeZoneDTO = _ts_decorate._([
+    (0, _graphql.ObjectType)('LiveSurgeZone')
+], LiveSurgeZoneDTO);
+
+
+/***/ }),
+/* 50 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({
+    value: true
+}));
 Object.defineProperty(exports, "CronJobService", ({
     enumerable: true,
     get: function() {
@@ -46777,7 +47458,7 @@ CronJobService = _ts_decorate._([
 
 
 /***/ }),
-/* 50 */
+/* 51 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -46794,10 +47475,10 @@ const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
-const _orderresolver = __webpack_require__(51);
+const _orderresolver = __webpack_require__(52);
 const _drivermodule = __webpack_require__(35);
-const _orderservice = __webpack_require__(52);
-const _ordersubscriptionservice = __webpack_require__(58);
+const _orderservice = __webpack_require__(53);
+const _ordersubscriptionservice = __webpack_require__(59);
 const _axios = __webpack_require__(18);
 let OrderModule = class OrderModule {
 };
@@ -46850,7 +47531,7 @@ OrderModule = _ts_decorate._([
 
 
 /***/ }),
-/* 51 */
+/* 52 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -46871,12 +47552,12 @@ const _graphql = __webpack_require__(9);
 const _database = __webpack_require__(12);
 const _authenticateduser = __webpack_require__(44);
 const _jwtgqlauthguard = __webpack_require__(43);
-const _orderservice = __webpack_require__(52);
-const _riderreviewinput = __webpack_require__(53);
-const _updatestatusdto = __webpack_require__(54);
-const _activeorderdto = __webpack_require__(55);
-const _pastorderdto = __webpack_require__(56);
-const _cancelreasondto = __webpack_require__(57);
+const _orderservice = __webpack_require__(53);
+const _riderreviewinput = __webpack_require__(54);
+const _updatestatusdto = __webpack_require__(55);
+const _activeorderdto = __webpack_require__(56);
+const _pastorderdto = __webpack_require__(57);
+const _cancelreasondto = __webpack_require__(58);
 const _apollo = __webpack_require__(17);
 let OrderResolver = class OrderResolver {
     constructor(context, orderService, driverRedisService, orderRedisService){
@@ -47217,7 +47898,7 @@ OrderResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 52 */
+/* 53 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -47333,6 +48014,9 @@ let OrderService = class OrderService {
             if (driver == null) {
                 throw new _apollo.ForbiddenError(`Driver with ID ${input.driverId} not found`);
             }
+            if (driver.activeOrderIds && driver.activeOrderIds.length > 0) {
+                throw new _apollo.ForbiddenError('DRIVER_ALREADY_ON_TRIP');
+            }
             const rider = await this.riderRedisService.getOnlineRider(orderMetadata.riderId);
             // Calculate ETAs with Google Services
             // Keep accept fast: cap the driver->pickup Google call, reuse trip estimate.
@@ -47430,7 +48114,7 @@ let OrderService = class OrderService {
             });
             // Retrieve and return active order
             const activeOrder = await this.activeOrderRedisService.getActiveOrder(input.orderId.toString());
-            const dto = this.convertToActiveOrderDTO(activeOrder, rider);
+            const dto = this.convertToActiveOrderDTO(activeOrder, await this.withRiderContact(activeOrder.riderId, rider));
             return dto;
         } finally{
             // Release lock (only if we still own it)
@@ -47794,8 +48478,23 @@ let OrderService = class OrderService {
         const orders = await this.activeOrderRedisService.getActiveOrders(driverMeta.activeOrderIds);
         return Promise.all(orders.map(async (order)=>{
             const rider = await this.riderRedisService.getOnlineRider(order.riderId.toString());
-            return this.convertToActiveOrderDTO(order, rider);
+            return this.convertToActiveOrderDTO(order, await this.withRiderContact(order.riderId, rider));
         }));
+    }
+    async withRiderContact(riderId, rider) {
+        const num = rider?.mobileNumber;
+        if (num && num !== '-' && /\d/.test(num)) return rider;
+        const dbRider = await this.riderRepository.findOne({
+            where: {
+                id: Number(riderId)
+            }
+        });
+        if (!dbRider) return rider;
+        return {
+            ...rider ?? {},
+            firstName: rider?.firstName ?? dbRider.firstName,
+            mobileNumber: dbRider.mobileNumber
+        };
     }
     convertToActiveOrderDTO(order, rider) {
         const chatMessages = Array.isArray(order?.chatMessages) ? order.chatMessages : [];
@@ -48251,7 +48950,7 @@ OrderService = _ts_decorate._([
 
 
 /***/ }),
-/* 53 */
+/* 54 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48291,7 +48990,7 @@ RiderReviewInput = _ts_decorate._([
 
 
 /***/ }),
-/* 54 */
+/* 55 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48350,7 +49049,7 @@ UpdateStatusDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 55 */
+/* 56 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48614,7 +49313,7 @@ ActiveOrderDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 56 */
+/* 57 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48770,7 +49469,7 @@ PastOrderDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 57 */
+/* 58 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48802,7 +49501,7 @@ OrderCancelReasonDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 58 */
+/* 59 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48873,7 +49572,7 @@ OrderSubscriptionService = _ts_decorate._([
 
 
 /***/ }),
-/* 59 */
+/* 60 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48892,8 +49591,8 @@ const _ts_param = __webpack_require__(29);
 const _graphql = __webpack_require__(9);
 const _jwt = __webpack_require__(33);
 const _driverservice = __webpack_require__(36);
-const _logindto = __webpack_require__(60);
-const _logininput = __webpack_require__(61);
+const _logindto = __webpack_require__(61);
+const _logininput = __webpack_require__(62);
 const _database = __webpack_require__(12);
 const _driverdto = __webpack_require__(46);
 const _common = __webpack_require__(2);
@@ -48901,19 +49600,19 @@ const _jwtgqlauthguard = __webpack_require__(43);
 const _authenticateduser = __webpack_require__(44);
 const _apollo = __webpack_require__(17);
 const _firebaseadmin = __webpack_require__(22);
-const _verificationdto = __webpack_require__(62);
-const _verifynumberdto = __webpack_require__(63);
-const _sendemailverificationdto = __webpack_require__(64);
-const _verifyemaildto = __webpack_require__(65);
-const _authservice = __webpack_require__(66);
-const _driverdocumentdto = __webpack_require__(67);
+const _verificationdto = __webpack_require__(63);
+const _verifynumberdto = __webpack_require__(64);
+const _sendemailverificationdto = __webpack_require__(65);
+const _verifyemaildto = __webpack_require__(66);
+const _authservice = __webpack_require__(67);
+const _driverdocumentdto = __webpack_require__(68);
 const _typeorm = __webpack_require__(13);
 const _typeorm1 = __webpack_require__(11);
-const _carmodeldto = __webpack_require__(68);
-const _saveregistrationprogressinput = __webpack_require__(69);
-const _carcolordto = __webpack_require__(70);
-const _completeregistrationinput = __webpack_require__(71);
-const _googlelibphonenumber = __webpack_require__(72);
+const _carmodeldto = __webpack_require__(69);
+const _saveregistrationprogressinput = __webpack_require__(70);
+const _carcolordto = __webpack_require__(71);
+const _completeregistrationinput = __webpack_require__(72);
+const _googlelibphonenumber = __webpack_require__(73);
 let AuthResolver = class AuthResolver {
     constructor(driverService, sharedDriverService, driverDocumentRepository, carModelRepository, carColorRepository, jwtService, userContext, authService, sharedPasskeyService){
         this.driverService = driverService;
@@ -49461,7 +50160,7 @@ AuthResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 60 */
+/* 61 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49491,7 +50190,7 @@ LoginDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 61 */
+/* 62 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49519,7 +50218,7 @@ LoginInput = _ts_decorate._([
 
 
 /***/ }),
-/* 62 */
+/* 63 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49568,7 +50267,7 @@ VerificationDto = _ts_decorate._([
 
 
 /***/ }),
-/* 63 */
+/* 64 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49612,7 +50311,7 @@ VerifyNumberDto = _ts_decorate._([
 
 
 /***/ }),
-/* 64 */
+/* 65 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49655,7 +50354,7 @@ SendEmailVerificationDto = _ts_decorate._([
 
 
 /***/ }),
-/* 65 */
+/* 66 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49720,7 +50419,7 @@ VerifyEmailDto = _ts_decorate._([
 
 
 /***/ }),
-/* 66 */
+/* 67 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50090,7 +50789,7 @@ AuthService = _ts_decorate._([
 
 
 /***/ }),
-/* 67 */
+/* 68 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50143,7 +50842,7 @@ DriverDocumentDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 68 */
+/* 69 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50176,7 +50875,7 @@ CarModelDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 69 */
+/* 70 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50254,7 +50953,7 @@ SaveRegistrationProgressInput = _ts_decorate._([
 
 
 /***/ }),
-/* 70 */
+/* 71 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50289,7 +50988,7 @@ CarColorDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 71 */
+/* 72 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50443,13 +51142,13 @@ CompleteRegistrationInput = _ts_decorate._([
 
 
 /***/ }),
-/* 72 */
+/* 73 */
 /***/ ((module) => {
 
 module.exports = require("google-libphonenumber");
 
 /***/ }),
-/* 73 */
+/* 74 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50472,10 +51171,10 @@ _export(exports, {
 });
 const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
-const _passportjwt = __webpack_require__(74);
+const _passportjwt = __webpack_require__(75);
 const _passport = __webpack_require__(34);
 const _common = __webpack_require__(2);
-const _jwtdecode = __webpack_require__(75);
+const _jwtdecode = __webpack_require__(76);
 let JwtStrategy = class JwtStrategy extends (0, _passport.PassportStrategy)(_passportjwt.Strategy, 'jwt') {
     constructor(){
         super({
@@ -50505,19 +51204,19 @@ async function validateToken(token) {
 
 
 /***/ }),
-/* 74 */
+/* 75 */
 /***/ ((module) => {
 
 module.exports = require("passport-jwt");
 
 /***/ }),
-/* 75 */
+/* 76 */
 /***/ ((module) => {
 
 module.exports = require("jwt-decode");
 
 /***/ }),
-/* 76 */
+/* 77 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50533,8 +51232,8 @@ Object.defineProperty(exports, "ChatModule", ({
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
-const _chatresolver = __webpack_require__(77);
-const _chatservice = __webpack_require__(78);
+const _chatresolver = __webpack_require__(78);
+const _chatservice = __webpack_require__(79);
 let ChatModule = class ChatModule {
 };
 ChatModule = _ts_decorate._([
@@ -50552,7 +51251,7 @@ ChatModule = _ts_decorate._([
 
 
 /***/ }),
-/* 77 */
+/* 78 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50569,7 +51268,7 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(29);
 const _graphql = __webpack_require__(9);
-const _chatservice = __webpack_require__(78);
+const _chatservice = __webpack_require__(79);
 const _database = __webpack_require__(12);
 let ChatResolver = class ChatResolver {
     constructor(chatService){
@@ -50619,7 +51318,7 @@ ChatResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 78 */
+/* 79 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50694,7 +51393,7 @@ ChatService = _ts_decorate._([
 
 
 /***/ }),
-/* 79 */
+/* 80 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50713,8 +51412,8 @@ const _nestjsquerytypeorm = __webpack_require__(39);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
 const _jwtgqlauthguard = __webpack_require__(43);
-const _complaintdto = __webpack_require__(80);
-const _complaintinput = __webpack_require__(81);
+const _complaintdto = __webpack_require__(81);
+const _complaintinput = __webpack_require__(82);
 let ComplaintModule = class ComplaintModule {
 };
 ComplaintModule = _ts_decorate._([
@@ -50757,7 +51456,7 @@ ComplaintModule = _ts_decorate._([
 
 
 /***/ }),
-/* 80 */
+/* 81 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50805,7 +51504,7 @@ ComplaintDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 81 */
+/* 82 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50856,7 +51555,7 @@ ComplaintInput = _ts_decorate._([
 
 
 /***/ }),
-/* 82 */
+/* 83 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50907,7 +51606,7 @@ DriverApiSetupNotFoundController = _ts_decorate._([
 
 
 /***/ }),
-/* 83 */
+/* 84 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50920,18 +51619,18 @@ Object.defineProperty(exports, "DriverAPIController", ({
         return DriverAPIController;
     }
 }));
-const _interop_require_default = __webpack_require__(84);
+const _interop_require_default = __webpack_require__(85);
 const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(29);
 const _common = __webpack_require__(2);
-const _restjwtauthguard = __webpack_require__(85);
+const _restjwtauthguard = __webpack_require__(86);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 const _typeorm1 = __webpack_require__(13);
 const _properurljoin = /*#__PURE__*/ _interop_require_default._(__webpack_require__(14));
 const _express = __webpack_require__(4);
-const _packagejson = __webpack_require__(86);
+const _packagejson = __webpack_require__(87);
 let DriverAPIController = class DriverAPIController {
     constructor(mediaRepository, driverDocumentRepository, driverRepository, paymentRepository, cryptoService, sharedDriverService){
         this.mediaRepository = mediaRepository;
@@ -51122,13 +51821,13 @@ DriverAPIController = _ts_decorate._([
 
 
 /***/ }),
-/* 84 */
+/* 85 */
 /***/ ((module) => {
 
 module.exports = require("@swc/helpers/_/_interop_require_default");
 
 /***/ }),
-/* 85 */
+/* 86 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51161,13 +51860,13 @@ RestJwtAuthGuard = _ts_decorate._([
 
 
 /***/ }),
-/* 86 */
+/* 87 */
 /***/ ((module) => {
 
 module.exports = /*#__PURE__*/JSON.parse('{"name":"bettersuite","version":"5.3.2","license":"MIT","scripts":{"ng":"nx","nx":"nx","start":"ts-node src/index.ts","build":"ng build","test":"ng test","lint":"nx workspace-lint && ng lint","e2e":"ng e2e","affected:apps":"nx affected:apps","affected:libs":"nx affected:libs","affected:build":"nx affected:build","affected:e2e":"nx affected:e2e","affected:test":"nx affected:test","affected:lint":"nx affected:lint","affected:dep-graph":"nx affected:dep-graph","affected":"nx affected","format":"nx format:write","format:write":"nx format:write","format:check":"nx format:check","update":"nx migrate latest","workspace-generator":"nx workspace-generator","dep-graph":"nx dep-graph","help":"nx help","lint:fix":"eslint \'./**/*.{ts,tsx}\' --fix","i18n:extract":"ngx-translate-extract --input ./apps/admin-panel/src --output ./apps/admin-panel/src/assets/i18n/{en,es,bn,de,hi,ko,id,ja,pt,ru,ur,zh,fr,ar,hy}.json --clean --format namespaced-json","typeorm":"node --require ts-node/register ./node_modules/typeorm/cli.js","semantic-release":"semantic-release","publish-frontend":"bash scripts/docker-frontend-publish.sh","publish-backend":"bash scripts/docker-backend-publish.sh","inject-google-maps-key":"bash scripts/inject-google-maps-key.sh","client-setup":"bash scripts/client_setup/client-setup.sh","build-apks":"bash scripts/build-apks.sh","smoke-test":"bash scripts/backend-smoke-test.sh","gql-stats":"bash scripts/gql-stats.sh","load-test:seed":"node tools/load-tests/scripts/seed-database.js","load-test:seed:clean":"node tools/load-tests/scripts/seed-database.js --clean","load-test":"bash tools/load-tests/scripts/run-load-test.sh","load-test:rider":"bash tools/load-tests/scripts/run-load-test.sh rider","load-test:driver":"bash tools/load-tests/scripts/run-load-test.sh driver"},"private":true,"dependencies":{"@angular/animations":"20.1.4","@angular/cdk":"20.1.4","@angular/common":"20.1.4","@angular/compiler":"20.1.4","@angular/core":"20.1.4","@angular/forms":"20.1.4","@angular/google-maps":"20.1.4","@angular/platform-browser":"20.1.4","@angular/platform-browser-dynamic":"20.1.4","@angular/router":"20.1.4","@angular/service-worker":"20.1.4","@ant-design/icons-angular":"^20.0.0","@antv/g2":"^4.2.10","@apollo/client":"^3.13.8","@apollo/server":"^4.12.2","@aws-sdk/client-s3":"^3.886.0","@aws-sdk/client-secrets-manager":"^3.974.0","@bull-board/api":"^6.12.0","@bull-board/express":"^6.12.0","@bull-board/nestjs":"^6.12.0","@ctrl/tinycolor":"^4.1.0","@googlemaps/google-maps-services-js":"^3.4.2","@googlemaps/places":"^2.0.1","@googlemaps/routing":"^2.0.1","@ingameltd/payu":"^1.0.5","@nestjs/apollo":"^13.1.0","@nestjs/axios":"^4.0.1","@nestjs/bullmq":"^11.0.3","@nestjs/common":"11.1.5","@nestjs/config":"^4.0.2","@nestjs/core":"11.1.5","@nestjs/graphql":"^13.1.0","@nestjs/jwt":"^11.0.0","@nestjs/passport":"^11.0.5","@nestjs/platform-express":"^11.1.5","@nestjs/schedule":"^6.0.0","@nestjs/serve-static":"^5.0.3","@nestjs/typeorm":"11.0.0","@nestjs/websockets":"^11.1.3","@nx/angular":"21.3.10","@nx/web":"21.3.10","@paypal/checkout-server-sdk":"^1.0.3","@ptc-org/nestjs-query-core":"^9.1.0","@ptc-org/nestjs-query-graphql":"^9.1.0","@ptc-org/nestjs-query-typeorm":"^9.1.0","@redis/client":"^6.2.1","@redis/json":"^6.2.1","@redis/search":"^6.2.1","@sentry/cli":"^2.50.2","@sentry/nestjs":"^10.0.0","@sentry/profiling-node":"10.0.0","@simplewebauthn/server":"^13.0.0","@simplewebauthn/types":"^12.0.0","@willsoto/nestjs-prometheus":"^6.0.2","apollo-angular":"^11.0.0","autoprefixer":"^10.4.21","bullmq":"^5.56.9","class-transformer":"0.5.1","class-validator":"0.14.2","core-js":"^3.42.0","dataloader":"^2.2.3","dotenv":"16.5.0","firebase-admin":"^13.4.0","google-libphonenumber":"^3.2.43","graphql":"^16.11.0","graphql-redis-subscriptions":"^2.7.0","graphql-relay":"^0.10.2","graphql-subscriptions":"^3.0.0","graphql-tools":"^9.0.20","graphql-ws":"^6.0.6","h3-js":"^4.2.1","instamojo-payment-nodejs":"^3.0.0","ioredis":"^5.7.0","json-2-csv":"^4.0.0","jwt-decode":"^4.0.0","license-verify":"0.1.5","mercadopago":"^1.5.17","multer":"^2.0.0","mysql2":"^3.14.3","ng-zorro-antd":"^20.1.0","ngx-timeago":"^3.0.0","node-rsa":"^1.1.1","overshom-wayforpay":"^1.1.0","passport":"^0.7.0","passport-jwt":"^4.0.1","passport-local":"^1.0.0","paystack-node":"^0.3.0","paytmchecksum":"^1.5.1","pdfkit":"^0.17.1","pdfkit-table":"^0.1.99","plivo":"^4.70.0","prom-client":"^15.1.3","proper-url-join":"^2.1.2","razorpay":"^2.9.8","redis":"^6.2.1","reflect-metadata":"^0.2.2","rxjs":"7.8.2","sberbank-acquiring":"^1.2.2","sharp":"^0.34.3","stripe":"^18.4.0","tslib":"^2.6.1","twilio":"^5.6.1","typeorm":"0.3.26","uuid":"^11.1.0","zone.js":"0.15.1"},"devDependencies":{"@angular-devkit/build-angular":"20.1.4","@angular-devkit/core":"20.1.4","@angular-devkit/schematics":"20.1.4","@angular-eslint/eslint-plugin":"20.1.0","@angular-eslint/eslint-plugin-template":"20.1.0","@angular-eslint/template-parser":"20.1.0","@angular/cli":"~20.1.0","@angular/compiler-cli":"20.1.4","@angular/language-service":"20.1.4","@bartholomej/ngx-translate-extract":"^8.0.2","@graphql-codegen/cli":"^5.0.7","@graphql-codegen/introspection":"^4.0.3","@graphql-codegen/typescript":"^4.1.6","@graphql-codegen/typescript-apollo-angular":"^4.0.1","@graphql-codegen/typescript-operations":"^4.6.1","@monodon/rust":"^2.3.0","@nestjs/cli":"^11.0.10","@nestjs/schematics":"11.0.5","@nestjs/testing":"11.1.3","@ngx-translate/core":"^17.0.0","@ngx-translate/http-loader":"^17.0.0","@nx/eslint":"21.3.10","@nx/eslint-plugin":"21.3.10","@nx/jest":"21.3.10","@nx/js":"21.3.10","@nx/node":"21.3.10","@nx/webpack":"21.3.10","@nxrocks/nx-flutter":"^10.0.1","@schematics/angular":"20.1.4","@semantic-release/changelog":"^6.0.3","@semantic-release/commit-analyzer":"^13.0.1","@semantic-release/git":"^10.0.1","@semantic-release/npm":"^12.0.1","@semantic-release/release-notes-generator":"^14.0.3","@swc-node/register":"1.10.10","@swc/cli":"^0.7.8","@swc/core":"1.13.3","@swc/helpers":"0.5.17","@swc/jest":"0.2.39","@tailwindcss/forms":"^0.5.4","@tailwindcss/typography":"^0.5.9","@testcontainers/mysql":"^11.5.1","@testcontainers/redis":"^11.5.1","@types/busboy":"^1.5.0","@types/cron":"^2.0.1","@types/estree":"1.0.1","@types/google-libphonenumber":"^7.4.30","@types/jest":"^29.5.0","@types/multer":"^1.4.12","@types/node":"^24.0.10","@types/passport-jwt":"^4.0.1","@types/paypal__checkout-server-sdk":"^1.0.5","@types/pdfkit":"^0.17.0","@types/proper-url-join":"^2.1.5","@types/supertest":"^6.0.3","conventional-changelog-conventionalcommits":"^9.0.0","eslint":"^9.28.0","eslint-config-prettier":"10.1.5","eslint-plugin-unused-imports":"^4.1.4","jest":"^29.7.0","jest-environment-jsdom":"^29.7.0","jest-util":"^29.7.0","jsonc-eslint-parser":"^2.1.0","ng-packagr":"20.1.0","nx":"21.3.10","postcss":"^8.4.27","postcss-import":"15.1.0","postcss-preset-env":"9.1.0","postcss-url":"10.1.3","prettier":"^3.5.3","supertest":"^7.1.4","swc-loader":"^0.2.6","tailwindcss":"^3.3.3","testcontainers":"^11.5.1","ts-jest":"29.4.0","ts-node":"10.9.2","tslib":"^2.3.0","typescript":"5.8.3","typescript-eslint":"^8.33.0","webpack-cli":"^5.1.4"},"workspaces":["libs/*","apps/*"],"overrides":{"typescript":"5.8.3","eslint":"^9.28.0","rxjs":"7.8.2","typeorm":{"redis":"^5.8.2"}},"repository":{"type":"git","url":"https://github.com/ridyio/ridy-monorepo.git"},"publishConfig":{"access":"restricted"},"allowScripts":{"cpu-features@0.0.10":true,"core-js@3.43.0":true,"lmdb@3.4.1":true,"msgpackr-extract@3.0.3":true,"nx@21.3.10":true,"protobufjs@7.5.3":true,"sharp@0.34.3":true,"ssh2@1.16.0":true,"unrs-resolver@1.11.1":true,"@apollo/protobufjs@1.2.7":true,"@firebase/util@1.12.1":true,"@nestjs/core@11.1.5":true,"@parcel/watcher@2.6.0":true,"@sentry/cli@2.50.2":true,"@sentry-internal/node-cpu-profiler@2.2.0":true,"@swc/core@1.13.3":true,"fsevents@2.3.3":true,"esbuild@0.25.5":true}}');
 
 /***/ }),
-/* 87 */
+/* 88 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51184,8 +51883,8 @@ const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
-const _feedbacksservice = __webpack_require__(88);
-const _feedbacksresolver = __webpack_require__(89);
+const _feedbacksservice = __webpack_require__(89);
+const _feedbacksresolver = __webpack_require__(90);
 let FeedbacksModule = class FeedbacksModule {
 };
 FeedbacksModule = _ts_decorate._([
@@ -51206,7 +51905,7 @@ FeedbacksModule = _ts_decorate._([
 
 
 /***/ }),
-/* 88 */
+/* 89 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51294,7 +51993,7 @@ FeedbacksService = _ts_decorate._([
 
 
 /***/ }),
-/* 89 */
+/* 90 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51311,8 +52010,8 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(29);
 const _graphql = __webpack_require__(9);
-const _feedbacksservice = __webpack_require__(88);
-const _feedbackssummarydto = __webpack_require__(90);
+const _feedbacksservice = __webpack_require__(89);
+const _feedbackssummarydto = __webpack_require__(91);
 const _common = __webpack_require__(2);
 const _authenticateduser = __webpack_require__(44);
 const _jwtgqlauthguard = __webpack_require__(43);
@@ -51346,7 +52045,7 @@ FeedbacksResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 90 */
+/* 91 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51362,7 +52061,7 @@ Object.defineProperty(exports, "FeedbacksSummaryDTO", ({
 const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _graphql = __webpack_require__(9);
-const _reviewdto = __webpack_require__(91);
+const _reviewdto = __webpack_require__(92);
 let FeedbacksSummaryDTO = class FeedbacksSummaryDTO {
 };
 _ts_decorate._([
@@ -51401,7 +52100,7 @@ FeedbacksSummaryDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 91 */
+/* 92 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51451,7 +52150,7 @@ ReviewEntity = _ts_decorate._([
 
 
 /***/ }),
-/* 92 */
+/* 93 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51470,12 +52169,12 @@ const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 const _nestjsquerygraphql = __webpack_require__(16);
 const _jwtgqlauthguard = __webpack_require__(43);
-const _payoutaccountdto = __webpack_require__(93);
+const _payoutaccountdto = __webpack_require__(94);
 const _nestjsquerytypeorm = __webpack_require__(39);
-const _payoutservice = __webpack_require__(97);
-const _payoutresolver = __webpack_require__(98);
-const _walletmodule = __webpack_require__(103);
-const _payoutmethoddto = __webpack_require__(95);
+const _payoutservice = __webpack_require__(98);
+const _payoutresolver = __webpack_require__(99);
+const _walletmodule = __webpack_require__(104);
+const _payoutmethoddto = __webpack_require__(96);
 const _axios = __webpack_require__(18);
 let PayoutModule = class PayoutModule {
 };
@@ -51558,7 +52257,7 @@ PayoutModule = _ts_decorate._([
 
 
 /***/ }),
-/* 93 */
+/* 94 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51575,10 +52274,10 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _graphql = __webpack_require__(9);
 const _nestjsquerygraphql = __webpack_require__(16);
-const _paymentgatewaydto = __webpack_require__(94);
+const _paymentgatewaydto = __webpack_require__(95);
 const _database = __webpack_require__(12);
-const _payoutmethoddto = __webpack_require__(95);
-const _drivertransactiondto = __webpack_require__(96);
+const _payoutmethoddto = __webpack_require__(96);
+const _drivertransactiondto = __webpack_require__(97);
 let PayoutAccountDTO = class PayoutAccountDTO {
 };
 _ts_decorate._([
@@ -51701,7 +52400,7 @@ PayoutAccountDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 94 */
+/* 95 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51778,7 +52477,7 @@ PaymentGatewayDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 95 */
+/* 96 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51852,7 +52551,7 @@ PayoutMethodDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 96 */
+/* 97 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51941,7 +52640,7 @@ DriverTransactionDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 97 */
+/* 98 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52075,7 +52774,7 @@ PayoutService = _ts_decorate._([
 
 
 /***/ }),
-/* 98 */
+/* 99 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52100,16 +52799,16 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(29);
 const _graphql = __webpack_require__(9);
-const _payoutservice = __webpack_require__(97);
-const _payoutaccountdto = __webpack_require__(93);
+const _payoutservice = __webpack_require__(98);
+const _payoutaccountdto = __webpack_require__(94);
 const _common = __webpack_require__(2);
 const _authenticateduser = __webpack_require__(44);
-const _payoutmethoddto = __webpack_require__(95);
-const _topupwalletinput = __webpack_require__(99);
-const _payoutaccountinput = __webpack_require__(100);
-const _getpayoutlinkurlinput = __webpack_require__(101);
+const _payoutmethoddto = __webpack_require__(96);
+const _topupwalletinput = __webpack_require__(100);
+const _payoutaccountinput = __webpack_require__(101);
+const _getpayoutlinkurlinput = __webpack_require__(102);
 const _jwtgqlauthguard = __webpack_require__(43);
-const _updatepayoutmethodinput = __webpack_require__(102);
+const _updatepayoutmethodinput = __webpack_require__(103);
 let PayoutResolver = class PayoutResolver {
     constructor(payoutService, context){
         this.payoutService = payoutService;
@@ -52233,7 +52932,7 @@ const IntentResultToTopUpWalletStatus = (status)=>{
 
 
 /***/ }),
-/* 99 */
+/* 100 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52347,7 +53046,7 @@ TopUpWalletResponse = _ts_decorate._([
 
 
 /***/ }),
-/* 100 */
+/* 101 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52461,7 +53160,7 @@ PayoutAccountInput = _ts_decorate._([
 
 
 /***/ }),
-/* 101 */
+/* 102 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52490,7 +53189,7 @@ GetPayoutLinkUrlInput = _ts_decorate._([
 
 
 /***/ }),
-/* 102 */
+/* 103 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52526,7 +53225,7 @@ UpdatePayoutMethodInput = _ts_decorate._([
 
 
 /***/ }),
-/* 103 */
+/* 104 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52546,12 +53245,12 @@ const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 const _jwtgqlauthguard = __webpack_require__(43);
-const _drivertransactiondto = __webpack_require__(96);
-const _driverwalletdto = __webpack_require__(104);
-const _earningsservice = __webpack_require__(105);
-const _walletresolver = __webpack_require__(107);
+const _drivertransactiondto = __webpack_require__(97);
+const _driverwalletdto = __webpack_require__(105);
+const _earningsservice = __webpack_require__(106);
+const _walletresolver = __webpack_require__(108);
 const _axios = __webpack_require__(18);
-const _walletservice = __webpack_require__(110);
+const _walletservice = __webpack_require__(111);
 let WalletModule = class WalletModule {
 };
 WalletModule = _ts_decorate._([
@@ -52640,7 +53339,7 @@ WalletModule = _ts_decorate._([
 
 
 /***/ }),
-/* 104 */
+/* 105 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52695,7 +53394,7 @@ DriverWalletDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 105 */
+/* 106 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52715,7 +53414,7 @@ const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 const _typeorm1 = __webpack_require__(13);
-const _earningsdto = __webpack_require__(106);
+const _earningsdto = __webpack_require__(107);
 let EarningsService = class EarningsService {
     constructor(requestRepository){
         this.requestRepository = requestRepository;
@@ -52726,7 +53425,7 @@ let EarningsService = class EarningsService {
         ]);
         if (q.length < 1) {
             return {
-                currency: 'USD',
+                currency: 'INR',
                 sumOfCurrentPeriod: 0,
                 dataset: []
             };
@@ -52766,7 +53465,7 @@ let EarningsService = class EarningsService {
         ]);
         if (q.length < 1) {
             return {
-                currency: 'USD',
+                currency: 'INR',
                 sumOfCurrentPeriod: 0,
                 dataset: []
             };
@@ -52910,7 +53609,7 @@ EarningsService = _ts_decorate._([
 
 
 /***/ }),
-/* 106 */
+/* 107 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53019,7 +53718,7 @@ Datapoint = _ts_decorate._([
 
 
 /***/ }),
-/* 107 */
+/* 108 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53042,15 +53741,15 @@ const _database = __webpack_require__(12);
 const _typeorm1 = __webpack_require__(13);
 const _authenticateduser = __webpack_require__(44);
 const _jwtgqlauthguard = __webpack_require__(43);
-const _earningsdto = __webpack_require__(106);
-const _topupwalletinput = __webpack_require__(99);
-const _earningsservice = __webpack_require__(105);
-const _giftcarddto = __webpack_require__(108);
-const _setup_payment_methoddto = __webpack_require__(109);
+const _earningsdto = __webpack_require__(107);
+const _topupwalletinput = __webpack_require__(100);
+const _earningsservice = __webpack_require__(106);
+const _giftcarddto = __webpack_require__(109);
+const _setup_payment_methoddto = __webpack_require__(110);
 const _rxjs = __webpack_require__(21);
 const _axios = __webpack_require__(18);
-const _walletservice = __webpack_require__(110);
-const _razorpayorderdto = __webpack_require__(111);
+const _walletservice = __webpack_require__(111);
+const _razorpayorderdto = __webpack_require__(112);
 let WalletResolver = class WalletResolver {
     constructor(gatewayRepo, driverRepo, context, earningsService, commonGiftCardService, httpService, cryptoService, walletService, razorpayService, sharedDriverService){
         this.gatewayRepo = gatewayRepo;
@@ -53088,6 +53787,23 @@ let WalletResolver = class WalletResolver {
         if (!isValid) {
             throw new Error('INVALID_PAYMENT_SIGNATURE');
         }
+        const rzpOrder = await this.razorpayService.fetchOrder(razorpayOrderId);
+        const driverId = this.context.req.user.id;
+        if (!String(rzpOrder.receipt ?? '').startsWith(`topup_${driverId}_`)) {
+            throw new Error('ORDER_NOT_BELONG_TO_DRIVER');
+        }
+        if (rzpOrder.status !== 'paid') {
+            throw new Error('ORDER_NOT_PAID');
+        }
+        const alreadyCredited = await this.driverRepo.manager.findOne(_database.DriverTransactionEntity, {
+            where: {
+                refrenceNumber: razorpayPaymentId
+            }
+        });
+        if (alreadyCredited) {
+            return true;
+        }
+        amount = Number(rzpOrder.amount_paid) / 100;
         await this.sharedDriverService.rechargeWallet({
             status: _database.TransactionStatus.Done,
             driverId: this.context.req.user.id,
@@ -53128,12 +53844,12 @@ let WalletResolver = class WalletResolver {
             return prev.balance > current.balance ? prev : current;
         }) : {
             balance: 0,
-            currency: 'USD'
+            currency: 'INR'
         };
         const obj = {
             gatewayId: gatewayId.toString(),
             userType: 'driver',
-            currency: walletsLargestBalance.currency ?? 'USD',
+            currency: walletsLargestBalance.currency ?? 'INR',
             userId: this.context.req.user.id.toString(),
             returnUrl: `${process.env.DRIVER_APPLICATION_ID ?? 'default.driver.redirection'}://`
         };
@@ -53322,7 +54038,7 @@ WalletResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 108 */
+/* 109 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53363,7 +54079,7 @@ GiftCardDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 109 */
+/* 110 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53393,7 +54109,7 @@ SetupPaymentMethodDto = _ts_decorate._([
 
 
 /***/ }),
-/* 110 */
+/* 111 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53491,7 +54207,7 @@ WalletService = _ts_decorate._([
 
 
 /***/ }),
-/* 111 */
+/* 112 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53531,7 +54247,7 @@ RazorpayOrderDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 112 */
+/* 113 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53548,8 +54264,8 @@ const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
-const _sosresolver = __webpack_require__(113);
-const _sosservice = __webpack_require__(115);
+const _sosresolver = __webpack_require__(114);
+const _sosservice = __webpack_require__(116);
 let SOSModule = class SOSModule {
 };
 SOSModule = _ts_decorate._([
@@ -53569,7 +54285,7 @@ SOSModule = _ts_decorate._([
 
 
 /***/ }),
-/* 113 */
+/* 114 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53589,8 +54305,8 @@ const _common = __webpack_require__(2);
 const _graphql = __webpack_require__(9);
 const _database = __webpack_require__(12);
 const _jwtgqlauthguard = __webpack_require__(43);
-const _sosdto = __webpack_require__(114);
-const _sosservice = __webpack_require__(115);
+const _sosdto = __webpack_require__(115);
+const _sosservice = __webpack_require__(116);
 let SOSResolver = class SOSResolver {
     constructor(sosService){
         this.sosService = sosService;
@@ -53629,7 +54345,7 @@ SOSResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 114 */
+/* 115 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53658,7 +54374,7 @@ SOSDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 115 */
+/* 116 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53729,13 +54445,13 @@ SOSService = _ts_decorate._([
 
 
 /***/ }),
-/* 116 */
+/* 117 */
 /***/ ((module) => {
 
 module.exports = require("@willsoto/nestjs-prometheus");
 
 /***/ }),
-/* 117 */
+/* 118 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53750,8 +54466,8 @@ Object.defineProperty(exports, "NotificationModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _notificationservice = __webpack_require__(118);
-const _notificationresolver = __webpack_require__(119);
+const _notificationservice = __webpack_require__(119);
+const _notificationresolver = __webpack_require__(120);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 let NotificationModule = class NotificationModule {
@@ -53774,7 +54490,7 @@ NotificationModule = _ts_decorate._([
 
 
 /***/ }),
-/* 118 */
+/* 119 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53827,7 +54543,7 @@ NotificationService = _ts_decorate._([
 
 
 /***/ }),
-/* 119 */
+/* 120 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53845,7 +54561,7 @@ const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(29);
 const _common = __webpack_require__(2);
 const _graphql = __webpack_require__(9);
-const _notificationservice = __webpack_require__(118);
+const _notificationservice = __webpack_require__(119);
 const _authenticateduser = __webpack_require__(44);
 const _jwtgqlauthguard = __webpack_require__(43);
 let NotificationResolver = class NotificationResolver {
@@ -53883,7 +54599,7 @@ NotificationResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 120 */
+/* 121 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53899,9 +54615,9 @@ Object.defineProperty(exports, "EphemeralMessagesModule", ({
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
-const _ephemeralmessagesservice = __webpack_require__(121);
-const _ephemeralmessagesresolver = __webpack_require__(122);
-const _ordermodule = __webpack_require__(50);
+const _ephemeralmessagesservice = __webpack_require__(122);
+const _ephemeralmessagesresolver = __webpack_require__(123);
+const _ordermodule = __webpack_require__(51);
 let EphemeralMessagesModule = class EphemeralMessagesModule {
 };
 EphemeralMessagesModule = _ts_decorate._([
@@ -53919,7 +54635,7 @@ EphemeralMessagesModule = _ts_decorate._([
 
 
 /***/ }),
-/* 121 */
+/* 122 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53973,7 +54689,7 @@ EphemeralMessagesService = _ts_decorate._([
 
 
 /***/ }),
-/* 122 */
+/* 123 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53990,8 +54706,8 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(29);
 const _graphql = __webpack_require__(9);
-const _ephemeralmessagesservice = __webpack_require__(121);
-const _ephemeralmessagedto = __webpack_require__(123);
+const _ephemeralmessagesservice = __webpack_require__(122);
+const _ephemeralmessagedto = __webpack_require__(124);
 const _common = __webpack_require__(2);
 const _authenticateduser = __webpack_require__(44);
 const _jwtgqlauthguard = __webpack_require__(43);
@@ -54039,7 +54755,7 @@ EphemeralMessagesResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 123 */
+/* 124 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54117,7 +54833,7 @@ EphemeralMessageDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 124 */
+/* 125 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54132,8 +54848,8 @@ Object.defineProperty(exports, "SupportModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _supportservice = __webpack_require__(125);
-const _supportresolver = __webpack_require__(126);
+const _supportservice = __webpack_require__(126);
+const _supportresolver = __webpack_require__(127);
 let SupportModule = class SupportModule {
 };
 SupportModule = _ts_decorate._([
@@ -54150,7 +54866,7 @@ SupportModule = _ts_decorate._([
 
 
 /***/ }),
-/* 125 */
+/* 126 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54182,7 +54898,7 @@ SupportService = _ts_decorate._([
 
 
 /***/ }),
-/* 126 */
+/* 127 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54202,7 +54918,7 @@ const _graphql = __webpack_require__(9);
 const _common = __webpack_require__(2);
 const _jwtgqlauthguard = __webpack_require__(43);
 const _authenticateduser = __webpack_require__(44);
-const _supportservice = __webpack_require__(125);
+const _supportservice = __webpack_require__(126);
 let SupportResolver = class SupportResolver {
     constructor(context, supportService){
         this.context = context;
@@ -54234,13 +54950,13 @@ SupportResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 127 */
+/* 128 */
 /***/ ((module) => {
 
 module.exports = require("firebase-admin/app");
 
 /***/ }),
-/* 128 */
+/* 129 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 // Import with `const Sentry = require("@sentry/nestjs");` if you are using CJS
@@ -54251,9 +54967,9 @@ Object.defineProperty(exports, "__esModule", ({
 const _interop_require_wildcard = __webpack_require__(1);
 const _apollo = __webpack_require__(17);
 const _common = __webpack_require__(2);
-const _nestjs = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(129));
-const _profilingnode = __webpack_require__(130);
-const _dotenv = __webpack_require__(131);
+const _nestjs = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(130));
+const _profilingnode = __webpack_require__(131);
+const _dotenv = __webpack_require__(132);
 (0, _dotenv.config)({
     path: __dirname + '/.env'
 });
@@ -54278,19 +54994,19 @@ _nestjs.init({
 
 
 /***/ }),
-/* 129 */
+/* 130 */
 /***/ ((module) => {
 
 module.exports = require("@sentry/nestjs");
 
 /***/ }),
-/* 130 */
+/* 131 */
 /***/ ((module) => {
 
 module.exports = require("@sentry/profiling-node");
 
 /***/ }),
-/* 131 */
+/* 132 */
 /***/ ((module) => {
 
 module.exports = require("dotenv");
@@ -54377,10 +55093,10 @@ const _common = __webpack_require__(2);
 const _core = __webpack_require__(3);
 const _express = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(4));
 const _driverapimodule = __webpack_require__(5);
-const _app = __webpack_require__(127);
+const _app = __webpack_require__(128);
 const _firebaseadmin = __webpack_require__(22);
 const _database = __webpack_require__(12);
-__webpack_require__(128);
+__webpack_require__(129);
 const _licenseverify = __webpack_require__(15);
 async function bootstrap() {
     await (0, _database.loadSecrets)();

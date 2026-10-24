@@ -217,6 +217,8 @@ export * from './taxi/taxi-support-request-activity.entity';
 export * from './taxi/taxi-support-request.entity';
 export * from './taxi/zone-price-category.entity';
 export * from './taxi/zone-price.entity';
+export * from './taxi/surge-zone.entity';
+export * from './taxi/surge-setting.entity';
 export * from './taxi/driver-timesheet.entity';
 export * from './taxi/taxi-order-driver-status.entity';
 export * from './auth-method.entity';

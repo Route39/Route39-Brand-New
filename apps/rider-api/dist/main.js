@@ -602,6 +602,8 @@ __webpack_require__.d(__webpack_exports__, {
   ShopWalletEntity: () => (/* reexport */ ShopWalletEntity),
   ShopWaypoint: () => (/* reexport */ ShopWaypoint),
   StorageModule: () => (/* reexport */ StorageModule),
+  SurgeSettingEntity: () => (/* reexport */ SurgeSettingEntity),
+  SurgeZoneEntity: () => (/* reexport */ SurgeZoneEntity),
   TaxiOrderDriverStatusEntity: () => (/* reexport */ TaxiOrderDriverStatusEntity),
   TaxiOrderEntity: () => (/* reexport */ TaxiOrderEntity),
   TaxiOrderNoteEntity: () => (/* reexport */ TaxiOrderNoteEntity),
@@ -4352,6 +4354,9 @@ var PolygonTransformer = /*#__PURE__*/ function() {
             var ar = x.map(function(y) {
                 return y.lng + " " + y.lat;
             });
+            if (x.length > 0 && (x[0].lat !== x[x.length - 1].lat || x[0].lng !== x[x.length - 1].lng)) {
+                ar.push(x[0].lng + " " + x[0].lat);
+            }
             return ar.join(',');
         }).join('),(');
         return "POLYGON((" + str + "))";
@@ -15332,6 +15337,279 @@ DriverWalletEntity = driver_wallet_entity_ts_decorate([
     (0,external_typeorm_.Entity)('driver_wallet')
 ], DriverWalletEntity);
 
+;// ../../libs/database/src/lib/entities/taxi/surge-zone.entity.ts
+function surge_zone_entity_ts_decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+function surge_zone_entity_ts_metadata(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+}
+
+
+var SurgeZoneEntity = function SurgeZoneEntity() {
+    "use strict";
+};
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.PrimaryGeneratedColumn)(),
+    surge_zone_entity_ts_metadata("design:type", Number)
+], SurgeZoneEntity.prototype, "id", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar'),
+    surge_zone_entity_ts_metadata("design:type", String)
+], SurgeZoneEntity.prototype, "name", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('polygon', {
+        transformer: new PolygonTransformer()
+    }),
+    surge_zone_entity_ts_metadata("design:type", Array)
+], SurgeZoneEntity.prototype, "area", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar', {
+        default: 'Off'
+    }),
+    surge_zone_entity_ts_metadata("design:type", String)
+], SurgeZoneEntity.prototype, "status", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: false
+    }),
+    surge_zone_entity_ts_metadata("design:type", Boolean)
+], SurgeZoneEntity.prototype, "autoLive", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar', {
+        nullable: true
+    }),
+    surge_zone_entity_ts_metadata("design:type", Object)
+], SurgeZoneEntity.prototype, "autoReason", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: false
+    }),
+    surge_zone_entity_ts_metadata("design:type", Boolean)
+], SurgeZoneEntity.prototype, "autoCreated", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('int', {
+        nullable: true
+    }),
+    surge_zone_entity_ts_metadata("design:type", Object)
+], SurgeZoneEntity.prototype, "regionId", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar', {
+        default: 'Peak'
+    }),
+    surge_zone_entity_ts_metadata("design:type", String)
+], SurgeZoneEntity.prototype, "type", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        nullable: true,
+        precision: 10,
+        scale: 2
+    }),
+    surge_zone_entity_ts_metadata("design:type", Object)
+], SurgeZoneEntity.prototype, "surgePercent", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        nullable: true,
+        precision: 10,
+        scale: 2
+    }),
+    surge_zone_entity_ts_metadata("design:type", Object)
+], SurgeZoneEntity.prototype, "surgeFlat", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        nullable: true,
+        precision: 10,
+        scale: 2
+    }),
+    surge_zone_entity_ts_metadata("design:type", Object)
+], SurgeZoneEntity.prototype, "commissionPercent", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar', {
+        nullable: true,
+        length: 5
+    }),
+    surge_zone_entity_ts_metadata("design:type", Object)
+], SurgeZoneEntity.prototype, "startTime", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar', {
+        nullable: true,
+        length: 5
+    }),
+    surge_zone_entity_ts_metadata("design:type", Object)
+], SurgeZoneEntity.prototype, "endTime", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar', {
+        nullable: true,
+        length: 10
+    }),
+    surge_zone_entity_ts_metadata("design:type", Object)
+], SurgeZoneEntity.prototype, "startDate", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar', {
+        nullable: true,
+        length: 10
+    }),
+    surge_zone_entity_ts_metadata("design:type", Object)
+], SurgeZoneEntity.prototype, "endDate", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.CreateDateColumn)(),
+    surge_zone_entity_ts_metadata("design:type", typeof Date === "undefined" ? Object : Date)
+], SurgeZoneEntity.prototype, "createdAt", void 0);
+surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.UpdateDateColumn)(),
+    surge_zone_entity_ts_metadata("design:type", typeof Date === "undefined" ? Object : Date)
+], SurgeZoneEntity.prototype, "updatedAt", void 0);
+SurgeZoneEntity = surge_zone_entity_ts_decorate([
+    (0,external_typeorm_.Entity)('surge_zone')
+], SurgeZoneEntity);
+
+;// ../../libs/database/src/lib/entities/taxi/surge-setting.entity.ts
+function surge_setting_entity_ts_decorate(decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+function surge_setting_entity_ts_metadata(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+}
+
+var SurgeSettingEntity = function SurgeSettingEntity() {
+    "use strict";
+};
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.PrimaryGeneratedColumn)(),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "id", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: false
+    }),
+    surge_setting_entity_ts_metadata("design:type", Boolean)
+], SurgeSettingEntity.prototype, "isEnabled", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: false
+    }),
+    surge_setting_entity_ts_metadata("design:type", Boolean)
+], SurgeSettingEntity.prototype, "autoSurgeEnabled", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 20,
+        precision: 10,
+        scale: 2
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "defaultSurgePercent", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 50,
+        precision: 10,
+        scale: 2
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "maxSurgePercent", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 0,
+        precision: 10,
+        scale: 2
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "commissionPercent", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 3,
+        precision: 10,
+        scale: 2
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "autoDemandRatio", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('int', {
+        default: 15
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "autoWindowMinutes", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: true
+    }),
+    surge_setting_entity_ts_metadata("design:type", Boolean)
+], SurgeSettingEntity.prototype, "notifyDrivers", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar', {
+        default: 'highest'
+    }),
+    surge_setting_entity_ts_metadata("design:type", String)
+], SurgeSettingEntity.prototype, "stackingMode", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('int', {
+        default: 5000
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "notifyRadiusMeters", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: false
+    }),
+    surge_setting_entity_ts_metadata("design:type", Boolean)
+], SurgeSettingEntity.prototype, "gridEnabled", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('int', {
+        default: 2000
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "gridSizeMeters", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 2
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "tierLowRatio", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 3
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "tierMidRatio", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 5
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "tierHighRatio", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 10
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "tierLowPercent", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 20
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "tierMidPercent", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 30
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "tierHighPercent", void 0);
+surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: 10
+    }),
+    surge_setting_entity_ts_metadata("design:type", Number)
+], SurgeSettingEntity.prototype, "rainExtraPercent", void 0);
+SurgeSettingEntity = surge_setting_entity_ts_decorate([
+    (0,external_typeorm_.Entity)('surge_setting')
+], SurgeSettingEntity);
+
 ;// ../../libs/database/src/lib/entities/taxi/driver-timesheet.entity.ts
 function driver_timesheet_entity_defineProperties(target, props) {
     for(var i = 0; i < props.length; i++){
@@ -15688,6 +15966,8 @@ AuthVerificationConfigEntity = auth_verification_config_entity_ts_decorate([
 ], AuthVerificationConfigEntity);
 
 ;// ../../libs/database/src/lib/entities/index.ts
+
+
 
 
 
@@ -17074,6 +17354,28 @@ taxi_order_entity_ts_decorate([
     }),
     taxi_order_entity_ts_metadata("design:type", Number)
 ], TaxiOrderEntity.prototype, "providerShare", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: '0.00',
+        precision: 10,
+        scale: 2
+    }),
+    taxi_order_entity_ts_metadata("design:type", Number)
+], TaxiOrderEntity.prototype, "surgeAmount", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)('int', {
+        nullable: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", Object)
+], TaxiOrderEntity.prototype, "surgeZoneId", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)('float', {
+        default: '0.00',
+        precision: 10,
+        scale: 2
+    }),
+    taxi_order_entity_ts_metadata("design:type", Number)
+], TaxiOrderEntity.prototype, "surgeCommission", void 0);
 taxi_order_entity_ts_decorate([
     (0,external_typeorm_.Column)('float', {
         precision: 10,
@@ -19091,6 +19393,8 @@ function database_module_ts_metadata(k, v) {
 
 
 
+
+
 var DatabaseModule = /*#__PURE__*/ function() {
     "use strict";
     function DatabaseModule(dataSource) {
@@ -19328,6 +19632,8 @@ var entities = [
     SOSActivityEntity,
     AnnouncementEntity,
     ZonePriceEntity,
+    SurgeZoneEntity,
+    SurgeSettingEntity,
     GatewayToUserEntity,
     SavedPaymentMethodEntity,
     RiderReviewEntity,
@@ -28425,16 +28731,11 @@ var DriverNotificationService = /*#__PURE__*/ function() {
                                 apns: {
                                     payload: {
                                         aps: {
-                                            sound: {
-                                                critical: true,
-                                                name: (_process_env_REQUEST_SOUND = process.env.REQUEST_SOUND) != null ? _process_env_REQUEST_SOUND : 'default',
-                                                volume: 1.0
-                                            },
+                                            sound: (_process_env_REQUEST_SOUND = process.env.REQUEST_SOUND) != null ? _process_env_REQUEST_SOUND : 'default',
                                             badge: 1,
-                                            contentAvailable: true,
                                             alert: {
-                                                titleLocKey: 'notification_new_request_title',
-                                                subtitleLocKey: 'notification_new_request_body'
+                                                title: 'New ride request',
+                                                body: 'Tap to view the request'
                                             }
                                         }
                                     }
@@ -28454,6 +28755,92 @@ var DriverNotificationService = /*#__PURE__*/ function() {
                         return [
                             3,
                             4
+                        ];
+                    case 4:
+                        return [
+                            2
+                        ];
+                }
+            });
+        }).apply(this, arguments);
+    };
+    _proto.surge = function surge() {
+        return driver_notification_service_async_to_generator(function(tokens, title, body, data) {
+            var result, error;
+            return driver_notification_service_ts_generator(this, function(_state) {
+                switch(_state.label){
+                    case 0:
+                        if (data === void 0) data = {};
+                        tokens = tokens.filter(function(t) {
+                            var _t_length;
+                            return ((_t_length = t == null ? void 0 : t.length) != null ? _t_length : 0) > 0;
+                        });
+                        if (tokens.length < 1) return [
+                            2,
+                            0
+                        ];
+                        _state.label = 1;
+                    case 1:
+                        _state.trys.push([
+                            1,
+                            3,
+                            ,
+                            4
+                        ]);
+                        return [
+                            4,
+                            (0,external_firebase_admin_.messaging)().sendEachForMulticast({
+                                tokens: tokens,
+                                data: driver_notification_service_extends({
+                                    type: 'surge'
+                                }, data),
+                                notification: {
+                                    title: title,
+                                    body: body
+                                },
+                                webpush: {
+                                    notification: {
+                                        title: title,
+                                        body: body,
+                                        icon: '/icons/Icon-192.png'
+                                    }
+                                },
+                                android: {
+                                    priority: 'high',
+                                    notification: {
+                                        sound: 'default',
+                                        title: title,
+                                        body: body,
+                                        channelId: 'tripEvents',
+                                        icon: 'notification_icon'
+                                    }
+                                },
+                                apns: {
+                                    payload: {
+                                        aps: {
+                                            sound: 'default',
+                                            alert: {
+                                                title: title,
+                                                body: body
+                                            }
+                                        }
+                                    }
+                                }
+                            })
+                        ];
+                    case 2:
+                        result = _state.sent();
+                        common_.Logger.log("surge sent: " + result.successCount + "/" + tokens.length, 'DriverNotificationService.surge');
+                        return [
+                            2,
+                            result.successCount
+                        ];
+                    case 3:
+                        error = _state.sent();
+                        common_.Logger.error(error);
+                        return [
+                            2,
+                            0
                         ];
                     case 4:
                         return [
@@ -32271,6 +32658,7 @@ function shared_order_service_ts_param(paramIndex, decorator) {
 
 
 
+
 var SharedOrderService = /*#__PURE__*/ function() {
     "use strict";
     function SharedOrderService(orderRepository, activityRepository, regionService, serviceCategoryRepository, serviceOptionRepository, zonePriceRepository, paymentRepository, messageRepository, googleServices, servicesService, riderService, sharedRiderWalletService, driverRedisService, riderRedisService, rideOfferRedisService, activeOrderRedisService, driverService, sharedProviderService, sharedFleetService, commonCouponService, driverNotificationService, riderNotificationService, httpService, dispatchMainQueue, pubsubService, configService) {
@@ -32362,6 +32750,114 @@ var SharedOrderService = /*#__PURE__*/ function() {
             });
         }).call(this);
     };
+    _proto.getSurgeContext = function getSurgeContext(point) {
+        return shared_order_service_async_to_generator(function() {
+            var settingRepo, settings, rows, hhmm, zones, top, _settings_maxSurgePercent, _settings_stackingMode, e;
+            return shared_order_service_ts_generator(this, function(_state) {
+                switch(_state.label){
+                    case 0:
+                        _state.trys.push([
+                            0,
+                            5,
+                            ,
+                            6
+                        ]);
+                        settingRepo = this.orderRepository.manager.getRepository(SurgeSettingEntity);
+                        return [
+                            4,
+                            settingRepo.find({
+                                order: {
+                                    id: 'ASC'
+                                },
+                                take: 1
+                            })
+                        ];
+                    case 1:
+                        settings = _state.sent()[0];
+                        if (!!settings) return [
+                            3,
+                            3
+                        ];
+                        return [
+                            4,
+                            settingRepo.save(settingRepo.create({}))
+                        ];
+                    case 2:
+                        settings = _state.sent();
+                        _state.label = 3;
+                    case 3:
+                        if (!settings.isEnabled) return [
+                            2,
+                            null
+                        ];
+                        return [
+                            4,
+                            this.orderRepository.manager.query("SELECT id, type, surgePercent, surgeFlat, commissionPercent, startTime, endTime FROM surge_zone WHERE (status = 'Active' OR (status = 'Auto' AND autoLive = 1)) AND ST_Within(st_geomfromtext('POINT(? ?)'), area)", [
+                                point.lng,
+                                point.lat
+                            ])
+                        ];
+                    case 4:
+                        rows = _state.sent();
+                        hhmm = new Date(Date.now() + 330 * 60000).toISOString().substring(11, 16); // IST
+                        zones = rows.filter(function(z) {
+                            return !z.startTime || !z.endTime || (z.startTime <= z.endTime ? hhmm >= z.startTime && hhmm < z.endTime : hhmm >= z.startTime || hhmm < z.endTime);
+                        }).map(function(z) {
+                            var hasFlat = z.surgeFlat != null && Number(z.surgeFlat) > 0;
+                            var _z_type, _z_surgePercent, _ref, _z_commissionPercent, _ref1;
+                            return {
+                                id: Number(z.id),
+                                type: (_z_type = z.type) != null ? _z_type : 'Peak',
+                                flat: hasFlat ? Number(z.surgeFlat) : 0,
+                                percent: hasFlat ? 0 : Number((_ref = (_z_surgePercent = z.surgePercent) != null ? _z_surgePercent : settings.defaultSurgePercent) != null ? _ref : 0),
+                                commissionPercent: Number((_ref1 = (_z_commissionPercent = z.commissionPercent) != null ? _z_commissionPercent : settings.commissionPercent) != null ? _ref1 : 0)
+                            };
+                        });
+                        if (zones.length === 0) return [
+                            2,
+                            null
+                        ];
+                        top = [].concat(zones).sort(function(x, y) {
+                            return (y.flat || y.percent) - (x.flat || x.percent);
+                        })[0];
+                        return [
+                            2,
+                            {
+                                zoneId: top.id,
+                                type: top.type,
+                                commissionPercent: top.commissionPercent,
+                                maxPercent: Number((_settings_maxSurgePercent = settings.maxSurgePercent) != null ? _settings_maxSurgePercent : 0),
+                                stacking: (_settings_stackingMode = settings.stackingMode) != null ? _settings_stackingMode : 'highest',
+                                zones: zones
+                            }
+                        ];
+                    case 5:
+                        e = _state.sent();
+                        common_.Logger.warn("surge lookup failed: " + e, 'SharedOrderService.surge');
+                        return [
+                            2,
+                            null
+                        ];
+                    case 6:
+                        return [
+                            2
+                        ];
+                }
+            });
+        }).call(this);
+    };
+    _proto.computeSurgeAmount = function computeSurgeAmount(baseCost, ctx) {
+        var _Math;
+        if (!ctx || baseCost <= 0 || ctx.zones.length === 0) return 0;
+        var parts = ctx.zones.map(function(z) {
+            return z.flat > 0 ? z.flat : baseCost * z.percent / 100;
+        });
+        var amt = ctx.stacking === 'add' ? parts.reduce(function(a, b) {
+            return a + b;
+        }, 0) : (_Math = Math).max.apply(_Math, [].concat(parts));
+        if (ctx.maxPercent > 0) amt = Math.min(amt, baseCost * ctx.maxPercent / 100);
+        return Math.round(amt * 100) / 100;
+    };
     _proto.getZonePricingsForPoints = function getZonePricingsForPoints(from, to) {
         return shared_order_service_async_to_generator(function() {
             var pricings;
@@ -32431,7 +32927,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.calculateFare = function calculateFare(input) {
         return shared_order_service_async_to_generator(function() {
-            var _this, distances, totalDistance, zonePricings, regions, servicesInRegion, unrestrictedServices, fareCurrency, _input_twoWay, metrics, cats, feeMultiplier, optionFee, options, paidOptions, _cats;
+            var _this, distances, totalDistance, zonePricings, regions, servicesInRegion, unrestrictedServices, fareCurrency, _input_twoWay, metrics, cats, feeMultiplier, optionFee, options, paidOptions, surgeCtx, _cats;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32574,6 +33070,12 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         common_.Logger.log("Calculated option fee: " + optionFee + " from " + paidOptions.length + " paid options", 'SharedOrderService.calculateFare');
                         _state.label = 11;
                     case 11:
+                        return [
+                            4,
+                            this.getSurgeContext(input.points[0])
+                        ];
+                    case 12:
+                        surgeCtx = _state.sent();
                         _cats = cats.map(function(cat) {
                             var services = cat.services, _cat = _object_without_properties_loose(cat, [
                                 "services"
@@ -32595,6 +33097,15 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 var _input_waitTime;
                                 costResult = _this.servicesService.calculateCost(service, metrics.distance, metrics.duration, timestamp, feeMultiplier, (_input_waitTime = input.waitTime) != null ? _input_waitTime : 0, optionFee);
                                 cost = costResult.cost;
+                                var estSurge = _this.computeSurgeAmount(cost, surgeCtx);
+                                if (estSurge > 0) {
+                                    cost += estSurge;
+                                    costResult = shared_order_service_extends({}, costResult, {
+                                        cost: cost,
+                                        min: costResult.min != null ? costResult.min + estSurge : costResult.min,
+                                        max: costResult.max != null ? costResult.max + estSurge : costResult.max
+                                    });
+                                }
                                 var _input_waitTime1;
                                 common_.Logger.log({
                                     serviceId: service.id,
@@ -32703,7 +33214,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.createOrder = function createOrder(input) {
         return shared_order_service_async_to_generator(function() {
-            var _this, _regions_, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, regions, _regions__currency, orderCurrency, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, isOnlinePayment, _service_gstPercent, gstAmount, _service_platformFee, platformFeeAmount, _service_paymentGatewayFee, paymentGatewayFeeAmount, _input_waitMinutes2, _input_waitMinutes3, orderObject, order, couponResult, activityType;
+            var _this, _regions_, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, orderSurgeCtx, surgeAmount, baseCostBeforeSurge, _orderSurgeCtx_commissionPercent, surgeCommission, regions, _regions__currency, orderCurrency, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, isOnlinePayment, _service_gstPercent, gstAmount, _service_platformFee, platformFeeAmount, _service_paymentGatewayFee, paymentGatewayFeeAmount, _input_waitMinutes2, _input_waitMinutes3, _orderSurgeCtx_zoneId, orderObject, order, couponResult, activityType;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -32843,9 +33354,19 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         }, 'SharedOrderService.createOrder.finalCost');
                         return [
                             4,
-                            this.regionService.getRegionWithPoint(input.waypoints[0].point)
+                            this.getSurgeContext(input.waypoints[0].point)
                         ];
                     case 12:
+                        orderSurgeCtx = _state.sent();
+                        surgeAmount = this.computeSurgeAmount(cost, orderSurgeCtx);
+                        baseCostBeforeSurge = cost;
+                        cost += surgeAmount;
+                        surgeCommission = Math.round(surgeAmount * ((_orderSurgeCtx_commissionPercent = orderSurgeCtx == null ? void 0 : orderSurgeCtx.commissionPercent) != null ? _orderSurgeCtx_commissionPercent : 0)) / 100;
+                        return [
+                            4,
+                            this.regionService.getRegionWithPoint(input.waypoints[0].point)
+                        ];
+                    case 13:
                         regions = _state.sent();
                         common_.Logger.log(regions, 'SharedOrderService.createOrder.regions');
                         if (regions.length === 0 && !this.regionService.isPointInIndia(input.waypoints[0].point)) {
@@ -32864,13 +33385,13 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         paidAmount = 0;
                         if (!(service.prepayPercent > 0)) return [
                             3,
-                            14
+                            15
                         ];
                         return [
                             4,
                             this.sharedRiderWalletService.getRiderCreditInCurrency(input.riderId, orderCurrency)
                         ];
-                    case 13:
+                    case 14:
                         balance = _state.sent();
                         amountNeedsToBePrePaid = cost * service.prepayPercent / 100;
                         switch(input.paymentMode){
@@ -32888,8 +33409,8 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 shouldPrePay = true;
                                 break;
                         }
-                        _state.label = 14;
-                    case 14:
+                        _state.label = 15;
+                    case 15:
                         // GST and Platform Fee apply to every order; Payment Gateway Fee only
                         // applies when the rider is actually paying through a gateway (a saved
                         // card or a fresh gateway payment) — not for cash or wallet.
@@ -32942,7 +33463,10 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             waitCost: service.perMinuteWait * ((_input_waitMinutes3 = input.waitMinutes) != null ? _input_waitMinutes3 : 0),
                             rideOptionsCost: optionFee,
                             fleetId: input.fleetId,
-                            providerShare: service.providerShareFlat + service.providerSharePercent * cost / 100,
+                            providerShare: service.providerShareFlat + service.providerSharePercent * baseCostBeforeSurge / 100 + surgeCommission,
+                            surgeAmount: surgeAmount,
+                            surgeZoneId: (_orderSurgeCtx_zoneId = orderSurgeCtx == null ? void 0 : orderSurgeCtx.zoneId) != null ? _orderSurgeCtx_zoneId : null,
+                            surgeCommission: surgeCommission,
                             gstAmount: gstAmount,
                             platformFeeAmount: platformFeeAmount,
                             paymentGatewayFeeAmount: paymentGatewayFeeAmount,
@@ -32952,7 +33476,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             4,
                             this.orderRepository.save(orderObject)
                         ];
-                    case 15:
+                    case 16:
                         order = _state.sent();
                         return [
                             4,
@@ -32973,22 +33497,22 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 }
                             })
                         ];
-                    case 16:
+                    case 17:
                         order = _state.sent();
                         if (!(input.couponCode != null && input.couponCode != '' && rider != null)) return [
                             3,
-                            18
+                            19
                         ];
                         return [
                             4,
                             this.commonCouponService.applyCoupon(input.couponCode, order.id, rider.id)
                         ];
-                    case 17:
+                    case 18:
                         couponResult = _state.sent();
                         // Only take costAfterCoupon from the result; keep our fully-loaded order
                         order.costAfterCoupon = couponResult.costAfterCoupon;
-                        _state.label = 18;
-                    case 18:
+                        _state.label = 19;
+                    case 19:
                         activityType = RequestActivityType.RequestedByRider;
                         if (input.intervalMinutes > 0) {
                             activityType = input.operatorId == null ? activityType = RequestActivityType.BookedByRider : RequestActivityType.BookedByOperator;
@@ -33004,22 +33528,22 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         });
                         if (!!shouldPrePay) return [
                             3,
-                            21
+                            22
                         ];
                         return [
                             4,
                             this.riderRedisService.addActiveOrderToRider(order.riderId.toString(), order.id.toString())
                         ];
-                    case 19:
+                    case 20:
                         _state.sent();
                         return [
                             4,
                             this.dispatchRide(order)
                         ];
-                    case 20:
-                        _state.sent();
-                        _state.label = 21;
                     case 21:
+                        _state.sent();
+                        _state.label = 22;
+                    case 22:
                         return [
                             2,
                             order
@@ -44941,6 +45465,16 @@ var RazorpayService = /*#__PURE__*/ function() {
             });
         }).call(this);
     };
+    _proto.fetchOrder = function fetchOrder(orderId) {
+        return razorpay_service_async_to_generator(function() {
+            return razorpay_service_ts_generator(this, function(_state) {
+                return [
+                    2,
+                    this.client.orders.fetch(orderId)
+                ];
+            });
+        }).call(this);
+    };
     _proto.verifySignature = function verifySignature(orderId, paymentId, signature) {
         var generated = external_crypto_.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET).update(orderId + "|" + paymentId).digest('hex');
         return generated === signature;
@@ -49312,7 +49846,14 @@ let RiderOrderService = class RiderOrderService {
         };
     }
     async verifyRazorpayRidePayment(input) {
-        const activeOrder = await this.activeOrderRedisService.getActiveOrder(input.orderId.toString());
+        const paymentByRzp = await this.paymentRepo.findOne({
+            where: {
+                userType: 'rider',
+                userId: input.riderId.toString(),
+                transactionNumber: input.razorpayOrderId
+            }
+        });
+        const activeOrder = await this.activeOrderRedisService.getActiveOrder(paymentByRzp?.orderNumber ?? input.orderId.toString());
         if (activeOrder == null) {
             throw new _apollo.ForbiddenError('ACTIVE_ORDER_NOT_FOUND');
         }
@@ -49642,7 +50183,7 @@ let DispatchPubSubService = class DispatchPubSubService {
             const driver = await this.driverRedisService.getOnlineDriverMetaData(driverId.toString());
             const hasPendingOffers = driver?.rideOfferIds && driver.rideOfferIds.length > 0;
             const hasActiveOrders = driver?.activeOrderIds && driver.activeOrderIds.length > 0;
-            if (driver && !hasPendingOffers && !hasActiveOrders) {
+            if (driver && !hasActiveOrders) {
                 availableDriverIds.push(driverId);
             }
         }
@@ -51614,7 +52155,7 @@ let WalletResolver = class WalletResolver {
             keyId: process.env.RAZORPAY_KEY_ID
         };
     }
-    async verifyRazorpayRidePayment(orderId, razorpayOrderId, razorpayPaymentId, razorpaySignature) {
+    async verifyRazorpayRidePaymentLegacy(orderId, razorpayOrderId, razorpayPaymentId, razorpaySignature) {
         const isValid = this.razorpayService.verifySignature(razorpayOrderId, razorpayPaymentId, razorpaySignature);
         if (!isValid) {
             throw new Error('INVALID_PAYMENT_SIGNATURE');
@@ -51643,7 +52184,7 @@ let WalletResolver = class WalletResolver {
             return prev.balance > current.balance ? prev : current;
         }) : {
             balance: 0,
-            currency: 'USD'
+            currency: 'INR'
         };
         const obj = {
             gatewayId: gatewayId.toString(),
@@ -51715,7 +52256,9 @@ _ts_decorate._([
     _ts_metadata._("design:returntype", Promise)
 ], WalletResolver.prototype, "createRazorpayWalletOrder", null);
 _ts_decorate._([
-    (0, _graphql.Mutation)(()=>Boolean),
+    (0, _graphql.Mutation)(()=>Boolean, {
+        name: 'verifyRazorpayRidePaymentLegacy'
+    }),
     _ts_param._(0, (0, _graphql.Args)('orderId', {
         type: ()=>_graphql.ID
     })),
@@ -51736,7 +52279,7 @@ _ts_decorate._([
         String
     ]),
     _ts_metadata._("design:returntype", Promise)
-], WalletResolver.prototype, "verifyRazorpayRidePayment", null);
+], WalletResolver.prototype, "verifyRazorpayRidePaymentLegacy", null);
 _ts_decorate._([
     (0, _graphql.Query)(()=>[
             _database.PaymentMethodBase
