@@ -95,6 +95,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   },
                                 ),
                                 const SizedBox(height: 16),
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 52,
+                                  child: OutlinedButton.icon(
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: Colors.red,
+                                      side: const BorderSide(color: Colors.red, width: 1.5),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                    icon: const Icon(Icons.delete_forever),
+                                    label: const Text('Delete Account',
+                                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                                    onPressed: () => _confirmAndDeleteAccount(context),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
                                 AppMenuItem(
                                   icon: Ionicons.business,
                                   title: context.translate.payoutMethods,
@@ -154,12 +170,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   onPressed: () => NavItem.logout.onPressed(context),
                                 ),
                                 const SizedBox(height: 16),
-                                AppMenuItem(
-                                  icon: Icons.delete_forever,
-                                  title: 'Delete Account',
-                                  onPressed: () => _confirmAndDeleteAccount(context),
-                                ),
-                                const SizedBox(height: 16),
                               ],
                             ),
                           ),
@@ -185,7 +195,7 @@ Future<void> _confirmAndDeleteAccount(BuildContext context) async {
     builder: (dialogContext) => AlertDialog(
       title: const Text('Delete Account'),
       content: const Text(
-        'Are you sure you want to delete your account? This will deactivate your driver account and you will no longer be able to accept rides.',
+        'Are you sure you want to delete your account? This will permanently delete your account and personal data. This action cannot be undone.',
       ),
       actions: [
         TextButton(
