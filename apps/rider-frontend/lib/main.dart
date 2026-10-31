@@ -36,7 +36,7 @@ void main() async {
     await Hive.initFlutter();
     try {
       await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
+        options: kIsWeb ? DefaultFirebaseOptions.currentPlatform : null,
       );
     } catch (e) {
       if (!e.toString().contains('duplicate-app')) {

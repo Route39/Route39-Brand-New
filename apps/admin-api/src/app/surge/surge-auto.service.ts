@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { googleRainMm } from "./google-weather";
 import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -30,11 +31,7 @@ export class SurgeAutoService {
 
   private async rainMm(lat: number, lng: number): Promise<number | null> {
     try {
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lng.toFixed(4)}&current=precipitation`;
-      const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-      if (!res.ok) return null;
-      const data: any = await res.json();
-      return Number(data?.current?.precipitation ?? 0);
+      return await googleRainMm(lat, lng);
     } catch (e) {
       this.logger.warn(`weather fetch failed: ${(e as Error).message}`);
       return null;

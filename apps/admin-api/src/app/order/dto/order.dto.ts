@@ -51,6 +51,9 @@ import { ServiceOptionDTO } from '../../service/dto/service-option.dto';
 @Relation('fleet', () => FleetDTO, { nullable: true })
 @UnPagedRelation('options', () => ServiceOptionDTO)
 export class TaxiOrderDTO {
+  @FilterableField(() => String, { nullable: true })
+  city?: string;
+
   @IDField(() => ID)
   id!: number;
   @FilterableField()
@@ -107,6 +110,8 @@ export class TaxiOrderDTO {
   driverId?: number;
   @FilterableField(() => ID, { nullable: true })
   regionId?: number;
+  @FilterableField(() => String, { nullable: true })
+  city?: string;
   @FilterableField(() => ID, { nullable: true })
   fleetId?: number;
   @FilterableField(() => ID, { nullable: true })

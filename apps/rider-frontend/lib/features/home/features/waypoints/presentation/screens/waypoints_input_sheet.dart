@@ -113,18 +113,19 @@ class _WaypointsInputSheetState extends State<WaypointsInputSheet> {
           BlocProvider.value(value: locator<DestinationSuggestionsCubit>()),
         ],
         child: SafeArea(
+          top: false,
           child: LayoutBuilder(
             builder: (context, constraints) => Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 12),
-              BlocBuilder<HomeBloc, HomeState>(
+              Expanded(child: BlocBuilder<HomeBloc, HomeState>(
                 builder: (context, state) {
                   final availableHeight = constraints.maxHeight;
                   return ConstrainedBox(
                     constraints: BoxConstraints(
-                      maxHeight: availableHeight * 0.55,
+                      maxHeight: double.infinity,
                     ),
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -186,11 +187,11 @@ class _WaypointsInputSheetState extends State<WaypointsInputSheet> {
                                           },
                                           onMapPressed: (value) {
                                             locator<HomeBloc>().add(HomeEvent.focusOnWaypoint(index: index));
-                                            showConfirmLocation(
-                                              widget.waypoints[index] ??
+                                            locator<HomeBloc>().add(HomeEvent.showConfirmWaypoint(
+                                              selectedLocation: widget.waypoints[index] ??
                                                   locator<LocationCubit>().state.place ??
                                                   Constants.defaultLocation,
-                                            );
+                                            ));
                                           },
                                         ),
                                       ),
@@ -282,7 +283,8 @@ class _WaypointsInputSheetState extends State<WaypointsInputSheet> {
                     ),
                   );
                 },
-              ),
+              )),
+              if (widget.waypoints.nonNulls.length == widget.waypoints.length)
               Padding(
                 padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 8),
                 child: AppPrimaryButton(
@@ -318,20 +320,5 @@ class _WaypointsInputSheetState extends State<WaypointsInputSheet> {
     final homeBloc = locator<HomeBloc>();
     homeBloc.add(HomeEvent.showConfirmWaypoint(selectedLocation: place));
     homeBloc.add(HomeEvent.onWaypointConfirmed());
-
-    final updatedWaypoints = [...widget.waypoints];
-    final index = homeBloc.state.selectedWaypointIndex ?? 0;
-    if (index < updatedWaypoints.length) {
-      updatedWaypoints[index] = place;
-    }
-    final allFilled = updatedWaypoints.nonNulls.length == updatedWaypoints.length;
-    if (allFilled) {
-      final isAuthenticated = locator<AuthBloc>().state.isAuthenticated;
-      if (isAuthenticated) {
-        homeBloc.add(HomeEvent.showPreview());
-      } else {
-        context.router.push(const AuthRoute());
-      }
-    }
   }
 }

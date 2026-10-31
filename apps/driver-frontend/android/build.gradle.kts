@@ -41,3 +41,11 @@ tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
 
+
+// Force plugin libraries to compileSdk 36 (needed for AGP 8.13 + Navigation SDK)
+subprojects {
+    val forceSdk = {
+        extensions.findByType(com.android.build.gradle.LibraryExtension::class.java)?.compileSdk = 36
+    }
+    if (state.executed) forceSdk() else afterEvaluate { forceSdk() }
+}

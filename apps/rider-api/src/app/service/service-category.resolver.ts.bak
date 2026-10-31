@@ -1,0 +1,41 @@
+import { Args, Float, Query, Resolver } from '@nestjs/graphql';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ServiceCategoryEntity } from '@ridy/database';
+import { Repository } from 'typeorm';
+import { ServiceCategoryDTO } from './dto/service-category.dto';
+
+@Resolver()
+export class ServiceCategoryResolver {
+  constructor(
+    @InjectRepository(ServiceCategoryEntity)
+    private categoryRepository: Repository<ServiceCategoryEntity>,
+  ) {}
+
+  @Query(() => [ServiceCategoryDTO])
+  async serviceCategories(
+    @Args('lat', { type: () => Float, nullable: true }) lat?: number,
+    @Args('lng', { type: () => Float, nullable: true }) lng?: number,
+  ): Promise<ServiceCategoryDTO[]> {
+    const cats = await this.categoryRepository.find({
+      where: { isEnabled: true },
+      relations: { media: true },
+      order: { displayPriority: 'ASC', id: 'ASC' },
+    });
+    let allowed: Set<number> | null = null;
+    if (lat != null && lng != null) {
+      const region = await this.categoryRepository.query(
+        `SELECT id FROM region WHERE enabled=TRUE AND ST_Within(st_geomfromtext('POINT(? ?)'), location) ORDER BY ST_Area(location) ASC LIMIT 1`,
+        [lng, lat],
+      );
+      if (region.length > 0) {
+        const rows = await this.categoryRepository.query(
+          `SELECT DISTINCT s.categoryId FROM service s JOIN service_regions_region sr ON sr.serviceId = s.id WHERE sr.regionId = ?`,
+          [region[0].id],
+        );
+        allowed = new Set(rows.map((r: { categoryId: number }) => Number(r.categoryId)));
+      }
+    }
+    const list = allowed ? cats.filter((c) => allowed!.has(c.id)) : cats;
+    return list.map((c) => ({ ...c, services: [] }) as unknown as ServiceCategoryDTO);
+  }
+}

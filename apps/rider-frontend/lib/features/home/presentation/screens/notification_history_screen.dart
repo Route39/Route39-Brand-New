@@ -22,7 +22,7 @@ class NotificationHistoryScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppTopBar(title: 'Notifications'),
+              const AppTopBar(title: 'Notifications'),
               const SizedBox(height: 16),
               Expanded(
                 child: BlocBuilder<NotificationHistoryCubit, List<NotificationItem>>(

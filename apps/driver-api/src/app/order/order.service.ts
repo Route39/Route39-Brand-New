@@ -35,7 +35,7 @@ import { RideOfferRedisService } from '@ridy/database';
 import { ServiceEntity, ServiceService, RangePolicy } from '@ridy/database';
 import { ForbiddenError } from '@nestjs/apollo';
 import { firstValueFrom } from 'rxjs';
-import { In, Repository } from 'typeorm';
+import { In, Repository, MoreThanOrEqual } from 'typeorm';
 import { DriverEntity } from '@ridy/database';
 import { RiderReviewInput } from './dto/rider-review.input';
 import { RiderReviewEntity } from '@ridy/database';
@@ -174,8 +174,9 @@ export class OrderService {
         throw new ForbiddenError(`Driver with ID ${input.driverId} not found`);
       }
 
-      if (driver.activeOrderIds && driver.activeOrderIds.length > 0) {
-        throw new ForbiddenError('DRIVER_ALREADY_ON_TRIP');
+      const maxActive = process.env.QUEUED_RIDES_ENABLED === "true" ? 1 : 0;
+      if (driver.activeOrderIds && driver.activeOrderIds.length > maxActive) {
+        throw new ForbiddenError("DRIVER_ALREADY_ON_TRIP");
       }
 
       const rider = await this.riderRedisService.getOnlineRider(
@@ -323,6 +324,11 @@ export class OrderService {
       orderId: input.orderId.toString(),
       driverId: input.driverId.toString(),
     });
+    this.pubsub.publish(
+      "driver.event",
+      { driverId: input.driverId },
+      { type: DriverEventType.RideOfferRevoked, orderId: input.orderId, driverId: input.driverId },
+    );
     return true;
   }
 
@@ -979,6 +985,15 @@ export class OrderService {
       throw new Error(
         `Driver with ID ${input.driverId} is not assigned to order ${input.orderId}`,
       );
+    }
+    const cancelLimit = Number(process.env.DRIVER_MONTHLY_CANCEL_LIMIT ?? 5);
+    const ist = new Date(Date.now() + 330 * 60000);
+    const monthStart = new Date(Date.UTC(ist.getUTCFullYear(), ist.getUTCMonth(), 1) - 330 * 60000);
+    const cancelsThisMonth = await this.orderRepository.count({
+      where: { driverId: input.driverId, status: OrderStatus.DriverCanceled, finishTimestamp: MoreThanOrEqual(monthStart) },
+    });
+    if (cancelLimit > 0 && cancelsThisMonth >= cancelLimit) {
+      throw new ForbiddenError(`MONTHLY_CANCEL_LIMIT_REACHED: You have used all ${cancelLimit} ride cancellations for this month.`);
     }
     await this.orderRepository.update(order.id, {
       status: OrderStatus.DriverCanceled,

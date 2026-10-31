@@ -442,6 +442,11 @@ export class RiderAPIController {
     await this.riderRepository.update((req as unknown as any).user.id, {
       mediaId: insert.raw.insertId,
     });
+    try {
+      await this.riderRedisService.updateOnlineRider(String((req as unknown as any).user.id), { profileImageUrl: file.filename });
+    } catch (e) {
+      // rider not cached in Redis — ignore
+    }
     res.send({
       __typename: 'Media',
       id: insert.raw.insertId.toString(),

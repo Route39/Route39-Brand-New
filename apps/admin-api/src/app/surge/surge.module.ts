@@ -7,6 +7,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { SurgeZoneService } from './surge-zone.service';
 import { SurgeAutoService } from './surge-auto.service';
 import { SurgeGridService } from './surge-grid.service';
+import { FestivalCalendarService } from './festival-calendar.service';
 import { SurgeZoneDTO } from './dto/surge-zone.dto';
 import { SurgeZoneInput } from './dto/surge-zone.input';
 import { SurgeSettingDTO, SurgeSettingInput } from './dto/surge-setting.dto';
@@ -45,6 +46,6 @@ import { SurgeSettingDTO, SurgeSettingInput } from './dto/surge-setting.dto';
     }),
     TypeOrmModule.forFeature([SurgeZoneEntity, SurgeSettingEntity, RegionEntity]),
   ],
-  providers: [SurgeZoneService, SurgeAutoService, SurgeGridService],
+  providers: [SurgeZoneService, SurgeAutoService, SurgeGridService, FestivalCalendarService],
 })
 export class SurgeModule {}

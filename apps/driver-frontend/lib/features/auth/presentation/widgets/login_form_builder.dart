@@ -33,6 +33,9 @@ class LoginFormBuilder {
     if (loginState.selectedVehicleType == null) {
       return VehicleSelectionScreen(
         embedded: true,
+        loadServices: () => locator<LoginBloc>().loadServicesForCity(
+          loginState.selectedCity!,
+        ),
         initialVehicle: loginState.draftVehicleType,
         onDraftChanged: (vehicle) =>
             locator<LoginBloc>().onDraftVehicleChanged(vehicle),

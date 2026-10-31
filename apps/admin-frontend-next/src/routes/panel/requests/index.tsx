@@ -1,4 +1,5 @@
 import { useQuery } from "@apollo/client";
+import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -115,14 +116,16 @@ export default function RequestsListPage({
   disableRowNavigation = false,
   showBackLink = true,
   showExportButton = true,
+  showFilters = true,
 }: {
   disableRowNavigation?: boolean;
   showBackLink?: boolean;
   showExportButton?: boolean;
+  showFilters?: boolean;
 } = {}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { page, pageSize, sort, filters } = usePageState();
+  const { page, pageSize, sort, filters, setFilters } = usePageState();
   //const { page, pageSize, sort, filters, setFilters } = usePageState();
 
   // const dateFrom =
@@ -355,10 +358,13 @@ export default function RequestsListPage({
           </div>
         </div>
       ) : null}
+      <CityDateFilters filters={filters as any[]} setFilters={setFilters as any} />
+      {showFilters ? (
       <TableToolbar>
         <FilterSelect field="status" options={ORDER_STATUS_OPTIONS} placeholder="Any status" width="11rem" />
         <FilterSelect field="type" options={ORDER_TYPE_OPTIONS} placeholder="Any type" width="10rem" />
       </TableToolbar>
+      ) : null}
       <DataTable
         columns={columns}
         rows={rows}
@@ -369,6 +375,67 @@ export default function RequestsListPage({
         // Row click navigation — disabled when embedded inside Dispatcher
         onRowClick={disableRowNavigation ? undefined : (r) => navigate(`/requests/${r.id}`)}
       />
+    </div>
+  );
+}
+
+const CITY_COLORS = ["#22c55e", "#3b82f6", "#f59e0b", "#ec4899", "#8b5cf6", "#14b8a6"];
+function CityDateFilters({ filters, setFilters }: { filters: any[]; setFilters: (f: any[]) => void }) {
+  const CITY_OPTIONS = ["Coimbatore", "Chennai", "Tiruppur", "Bangalore"].map((c, i) => ({ value: c, label: c, color: CITY_COLORS[i % CITY_COLORS.length] }));
+  const get = (field: string, op: string) => filters.find((f) => f.field === field && f.operator === op)?.value ?? "";
+  const toLocal = (v: string) => (v ? new Date(v).toLocaleDateString("en-CA") : "");
+  const city = get("city", "eq");
+  const fromF = toLocal(get("createdOn", "gte"));
+  const toF = toLocal(get("createdOn", "lte"));
+  const [fromD, setFromD] = useState(fromF);
+  const [toD, setToD] = useState(toF);
+  useEffect(() => setFromD(fromF), [fromF]);
+  useEffect(() => setToD(toF), [toF]);
+  const from = fromF;
+  const to = toF;
+  const setCity = (v: string) => {
+    const n = filters.filter((f) => f.field !== "city");
+    if (v) n.push({ field: "city", operator: "eq", value: v });
+    setFilters(n);
+  };
+  const okDate = (d: string) => !d || (/^\d{4}-\d{2}-\d{2}$/.test(d) && Number(d.slice(0, 4)) >= 2000);
+  const setRange = (a: string, b: string) => {
+    setFromD(a);
+    setToD(b);
+    if (!okDate(a) || !okDate(b)) return;
+    const n = filters.filter((f) => f.field !== "createdOn");
+    if (a) n.push({ field: "createdOn", operator: "gte", value: new Date(a + "T00:00:00").toISOString() });
+    if (b) n.push({ field: "createdOn", operator: "lte", value: new Date(b + "T23:59:59.999").toISOString() });
+    setFilters(n);
+  };
+  const setMonth = (m: string) => {
+    if (!m) return setRange("", "");
+    const [y, mo] = m.split("-").map(Number);
+    setRange(`${m}-01`, `${m}-${String(new Date(y, mo, 0).getDate()).padStart(2, "0")}`);
+  };
+  const month = from && to && from.endsWith("-01") && from.slice(0, 7) === to.slice(0, 7) ? from.slice(0, 7) : "";
+  const cls = "h-9 rounded-md border border-input bg-transparent px-3 text-sm";
+  return (
+    <div className="mb-3 flex flex-wrap items-center gap-2">
+      <div className="mb-2 flex w-full flex-wrap gap-3">
+        {CITY_OPTIONS.map((c) => {
+          const active = city === c.value;
+          return (
+            <button key={c.value} type="button" onClick={() => setCity(active ? "" : c.value)}
+              className={`flex items-center gap-2.5 rounded-full border px-5 py-2.5 text-[15px] font-semibold transition ${active ? "border-white/50 bg-white/10" : "border-white/15 hover:border-white/30"}`}>
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: c.color }} />
+              {c.label}
+            </button>
+          );
+        })}
+      </div>
+      <input type="month" className={cls} value={month} onChange={(e) => setMonth(e.target.value)} />
+      <input type="date" className={cls} value={fromD} onChange={(e) => setRange(e.target.value, toD)} />
+      <span className="text-muted-foreground">→</span>
+      <input type="date" className={cls} value={toD} onChange={(e) => setRange(fromD, e.target.value)} />
+      {city || from || to ? (
+        <button className={cls} onClick={() => setFilters(filters.filter((f) => f.field !== "city" && f.field !== "createdOn"))}>Clear</button>
+      ) : null}
     </div>
   );
 }

@@ -167,6 +167,14 @@ export const SERVICE_CATEGORIES_LIST_QUERY = graphql(`
     serviceCategories(filter: $filter, sorting: $sorting) {
       id
       name
+      description
+      displayPriority
+      isEnabled
+      mediaId
+      media {
+        id
+        address
+      }
     }
   }
 `);
@@ -176,6 +184,14 @@ export const SERVICE_CATEGORY_QUERY = graphql(`
     serviceCategory(id: $id) {
       id
       name
+      description
+      displayPriority
+      isEnabled
+      mediaId
+      media {
+        id
+        address
+      }
     }
   }
 `);

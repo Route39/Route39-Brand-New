@@ -126,6 +126,7 @@
 		"management": {
 			"regions": "Regions",
 			"services": "Services",
+			"serviceCategories": "Service Categories",
 			"serviceOptions": "Service Options",
 			"fleets": "Fleets",
 			"zonePrices": "Zone Prices",

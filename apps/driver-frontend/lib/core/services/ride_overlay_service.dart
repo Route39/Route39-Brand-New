@@ -43,6 +43,9 @@ class RideOverlayService {
   }
 
   static Future<void> showOrderScreen({
+    String? orderId,
+    String? token,
+    String? gqlUrl,
     required String serviceName,
     required String fare,
     required String distance,
@@ -71,6 +74,9 @@ class RideOverlayService {
     await Future.delayed(const Duration(milliseconds: 300));
     await FlutterOverlayWindow.shareData(jsonEncode({
       "type": "new_order",
+      "orderId": orderId,
+      "token": token,
+      "gqlUrl": gqlUrl,
       "serviceName": serviceName,
       "fare": fare,
       "distance": distance,

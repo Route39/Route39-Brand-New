@@ -86,6 +86,16 @@ class LoginBloc extends HydratedCubit<LoginState> {
 
   void onCityConfirmed(String city) => emit(state.copyWith(selectedCity: city));
 
+  Future<List<({String id, String name, String imageUrl})>> loadServicesForCity(
+    String city,
+  ) async {
+    final res = await repository.getServicesForCity(city);
+    if (!res.isLoaded) return [];
+    return res.data!.servicesForCity
+        .map((s) => (id: s.id, name: s.name, imageUrl: s.imageUrl ?? ''))
+        .toList();
+  }
+
   void onVehicleConfirmed(String vehicleType) =>
       emit(state.copyWith(selectedVehicleType: vehicleType));
 

@@ -52,30 +52,30 @@ const _announcementmodule = __webpack_require__(25);
 const _authmodule = __webpack_require__(30);
 const _jwtstrategy = __webpack_require__(51);
 const _chatmodule = __webpack_require__(54);
-const _complaintmodule = __webpack_require__(105);
-const _couponmodule = __webpack_require__(92);
-const _driver_tendencymodule = __webpack_require__(110);
+const _complaintmodule = __webpack_require__(106);
+const _couponmodule = __webpack_require__(93);
+const _driver_tendencymodule = __webpack_require__(111);
 const _ordermodule = __webpack_require__(55);
-const _riderapisetupnotfoundcontroller = __webpack_require__(113);
-const _riderapicontroller = __webpack_require__(114);
+const _riderapisetupnotfoundcontroller = __webpack_require__(114);
+const _riderapicontroller = __webpack_require__(115);
 const _ridermodule = __webpack_require__(33);
 const _servicemodule = __webpack_require__(56);
-const _sosmodule = __webpack_require__(118);
+const _sosmodule = __webpack_require__(119);
 const _uploadmodule = __webpack_require__(57);
-const _walletmodule = __webpack_require__(97);
-const _setup = __webpack_require__(122);
+const _walletmodule = __webpack_require__(98);
+const _setup = __webpack_require__(123);
 const _core = __webpack_require__(3);
-const _nestjsprometheus = __webpack_require__(123);
+const _nestjsprometheus = __webpack_require__(124);
 const _bullmq = __webpack_require__(20);
 const _licenseverify = __webpack_require__(15);
-const _express = __webpack_require__(124);
-const _nestjs = __webpack_require__(81);
-const _notificationmodule = __webpack_require__(125);
-const _dispatcher = __webpack_require__(71);
-const _ephemeralmessagesmodule = __webpack_require__(128);
-const _feedbackmodule = __webpack_require__(132);
-const _favoritelocationmodule = __webpack_require__(136);
-const _supportmodule = __webpack_require__(141);
+const _express = __webpack_require__(125);
+const _nestjs = __webpack_require__(82);
+const _notificationmodule = __webpack_require__(126);
+const _dispatcher = __webpack_require__(72);
+const _ephemeralmessagesmodule = __webpack_require__(129);
+const _feedbackmodule = __webpack_require__(133);
+const _favoritelocationmodule = __webpack_require__(137);
+const _supportmodule = __webpack_require__(142);
 let RiderAPIModule = class RiderAPIModule {
     constructor(licenseService){
         this.licenseService = licenseService;
@@ -645,6 +645,7 @@ __webpack_require__.d(__webpack_exports__, {
   WeekdayScheduleDTO: () => (/* reexport */ WeekdayScheduleDTO),
   ZonePriceCategoryEntity: () => (/* reexport */ ZonePriceCategoryEntity),
   ZonePriceEntity: () => (/* reexport */ ZonePriceEntity),
+  detectCity: () => (/* reexport */ detectCity),
   entities: () => (/* reexport */ entities),
   generateDriverCode: () => (/* reexport */ generateDriverCode),
   getCityPrefix: () => (/* reexport */ getCityPrefix),
@@ -4471,6 +4472,7 @@ function service_category_entity_ts_metadata(k, v) {
 }
 
 
+
 var ServiceCategoryEntity = function ServiceCategoryEntity() {
     "use strict";
 };
@@ -4484,6 +4486,40 @@ service_category_entity_ts_decorate([
     }),
     service_category_entity_ts_metadata("design:type", String)
 ], ServiceCategoryEntity.prototype, "name", void 0);
+service_category_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    service_category_entity_ts_metadata("design:type", String)
+], ServiceCategoryEntity.prototype, "description", void 0);
+service_category_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: 0
+    }),
+    service_category_entity_ts_metadata("design:type", Number)
+], ServiceCategoryEntity.prototype, "displayPriority", void 0);
+service_category_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: true
+    }),
+    service_category_entity_ts_metadata("design:type", Boolean)
+], ServiceCategoryEntity.prototype, "isEnabled", void 0);
+service_category_entity_ts_decorate([
+    (0,external_typeorm_.OneToOne)(function() {
+        return MediaEntity;
+    }, {
+        eager: true,
+        nullable: true
+    }),
+    (0,external_typeorm_.JoinColumn)(),
+    service_category_entity_ts_metadata("design:type", typeof MediaEntity === "undefined" ? Object : MediaEntity)
+], ServiceCategoryEntity.prototype, "media", void 0);
+service_category_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    service_category_entity_ts_metadata("design:type", Number)
+], ServiceCategoryEntity.prototype, "mediaId", void 0);
 service_category_entity_ts_decorate([
     (0,external_typeorm_.OneToMany)(function() {
         return ServiceEntity;
@@ -17478,6 +17514,12 @@ taxi_order_entity_ts_decorate([
     taxi_order_entity_ts_metadata("design:type", Number)
 ], TaxiOrderEntity.prototype, "regionId", void 0);
 taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", String)
+], TaxiOrderEntity.prototype, "city", void 0);
+taxi_order_entity_ts_decorate([
     (0,external_typeorm_.OneToMany)(function() {
         return RequestActivityEntity;
     }, function(activity) {
@@ -17506,6 +17548,13 @@ taxi_order_entity_ts_decorate([
     }),
     taxi_order_entity_ts_metadata("design:type", Array)
 ], TaxiOrderEntity.prototype, "points", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar', {
+        length: 30,
+        nullable: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", String)
+], TaxiOrderEntity.prototype, "city", void 0);
 taxi_order_entity_ts_decorate([
     (0,external_typeorm_.Column)('multipoint', {
         transformer: new MultipointTransformer(),
@@ -25548,17 +25597,30 @@ var ActiveOrderDriverRedisService = /*#__PURE__*/ function() {
     var _proto = ActiveOrderDriverRedisService.prototype;
     _proto.updateLastSeenForDriver = function updateLastSeenForDriver(orderId, lastSeenAt) {
         return active_order_driver_redis_service_async_to_generator(function() {
-            var pipeline;
+            var key, res, _res_, len, pipeline, i;
             return active_order_driver_redis_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
+                        key = "active_order:" + orderId;
+                        return [
+                            4,
+                            this.redisService.json.arrLen(key, '$.chatMessages')
+                        ];
+                    case 1:
+                        res = _state.sent();
+                        len = Array.isArray(res) ? Number((_res_ = res[0]) != null ? _res_ : 0) : Number(res != null ? res : 0);
+                        if (!len) return [
+                            2
+                        ];
                         pipeline = this.redisService.multi();
-                        pipeline.json.set("active_order:" + orderId, '$.chatMessages[*].driverLastSeenAt', lastSeenAt.getTime());
+                        for(i = 0; i < len; i++){
+                            pipeline.json.set(key, "$.chatMessages[" + i + "].driverLastSeenAt", lastSeenAt.getTime());
+                        }
                         return [
                             4,
                             pipeline.exec()
                         ];
-                    case 1:
+                    case 2:
                         _state.sent();
                         return [
                             2
@@ -25724,17 +25786,30 @@ var ActiveOrderRiderRedisService = /*#__PURE__*/ function() {
     var _proto = ActiveOrderRiderRedisService.prototype;
     _proto.updateLastSeenForRider = function updateLastSeenForRider(orderId, lastSeenAt) {
         return active_order_rider_redis_service_async_to_generator(function() {
-            var pipeline;
+            var key, res, _res_, len, pipeline, i;
             return active_order_rider_redis_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
+                        key = "active_order:" + orderId;
+                        return [
+                            4,
+                            this.redisService.json.arrLen(key, '$.chatMessages')
+                        ];
+                    case 1:
+                        res = _state.sent();
+                        len = Array.isArray(res) ? Number((_res_ = res[0]) != null ? _res_ : 0) : Number(res != null ? res : 0);
+                        if (!len) return [
+                            2
+                        ];
                         pipeline = this.redisService.multi();
-                        pipeline.json.set("active_order:" + orderId, '$.chatMessages[*].riderLastSeenAt', lastSeenAt.getTime());
+                        for(i = 0; i < len; i++){
+                            pipeline.json.set(key, "$.chatMessages[" + i + "].riderLastSeenAt", lastSeenAt.getTime());
+                        }
                         return [
                             4,
                             pipeline.exec()
                         ];
-                    case 1:
+                    case 2:
                         _state.sent();
                         return [
                             2
@@ -30154,7 +30229,7 @@ var RegionService = /*#__PURE__*/ function() {
                     case 0:
                         return [
                             4,
-                            this.regionRepository.query("SELECT * FROM region WHERE enabled=TRUE AND ST_Within(st_geomfromtext('POINT(? ?)'), region.location)", [
+                            this.regionRepository.query("SELECT * FROM region WHERE enabled=TRUE AND ST_Within(st_geomfromtext('POINT(? ?)'), region.location) ORDER BY ST_Area(region.location) ASC", [
                                 point.lng,
                                 point.lat
                             ])
@@ -32918,7 +32993,8 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             2,
                             {
                                 distance: metrics.distance,
-                                duration: metrics.duration
+                                duration: metrics.duration,
+                                directions: metrics.directions
                             }
                         ];
                 }
@@ -33024,10 +33100,20 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         return [
                             4,
                             this.serviceCategoryRepository.find({
+                                where: {
+                                    isEnabled: true
+                                },
                                 relations: {
+                                    media: true,
                                     services: {
                                         media: true,
                                         options: true
+                                    }
+                                },
+                                order: {
+                                    displayPriority: 'ASC',
+                                    services: {
+                                        displayPriority: 'ASC'
                                     }
                                 }
                             })
@@ -33214,7 +33300,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.createOrder = function createOrder(input) {
         return shared_order_service_async_to_generator(function() {
-            var _this, _regions_, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, orderSurgeCtx, surgeAmount, baseCostBeforeSurge, _orderSurgeCtx_commissionPercent, surgeCommission, regions, _regions__currency, orderCurrency, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, isOnlinePayment, _service_gstPercent, gstAmount, _service_platformFee, platformFeeAmount, _service_paymentGatewayFee, paymentGatewayFeeAmount, _input_waitMinutes2, _input_waitMinutes3, _orderSurgeCtx_zoneId, orderObject, order, couponResult, activityType;
+            var _input_waypoints_, _this, _regions_, _regions_1, _input_waypoints_1, _input_waypoints_2, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, orderSurgeCtx, surgeAmount, baseCostBeforeSurge, _orderSurgeCtx_commissionPercent, surgeCommission, regions, _regions__currency, orderCurrency, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, isOnlinePayment, _service_gstPercent, gstAmount, _service_platformFee, platformFeeAmount, _service_paymentGatewayFee, paymentGatewayFeeAmount, _input_waitMinutes2, _input_waitMinutes3, _detectCityFromAddress, _orderSurgeCtx_zoneId, orderObject, order, couponResult, activityType;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -33288,6 +33374,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             points: input.waypoints.map(function(w) {
                                 return w.point;
                             }),
+                            city: detectCity((_input_waypoints_ = input.waypoints[0]) == null ? void 0 : _input_waypoints_.point),
                             distance: metrics.distance,
                             duration: metrics.duration
                         }, 'SharedOrderService.createOrder.metrics');
@@ -33463,6 +33550,8 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             waitCost: service.perMinuteWait * ((_input_waitMinutes3 = input.waitMinutes) != null ? _input_waitMinutes3 : 0),
                             rideOptionsCost: optionFee,
                             fleetId: input.fleetId,
+                            regionId: (_regions_1 = regions[0]) == null ? void 0 : _regions_1.id,
+                            city: (_detectCityFromAddress = detectCityFromAddress((_input_waypoints_1 = input.waypoints[0]) == null ? void 0 : _input_waypoints_1.address)) != null ? _detectCityFromAddress : detectCity((_input_waypoints_2 = input.waypoints[0]) == null ? void 0 : _input_waypoints_2.point),
                             providerShare: service.providerShareFlat + service.providerSharePercent * baseCostBeforeSurge / 100 + surgeCommission,
                             surgeAmount: surgeAmount,
                             surgeZoneId: (_orderSurgeCtx_zoneId = orderSurgeCtx == null ? void 0 : orderSurgeCtx.zoneId) != null ? _orderSurgeCtx_zoneId : null,
@@ -34545,6 +34634,53 @@ var CalculateFareError = /*#__PURE__*/ function(CalculateFareError) {
     CalculateFareError["NoServiceInRegion"] = "NO_SERVICE_IN_REGION";
     return CalculateFareError;
 }(CalculateFareError || {});
+var CITY_CENTERS = [
+    {
+        name: 'Tiruppur',
+        lat: 11.1085,
+        lng: 77.3411
+    },
+    {
+        name: 'Coimbatore',
+        lat: 11.0168,
+        lng: 76.9558
+    },
+    {
+        name: 'Chennai',
+        lat: 13.0827,
+        lng: 80.2707
+    },
+    {
+        name: 'Bangalore',
+        lat: 12.9716,
+        lng: 77.5946
+    }
+];
+function detectCity(p) {
+    if (!p) return undefined;
+    var R = 6371, rad = function(d) {
+        return d * Math.PI / 180;
+    };
+    var best, min = 40;
+    for(var _iterator = shared_order_service_create_for_of_iterator_helper_loose(CITY_CENTERS), _step; !(_step = _iterator()).done;){
+        var c = _step.value;
+        var a = Math.pow(Math.sin(rad(c.lat - p.lat) / 2), 2) + Math.cos(rad(p.lat)) * Math.cos(rad(c.lat)) * Math.pow(Math.sin(rad(c.lng - p.lng) / 2), 2);
+        var d = 2 * R * Math.asin(Math.sqrt(a));
+        if (d < min) {
+            min = d;
+            best = c.name;
+        }
+    }
+    return best;
+}
+function detectCityFromAddress(address) {
+    var a = (address != null ? address : '').toLowerCase();
+    if (a.includes('tirup')) return 'Tiruppur';
+    if (a.includes('coimbatore')) return 'Coimbatore';
+    if (a.includes('chennai')) return 'Chennai';
+    if (a.includes('bangalore') || a.includes('bengaluru')) return 'Bangalore';
+    return undefined;
+}
 
 ;// external "typeorm/repository/Repository"
 const Repository_namespaceObject = require("typeorm/repository/Repository");
@@ -47729,8 +47865,8 @@ const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
 const _ordermodule = __webpack_require__(55);
-const _chatservice = __webpack_require__(103);
-const _chatresolver = __webpack_require__(104);
+const _chatservice = __webpack_require__(104);
+const _chatresolver = __webpack_require__(105);
 let ChatModule = class ChatModule {
 };
 ChatModule = _ts_decorate._([
@@ -47769,13 +47905,13 @@ const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 const _ridermodule = __webpack_require__(33);
 const _servicemodule = __webpack_require__(56);
-const _orderresolver = __webpack_require__(58);
-const _orderservice = __webpack_require__(70);
-const _ordersubscriptionservice = __webpack_require__(91);
-const _couponmodule = __webpack_require__(92);
+const _orderresolver = __webpack_require__(63);
+const _orderservice = __webpack_require__(71);
+const _ordersubscriptionservice = __webpack_require__(92);
+const _couponmodule = __webpack_require__(93);
 const _axios = __webpack_require__(16);
-const _dispatcher = __webpack_require__(71);
-const _walletmodule = __webpack_require__(97);
+const _dispatcher = __webpack_require__(72);
+const _walletmodule = __webpack_require__(98);
 let OrderModule = class OrderModule {
 };
 OrderModule = _ts_decorate._([
@@ -47842,6 +47978,7 @@ const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
 const _uploadmodule = __webpack_require__(57);
 const _typeorm = __webpack_require__(11);
+const _servicecategoryresolver = __webpack_require__(58);
 let ServiceModule = class ServiceModule {
 };
 ServiceModule = _ts_decorate._([
@@ -47849,11 +47986,13 @@ ServiceModule = _ts_decorate._([
         imports: [
             _uploadmodule.UploadModule,
             _typeorm.TypeOrmModule.forFeature([
-                _database.ServiceEntity
+                _database.ServiceEntity,
+                _database.ServiceCategoryEntity
             ])
         ],
         providers: [
-            _database.ServiceService
+            _database.ServiceService,
+            _servicecategoryresolver.ServiceCategoryResolver
         ],
         exports: [
             _database.ServiceService
@@ -47897,6 +48036,407 @@ UploadModule = _ts_decorate._([
 Object.defineProperty(exports, "__esModule", ({
     value: true
 }));
+Object.defineProperty(exports, "ServiceCategoryResolver", ({
+    enumerable: true,
+    get: function() {
+        return ServiceCategoryResolver;
+    }
+}));
+const _ts_decorate = __webpack_require__(6);
+const _ts_metadata = __webpack_require__(7);
+const _ts_param = __webpack_require__(27);
+const _graphql = __webpack_require__(10);
+const _typeorm = __webpack_require__(11);
+const _database = __webpack_require__(12);
+const _typeorm1 = __webpack_require__(13);
+const _servicecategorydto = __webpack_require__(59);
+let ServiceCategoryResolver = class ServiceCategoryResolver {
+    constructor(categoryRepository){
+        this.categoryRepository = categoryRepository;
+    }
+    async serviceCategories(lat, lng) {
+        const cats = await this.categoryRepository.find({
+            where: {
+                isEnabled: true
+            },
+            relations: {
+                media: true,
+                services: {
+                    media: true,
+                    regions: true
+                }
+            },
+            order: {
+                displayPriority: 'ASC',
+                id: 'ASC'
+            }
+        });
+        let regionId = null;
+        if (typeof lat === 'number' && typeof lng === 'number') {
+            const region = await this.categoryRepository.query(`SELECT id FROM region WHERE enabled=TRUE AND ST_Within(st_geomfromtext('POINT(? ?)'), location) ORDER BY ST_Area(location) ASC LIMIT 1`, [
+                lng,
+                lat
+            ]);
+            if (region.length > 0) regionId = Number(region[0].id);
+        }
+        const out = cats.map((c)=>{
+            const services = (c.services ?? []).filter((s)=>s.deletedAt == null).filter((s)=>regionId === null || (s.regions ?? []).some((r)=>Number(r.id) === regionId)).sort((a, b)=>(a.displayPriority ?? 0) - (b.displayPriority ?? 0) || a.id - b.id).map((s)=>({
+                    ...s,
+                    name: s.name ?? s.title,
+                    options: []
+                }));
+            return {
+                ...c,
+                services
+            };
+        });
+        return regionId === null ? out : out.filter((c)=>c.services.length > 0);
+    }
+};
+_ts_decorate._([
+    (0, _graphql.Query)(()=>[
+            _servicecategorydto.ServiceCategoryDTO
+        ]),
+    _ts_param._(0, (0, _graphql.Args)('lat', {
+        type: ()=>_graphql.Float,
+        nullable: true
+    })),
+    _ts_param._(1, (0, _graphql.Args)('lng', {
+        type: ()=>_graphql.Float,
+        nullable: true
+    })),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        Number,
+        Number
+    ]),
+    _ts_metadata._("design:returntype", Promise)
+], ServiceCategoryResolver.prototype, "serviceCategories", null);
+ServiceCategoryResolver = _ts_decorate._([
+    (0, _graphql.Resolver)(),
+    _ts_param._(0, (0, _typeorm.InjectRepository)(_database.ServiceCategoryEntity)),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        typeof _typeorm1.Repository === "undefined" ? Object : _typeorm1.Repository
+    ])
+], ServiceCategoryResolver);
+
+
+/***/ }),
+/* 59 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({
+    value: true
+}));
+Object.defineProperty(exports, "ServiceCategoryDTO", ({
+    enumerable: true,
+    get: function() {
+        return ServiceCategoryDTO;
+    }
+}));
+const _ts_decorate = __webpack_require__(6);
+const _ts_metadata = __webpack_require__(7);
+const _graphql = __webpack_require__(10);
+const _mediadto = __webpack_require__(60);
+const _servicedto = __webpack_require__(61);
+let ServiceCategoryDTO = class ServiceCategoryDTO {
+};
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.ID),
+    _ts_metadata._("design:type", Number)
+], ServiceCategoryDTO.prototype, "id", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", String)
+], ServiceCategoryDTO.prototype, "name", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], ServiceCategoryDTO.prototype, "description", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Int, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceCategoryDTO.prototype, "displayPriority", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_mediadto.MediaDTO, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", typeof _mediadto.MediaDTO === "undefined" ? Object : _mediadto.MediaDTO)
+], ServiceCategoryDTO.prototype, "media", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>[
+            _servicedto.ServiceDTO
+        ], {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", Array)
+], ServiceCategoryDTO.prototype, "services", void 0);
+ServiceCategoryDTO = _ts_decorate._([
+    (0, _graphql.ObjectType)('ServiceCategory')
+], ServiceCategoryDTO);
+
+
+/***/ }),
+/* 60 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({
+    value: true
+}));
+Object.defineProperty(exports, "MediaDTO", ({
+    enumerable: true,
+    get: function() {
+        return MediaDTO;
+    }
+}));
+const _ts_decorate = __webpack_require__(6);
+const _ts_metadata = __webpack_require__(7);
+const _graphql = __webpack_require__(10);
+let MediaDTO = class MediaDTO {
+};
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.ID),
+    _ts_metadata._("design:type", Number)
+], MediaDTO.prototype, "id", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String),
+    _ts_metadata._("design:type", String)
+], MediaDTO.prototype, "address", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], MediaDTO.prototype, "base64", void 0);
+MediaDTO = _ts_decorate._([
+    (0, _graphql.ObjectType)('Media')
+], MediaDTO);
+
+
+/***/ }),
+/* 61 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({
+    value: true
+}));
+Object.defineProperty(exports, "ServiceDTO", ({
+    enumerable: true,
+    get: function() {
+        return ServiceDTO;
+    }
+}));
+const _ts_decorate = __webpack_require__(6);
+const _ts_metadata = __webpack_require__(7);
+const _graphql = __webpack_require__(10);
+const _database = __webpack_require__(12);
+const _mediadto = __webpack_require__(60);
+const _serviceoptiondto = __webpack_require__(62);
+let ServiceDTO = class ServiceDTO {
+};
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.ID),
+    _ts_metadata._("design:type", Number)
+], ServiceDTO.prototype, "id", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", String)
+], ServiceDTO.prototype, "name", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], ServiceDTO.prototype, "description", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Int, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceDTO.prototype, "personCapacity", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_database.ServicePaymentMethod, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", typeof _database.ServicePaymentMethod === "undefined" ? Object : _database.ServicePaymentMethod)
+], ServiceDTO.prototype, "paymentMethod", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: false,
+        deprecationReason: 'Use costResult instead for range pricing support'
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceDTO.prototype, "cost", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_database.CostResultUnion, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", Object)
+], ServiceDTO.prototype, "costResult", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceDTO.prototype, "costAfterCoupon", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_database.CostResultUnion, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Object)
+], ServiceDTO.prototype, "discountedCostResult", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceDTO.prototype, "cancellationTotalFee", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceDTO.prototype, "gstPercent", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceDTO.prototype, "platformFee", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceDTO.prototype, "paymentGatewayFee", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Int, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceDTO.prototype, "cargoWaitingTimeMinutes", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Int, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceDTO.prototype, "prepayPercent", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>Boolean, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", Boolean)
+], ServiceDTO.prototype, "twoWayAvailable", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_mediadto.MediaDTO, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", typeof _mediadto.MediaDTO === "undefined" ? Object : _mediadto.MediaDTO)
+], ServiceDTO.prototype, "media", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>[
+            _serviceoptiondto.ServiceOptionDTO
+        ], {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", Array)
+], ServiceDTO.prototype, "options", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_database.PricingMode, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", typeof _database.PricingMode === "undefined" ? Object : _database.PricingMode)
+], ServiceDTO.prototype, "pricingMode", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_database.RangePolicy, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", typeof _database.RangePolicy === "undefined" ? Object : _database.RangePolicy)
+], ServiceDTO.prototype, "rangePolicy", void 0);
+ServiceDTO = _ts_decorate._([
+    (0, _graphql.ObjectType)('Service')
+], ServiceDTO);
+
+
+/***/ }),
+/* 62 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({
+    value: true
+}));
+Object.defineProperty(exports, "ServiceOptionDTO", ({
+    enumerable: true,
+    get: function() {
+        return ServiceOptionDTO;
+    }
+}));
+const _ts_decorate = __webpack_require__(6);
+const _ts_metadata = __webpack_require__(7);
+const _graphql = __webpack_require__(10);
+const _database = __webpack_require__(12);
+let ServiceOptionDTO = class ServiceOptionDTO {
+};
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.ID),
+    _ts_metadata._("design:type", Number)
+], ServiceOptionDTO.prototype, "id", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", String)
+], ServiceOptionDTO.prototype, "name", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], ServiceOptionDTO.prototype, "description", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_database.ServiceOptionType, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", typeof _database.ServiceOptionType === "undefined" ? Object : _database.ServiceOptionType)
+], ServiceOptionDTO.prototype, "type", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceOptionDTO.prototype, "additionalFee", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_database.ServiceOptionIcon, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", typeof _database.ServiceOptionIcon === "undefined" ? Object : _database.ServiceOptionIcon)
+], ServiceOptionDTO.prototype, "icon", void 0);
+ServiceOptionDTO = _ts_decorate._([
+    (0, _graphql.ObjectType)('ServiceOption')
+], ServiceOptionDTO);
+
+
+/***/ }),
+/* 63 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({
+    value: true
+}));
 Object.defineProperty(exports, "OrderResolver", ({
     enumerable: true,
     get: function() {
@@ -47909,22 +48449,22 @@ const _ts_param = __webpack_require__(27);
 const _common = __webpack_require__(2);
 const _graphql = __webpack_require__(10);
 const _database = __webpack_require__(12);
-const _razorpayridedto = __webpack_require__(59);
+const _razorpayridedto = __webpack_require__(64);
 const _authenticateduser = __webpack_require__(37);
 const _accesstokenguard = __webpack_require__(41);
-const _calculatefaredto = __webpack_require__(60);
-const _calculatefareinput = __webpack_require__(65);
-const _getroutedistanceinput = __webpack_require__(66);
-const _routedistancedto = __webpack_require__(67);
-const _createorderinput = __webpack_require__(68);
-const _submitfeedbackinput = __webpack_require__(69);
-const _orderservice = __webpack_require__(70);
-const _activeorderdto = __webpack_require__(85);
-const _applycoupondto = __webpack_require__(86);
-const _updateorderwaittimeresponsedto = __webpack_require__(87);
-const _pastorderdto = __webpack_require__(88);
-const _cancelreasondto = __webpack_require__(90);
-const _topupwalletinput = __webpack_require__(83);
+const _calculatefaredto = __webpack_require__(65);
+const _calculatefareinput = __webpack_require__(66);
+const _getroutedistanceinput = __webpack_require__(67);
+const _routedistancedto = __webpack_require__(68);
+const _createorderinput = __webpack_require__(69);
+const _submitfeedbackinput = __webpack_require__(70);
+const _orderservice = __webpack_require__(71);
+const _activeorderdto = __webpack_require__(86);
+const _applycoupondto = __webpack_require__(87);
+const _updateorderwaittimeresponsedto = __webpack_require__(88);
+const _pastorderdto = __webpack_require__(89);
+const _cancelreasondto = __webpack_require__(91);
+const _topupwalletinput = __webpack_require__(84);
 let OrderResolver = class OrderResolver {
     constructor(context, orderService, riderOrderService, driverRedisService, commonCouponService){
         this.context = context;
@@ -48346,7 +48886,7 @@ OrderResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 59 */
+/* 64 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48386,7 +48926,7 @@ RazorpayRideOrderDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 60 */
+/* 65 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48411,7 +48951,7 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _graphql = __webpack_require__(10);
 const _database = __webpack_require__(12);
-const _servicecategorydto = __webpack_require__(61);
+const _servicecategorydto = __webpack_require__(59);
 var CalculateFareError = /*#__PURE__*/ function(CalculateFareError) {
     CalculateFareError["RegionUnsupported"] = "REGION_UNSUPPORTED";
     CalculateFareError["NoServiceInRegion"] = "NO_SERVICE_IN_REGION";
@@ -48468,295 +49008,7 @@ CalculateFareDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 61 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({
-    value: true
-}));
-Object.defineProperty(exports, "ServiceCategoryDTO", ({
-    enumerable: true,
-    get: function() {
-        return ServiceCategoryDTO;
-    }
-}));
-const _ts_decorate = __webpack_require__(6);
-const _ts_metadata = __webpack_require__(7);
-const _graphql = __webpack_require__(10);
-const _servicedto = __webpack_require__(62);
-let ServiceCategoryDTO = class ServiceCategoryDTO {
-};
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_graphql.ID),
-    _ts_metadata._("design:type", Number)
-], ServiceCategoryDTO.prototype, "id", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>String, {
-        nullable: false
-    }),
-    _ts_metadata._("design:type", String)
-], ServiceCategoryDTO.prototype, "name", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>[
-            _servicedto.ServiceDTO
-        ], {
-        nullable: false
-    }),
-    _ts_metadata._("design:type", Array)
-], ServiceCategoryDTO.prototype, "services", void 0);
-ServiceCategoryDTO = _ts_decorate._([
-    (0, _graphql.ObjectType)('ServiceCategory')
-], ServiceCategoryDTO);
-
-
-/***/ }),
-/* 62 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({
-    value: true
-}));
-Object.defineProperty(exports, "ServiceDTO", ({
-    enumerable: true,
-    get: function() {
-        return ServiceDTO;
-    }
-}));
-const _ts_decorate = __webpack_require__(6);
-const _ts_metadata = __webpack_require__(7);
-const _graphql = __webpack_require__(10);
-const _database = __webpack_require__(12);
-const _mediadto = __webpack_require__(63);
-const _serviceoptiondto = __webpack_require__(64);
-let ServiceDTO = class ServiceDTO {
-};
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_graphql.ID),
-    _ts_metadata._("design:type", Number)
-], ServiceDTO.prototype, "id", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>String, {
-        nullable: false
-    }),
-    _ts_metadata._("design:type", String)
-], ServiceDTO.prototype, "name", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>String, {
-        nullable: true
-    }),
-    _ts_metadata._("design:type", String)
-], ServiceDTO.prototype, "description", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_graphql.Int, {
-        nullable: true
-    }),
-    _ts_metadata._("design:type", Number)
-], ServiceDTO.prototype, "personCapacity", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_database.ServicePaymentMethod, {
-        nullable: false
-    }),
-    _ts_metadata._("design:type", typeof _database.ServicePaymentMethod === "undefined" ? Object : _database.ServicePaymentMethod)
-], ServiceDTO.prototype, "paymentMethod", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_graphql.Float, {
-        nullable: false,
-        deprecationReason: 'Use costResult instead for range pricing support'
-    }),
-    _ts_metadata._("design:type", Number)
-], ServiceDTO.prototype, "cost", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_database.CostResultUnion, {
-        nullable: false
-    }),
-    _ts_metadata._("design:type", Object)
-], ServiceDTO.prototype, "costResult", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_graphql.Float, {
-        nullable: true
-    }),
-    _ts_metadata._("design:type", Number)
-], ServiceDTO.prototype, "costAfterCoupon", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_database.CostResultUnion, {
-        nullable: true
-    }),
-    _ts_metadata._("design:type", Object)
-], ServiceDTO.prototype, "discountedCostResult", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_graphql.Float, {
-        nullable: false
-    }),
-    _ts_metadata._("design:type", Number)
-], ServiceDTO.prototype, "cancellationTotalFee", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_graphql.Float, {
-        nullable: true
-    }),
-    _ts_metadata._("design:type", Number)
-], ServiceDTO.prototype, "gstPercent", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_graphql.Float, {
-        nullable: true
-    }),
-    _ts_metadata._("design:type", Number)
-], ServiceDTO.prototype, "platformFee", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_graphql.Float, {
-        nullable: true
-    }),
-    _ts_metadata._("design:type", Number)
-], ServiceDTO.prototype, "paymentGatewayFee", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_graphql.Int, {
-        nullable: true
-    }),
-    _ts_metadata._("design:type", Number)
-], ServiceDTO.prototype, "cargoWaitingTimeMinutes", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_graphql.Int, {
-        nullable: false
-    }),
-    _ts_metadata._("design:type", Number)
-], ServiceDTO.prototype, "prepayPercent", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>Boolean, {
-        nullable: false
-    }),
-    _ts_metadata._("design:type", Boolean)
-], ServiceDTO.prototype, "twoWayAvailable", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_mediadto.MediaDTO, {
-        nullable: true
-    }),
-    _ts_metadata._("design:type", typeof _mediadto.MediaDTO === "undefined" ? Object : _mediadto.MediaDTO)
-], ServiceDTO.prototype, "media", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>[
-            _serviceoptiondto.ServiceOptionDTO
-        ], {
-        nullable: false
-    }),
-    _ts_metadata._("design:type", Array)
-], ServiceDTO.prototype, "options", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_database.PricingMode, {
-        nullable: false
-    }),
-    _ts_metadata._("design:type", typeof _database.PricingMode === "undefined" ? Object : _database.PricingMode)
-], ServiceDTO.prototype, "pricingMode", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_database.RangePolicy, {
-        nullable: false
-    }),
-    _ts_metadata._("design:type", typeof _database.RangePolicy === "undefined" ? Object : _database.RangePolicy)
-], ServiceDTO.prototype, "rangePolicy", void 0);
-ServiceDTO = _ts_decorate._([
-    (0, _graphql.ObjectType)('Service')
-], ServiceDTO);
-
-
-/***/ }),
-/* 63 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({
-    value: true
-}));
-Object.defineProperty(exports, "MediaDTO", ({
-    enumerable: true,
-    get: function() {
-        return MediaDTO;
-    }
-}));
-const _ts_decorate = __webpack_require__(6);
-const _ts_metadata = __webpack_require__(7);
-const _graphql = __webpack_require__(10);
-let MediaDTO = class MediaDTO {
-};
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_graphql.ID),
-    _ts_metadata._("design:type", Number)
-], MediaDTO.prototype, "id", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>String),
-    _ts_metadata._("design:type", String)
-], MediaDTO.prototype, "address", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>String, {
-        nullable: true
-    }),
-    _ts_metadata._("design:type", String)
-], MediaDTO.prototype, "base64", void 0);
-MediaDTO = _ts_decorate._([
-    (0, _graphql.ObjectType)('Media')
-], MediaDTO);
-
-
-/***/ }),
-/* 64 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({
-    value: true
-}));
-Object.defineProperty(exports, "ServiceOptionDTO", ({
-    enumerable: true,
-    get: function() {
-        return ServiceOptionDTO;
-    }
-}));
-const _ts_decorate = __webpack_require__(6);
-const _ts_metadata = __webpack_require__(7);
-const _graphql = __webpack_require__(10);
-const _database = __webpack_require__(12);
-let ServiceOptionDTO = class ServiceOptionDTO {
-};
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_graphql.ID),
-    _ts_metadata._("design:type", Number)
-], ServiceOptionDTO.prototype, "id", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>String, {
-        nullable: false
-    }),
-    _ts_metadata._("design:type", String)
-], ServiceOptionDTO.prototype, "name", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>String, {
-        nullable: true
-    }),
-    _ts_metadata._("design:type", String)
-], ServiceOptionDTO.prototype, "description", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_database.ServiceOptionType, {
-        nullable: false
-    }),
-    _ts_metadata._("design:type", typeof _database.ServiceOptionType === "undefined" ? Object : _database.ServiceOptionType)
-], ServiceOptionDTO.prototype, "type", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_graphql.Float, {
-        nullable: true
-    }),
-    _ts_metadata._("design:type", Number)
-], ServiceOptionDTO.prototype, "additionalFee", void 0);
-_ts_decorate._([
-    (0, _graphql.Field)(()=>_database.ServiceOptionIcon, {
-        nullable: false
-    }),
-    _ts_metadata._("design:type", typeof _database.ServiceOptionIcon === "undefined" ? Object : _database.ServiceOptionIcon)
-], ServiceOptionDTO.prototype, "icon", void 0);
-ServiceOptionDTO = _ts_decorate._([
-    (0, _graphql.ObjectType)('ServiceOption')
-], ServiceOptionDTO);
-
-
-/***/ }),
-/* 65 */
+/* 66 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48821,7 +49073,7 @@ CalculateFareInput = _ts_decorate._([
 
 
 /***/ }),
-/* 66 */
+/* 67 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48852,7 +49104,7 @@ GetRouteDistanceInput = _ts_decorate._([
 
 
 /***/ }),
-/* 67 */
+/* 68 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -48867,6 +49119,7 @@ Object.defineProperty(exports, "RouteDistanceDTO", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
+const _database = __webpack_require__(12);
 const _graphql = __webpack_require__(10);
 let RouteDistanceDTO = class RouteDistanceDTO {
 };
@@ -48878,13 +49131,21 @@ _ts_decorate._([
     (0, _graphql.Field)(()=>_graphql.Int),
     _ts_metadata._("design:type", Number)
 ], RouteDistanceDTO.prototype, "duration", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>[
+            _database.Point
+        ], {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Array)
+], RouteDistanceDTO.prototype, "directions", void 0);
 RouteDistanceDTO = _ts_decorate._([
     (0, _graphql.ObjectType)()
 ], RouteDistanceDTO);
 
 
 /***/ }),
-/* 68 */
+/* 69 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49005,7 +49266,7 @@ CreateOrderInput = _ts_decorate._([
 
 
 /***/ }),
-/* 69 */
+/* 70 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49059,7 +49320,7 @@ SubmitFeedbackInput = _ts_decorate._([
 
 
 /***/ }),
-/* 70 */
+/* 71 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -49082,9 +49343,9 @@ const _database = __webpack_require__(12);
 const _apollo = __webpack_require__(8);
 const _rxjs = __webpack_require__(18);
 const _typeorm1 = __webpack_require__(13);
-const _dispatcher = __webpack_require__(71);
-const _topupwalletinput = __webpack_require__(83);
-const _walletservice = __webpack_require__(84);
+const _dispatcher = __webpack_require__(72);
+const _topupwalletinput = __webpack_require__(84);
+const _walletservice = __webpack_require__(85);
 let RiderOrderService = class RiderOrderService {
     constructor(orderRepository, activityRepository, feedbackRepository, cancelReasonRepository, paymentRepo, fleetRepo, riderService, driverService, rideOfferRedisService, activeOrderRedisService, driverRedisService, riderRedisService, providerService, sharedOrderService, serviceRedisService, driverNotificationService, pubsub, dispatchService, httpService, customerWalletService, walletService, razorpayService){
         this.orderRepository = orderRepository;
@@ -50034,26 +50295,26 @@ RiderOrderService = _ts_decorate._([
 
 
 /***/ }),
-/* 71 */
+/* 72 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
 Object.defineProperty(exports, "__esModule", ({
     value: true
 }));
-const _export_star = __webpack_require__(72);
-_export_star._(__webpack_require__(73), exports);
-_export_star._(__webpack_require__(75), exports);
+const _export_star = __webpack_require__(73);
+_export_star._(__webpack_require__(74), exports);
+_export_star._(__webpack_require__(77), exports);
 
 
 /***/ }),
-/* 72 */
+/* 73 */
 /***/ ((module) => {
 
 module.exports = require("@swc/helpers/_/_export_star");
 
 /***/ }),
-/* 73 */
+/* 74 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50068,17 +50329,17 @@ Object.defineProperty(exports, "DispatchModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _dispatchpubsubservice = __webpack_require__(74);
+const _dispatchpubsubservice = __webpack_require__(75);
 const _bullmq = __webpack_require__(20);
-const _dispatchservice = __webpack_require__(75);
-const _mainprocessor = __webpack_require__(76);
+const _dispatchservice = __webpack_require__(77);
+const _mainprocessor = __webpack_require__(78);
 const _database = __webpack_require__(12);
-const _sequentialprocessor = __webpack_require__(77);
-const _broadcastprocessor = __webpack_require__(80);
-const _driverselectionservice = __webpack_require__(78);
+const _sequentialprocessor = __webpack_require__(79);
+const _broadcastprocessor = __webpack_require__(81);
+const _driverselectionservice = __webpack_require__(80);
 const _typeorm = __webpack_require__(11);
-const _nestjs = __webpack_require__(81);
-const _bullMQAdapter = __webpack_require__(82);
+const _nestjs = __webpack_require__(82);
+const _bullMQAdapter = __webpack_require__(83);
 let DispatchModule = class DispatchModule {
 };
 DispatchModule = _ts_decorate._([
@@ -50150,7 +50411,7 @@ DispatchModule = _ts_decorate._([
 
 
 /***/ }),
-/* 74 */
+/* 75 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50167,12 +50428,27 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
+const _driverprofileservice = __webpack_require__(76);
 let DispatchPubSubService = class DispatchPubSubService {
-    constructor(pubsubService, orderRedisService, driverNotificationService, driverRedisService){
+    constructor(pubsubService, orderRedisService, driverNotificationService, driverRedisService, activeOrderRedisService){
         this.pubsubService = pubsubService;
         this.orderRedisService = orderRedisService;
         this.driverNotificationService = driverNotificationService;
         this.driverRedisService = driverRedisService;
+        this.activeOrderRedisService = activeOrderRedisService;
+    }
+    async isAvailable(driver, orderId) {
+        const active = driver?.activeOrderIds ?? [];
+        if (active.length === 0) return true;
+        if (process.env.QUEUED_RIDES_ENABLED !== 'true' || active.length > 1) return false;
+        const cur = await this.activeOrderRedisService.getActiveOrder(String(active[0]));
+        if (!cur || cur.status !== _database.OrderStatus.Started) return false;
+        const drop = cur.waypoints?.[cur.waypoints.length - 1]?.location;
+        const meta = await this.orderRedisService.getRideOfferMetadata(orderId);
+        if (!drop || !driver.location || !meta?.pickupLocation) return false;
+        const toDrop = (0, _driverprofileservice.calculateHaversineDistance)(driver.location, drop);
+        const pickupToDrop = (0, _driverprofileservice.calculateHaversineDistance)(meta.pickupLocation, drop);
+        return toDrop <= Number(process.env.QUEUED_DRIVER_TO_DROP_M ?? 1500) && pickupToDrop <= Number(process.env.QUEUED_PICKUP_TO_DROP_M ?? 2000);
     }
     /**
    * Broadcast mode: Notify multiple drivers at once
@@ -50183,7 +50459,7 @@ let DispatchPubSubService = class DispatchPubSubService {
             const driver = await this.driverRedisService.getOnlineDriverMetaData(driverId.toString());
             const hasPendingOffers = driver?.rideOfferIds && driver.rideOfferIds.length > 0;
             const hasActiveOrders = driver?.activeOrderIds && driver.activeOrderIds.length > 0;
-            if (driver && !hasActiveOrders) {
+            if (driver && await this.isAvailable(driver, orderId)) {
                 availableDriverIds.push(driverId);
             }
         }
@@ -50257,7 +50533,7 @@ let DispatchPubSubService = class DispatchPubSubService {
         const driver = await this.driverRedisService.getOnlineDriverMetaData(driverId.toString());
         const hasPendingOffers = driver?.rideOfferIds && driver.rideOfferIds.length > 0;
         const hasActiveOrders = driver?.activeOrderIds && driver.activeOrderIds.length > 0;
-        if (!driver || hasPendingOffers || hasActiveOrders) {
+        if (!driver || hasPendingOffers || !await this.isAvailable(driver, orderId)) {
             // Driver busy or offline - don't send offer, processor should move to next immediately
             return false;
         }
@@ -50314,13 +50590,41 @@ DispatchPubSubService = _ts_decorate._([
         typeof _database.PubSubService === "undefined" ? Object : _database.PubSubService,
         typeof _database.RideOfferRedisService === "undefined" ? Object : _database.RideOfferRedisService,
         typeof _database.DriverNotificationService === "undefined" ? Object : _database.DriverNotificationService,
-        typeof _database.DriverRedisService === "undefined" ? Object : _database.DriverRedisService
+        typeof _database.DriverRedisService === "undefined" ? Object : _database.DriverRedisService,
+        typeof _database.ActiveOrderCommonRedisService === "undefined" ? Object : _database.ActiveOrderCommonRedisService
     ])
 ], DispatchPubSubService);
 
 
 /***/ }),
-/* 75 */
+/* 76 */
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({
+    value: true
+}));
+Object.defineProperty(exports, "calculateHaversineDistance", ({
+    enumerable: true,
+    get: function() {
+        return calculateHaversineDistance;
+    }
+}));
+function calculateHaversineDistance(location, pickupLocation) {
+    // Implement Haversine formula to calculate distance
+    const R = 6371e3; // metres
+    const φ1 = location.lat * Math.PI / 180; // φ in radians
+    const φ2 = pickupLocation.lat * Math.PI / 180;
+    const Δφ = (pickupLocation.lat - location.lat) * Math.PI / 180;
+    const Δλ = (pickupLocation.lng - location.lng) * Math.PI / 180;
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // in metres
+}
+
+
+/***/ }),
+/* 77 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50374,7 +50678,7 @@ DispatchService = _ts_decorate._([
 
 
 /***/ }),
-/* 76 */
+/* 78 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50552,7 +50856,7 @@ MainConsumer = _ts_decorate._([
 
 
 /***/ }),
-/* 77 */
+/* 79 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50571,8 +50875,8 @@ const _ts_param = __webpack_require__(27);
 const _bullmq = __webpack_require__(20);
 const _bullmq1 = __webpack_require__(21);
 const _database = __webpack_require__(12);
-const _dispatchpubsubservice = __webpack_require__(74);
-const _driverselectionservice = __webpack_require__(78);
+const _dispatchpubsubservice = __webpack_require__(75);
+const _driverselectionservice = __webpack_require__(80);
 const _common = __webpack_require__(2);
 let SequentialConsumer = class SequentialConsumer extends _bullmq.WorkerHost {
     constructor(pubsub, sequentialDispatchQueue, driverSelectionService, driverRedisService){
@@ -50631,7 +50935,7 @@ SequentialConsumer = _ts_decorate._([
 
 
 /***/ }),
-/* 78 */
+/* 80 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50648,7 +50952,7 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
-const _driverprofileservice = __webpack_require__(79);
+const _driverprofileservice = __webpack_require__(76);
 let DriverSelectionService = class DriverSelectionService {
     constructor(rideOfferRedisService, orderRedisService, driverRedisService){
         this.rideOfferRedisService = rideOfferRedisService;
@@ -50739,34 +51043,7 @@ DriverSelectionService = _ts_decorate._([
 
 
 /***/ }),
-/* 79 */
-/***/ ((__unused_webpack_module, exports) => {
-
-
-Object.defineProperty(exports, "__esModule", ({
-    value: true
-}));
-Object.defineProperty(exports, "calculateHaversineDistance", ({
-    enumerable: true,
-    get: function() {
-        return calculateHaversineDistance;
-    }
-}));
-function calculateHaversineDistance(location, pickupLocation) {
-    // Implement Haversine formula to calculate distance
-    const R = 6371e3; // metres
-    const φ1 = location.lat * Math.PI / 180; // φ in radians
-    const φ2 = pickupLocation.lat * Math.PI / 180;
-    const Δφ = (pickupLocation.lat - location.lat) * Math.PI / 180;
-    const Δλ = (pickupLocation.lng - location.lng) * Math.PI / 180;
-    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // in metres
-}
-
-
-/***/ }),
-/* 80 */
+/* 81 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -50792,8 +51069,8 @@ const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(27);
 const _bullmq = __webpack_require__(20);
 const _bullmq1 = __webpack_require__(21);
-const _dispatchpubsubservice = __webpack_require__(74);
-const _driverselectionservice = __webpack_require__(78);
+const _dispatchpubsubservice = __webpack_require__(75);
+const _driverselectionservice = __webpack_require__(80);
 const _common = __webpack_require__(2);
 let BroadcastConsumer = class BroadcastConsumer extends _bullmq.WorkerHost {
     constructor(pubsub, attemptQueue, driverSelectionService){
@@ -50862,19 +51139,19 @@ let BroadcastDispatchJobData = class BroadcastDispatchJobData {
 
 
 /***/ }),
-/* 81 */
+/* 82 */
 /***/ ((module) => {
 
 module.exports = require("@bull-board/nestjs");
 
 /***/ }),
-/* 82 */
+/* 83 */
 /***/ ((module) => {
 
 module.exports = require("@bull-board/api/bullMQAdapter");
 
 /***/ }),
-/* 83 */
+/* 84 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51038,7 +51315,7 @@ const IntentResultToTopUpWalletStatus = (status)=>{
 
 
 /***/ }),
-/* 84 */
+/* 85 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51220,7 +51497,7 @@ WalletService = _ts_decorate._([
 
 
 /***/ }),
-/* 85 */
+/* 86 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51401,7 +51678,7 @@ ActiveOrderDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 86 */
+/* 87 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51433,7 +51710,7 @@ ApplyCouponResponseDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 87 */
+/* 88 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51467,7 +51744,7 @@ UpdateOrderWaitTimeResponseDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 88 */
+/* 89 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51484,7 +51761,7 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _graphql = __webpack_require__(10);
 const _database = __webpack_require__(12);
-const _pastorderdriverdto = __webpack_require__(89);
+const _pastorderdriverdto = __webpack_require__(90);
 let PastOrderDTO = class PastOrderDTO {
 };
 _ts_decorate._([
@@ -51607,7 +51884,7 @@ PastOrderDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 89 */
+/* 90 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51678,7 +51955,7 @@ PastOrderDriverDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 90 */
+/* 91 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51710,7 +51987,7 @@ OrderCancelReasonDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 91 */
+/* 92 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51770,7 +52047,7 @@ OrderSubscriptionService = _ts_decorate._([
 
 
 /***/ }),
-/* 92 */
+/* 93 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51788,8 +52065,8 @@ const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 const _ordermodule = __webpack_require__(55);
-const _couponresolver = __webpack_require__(93);
-const _couponservice = __webpack_require__(96);
+const _couponresolver = __webpack_require__(94);
+const _couponservice = __webpack_require__(97);
 let CouponModule = class CouponModule {
 };
 CouponModule = _ts_decorate._([
@@ -51816,7 +52093,7 @@ CouponModule = _ts_decorate._([
 
 
 /***/ }),
-/* 93 */
+/* 94 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51837,8 +52114,8 @@ const _graphql = __webpack_require__(10);
 const _database = __webpack_require__(12);
 const _authenticateduser = __webpack_require__(37);
 const _accesstokenguard = __webpack_require__(41);
-const _coupondto = __webpack_require__(94);
-const _giftcarddto = __webpack_require__(95);
+const _coupondto = __webpack_require__(95);
+const _giftcarddto = __webpack_require__(96);
 let CouponResolver = class CouponResolver {
     constructor(commonCouponService, commonGiftCardService, context){
         this.commonCouponService = commonCouponService;
@@ -51898,7 +52175,7 @@ CouponResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 94 */
+/* 95 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51950,7 +52227,7 @@ CouponDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 95 */
+/* 96 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -51990,7 +52267,7 @@ GiftCardDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 96 */
+/* 97 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52013,7 +52290,7 @@ CouponService = _ts_decorate._([
 
 
 /***/ }),
-/* 97 */
+/* 98 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52028,10 +52305,10 @@ Object.defineProperty(exports, "WalletModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _walletresolver = __webpack_require__(98);
+const _walletresolver = __webpack_require__(99);
 const _database = __webpack_require__(12);
 const _axios = __webpack_require__(16);
-const _walletservice = __webpack_require__(84);
+const _walletservice = __webpack_require__(85);
 const _typeorm = __webpack_require__(11);
 let WalletModule = class WalletModule {
 };
@@ -52065,7 +52342,7 @@ WalletModule = _ts_decorate._([
 
 
 /***/ }),
-/* 98 */
+/* 99 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52087,16 +52364,16 @@ const _typeorm = __webpack_require__(11);
 const _typeorm1 = __webpack_require__(13);
 const _authenticateduser = __webpack_require__(37);
 const _accesstokenguard = __webpack_require__(41);
-const _topupwalletinput = __webpack_require__(83);
+const _topupwalletinput = __webpack_require__(84);
 const _database = __webpack_require__(12);
 const _axios = __webpack_require__(16);
 const _rxjs = __webpack_require__(18);
-const _walletservice = __webpack_require__(84);
-const _setup_payment_methoddto = __webpack_require__(99);
-const _giftcarddto = __webpack_require__(95);
-const _riderwalletdto = __webpack_require__(100);
-const _ridertransactiondto = __webpack_require__(101);
-const _razorpayorderdto = __webpack_require__(102);
+const _walletservice = __webpack_require__(85);
+const _setup_payment_methoddto = __webpack_require__(100);
+const _giftcarddto = __webpack_require__(96);
+const _riderwalletdto = __webpack_require__(101);
+const _ridertransactiondto = __webpack_require__(102);
+const _razorpayorderdto = __webpack_require__(103);
 let WalletResolver = class WalletResolver {
     constructor(customerRepo, orderRedisService, cryptoService, commongGiftCardService, context, httpService, walletService, razorpayService, sharedOrderService){
         this.customerRepo = customerRepo;
@@ -52371,7 +52648,7 @@ WalletResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 99 */
+/* 100 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52401,7 +52678,7 @@ SetupPaymentMethodDto = _ts_decorate._([
 
 
 /***/ }),
-/* 100 */
+/* 101 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52437,7 +52714,7 @@ RiderWalletDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 101 */
+/* 102 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52506,7 +52783,7 @@ RiderTransactionDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 102 */
+/* 103 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52546,7 +52823,7 @@ RazorpayOrderDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 103 */
+/* 104 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52621,7 +52898,7 @@ ChatService = _ts_decorate._([
 
 
 /***/ }),
-/* 104 */
+/* 105 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52638,7 +52915,7 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(27);
 const _graphql = __webpack_require__(10);
-const _chatservice = __webpack_require__(103);
+const _chatservice = __webpack_require__(104);
 const _database = __webpack_require__(12);
 let ChatResolver = class ChatResolver {
     constructor(chatService){
@@ -52688,7 +52965,7 @@ ChatResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 105 */
+/* 106 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52703,8 +52980,8 @@ Object.defineProperty(exports, "ComplaintModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _complaintresolver = __webpack_require__(106);
-const _complaintservice = __webpack_require__(107);
+const _complaintresolver = __webpack_require__(107);
+const _complaintservice = __webpack_require__(108);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 let ComplaintModule = class ComplaintModule {
@@ -52728,7 +53005,7 @@ ComplaintModule = _ts_decorate._([
 
 
 /***/ }),
-/* 106 */
+/* 107 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52745,9 +53022,9 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(27);
 const _graphql = __webpack_require__(10);
-const _complaintservice = __webpack_require__(107);
-const _complaintdto = __webpack_require__(108);
-const _complaintinput = __webpack_require__(109);
+const _complaintservice = __webpack_require__(108);
+const _complaintdto = __webpack_require__(109);
+const _complaintinput = __webpack_require__(110);
 const _authenticateduser = __webpack_require__(37);
 const _common = __webpack_require__(2);
 const _accesstokenguard = __webpack_require__(41);
@@ -52795,7 +53072,7 @@ ComplaintResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 107 */
+/* 108 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52897,7 +53174,7 @@ ComplaintService = _ts_decorate._([
 
 
 /***/ }),
-/* 108 */
+/* 109 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52944,7 +53221,7 @@ ComplaintDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 109 */
+/* 110 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -52990,7 +53267,7 @@ ComplaintInput = _ts_decorate._([
 
 
 /***/ }),
-/* 110 */
+/* 111 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53007,8 +53284,8 @@ const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
-const _driver_tendenyservice = __webpack_require__(111);
-const _driver_tendencyresolver = __webpack_require__(112);
+const _driver_tendenyservice = __webpack_require__(112);
+const _driver_tendencyresolver = __webpack_require__(113);
 let DriverTendencyModule = class DriverTendencyModule {
 };
 DriverTendencyModule = _ts_decorate._([
@@ -53027,7 +53304,7 @@ DriverTendencyModule = _ts_decorate._([
 
 
 /***/ }),
-/* 111 */
+/* 112 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53095,7 +53372,7 @@ DriverTendencyService = _ts_decorate._([
 
 
 /***/ }),
-/* 112 */
+/* 113 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53112,11 +53389,11 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(27);
 const _graphql = __webpack_require__(10);
-const _driver_tendenyservice = __webpack_require__(111);
+const _driver_tendenyservice = __webpack_require__(112);
 const _common = __webpack_require__(2);
 const _authenticateduser = __webpack_require__(37);
 const _accesstokenguard = __webpack_require__(41);
-const _pastorderdriverdto = __webpack_require__(89);
+const _pastorderdriverdto = __webpack_require__(90);
 let DriverTendencyResolver = class DriverTendencyResolver {
     constructor(driverTendencyService, context){
         this.driverTendencyService = driverTendencyService;
@@ -53162,7 +53439,7 @@ DriverTendencyResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 113 */
+/* 114 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53213,7 +53490,7 @@ RiderApiSetupNotFoundController = _ts_decorate._([
 
 
 /***/ }),
-/* 114 */
+/* 115 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53226,18 +53503,18 @@ Object.defineProperty(exports, "RiderAPIController", ({
         return RiderAPIController;
     }
 }));
-const _interop_require_default = __webpack_require__(115);
+const _interop_require_default = __webpack_require__(116);
 const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(27);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
 const _express = __webpack_require__(4);
-const _restjwtauthguard = __webpack_require__(116);
+const _restjwtauthguard = __webpack_require__(117);
 const _typeorm = __webpack_require__(11);
 const _typeorm1 = __webpack_require__(13);
 const _properurljoin = /*#__PURE__*/ _interop_require_default._(__webpack_require__(14));
-const _packagejson = __webpack_require__(117);
+const _packagejson = __webpack_require__(118);
 let RiderAPIController = class RiderAPIController {
     constructor(sharedCustomerWalletService, sharedOrderService, activeOrderRedisService, cryptoService, pubsub, driverRedisService, riderRedisService, riderRepository, paymentRepository, mediaRepository){
         this.sharedCustomerWalletService = sharedCustomerWalletService;
@@ -53510,6 +53787,13 @@ let RiderAPIController = class RiderAPIController {
         await this.riderRepository.update(req.user.id, {
             mediaId: insert.raw.insertId
         });
+        try {
+            await this.riderRedisService.updateOnlineRider(String(req.user.id), {
+                profileImageUrl: file.filename
+            });
+        } catch (e) {
+        // rider not cached in Redis — ignore
+        }
         res.send({
             __typename: 'Media',
             id: insert.raw.insertId.toString(),
@@ -53607,13 +53891,13 @@ RiderAPIController = _ts_decorate._([
 
 
 /***/ }),
-/* 115 */
+/* 116 */
 /***/ ((module) => {
 
 module.exports = require("@swc/helpers/_/_interop_require_default");
 
 /***/ }),
-/* 116 */
+/* 117 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53646,13 +53930,13 @@ RestJwtAuthGuard = _ts_decorate._([
 
 
 /***/ }),
-/* 117 */
+/* 118 */
 /***/ ((module) => {
 
 module.exports = /*#__PURE__*/JSON.parse('{"name":"bettersuite","version":"5.3.2","license":"MIT","scripts":{"ng":"nx","nx":"nx","start":"ts-node src/index.ts","build":"ng build","test":"ng test","lint":"nx workspace-lint && ng lint","e2e":"ng e2e","affected:apps":"nx affected:apps","affected:libs":"nx affected:libs","affected:build":"nx affected:build","affected:e2e":"nx affected:e2e","affected:test":"nx affected:test","affected:lint":"nx affected:lint","affected:dep-graph":"nx affected:dep-graph","affected":"nx affected","format":"nx format:write","format:write":"nx format:write","format:check":"nx format:check","update":"nx migrate latest","workspace-generator":"nx workspace-generator","dep-graph":"nx dep-graph","help":"nx help","lint:fix":"eslint \'./**/*.{ts,tsx}\' --fix","i18n:extract":"ngx-translate-extract --input ./apps/admin-panel/src --output ./apps/admin-panel/src/assets/i18n/{en,es,bn,de,hi,ko,id,ja,pt,ru,ur,zh,fr,ar,hy}.json --clean --format namespaced-json","typeorm":"node --require ts-node/register ./node_modules/typeorm/cli.js","semantic-release":"semantic-release","publish-frontend":"bash scripts/docker-frontend-publish.sh","publish-backend":"bash scripts/docker-backend-publish.sh","inject-google-maps-key":"bash scripts/inject-google-maps-key.sh","client-setup":"bash scripts/client_setup/client-setup.sh","build-apks":"bash scripts/build-apks.sh","smoke-test":"bash scripts/backend-smoke-test.sh","gql-stats":"bash scripts/gql-stats.sh","load-test:seed":"node tools/load-tests/scripts/seed-database.js","load-test:seed:clean":"node tools/load-tests/scripts/seed-database.js --clean","load-test":"bash tools/load-tests/scripts/run-load-test.sh","load-test:rider":"bash tools/load-tests/scripts/run-load-test.sh rider","load-test:driver":"bash tools/load-tests/scripts/run-load-test.sh driver"},"private":true,"dependencies":{"@angular/animations":"20.1.4","@angular/cdk":"20.1.4","@angular/common":"20.1.4","@angular/compiler":"20.1.4","@angular/core":"20.1.4","@angular/forms":"20.1.4","@angular/google-maps":"20.1.4","@angular/platform-browser":"20.1.4","@angular/platform-browser-dynamic":"20.1.4","@angular/router":"20.1.4","@angular/service-worker":"20.1.4","@ant-design/icons-angular":"^20.0.0","@antv/g2":"^4.2.10","@apollo/client":"^3.13.8","@apollo/server":"^4.12.2","@aws-sdk/client-s3":"^3.886.0","@aws-sdk/client-secrets-manager":"^3.974.0","@bull-board/api":"^6.12.0","@bull-board/express":"^6.12.0","@bull-board/nestjs":"^6.12.0","@ctrl/tinycolor":"^4.1.0","@googlemaps/google-maps-services-js":"^3.4.2","@googlemaps/places":"^2.0.1","@googlemaps/routing":"^2.0.1","@ingameltd/payu":"^1.0.5","@nestjs/apollo":"^13.1.0","@nestjs/axios":"^4.0.1","@nestjs/bullmq":"^11.0.3","@nestjs/common":"11.1.5","@nestjs/config":"^4.0.2","@nestjs/core":"11.1.5","@nestjs/graphql":"^13.1.0","@nestjs/jwt":"^11.0.0","@nestjs/passport":"^11.0.5","@nestjs/platform-express":"^11.1.5","@nestjs/schedule":"^6.0.0","@nestjs/serve-static":"^5.0.3","@nestjs/typeorm":"11.0.0","@nestjs/websockets":"^11.1.3","@nx/angular":"21.3.10","@nx/web":"21.3.10","@paypal/checkout-server-sdk":"^1.0.3","@ptc-org/nestjs-query-core":"^9.1.0","@ptc-org/nestjs-query-graphql":"^9.1.0","@ptc-org/nestjs-query-typeorm":"^9.1.0","@redis/client":"^6.2.1","@redis/json":"^6.2.1","@redis/search":"^6.2.1","@sentry/cli":"^2.50.2","@sentry/nestjs":"^10.0.0","@sentry/profiling-node":"10.0.0","@simplewebauthn/server":"^13.0.0","@simplewebauthn/types":"^12.0.0","@willsoto/nestjs-prometheus":"^6.0.2","apollo-angular":"^11.0.0","autoprefixer":"^10.4.21","bullmq":"^5.56.9","class-transformer":"0.5.1","class-validator":"0.14.2","core-js":"^3.42.0","dataloader":"^2.2.3","dotenv":"16.5.0","firebase-admin":"^13.4.0","google-libphonenumber":"^3.2.43","graphql":"^16.11.0","graphql-redis-subscriptions":"^2.7.0","graphql-relay":"^0.10.2","graphql-subscriptions":"^3.0.0","graphql-tools":"^9.0.20","graphql-ws":"^6.0.6","h3-js":"^4.2.1","instamojo-payment-nodejs":"^3.0.0","ioredis":"^5.7.0","json-2-csv":"^4.0.0","jwt-decode":"^4.0.0","license-verify":"0.1.5","mercadopago":"^1.5.17","multer":"^2.0.0","mysql2":"^3.14.3","ng-zorro-antd":"^20.1.0","ngx-timeago":"^3.0.0","node-rsa":"^1.1.1","overshom-wayforpay":"^1.1.0","passport":"^0.7.0","passport-jwt":"^4.0.1","passport-local":"^1.0.0","paystack-node":"^0.3.0","paytmchecksum":"^1.5.1","pdfkit":"^0.17.1","pdfkit-table":"^0.1.99","plivo":"^4.70.0","prom-client":"^15.1.3","proper-url-join":"^2.1.2","razorpay":"^2.9.8","redis":"^6.2.1","reflect-metadata":"^0.2.2","rxjs":"7.8.2","sberbank-acquiring":"^1.2.2","sharp":"^0.34.3","stripe":"^18.4.0","tslib":"^2.6.1","twilio":"^5.6.1","typeorm":"0.3.26","uuid":"^11.1.0","zone.js":"0.15.1"},"devDependencies":{"@angular-devkit/build-angular":"20.1.4","@angular-devkit/core":"20.1.4","@angular-devkit/schematics":"20.1.4","@angular-eslint/eslint-plugin":"20.1.0","@angular-eslint/eslint-plugin-template":"20.1.0","@angular-eslint/template-parser":"20.1.0","@angular/cli":"~20.1.0","@angular/compiler-cli":"20.1.4","@angular/language-service":"20.1.4","@bartholomej/ngx-translate-extract":"^8.0.2","@graphql-codegen/cli":"^5.0.7","@graphql-codegen/introspection":"^4.0.3","@graphql-codegen/typescript":"^4.1.6","@graphql-codegen/typescript-apollo-angular":"^4.0.1","@graphql-codegen/typescript-operations":"^4.6.1","@monodon/rust":"^2.3.0","@nestjs/cli":"^11.0.10","@nestjs/schematics":"11.0.5","@nestjs/testing":"11.1.3","@ngx-translate/core":"^17.0.0","@ngx-translate/http-loader":"^17.0.0","@nx/eslint":"21.3.10","@nx/eslint-plugin":"21.3.10","@nx/jest":"21.3.10","@nx/js":"21.3.10","@nx/node":"21.3.10","@nx/webpack":"21.3.10","@nxrocks/nx-flutter":"^10.0.1","@schematics/angular":"20.1.4","@semantic-release/changelog":"^6.0.3","@semantic-release/commit-analyzer":"^13.0.1","@semantic-release/git":"^10.0.1","@semantic-release/npm":"^12.0.1","@semantic-release/release-notes-generator":"^14.0.3","@swc-node/register":"1.10.10","@swc/cli":"^0.7.8","@swc/core":"1.13.3","@swc/helpers":"0.5.17","@swc/jest":"0.2.39","@tailwindcss/forms":"^0.5.4","@tailwindcss/typography":"^0.5.9","@testcontainers/mysql":"^11.5.1","@testcontainers/redis":"^11.5.1","@types/busboy":"^1.5.0","@types/cron":"^2.0.1","@types/estree":"1.0.1","@types/google-libphonenumber":"^7.4.30","@types/jest":"^29.5.0","@types/multer":"^1.4.12","@types/node":"^24.0.10","@types/passport-jwt":"^4.0.1","@types/paypal__checkout-server-sdk":"^1.0.5","@types/pdfkit":"^0.17.0","@types/proper-url-join":"^2.1.5","@types/supertest":"^6.0.3","conventional-changelog-conventionalcommits":"^9.0.0","eslint":"^9.28.0","eslint-config-prettier":"10.1.5","eslint-plugin-unused-imports":"^4.1.4","jest":"^29.7.0","jest-environment-jsdom":"^29.7.0","jest-util":"^29.7.0","jsonc-eslint-parser":"^2.1.0","ng-packagr":"20.1.0","nx":"21.3.10","postcss":"^8.4.27","postcss-import":"15.1.0","postcss-preset-env":"9.1.0","postcss-url":"10.1.3","prettier":"^3.5.3","supertest":"^7.1.4","swc-loader":"^0.2.6","tailwindcss":"^3.3.3","testcontainers":"^11.5.1","ts-jest":"29.4.0","ts-node":"10.9.2","tslib":"^2.3.0","typescript":"5.8.3","typescript-eslint":"^8.33.0","webpack-cli":"^5.1.4"},"workspaces":["libs/*","apps/*"],"overrides":{"typescript":"5.8.3","eslint":"^9.28.0","rxjs":"7.8.2","typeorm":{"redis":"^5.8.2"}},"repository":{"type":"git","url":"https://github.com/ridyio/ridy-monorepo.git"},"publishConfig":{"access":"restricted"},"allowScripts":{"cpu-features@0.0.10":true,"core-js@3.43.0":true,"lmdb@3.4.1":true,"msgpackr-extract@3.0.3":true,"nx@21.3.10":true,"protobufjs@7.5.3":true,"sharp@0.34.3":true,"ssh2@1.16.0":true,"unrs-resolver@1.11.1":true,"@apollo/protobufjs@1.2.7":true,"@firebase/util@1.12.1":true,"@nestjs/core@11.1.5":true,"@parcel/watcher@2.6.0":true,"@sentry/cli@2.50.2":true,"@sentry-internal/node-cpu-profiler@2.2.0":true,"@swc/core@1.13.3":true,"fsevents@2.3.3":true,"esbuild@0.25.5":true}}');
 
 /***/ }),
-/* 118 */
+/* 119 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53669,8 +53953,8 @@ const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
-const _sosresolver = __webpack_require__(119);
-const _sosservice = __webpack_require__(121);
+const _sosresolver = __webpack_require__(120);
+const _sosservice = __webpack_require__(122);
 let SOSModule = class SOSModule {
 };
 SOSModule = _ts_decorate._([
@@ -53691,7 +53975,7 @@ SOSModule = _ts_decorate._([
 
 
 /***/ }),
-/* 119 */
+/* 120 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53711,8 +53995,8 @@ const _common = __webpack_require__(2);
 const _graphql = __webpack_require__(10);
 const _database = __webpack_require__(12);
 const _accesstokenguard = __webpack_require__(41);
-const _sosdto = __webpack_require__(120);
-const _sosservice = __webpack_require__(121);
+const _sosdto = __webpack_require__(121);
+const _sosservice = __webpack_require__(122);
 let SOSResolver = class SOSResolver {
     constructor(sosService){
         this.sosService = sosService;
@@ -53751,7 +54035,7 @@ SOSResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 120 */
+/* 121 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53779,7 +54063,7 @@ SOSDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 121 */
+/* 122 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53848,25 +54132,25 @@ SOSService = _ts_decorate._([
 
 
 /***/ }),
-/* 122 */
+/* 123 */
 /***/ ((module) => {
 
 module.exports = require("@sentry/nestjs/setup");
 
 /***/ }),
-/* 123 */
+/* 124 */
 /***/ ((module) => {
 
 module.exports = require("@willsoto/nestjs-prometheus");
 
 /***/ }),
-/* 124 */
+/* 125 */
 /***/ ((module) => {
 
 module.exports = require("@bull-board/express");
 
 /***/ }),
-/* 125 */
+/* 126 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53881,8 +54165,8 @@ Object.defineProperty(exports, "NotificationModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _notificationservice = __webpack_require__(126);
-const _notificationresolver = __webpack_require__(127);
+const _notificationservice = __webpack_require__(127);
+const _notificationresolver = __webpack_require__(128);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 let NotificationModule = class NotificationModule {
@@ -53906,7 +54190,7 @@ NotificationModule = _ts_decorate._([
 
 
 /***/ }),
-/* 126 */
+/* 127 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53959,7 +54243,7 @@ NotificationService = _ts_decorate._([
 
 
 /***/ }),
-/* 127 */
+/* 128 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -53978,7 +54262,7 @@ const _ts_param = __webpack_require__(27);
 const _common = __webpack_require__(2);
 const _graphql = __webpack_require__(10);
 const _accesstokenguard = __webpack_require__(41);
-const _notificationservice = __webpack_require__(126);
+const _notificationservice = __webpack_require__(127);
 const _authenticateduser = __webpack_require__(37);
 let NotificationResolver = class NotificationResolver {
     constructor(context, notificationService){
@@ -54015,7 +54299,7 @@ NotificationResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 128 */
+/* 129 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54031,8 +54315,8 @@ Object.defineProperty(exports, "EphemeralMessagesModule", ({
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _database = __webpack_require__(12);
-const _ephemeralmessagesservice = __webpack_require__(129);
-const _ephemeralmessagesresolver = __webpack_require__(130);
+const _ephemeralmessagesservice = __webpack_require__(130);
+const _ephemeralmessagesresolver = __webpack_require__(131);
 const _ordermodule = __webpack_require__(55);
 let EphemeralMessagesModule = class EphemeralMessagesModule {
 };
@@ -54051,7 +54335,7 @@ EphemeralMessagesModule = _ts_decorate._([
 
 
 /***/ }),
-/* 129 */
+/* 130 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54104,7 +54388,7 @@ EphemeralMessagesService = _ts_decorate._([
 
 
 /***/ }),
-/* 130 */
+/* 131 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54121,8 +54405,8 @@ const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _ts_param = __webpack_require__(27);
 const _graphql = __webpack_require__(10);
-const _ephemeralmessagesservice = __webpack_require__(129);
-const _ephemeralmessagedto = __webpack_require__(131);
+const _ephemeralmessagesservice = __webpack_require__(130);
+const _ephemeralmessagedto = __webpack_require__(132);
 const _common = __webpack_require__(2);
 const _accesstokenguard = __webpack_require__(41);
 const _authenticateduser = __webpack_require__(37);
@@ -54170,7 +54454,7 @@ EphemeralMessagesResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 131 */
+/* 132 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54248,7 +54532,7 @@ EphemeralMessageDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 132 */
+/* 133 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54265,8 +54549,8 @@ const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
-const _feedbackservice = __webpack_require__(133);
-const _feedbackresolver = __webpack_require__(134);
+const _feedbackservice = __webpack_require__(134);
+const _feedbackresolver = __webpack_require__(135);
 let FeedbackModule = class FeedbackModule {
 };
 FeedbackModule = _ts_decorate._([
@@ -54285,7 +54569,7 @@ FeedbackModule = _ts_decorate._([
 
 
 /***/ }),
-/* 133 */
+/* 134 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54325,7 +54609,7 @@ FeedbackService = _ts_decorate._([
 
 
 /***/ }),
-/* 134 */
+/* 135 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54341,8 +54625,8 @@ Object.defineProperty(exports, "FeedbackResolver", ({
 const _ts_decorate = __webpack_require__(6);
 const _ts_metadata = __webpack_require__(7);
 const _graphql = __webpack_require__(10);
-const _feedbackparameterdto = __webpack_require__(135);
-const _feedbackservice = __webpack_require__(133);
+const _feedbackparameterdto = __webpack_require__(136);
+const _feedbackservice = __webpack_require__(134);
 let FeedbackResolver = class FeedbackResolver {
     constructor(feedbackService){
         this.feedbackService = feedbackService;
@@ -54369,7 +54653,7 @@ FeedbackResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 135 */
+/* 136 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54409,7 +54693,7 @@ FeedbackParameterDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 136 */
+/* 137 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54424,8 +54708,8 @@ Object.defineProperty(exports, "FavoriteLocationModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _favoritelocationresolver = __webpack_require__(137);
-const _favoritelocationservice = __webpack_require__(140);
+const _favoritelocationresolver = __webpack_require__(138);
+const _favoritelocationservice = __webpack_require__(141);
 const _typeorm = __webpack_require__(11);
 const _database = __webpack_require__(12);
 let FavoriteLocationModule = class FavoriteLocationModule {
@@ -54446,7 +54730,7 @@ FavoriteLocationModule = _ts_decorate._([
 
 
 /***/ }),
-/* 137 */
+/* 138 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54465,9 +54749,9 @@ const _ts_param = __webpack_require__(27);
 const _common = __webpack_require__(2);
 const _graphql = __webpack_require__(10);
 const _authenticateduser = __webpack_require__(37);
-const _favoritelocationdto = __webpack_require__(138);
-const _createfavoritelocationinput = __webpack_require__(139);
-const _favoritelocationservice = __webpack_require__(140);
+const _favoritelocationdto = __webpack_require__(139);
+const _createfavoritelocationinput = __webpack_require__(140);
+const _favoritelocationservice = __webpack_require__(141);
 const _accesstokenguard = __webpack_require__(41);
 let FavoriteLocationResolver = class FavoriteLocationResolver {
     constructor(favoriteLocationService, context){
@@ -54544,7 +54828,7 @@ FavoriteLocationResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 138 */
+/* 139 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54603,7 +54887,7 @@ FavoriteLocationDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 139 */
+/* 140 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54658,7 +54942,7 @@ CreateRiderAddressInput = _ts_decorate._([
 
 
 /***/ }),
-/* 140 */
+/* 141 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54738,7 +55022,7 @@ FavoriteLocationService = _ts_decorate._([
 
 
 /***/ }),
-/* 141 */
+/* 142 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54753,8 +55037,8 @@ Object.defineProperty(exports, "SupportModule", ({
 }));
 const _ts_decorate = __webpack_require__(6);
 const _common = __webpack_require__(2);
-const _supportservice = __webpack_require__(142);
-const _supportresolver = __webpack_require__(143);
+const _supportservice = __webpack_require__(143);
+const _supportresolver = __webpack_require__(144);
 let SupportModule = class SupportModule {
 };
 SupportModule = _ts_decorate._([
@@ -54771,7 +55055,7 @@ SupportModule = _ts_decorate._([
 
 
 /***/ }),
-/* 142 */
+/* 143 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54803,7 +55087,7 @@ SupportService = _ts_decorate._([
 
 
 /***/ }),
-/* 143 */
+/* 144 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -54823,7 +55107,7 @@ const _graphql = __webpack_require__(10);
 const _common = __webpack_require__(2);
 const _accesstokenguard = __webpack_require__(41);
 const _authenticateduser = __webpack_require__(37);
-const _supportservice = __webpack_require__(142);
+const _supportservice = __webpack_require__(143);
 let SupportResolver = class SupportResolver {
     constructor(context, supportService){
         this.context = context;
@@ -54855,19 +55139,19 @@ SupportResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 144 */
+/* 145 */
 /***/ ((module) => {
 
 module.exports = require("firebase-admin/app");
 
 /***/ }),
-/* 145 */
+/* 146 */
 /***/ ((module) => {
 
 module.exports = require("dotenv");
 
 /***/ }),
-/* 146 */
+/* 147 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 // Import with `const Sentry = require("@sentry/nestjs");` if you are using CJS
@@ -54877,9 +55161,9 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 const _interop_require_wildcard = __webpack_require__(1);
 const _apollo = __webpack_require__(8);
-const _nestjs = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(147));
-const _profilingnode = __webpack_require__(148);
-const _dotenv = __webpack_require__(145);
+const _nestjs = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(148));
+const _profilingnode = __webpack_require__(149);
+const _dotenv = __webpack_require__(146);
 (0, _dotenv.config)({
     path: __dirname + '/.env'
 });
@@ -54902,13 +55186,13 @@ _nestjs.init({
 
 
 /***/ }),
-/* 147 */
+/* 148 */
 /***/ ((module) => {
 
 module.exports = require("@sentry/nestjs");
 
 /***/ }),
-/* 148 */
+/* 149 */
 /***/ ((module) => {
 
 module.exports = require("@sentry/profiling-node");
@@ -54996,10 +55280,10 @@ const _core = __webpack_require__(3);
 const _express = /*#__PURE__*/ _interop_require_wildcard._(__webpack_require__(4));
 const _riderapimodule = __webpack_require__(5);
 const _firebaseadmin = __webpack_require__(19);
-const _app = __webpack_require__(144);
+const _app = __webpack_require__(145);
 const _database = __webpack_require__(12);
-const _dotenv = __webpack_require__(145);
-__webpack_require__(146);
+const _dotenv = __webpack_require__(146);
+__webpack_require__(147);
 const _licenseverify = __webpack_require__(15);
 process.on('unhandledRejection', (reason)=>{
     _common.Logger.error('Unhandled promise rejection (process kept alive)', reason, 'Rider API');
@@ -55023,7 +55307,12 @@ async function bootstrap() {
     const port = parseInt(process.env.RIDER_API_PORT || '3000', 10);
     app.enableShutdownHooks();
     app.enableCors();
-    const config = await (0, _licenseverify.getConfig)(process.env.NODE_ENV ?? 'production');
+    const config = await (0, _licenseverify.getConfig)(process.env.NODE_ENV ?? 'production').catch((e)=>{
+        _common.Logger.warn('License server unreachable, using local Firebase key: ' + e?.message, 'Bootstrap');
+        return {
+            firebaseProjectPrivateKey: 'firebase-adminsdk.json'
+        };
+    });
     if (config && config.firebaseProjectPrivateKey != null) {
         (0, _app.initializeApp)({
             credential: _firebaseadmin.credential.cert(`${process.cwd()}/config/${config.firebaseProjectPrivateKey}`)

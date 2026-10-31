@@ -118,3 +118,7 @@ mutation CreateRazorpayTopUpOrder($amount: Float!) {
 mutation VerifyRazorpayTopUp($razorpayOrderId: String!, $razorpayPaymentId: String!, $razorpaySignature: String!, $amount: Float!) {
   verifyRazorpayTopUp(razorpayOrderId: $razorpayOrderId, razorpayPaymentId: $razorpayPaymentId, razorpaySignature: $razorpaySignature, amount: $amount)
 }
+
+mutation RejectRideOffer($orderId: ID!) {
+  rejectRideOffer(orderId: $orderId)
+}

@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:ridy/features/profile/presentation/dialogs/edit_profile_sheet.dart';
 import 'package:better_localization/country_code/phone_number.extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -41,6 +42,15 @@ class ProfileInfoScreen extends StatelessWidget {
                         AppTopBar(title: context.translate.profileInfo),
                         const SizedBox(height: 32),
                         AvatarSelectButton(avatar: state.avatar),
+                        TextButton.icon(
+                          onPressed: () => showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (_) => EditProfileSheet(profile: profile),
+                          ),
+                          icon: const Icon(Icons.edit, size: 18),
+                          label: const Text('Edit profile'),
+                        ),
                         const SizedBox(height: 32),
                         Row(
                           children: [

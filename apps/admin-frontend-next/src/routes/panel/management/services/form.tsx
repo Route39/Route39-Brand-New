@@ -1,7 +1,8 @@
 import { useMutation, useQuery } from "@apollo/client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Trash2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { ImagePlus, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { adminUploadMedia, mediaUrl } from "@/lib/admin-upload";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -72,7 +73,10 @@ interface Props {
   initialImageUrl?: string;
 }
 
-export function ServiceForm({ mode, id, initialValues }: Props) {
+export function ServiceForm({ mode, id, initialValues, initialImageUrl }: Props) {
+  const [imageUrl, setImageUrl] = useState<string | null>(initialImageUrl ?? null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const confirm = useConfirm();
   const navigate = useNavigate();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -81,27 +85,7 @@ export function ServiceForm({ mode, id, initialValues }: Props) {
   ];
 
   const { data: catData } = useQuery(SERVICE_CATEGORIES_QUERY);
-  // Only "Passenger Auto" and "Cargo" are selectable — category management
-  // was disabled in favor of these two fixed options. Matching is
-  // case/whitespace-insensitive, and whatever category a service is
-  // *currently* assigned to is always kept in the list too (even if it's
-  // neither of the two), so editing an existing service never shows a
-  // blank dropdown just because its category name doesn't match exactly.
-  const ALLOWED_CATEGORY_NAMES = ["Passenger Auto", "Cargo"];
-  const categories = useMemo(() => {
-    const all = catData?.serviceCategories ?? [];
-    const allowed = all.filter((c) =>
-      ALLOWED_CATEGORY_NAMES.some(
-        (name) => name.toLowerCase() === c.name.trim().toLowerCase(),
-      ),
-    );
-    const currentId = initialValues?.categoryId;
-    if (currentId && !allowed.some((c) => c.id === currentId)) {
-      const current = all.find((c) => c.id === currentId);
-      if (current) return [...allowed, current];
-    }
-    return allowed;
-  }, [catData, initialValues?.categoryId]);
+  const categories = useMemo(() => catData?.serviceCategories ?? [], [catData]);
 
   const {
     register,
@@ -242,6 +226,28 @@ export function ServiceForm({ mode, id, initialValues }: Props) {
       ) : null}
 
       <FormSection title="Basics">
+        <div className="mb-4 flex items-center gap-4">
+          <button type="button" onClick={() => fileRef.current?.click()}
+            className="flex size-24 items-center justify-center overflow-hidden rounded-lg border border-dashed border-border bg-muted/30 hover:bg-muted/60">
+            {imageUrl ? <img src={mediaUrl(imageUrl)} alt="" className="size-full object-contain" /> : <ImagePlus className="size-7 text-muted-foreground" />}
+          </button>
+          <div className="text-xs text-muted-foreground">
+            <p className="font-medium text-foreground">Service image</p>
+            <p>{uploading ? "Uploading..." : "Shown in the rider app list"}</p>
+            {imageUrl ? (
+              <button type="button" className="mt-1 underline"
+                onClick={() => { setImageUrl(null); setValue("mediaId", "", { shouldDirty: true }); }}>Remove image</button>
+            ) : null}
+          </div>
+          <input ref={fileRef} type="file" accept="image/*" className="hidden"
+            onChange={async (e) => {
+              const f = e.target.files?.[0]; if (!f) return;
+              setUploading(true);
+              try { const m = await adminUploadMedia(f, {}); setImageUrl(m.address); setValue("mediaId", m.id, { shouldDirty: true }); toast.success("Image uploaded"); }
+              catch (err) { toast.error(err instanceof Error ? err.message : "Upload failed"); }
+              finally { setUploading(false); if (fileRef.current) fileRef.current.value = ""; }
+            }} />
+        </div>
         <FormGrid>
           <Field label="Name" htmlFor="name" error={errors.name?.message} required>
             <Input id="name" {...register("name")} />
@@ -267,9 +273,9 @@ export function ServiceForm({ mode, id, initialValues }: Props) {
             />
           </Field>
         </FormGrid>
-        {/* <Field label="Description" htmlFor="description">
-          <Textarea id="description" rows={2} {...register("description")} />
-        </Field> */}
+        <Field label="Description" htmlFor="description">
+          <Input id="description" placeholder="e.g. Comfortable seats, AC" {...register("description")} />
+        </Field>
         <Field label="Order types" error={errors.orderTypes?.message as string | undefined}>
           <Controller
             control={control}

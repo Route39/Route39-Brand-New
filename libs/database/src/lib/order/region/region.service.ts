@@ -14,7 +14,7 @@ export class RegionService {
 
   async getRegionWithPoint(point: Point): Promise<RegionEntity[]> {
     const regions: RegionEntity[] = await this.regionRepository.query(
-      `SELECT * FROM region WHERE enabled=TRUE AND ST_Within(st_geomfromtext('POINT(? ?)'), region.location)`,
+      `SELECT * FROM region WHERE enabled=TRUE AND ST_Within(st_geomfromtext('POINT(? ?)'), region.location) ORDER BY ST_Area(region.location) ASC`,
       [point.lng, point.lat],
     );
     return regions;

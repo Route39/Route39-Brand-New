@@ -35,6 +35,7 @@ abstract class HomeRepository {
   Future<ApiResponse<void>> updateStatus({required Enum$DriverStatus status, Input$PointInput? location});
 
   Future<ApiResponse<Fragment$ActiveOrder>> acceptOrderRequest({required String requestId});
+  Future<void> rejectOrderRequest({required String requestId});
 
   void onLoggedIn({required Fragment$Profile profile});
 

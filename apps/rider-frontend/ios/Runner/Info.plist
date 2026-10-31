@@ -88,6 +88,8 @@
 		<string>By granting this permission, we will be able to find your current location so you can find the trip's starting point easier.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>Access to you media library is required to upload the selected image to our server for Profile Image</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera access is required to take your profile photo</string>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
 		<key>UIBackgroundModes</key>

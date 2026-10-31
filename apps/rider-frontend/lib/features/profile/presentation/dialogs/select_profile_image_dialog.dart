@@ -1,4 +1,5 @@
 import 'package:api_response/api_response.dart';
+import 'package:ridy/core/repositories/profile_repository.dart';
 import 'package:dartz/dartz.dart' as dartz;
 import 'package:flutter/material.dart';
 import 'package:flutter_common/core/presentation/buttons/app_primary_button.dart';
@@ -45,21 +46,20 @@ class _SelectProfileImageDialogState extends State<SelectProfileImageDialog> {
           setState(() {
             isSaving = true;
           });
-          final update = await locator<UploadDatasource>().uploadProfilePicture(
-            avatar.fold(() => throw Exception('Avatar is not selected'), (a) => a),
-          );
+          final update = await locator<ProfileRepository>().getProfile();
           setState(() {
             isSaving = false;
           });
 
           switch (update) {
             case ApiResponseLoaded(:final data):
-              locator<AuthBloc>().profileUpdated(data.updateOneRider);
+              locator<AuthBloc>().profileUpdated(data);
             case ApiResponseError():
               throw Exception('Error updating profile');
 
             case _:
           }
+          if (context.mounted) Navigator.of(context).pop();
         },
         child: Text(context.translate.saveChanges),
       ),
@@ -67,12 +67,14 @@ class _SelectProfileImageDialogState extends State<SelectProfileImageDialog> {
         key: formKey,
         child: FormField<String>(
           initialValue: avatar.fold(() => null, (a) => a),
-          onSaved: (newValue) => avatar = dartz.some(newValue!),
+          onSaved: (newValue) { if (newValue != null) avatar = dartz.some(newValue); },
           builder: (state) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 UploadImageField<String>(
+                  allowCamera: true,
+                  enableCrop: true,
                   displayValue: (p0) => p0,
                   initialValue: state.value,
                   onChanged: (media) {
@@ -80,7 +82,7 @@ class _SelectProfileImageDialogState extends State<SelectProfileImageDialog> {
                   },
                   uploadButtonText: context.translate.uploadImage,
                   fileUploader: (path, bytes) async {
-                    return (await locator<UploadDatasource>().uploadProfilePicture(path)).address;
+                    return (await locator<UploadDatasource>().uploadProfilePicture(path, bytes: bytes)).address;
                   },
                 ),
               ],

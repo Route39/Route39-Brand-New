@@ -50,4 +50,6 @@ export class CompleteRegistrationInput {
   documentPairs!: DocumentPairInput[];
   @Field(() => [ID], { nullable: true })
   legacyDocumentIds?: number[];
+  @Field(() => ID, { nullable: true })
+  serviceId?: number;
 }

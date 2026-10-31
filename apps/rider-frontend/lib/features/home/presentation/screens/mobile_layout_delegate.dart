@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
+final fullMapNotifier = ValueNotifier<bool>(false);
+final cardHeightNotifier = ValueNotifier<double>(0);
+
 class MobileLayoutDelegate extends MultiChildLayoutDelegate {
   static const String mapLayoutId = 'map';
   static const String cardLayoutId = 'card';
   static const String actionButtonId = 'action';
   static const String myLocationButtonId = 'myLocation';
 
-  MobileLayoutDelegate();
+  MobileLayoutDelegate() : super(relayout: fullMapNotifier);
 
   @override
   void performLayout(Size size) {
@@ -17,6 +20,10 @@ class MobileLayoutDelegate extends MultiChildLayoutDelegate {
         maxHeight: size.height,
       ),
     );
+    if (cardHeightNotifier.value != cardSize.height) {
+      final h = cardSize.height;
+      WidgetsBinding.instance.addPostFrameCallback((_) => cardHeightNotifier.value = h);
+    }
     if (cardSize.height < size.height - 20) {
       positionChild(
         cardLayoutId,
@@ -26,7 +33,7 @@ class MobileLayoutDelegate extends MultiChildLayoutDelegate {
         mapLayoutId,
         BoxConstraints(
           maxWidth: size.width,
-          maxHeight: size.height - cardSize.height + 20,
+          maxHeight: size.height, // full-screen map behind card (Rapido style)
         ),
       );
       positionChild(mapLayoutId, Offset.zero);

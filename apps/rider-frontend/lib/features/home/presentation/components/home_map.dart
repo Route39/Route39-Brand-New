@@ -1,3 +1,5 @@
+import 'package:ridy/features/home/presentation/screens/mobile_layout_delegate.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:api_response/api_response.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,6 +17,8 @@ import 'package:ridy/features/home/presentation/blocs/home.extensions.dart';
 
 import 'current_location_marker.dart';
 
+final followDriverNotifier = ValueNotifier<bool>(true);
+
 class HomeMap extends StatefulWidget {
   const HomeMap({super.key});
 
@@ -22,12 +26,85 @@ class HomeMap extends StatefulWidget {
   State<HomeMap> createState() => _HomeMapState();
 }
 
-class _HomeMapState extends State<HomeMap> {
+class _HomeMapState extends State<HomeMap> with SingleTickerProviderStateMixin {
+  late final AnimationController _anim = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1500),
+  )..addListener(() {
+      final now = DateTime.now();
+      if (_anim.isCompleted || now.difference(_lastFrame).inMilliseconds >= 33) {
+        _lastFrame = now;
+        setState(() {});
+      }
+    });
+  DateTime _lastFrame = DateTime.fromMillisecondsSinceEpoch(0);
+  LatLng? _fromPos;
+  LatLng? _toPos;
+  int? _bearing;
+  DateTime? _lastUpdate;
+
+  @override
+  void dispose() {
+    _anim.dispose();
+    super.dispose();
+  }
+
+  LatLng? get _animPos {
+    if (_fromPos == null || _toPos == null) return _toPos;
+    final t = _anim.value;
+    return LatLng(
+      _fromPos!.latitude + (_toPos!.latitude - _fromPos!.latitude) * t,
+      _fromPos!.longitude + (_toPos!.longitude - _fromPos!.longitude) * t,
+    );
+  }
+
+  void _onDriverLoc(LatLng? newPos) {
+    if (newPos == null || newPos == _toPos) return;
+    if (_toPos == null) {
+      _fromPos = newPos;
+    } else {
+      _fromPos = _animPos ?? _toPos;
+      if (const Distance().as(LengthUnit.Meter, _fromPos!, newPos) > 3) {
+        _bearing = ((const Distance().bearing(_fromPos!, newPos) + 360) % 360).round();
+      }
+    }
+    final now = DateTime.now();
+    if (_lastUpdate != null) {
+      _anim.duration = Duration(milliseconds: now.difference(_lastUpdate!).inMilliseconds.clamp(800, 5000));
+    }
+    _lastUpdate = now;
+    _toPos = newPos;
+    _anim.forward(from: 0);
+  }
+
+  List<CustomMarker> _markers(HomeState state) {
+    final driverPos = state.activeOrder?.driver?.location?.toLatLng;
+    final pos = _animPos;
+    if (state.mode != HomeMode.rideInProgress || driverPos == null || pos == null) return state.markers;
+    return state.markers
+        .map((m) => m.position == driverPos
+            ? CustomMarker(
+                id: m.id,
+                position: pos,
+                widget: m.widget,
+                fallbackAssetPath: m.fallbackAssetPath,
+                fallbackAssetPackage: m.fallbackAssetPackage,
+                width: m.width,
+                height: m.height,
+                alignment: m.alignment,
+                rotation: _bearing ?? m.rotation,
+              )
+            : m)
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<HomeBloc, HomeState>(
       listenWhen: (previous, current) => previous.markers != current.markers,
       listener: (context, state) async {
+        _onDriverLoc(state.activeOrder?.driver?.location?.toLatLng);
+        if (state.mode != HomeMode.rideInProgress) followDriverNotifier.value = true;
         switch (state.mode) {
           case HomeMode.preSubmission:
             switch (state.orderSubmissionPage) {
@@ -62,6 +139,7 @@ class _HomeMapState extends State<HomeMap> {
             break;
 
           case HomeMode.rideInProgress:
+            if (!followDriverNotifier.value) return;
             if (state.markers.nonNulls.toList().length < 2) return;
 
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -85,16 +163,24 @@ class _HomeMapState extends State<HomeMap> {
         }
       },
       builder: (context, state) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => fullMapNotifier.value = state.mode == HomeMode.rideInProgress);
         return BlocBuilder<SettingsCubit, SettingsState>(
           buildWhen: (previous, current) =>
               previous.mapProvider != current.mapProvider,
           builder: (context, settingsState) {
-            return AppGenericMap(
-              padding: const EdgeInsets.only(
+            return Stack(children: [
+              Listener(
+              onPointerDown: (_) {
+                if (state.mode == HomeMode.rideInProgress && followDriverNotifier.value) {
+                  followDriverNotifier.value = false;
+                }
+              },
+              child: AppGenericMap(
+              padding: EdgeInsets.only(
                 left: 120,
                 right: 120,
                 top: 150,
-                bottom: 60,
+                bottom: state.mode == HomeMode.rideInProgress ? cardHeightNotifier.value + 20 : 60,
               ),
               buttonPadding: const EdgeInsets.symmetric(
                 vertical: 32,
@@ -153,10 +239,36 @@ class _HomeMapState extends State<HomeMap> {
                   );
                 }
               },
-              markers: state.markers,
+              markers: _markers(state),
               initialLocation:
                   state.waypoints.firstOrNull ?? Constants.defaultLocation,
-            );
+            )),
+            if (state.mode == HomeMode.rideInProgress)
+              Positioned.fill(
+                child: AnimatedBuilder(
+                  animation: Listenable.merge([followDriverNotifier, cardHeightNotifier]),
+                  builder: (context, _) => Align(
+                    alignment: Alignment.bottomRight,
+                    child: Padding(
+                      padding: EdgeInsets.only(right: 16, bottom: cardHeightNotifier.value + 84),
+                      child: followDriverNotifier.value
+                          ? const SizedBox.shrink()
+                          : FloatingActionButton.small(
+                              heroTag: 'recenter',
+                              backgroundColor: Colors.white,
+                              onPressed: () {
+                                followDriverNotifier.value = true;
+                                state.mapViewController?.fitBounds(
+                                  state.markers.nonNulls.map((e) => e.position).followedBy(state.directions.toLatLngs).toList(),
+                                );
+                              },
+                              child: const Icon(Icons.my_location, color: Colors.black87),
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            ]);
           },
         );
       },

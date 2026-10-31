@@ -6,8 +6,8 @@ import 'package:flutter_common/core/presentation/markers/app_marker_drop_off.dar
 import 'package:flutter_common/core/presentation/markers/app_marker_pickup.dart';
 
 extension PlaceExtensionX on Place {
-  CustomMarker markerPickup(String orderId) => AppMarkerPickup(address: address).genericMarker(orderId, latLng);
-  CustomMarker markerDropoff(String orderId) => AppMarkerDropoff(address: address).genericMarker(orderId, latLng);
+  CustomMarker markerPickup(String orderId, {String? eta}) => AppMarkerPickup(address: address, eta: eta).genericMarker(orderId, latLng);
+  CustomMarker markerDropoff(String orderId, {String? eta}) => AppMarkerDropoff(address: address, eta: eta).genericMarker(orderId, latLng);
 
   Input$PointInput get toGql {
     return latLng.toPointInput;

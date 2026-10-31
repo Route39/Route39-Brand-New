@@ -1,3 +1,4 @@
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:api_response/api_response.dart';
 import 'package:ridy_driver/core/blocs/auth_bloc.dart';
@@ -144,18 +145,13 @@ class _HomeScreenState extends State<HomeScreen> {
               // if new request added play sound
               BlocListener<HomeBloc, HomeState>(
                 listenWhen: (previous, current) {
-                  switch (current.driverStatus) {
-                    case HomeStateDriverStatus.online:
-                      switch (previous.driverStatus) {
-                        case HomeStateDriverStatus.online:
-                          return current.orderRequests.length >
-                              previous.orderRequests.length;
-                        default:
-                          return current.orderRequests.isNotEmpty;
-                      }
-                    default:
-                      return false;
+                  final active = current.driverStatus == HomeStateDriverStatus.online ||
+                      current.driverStatus == HomeStateDriverStatus.onTrip;
+                  if (!active) return false;
+                  if (previous.driverStatus != current.driverStatus) {
+                    return current.orderRequests.isNotEmpty;
                   }
+                  return current.orderRequests.length > previous.orderRequests.length;
                 },
                 listener: (context, state) {
                   if (_isRideAlertPlaying) return;
@@ -181,22 +177,57 @@ class _HomeScreenState extends State<HomeScreen> {
                   for (var message in state.ephemeralMessages) {
                     switch (message.type) {
                       case Enum$EphemeralMessageType.RateRider:
+                        int? selectedRating;
                         await showDialog(
                           context: context,
                           useSafeArea: false,
-                          builder: (context) {
-                            return AppResponsiveDialog(
-                              type: DialogType.bottomSheet,
-                              header: (
-                                Icons.star_outline,
-                                context.translate.howWasYourTrip,
-                                context.translate.submitFeedback,
-                              ),
-                              primaryButton: AppBorderedButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                title: context.translate.ok,
-                              ),
-                              child: const SizedBox(),
+                          builder: (dialogContext) {
+                            return StatefulBuilder(
+                              builder: (context, setDialogState) {
+                                return AppResponsiveDialog(
+                                  type: DialogType.bottomSheet,
+                                  header: (
+                                    Icons.star_outline,
+                                    context.translate.howWasYourTrip,
+                                    context.translate.submitFeedback,
+                                  ),
+                                  primaryButton: AppBorderedButton(
+                                    onPressed: () {
+                                      if (selectedRating != null) {
+                                        homeBloc.add(
+                                          HomeEvent.reviewSubmitted(
+                                            orderId: message.orderId,
+                                            rating: selectedRating,
+                                            review: null,
+                                          ),
+                                        );
+                                      }
+                                      Navigator.of(dialogContext).pop();
+                                    },
+                                    title: selectedRating == null
+                                        ? context.translate.ok
+                                        : context.translate.submitFeedback,
+                                  ),
+                                  child: Center(
+                                    child: RatingBar.builder(
+                                      itemSize: 40,
+                                      glow: false,
+                                      allowHalfRating: false,
+                                      itemCount: 5,
+                                      initialRating: selectedRating?.toDouble() ?? 0,
+                                      itemBuilder: (context, index) => const Icon(
+                                        Icons.star,
+                                        color: Colors.amber,
+                                      ),
+                                      onRatingUpdate: (value) {
+                                        setDialogState(() {
+                                          selectedRating = value.toInt();
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
                             );
                           },
                         );

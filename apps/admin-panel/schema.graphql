@@ -2778,6 +2778,8 @@ input DriverAggregateFilter {
   gender: GenderFilterComparison
   rating: IntFieldComparison
   reviewCount: IntFieldComparison
+  registrationTimestamp: DateFieldComparison
+  lastSeenTimestamp: DateFieldComparison
 }
 
 input DeliveryPackageSizeFilterComparison {
@@ -2951,6 +2953,8 @@ input DriverFilter {
   gender: GenderFilterComparison
   rating: IntFieldComparison
   reviewCount: IntFieldComparison
+  registrationTimestamp: DateFieldComparison
+  lastSeenTimestamp: DateFieldComparison
 }
 
 input DriverSort {
@@ -2975,6 +2979,8 @@ enum DriverSortFields {
   gender
   rating
   reviewCount
+  registrationTimestamp
+  lastSeenTimestamp
 }
 
 type ServiceOption {
@@ -3814,6 +3820,16 @@ type DriverAggregateGroupBy {
   gender: Gender
   rating: Int
   reviewCount: Int
+  registrationTimestamp(by: GroupBy! = DAY): DateTime
+  lastSeenTimestamp(by: GroupBy! = DAY): DateTime
+}
+
+"""Group by"""
+enum GroupBy {
+  DAY
+  WEEK
+  MONTH
+  YEAR
 }
 
 type DriverCountAggregate {
@@ -3832,6 +3848,8 @@ type DriverCountAggregate {
   gender: Int
   rating: Int
   reviewCount: Int
+  registrationTimestamp: Int
+  lastSeenTimestamp: Int
 }
 
 type DriverSumAggregate {
@@ -3868,6 +3886,8 @@ type DriverMinAggregate {
   gender: Gender
   rating: Int
   reviewCount: Int
+  registrationTimestamp: DateTime
+  lastSeenTimestamp: DateTime
 }
 
 type DriverMaxAggregate {
@@ -3886,6 +3906,8 @@ type DriverMaxAggregate {
   gender: Gender
   rating: Int
   reviewCount: Int
+  registrationTimestamp: DateTime
+  lastSeenTimestamp: DateTime
 }
 
 type DriverAggregateResponse {
@@ -4487,14 +4509,6 @@ type DriverTransactionAggregateGroupBy {
   payoutSessionMethodId: ID
 }
 
-"""Group by"""
-enum GroupBy {
-  DAY
-  WEEK
-  MONTH
-  YEAR
-}
-
 type DriverTransactionCountAggregate {
   id: Int
   createdAt: Int
@@ -4781,6 +4795,8 @@ type FleetDriversAggregateGroupBy {
   gender: Gender
   rating: Int
   reviewCount: Int
+  registrationTimestamp: DateTime
+  lastSeenTimestamp: DateTime
 }
 
 type FleetDriversCountAggregate {
@@ -4799,6 +4815,8 @@ type FleetDriversCountAggregate {
   gender: Int
   rating: Int
   reviewCount: Int
+  registrationTimestamp: Int
+  lastSeenTimestamp: Int
 }
 
 type FleetDriversSumAggregate {
@@ -4835,6 +4853,8 @@ type FleetDriversMinAggregate {
   gender: Gender
   rating: Int
   reviewCount: Int
+  registrationTimestamp: DateTime
+  lastSeenTimestamp: DateTime
 }
 
 type FleetDriversMaxAggregate {
@@ -4853,6 +4873,8 @@ type FleetDriversMaxAggregate {
   gender: Gender
   rating: Int
   reviewCount: Int
+  registrationTimestamp: DateTime
+  lastSeenTimestamp: DateTime
 }
 
 type FleetDriversAggregateResponse {
@@ -8835,6 +8857,7 @@ type RiderAggregateGroupBy {
   firstName: String
   lastName: String
   mobileNumber: String
+  registrationTimestamp(by: GroupBy! = DAY): DateTime
   gender: Gender
 }
 
@@ -8844,6 +8867,7 @@ type RiderCountAggregate {
   firstName: Int
   lastName: Int
   mobileNumber: Int
+  registrationTimestamp: Int
   gender: Int
 }
 
@@ -8861,6 +8885,7 @@ type RiderMinAggregate {
   firstName: String
   lastName: String
   mobileNumber: String
+  registrationTimestamp: DateTime
   gender: Gender
 }
 
@@ -8870,6 +8895,7 @@ type RiderMaxAggregate {
   firstName: String
   lastName: String
   mobileNumber: String
+  registrationTimestamp: DateTime
   gender: Gender
 }
 
@@ -9354,6 +9380,11 @@ type CustomerSessionDeleteResponse {
 type ServiceCategory {
   id: ID!
   name: String!
+  description: String
+  displayPriority: Int!
+  isEnabled: Boolean!
+  mediaId: ID
+  media: Media
   services(
     """Specify to filter the records returned."""
     filter: ServiceFilter! = {}
@@ -9405,6 +9436,10 @@ type ServiceDeleteResponse {
 type ServiceCategoryDeleteResponse {
   id: ID
   name: String
+  description: String
+  displayPriority: Int
+  isEnabled: Boolean
+  mediaId: ID
 }
 
 type ServiceOptionDeleteResponse {
@@ -9466,6 +9501,7 @@ input DistressSignalAggregateFilter {
   or: [DistressSignalAggregateFilter!]
   id: IDFilterComparison
   status: SOSStatusFilterComparison
+  submittedByRider: BooleanFieldComparison
 }
 
 input SOSStatusFilterComparison {
@@ -9497,6 +9533,7 @@ input DistressSignalFilter {
   or: [DistressSignalFilter!]
   id: IDFilterComparison
   status: SOSStatusFilterComparison
+  submittedByRider: BooleanFieldComparison
 }
 
 input DistressSignalSort {
@@ -9508,6 +9545,7 @@ input DistressSignalSort {
 enum DistressSignalSortFields {
   id
   status
+  submittedByRider
 }
 
 type DistressSignal {
@@ -9569,11 +9607,13 @@ type DistressSignalConnection {
 type DistressSignalAggregateGroupBy {
   id: ID
   status: SOSStatus
+  submittedByRider: Boolean
 }
 
 type DistressSignalCountAggregate {
   id: Int
   status: Int
+  submittedByRider: Int
 }
 
 type DistressSignalSumAggregate {
@@ -9667,11 +9707,13 @@ type SOSReasonSosConnection {
 type SOSReasonSosAggregateGroupBy {
   id: ID
   status: SOSStatus
+  submittedByRider: Boolean
 }
 
 type SOSReasonSosCountAggregate {
   id: Int
   status: Int
+  submittedByRider: Int
 }
 
 type SOSReasonSosSumAggregate {
@@ -13719,6 +13761,82 @@ type ZonePriceCategoryZonePricesConnection {
   totalCount: Int!
 }
 
+type SurgeZone {
+  id: ID!
+  name: String!
+  area: [[Point!]!]!
+  status: String!
+  type: String!
+  surgePercent: Float
+  surgeFlat: Float
+  commissionPercent: Float
+  startTime: String
+  endTime: String
+  startDate: String
+  endDate: String
+  autoLive: Boolean
+  autoReason: String
+  autoCreated: Boolean
+  regionId: Int
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type SurgeSetting {
+  id: ID!
+  isEnabled: Boolean!
+  autoSurgeEnabled: Boolean!
+  defaultSurgePercent: Float!
+  maxSurgePercent: Float!
+  commissionPercent: Float!
+  autoDemandRatio: Float!
+  autoWindowMinutes: Int!
+  notifyDrivers: Boolean!
+  stackingMode: String!
+  notifyRadiusMeters: Int!
+  gridEnabled: Boolean!
+  gridSizeMeters: Int!
+  tierLowRatio: Float!
+  tierMidRatio: Float!
+  tierHighRatio: Float!
+  tierLowPercent: Float!
+  tierMidPercent: Float!
+  tierHighPercent: Float!
+  rainExtraPercent: Float!
+}
+
+type SurgeZoneDeleteResponse {
+  id: ID
+  name: String
+  area: [[Point!]!]
+  status: String
+  type: String
+  surgePercent: Float
+  surgeFlat: Float
+  commissionPercent: Float
+  startTime: String
+  endTime: String
+  startDate: String
+  endDate: String
+  autoLive: Boolean
+  autoReason: String
+  autoCreated: Boolean
+  regionId: Int
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type SurgeZoneConnection {
+  """Paging information"""
+  pageInfo: OffsetPageInfo!
+
+  """Array of nodes."""
+  nodes: [SurgeZone!]!
+
+  """Fetch total count of records"""
+  totalCount: Int!
+}
+
 type DriverDocumentDeleteResponse {
   id: ID
   title: String
@@ -15697,6 +15815,31 @@ type Query {
     """Specify to sort results."""
     sorting: [ZonePriceCategorySort!]! = []
   ): [ZonePriceCategory!]!
+  surgeZone(
+    """The id of the record to find."""
+    id: ID!
+  ): SurgeZone!
+  surgeZones(
+    """Limit or page results."""
+    paging: OffsetPaging! = {limit: 10}
+
+    """Specify to filter the records returned."""
+    filter: SurgeZoneFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [SurgeZoneSort!]! = []
+  ): SurgeZoneConnection!
+  surgeSetting(
+    """The id of the record to find."""
+    id: ID!
+  ): SurgeSetting!
+  surgeSettings(
+    """Specify to filter the records returned."""
+    filter: SurgeSettingFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [SurgeSettingSort!]! = []
+  ): [SurgeSetting!]!
 }
 
 input PlatformKPIInput {
@@ -15724,6 +15867,7 @@ input RiderFilter {
   firstName: StringFieldComparison
   lastName: StringFieldComparison
   mobileNumber: StringFieldComparison
+  registrationTimestamp: DateFieldComparison
   gender: GenderFilterComparison
 }
 
@@ -15756,6 +15900,7 @@ enum RiderSortFields {
   firstName
   lastName
   mobileNumber
+  registrationTimestamp
   gender
 }
 
@@ -16069,6 +16214,7 @@ input RiderAggregateFilter {
   firstName: StringFieldComparison
   lastName: StringFieldComparison
   mobileNumber: StringFieldComparison
+  registrationTimestamp: DateFieldComparison
   gender: GenderFilterComparison
 }
 
@@ -17184,6 +17330,38 @@ enum ZonePriceCategorySortFields {
   id
 }
 
+input SurgeZoneFilter {
+  and: [SurgeZoneFilter!]
+  or: [SurgeZoneFilter!]
+  id: IDFilterComparison
+}
+
+input SurgeZoneSort {
+  field: SurgeZoneSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum SurgeZoneSortFields {
+  id
+}
+
+input SurgeSettingFilter {
+  and: [SurgeSettingFilter!]
+  or: [SurgeSettingFilter!]
+  id: IDFilterComparison
+}
+
+input SurgeSettingSort {
+  field: SurgeSettingSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum SurgeSettingSortFields {
+  id
+}
+
 type Mutation {
   updatePassword(input: UpdatePasswordInput!): Operator!
   terminateStaffSession(id: ID!): Boolean!
@@ -17440,6 +17618,11 @@ type Mutation {
   createOneZonePriceCategory(input: CreateOneZonePriceCategoryInput!): ZonePriceCategory!
   updateOneZonePriceCategory(input: UpdateOneZonePriceCategoryInput!): ZonePriceCategory!
   deleteOneZonePriceCategory(input: DeleteOneZonePriceCategoryInput!): ZonePriceCategoryDeleteResponse!
+  createOneSurgeZone(input: CreateOneSurgeZoneInput!): SurgeZone!
+  updateOneSurgeZone(input: UpdateOneSurgeZoneInput!): SurgeZone!
+  deleteOneSurgeZone(input: DeleteOneSurgeZoneInput!): SurgeZoneDeleteResponse!
+  createOneSurgeSetting(input: CreateOneSurgeSettingInput!): SurgeSetting!
+  updateOneSurgeSetting(input: UpdateOneSurgeSettingInput!): SurgeSetting!
 }
 
 input UpdatePasswordInput {
@@ -17768,6 +17951,10 @@ input CreateOneServiceCategoryInput {
 input ServiceCategoryInput {
   name: String!
   enabled: String
+  description: String
+  displayPriority: Int
+  isEnabled: Boolean
+  mediaId: ID
 }
 
 input UpdateOneServiceCategoryInput {
@@ -18003,6 +18190,10 @@ input UpdateDriverInput {
   address: String
   softRejectionNote: String
   mediaId: ID
+  city: String
+  countryIso: String
+  aadhaarNumber: String
+  panNumber: String
 }
 
 input UpdateOneDriverInput {
@@ -19892,6 +20083,73 @@ input UpdateOneZonePriceCategoryInput {
 input DeleteOneZonePriceCategoryInput {
   """The id of the record to delete."""
   id: ID!
+}
+
+input CreateOneSurgeZoneInput {
+  """The record to create"""
+  surgeZone: SurgeZoneInput!
+}
+
+input SurgeZoneInput {
+  name: String
+  area: [[PointInput!]!]
+  status: String
+  type: String
+  surgePercent: Float
+  surgeFlat: Float
+  commissionPercent: Float
+  startTime: String
+  endTime: String
+  startDate: String
+  endDate: String
+}
+
+input UpdateOneSurgeZoneInput {
+  """The id of the record to update"""
+  id: ID!
+
+  """The update to apply."""
+  update: SurgeZoneInput!
+}
+
+input DeleteOneSurgeZoneInput {
+  """The id of the record to delete."""
+  id: ID!
+}
+
+input CreateOneSurgeSettingInput {
+  """The record to create"""
+  surgeSetting: SurgeSettingInput!
+}
+
+input SurgeSettingInput {
+  isEnabled: Boolean
+  autoSurgeEnabled: Boolean
+  defaultSurgePercent: Float
+  maxSurgePercent: Float
+  commissionPercent: Float
+  autoDemandRatio: Float
+  autoWindowMinutes: Int
+  notifyDrivers: Boolean
+  stackingMode: String
+  notifyRadiusMeters: Int
+  gridEnabled: Boolean
+  gridSizeMeters: Int
+  tierLowRatio: Float
+  tierMidRatio: Float
+  tierHighRatio: Float
+  tierLowPercent: Float
+  tierMidPercent: Float
+  tierHighPercent: Float
+  rainExtraPercent: Float
+}
+
+input UpdateOneSurgeSettingInput {
+  """The id of the record to update"""
+  id: ID!
+
+  """The update to apply."""
+  update: SurgeSettingInput!
 }
 
 type Subscription {

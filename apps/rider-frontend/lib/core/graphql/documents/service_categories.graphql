@@ -1,0 +1,18 @@
+query ServiceCategories {
+  serviceCategories {
+    id
+    name
+    description
+    displayPriority
+    media {
+      address
+    }
+    services {
+      id
+      name
+      media {
+        address
+      }
+    }
+  }
+}

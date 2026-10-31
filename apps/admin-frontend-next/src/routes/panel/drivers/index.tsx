@@ -1,5 +1,7 @@
-import { useQuery } from "@apollo/client";
-import { Calendar, Plus, Star } from "lucide-react";
+import { useMutation, useQuery } from "@apollo/client";
+import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { Calendar, Plus, Star, Trash2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -9,15 +11,17 @@ import { PageHeader } from "@/components/panel/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  FilterSelect,
   FilterText,
   TableToolbar,
   FilterTabs,
 } from "@/components/tables/TableToolbar";
+import { DriverStatusCards } from "./status-cards";
 import { DRIVERS_LIST_QUERY } from "@/lib/graphql/documents/drivers";
+import { DELETE_DRIVER_MUTATION } from "@/lib/graphql/documents/management-detail-2";
+import { useConfirm } from "@/providers/ConfirmProvider";
 import { EXPORT_DRIVERS_QUERY } from "@/lib/graphql/documents/extras-2";
 import { buildSortInput as buildSortInputForExport } from "@/lib/panel/page-state";
-import { DRIVER_STATUS_OPTIONS, DRIVER_CITY_OPTIONS } from "@/lib/panel/enum-options";
+import { DRIVER_CITY_OPTIONS } from "@/lib/panel/enum-options";
 import {
   buildFilterInput,
   buildOffsetPaging,
@@ -75,7 +79,9 @@ function dayEndISO(dateStr: string): string {
 }
 
 function toDatePart(value: string): string {
-  return value.length > 10 ? value.slice(0, 10) : value;
+  if (value.length <= 10) return value;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? value.slice(0, 10) : toDateInput(d);
 }
 
 type DriverRow = {
@@ -97,6 +103,10 @@ export default function DriversListPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { page, pageSize, sort, filters, setFilters } = usePageState();
+  const confirm = useConfirm();
+  const [deleteOne, { loading: deleting }] = useMutation(DELETE_DRIVER_MUTATION, {
+    refetchQueries: "active",
+  });
 
   const dateFrom = toDatePart(
     filters.find((f) => f.field === "registrationTimestamp" && f.operator === "gte")?.value ?? "",
@@ -105,6 +115,25 @@ export default function DriversListPage() {
     filters.find((f) => f.field === "registrationTimestamp" && f.operator === "lte")?.value ?? "",
   );
   const activeRange = activeQuickRange(dateFrom, dateTo);
+  const [fromD, setFromD] = useState(dateFrom);
+  const [toD, setToD] = useState(dateTo);
+  useEffect(() => {
+    setFromD(dateFrom);
+  }, [dateFrom]);
+  useEffect(() => {
+    setToD(dateTo);
+  }, [dateTo]);
+  const okDate = (d: string) => /^\d{4}-\d{2}-\d{2}$/.test(d) && Number(d.slice(0, 4)) >= 2000;
+  function onFromChange(v: string) {
+    setFromD(v);
+    if (v === "") applyDateRange("", toD && okDate(toD) ? toD : "");
+    else if (okDate(v)) applyDateRange(v, okDate(toD) ? toD : "");
+  }
+  function onToChange(v: string) {
+    setToD(v);
+    if (v === "") applyDateRange(fromD && okDate(fromD) ? fromD : "", "");
+    else if (okDate(v)) applyDateRange(okDate(fromD) ? fromD : "", v);
+  }
 
   function applyDateRange(from: string, to: string) {
     const without = filters.filter((f) => f.field !== "registrationTimestamp");
@@ -130,6 +159,25 @@ export default function DriversListPage() {
       filter: buildFilterInput(filters) as never,
     },
   });
+
+  const NON_DELETABLE = ["Online", "InService"];
+
+  async function handleDelete(r: DriverRow) {
+    const label = r.driverCode ?? r.id;
+    const ok = await confirm({
+      title: `Delete driver ${label}?`,
+      description: "The phone number will be cleared from this record and can't be recovered.",
+      actionLabel: "Delete",
+      destructive: true,
+    });
+    if (!ok) return;
+    try {
+      await deleteOne({ variables: { id: r.id } });
+      toast.success("Driver deleted");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Delete failed");
+    }
+  }
 
   const rows = (data?.drivers.nodes ?? []) as DriverRow[];
 
@@ -194,6 +242,26 @@ export default function DriversListPage() {
       header: t("driver.lastSeen", { defaultValue: "Last seen" }),
       sortField: "lastSeenTimestamp",
       cell: (r) => formatDateTime(r.lastSeenTimestamp),
+    },
+    {
+      key: "actions",
+      header: "",
+      align: "right",
+      cell: (r) => (
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          disabled={deleting || NON_DELETABLE.includes(r.status)}
+          title={NON_DELETABLE.includes(r.status) ? "Active drivers can't be deleted" : "Delete driver"}
+          onClick={(e) => {
+            e.stopPropagation();
+            void handleDelete(r);
+          }}
+        >
+          <Trash2 className="size-4 text-destructive" />
+        </Button>
+      ),
     },
   ];
 
@@ -264,15 +332,15 @@ export default function DriversListPage() {
           <Calendar className="size-3.5 text-muted-foreground" />
           <input
             type="date"
-            value={dateFrom}
-            onChange={(e) => applyDateRange(e.target.value, dateTo)}
+            value={fromD}
+            onChange={(e) => onFromChange(e.target.value)}
             className="bg-transparent text-sm outline-none"
           />
           <span className="text-muted-foreground">→</span>
           <input
             type="date"
-            value={dateTo}
-            onChange={(e) => applyDateRange(dateFrom, e.target.value)}
+            value={toD}
+            onChange={(e) => onToChange(e.target.value)}
             className="bg-transparent text-sm outline-none"
           />
         </div>
@@ -286,10 +354,10 @@ export default function DriversListPage() {
           Clear filter
         </Button>
       </div>
+      <DriverStatusCards filters={filters} setFilters={setFilters} />
       <TableToolbar>
-        <FilterText field="lastName" placeholder="Search by last name" />
+        <FilterText field="name" placeholder="Search by name" />
         <FilterText field="mobileNumber" placeholder="Phone number" />
-        <FilterSelect field="status" options={DRIVER_STATUS_OPTIONS} placeholder="Any status" width="11rem" />
       </TableToolbar>
       <FilterTabs field="city" options={DRIVER_CITY_OPTIONS} allLabel="All cities" />
       <DataTable

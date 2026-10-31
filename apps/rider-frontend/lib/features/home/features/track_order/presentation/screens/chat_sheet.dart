@@ -48,6 +48,7 @@ class _ChatSheetState extends State<ChatSheet> {
                 children: [
                   AppBackButton(
                     onPressed: () {
+                      FocusManager.instance.primaryFocus?.unfocus();
                       locator<HomeBloc>().add(HomeEvent.changeTrackOrderPage(page: TrackOrderPage.overview));
                     },
                   ),

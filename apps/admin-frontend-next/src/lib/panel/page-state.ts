@@ -183,9 +183,28 @@ export function buildSortInput(sort: SortEntry | null) {
 }
 
 /** Converts FilterEntry[] into the nestjs-query filter shape. */
-export function buildFilterInput(filters: FilterEntry[]): Record<string, Record<string, unknown>> {
-  const out: Record<string, Record<string, unknown>> = {};
+export function buildFilterInput(filters: FilterEntry[]): Record<string, any> {
+  const out: Record<string, any> = {};
   for (const f of filters) {
+    // Virtual "name" field: match first OR last name (also full name "first last").
+    if (f.field === "name" && f.value) {
+      const w = wrapWildcards(f.value);
+      const parts = f.value.trim().split(/\s+/);
+      const or: Record<string, unknown>[] = [
+        { firstName: { like: w } },
+        { lastName: { like: w } },
+      ];
+      if (parts.length >= 2) {
+        or.push({
+          and: [
+            { firstName: { like: wrapWildcards(parts[0]) } },
+            { lastName: { like: wrapWildcards(parts.slice(1).join(" ")) } },
+          ],
+        });
+      }
+      out.or = or;
+      continue;
+    }
     if (!f.value && !["isNull", "isNotNull"].includes(f.operator)) continue;
     out[f.field] ??= {};
     if (f.operator === "in" || f.operator === "notIn") {
@@ -200,6 +219,10 @@ export function buildFilterInput(filters: FilterEntry[]): Record<string, Record<
     } else {
       out[f.field][f.operator] = f.value;
     }
+  }
+  const co = out["createdOn"] as Record<string, unknown> | undefined;
+  if (co && co.gte && co.lte) {
+    out["createdOn"] = { between: { lower: co.gte, upper: co.lte } };
   }
   return out;
 }

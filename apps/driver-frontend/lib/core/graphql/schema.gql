@@ -549,6 +549,18 @@ type Service {
   imageUrl: String!
 }
 
+type LiveSurgeZone {
+  id: ID!
+  name: String!
+  percent: Float!
+  centerLat: Float!
+  centerLng: Float!
+  radiusMeters: Int!
+  rainMm: Float!
+  type: String!
+  reason: String
+}
+
 type UpdateStatus {
   orderId: ID!
   status: OrderStatus!
@@ -1148,6 +1160,7 @@ type Query {
   requireUpdate(versionCode: Int!): VersionStatus!
   driverRequiredDocuments: [DriverDocument!]!
   carModels(query: String): [CarModel!]!
+  servicesForCity(city: String!): [Service!]!
   carColors: [CarColor!]!
 
   """Get all authentication methods linked to the current account."""
@@ -1421,6 +1434,7 @@ input SaveRegistrationProgressInput {
 }
 
 input CompleteRegistrationInput {
+  serviceId: ID
   firstName: String!
   lastName: String!
   certificateNumber: String
@@ -1561,16 +1575,4 @@ input ComplaintInput {
 
 type Subscription {
   driverEvents: DriverEventPayload!
-}
-
-type LiveSurgeZone {
-  id: ID!
-  name: String!
-  percent: Float!
-  centerLat: Float!
-  centerLng: Float!
-  radiusMeters: Int!
-  rainMm: Float!
-  type: String!
-  reason: String
 }

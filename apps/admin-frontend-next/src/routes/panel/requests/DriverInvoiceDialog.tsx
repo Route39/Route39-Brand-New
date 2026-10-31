@@ -99,24 +99,54 @@ export function DriverInvoiceDialog({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="flex max-h-[85vh] w-full max-w-6xl flex-col gap-0 p-0 print:max-h-none print:max-w-none print:overflow-visible print:border-0 print:shadow-none">
+      <DialogContent id="driver-invoice-dialog" className="flex max-h-[85vh] w-full max-w-6xl flex-col gap-0 p-0 print:max-h-none print:max-w-none print:overflow-visible print:border-0 print:shadow-none">
         <style>{`
           @media print {
             @page { size: A4 portrait; margin: 12mm; }
-            body * { visibility: hidden; }
-            #driver-invoice-print, #driver-invoice-print * { visibility: visible; }
-            #driver-invoice-print {
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-              padding: 0;
+            html, body {
+              height: auto !important;
+              overflow: visible !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              background: #fff !important;
             }
+            body > *:not(#driver-invoice-dialog):not(:has(#driver-invoice-dialog)) { display: none !important; }
+            
+            #driver-invoice-dialog {
+              position: static !important;
+              transform: none !important;
+              translate: none !important;
+              scale: none !important;
+              animation: none !important;
+              display: block !important;
+              width: 100% !important;
+              max-width: none !important;
+              max-height: none !important;
+              overflow: visible !important;
+              border: 0 !important;
+              box-shadow: none !important;
+              background: #fff !important;
+            }
+            #driver-invoice-dialog > button { display: none !important; }
+            #driver-invoice-print, #driver-invoice-print * {
+              color: #000 !important;
+              background: transparent !important;
+              border-color: #999 !important;
+              overflow: visible !important;
+              max-height: none !important;
+            }
+            #driver-invoice-print { display: block !important; }
             #driver-invoice-print table {
               width: 100%;
               table-layout: fixed;
               font-size: 11px;
             }
+            #driver-invoice-print th:nth-child(1) { width: 8%; }
+            #driver-invoice-print th:nth-child(2) { width: 22%; }
+            #driver-invoice-print th:nth-child(3) { width: 50%; }
+            #driver-invoice-print th:nth-child(4) { width: 20%; }
+            #driver-invoice-print thead { display: table-header-group; }
+            #driver-invoice-print tr { break-inside: avoid; page-break-inside: avoid; }
             #driver-invoice-print td,
             #driver-invoice-print th {
               word-break: break-word;

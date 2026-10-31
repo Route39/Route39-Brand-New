@@ -6,8 +6,9 @@ import 'package:flutter_common/core/presentation/markers/app_marker.dart';
 
 class AppMarkerDropoff extends StatelessWidget {
   final String address;
+  final String? eta;
 
-  const AppMarkerDropoff({super.key, required this.address});
+  const AppMarkerDropoff({super.key, required this.address, this.eta});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +18,7 @@ class AppMarkerDropoff extends StatelessWidget {
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text("Destination", style: context.labelMedium),
+          Text(eta != null ? "Drop in $eta" : "Destination", style: context.labelMedium?.copyWith(fontWeight: eta != null ? FontWeight.w700 : null)),
           Text(
             address,
             overflow: TextOverflow.ellipsis,

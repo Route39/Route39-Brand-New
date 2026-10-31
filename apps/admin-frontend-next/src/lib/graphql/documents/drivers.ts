@@ -47,6 +47,7 @@ export const VEHICLES_LIST_QUERY = graphql(`
         status
         carPlate
         city
+        address
         canDeliver
       }
     }

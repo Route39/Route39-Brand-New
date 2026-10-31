@@ -12,6 +12,7 @@ import 'package:ridy/features/home/features/track_order/presentation/screens/cha
 import 'package:ridy/features/home/features/track_order/presentation/screens/looking_for_driver_sheet.dart';
 import 'package:ridy/features/home/features/track_order/presentation/screens/pay_for_ride_sheet.dart';
 import 'order_in_progress_sheet.dart';
+import '../components/collapsible_card.dart';
 import 'ride_scheduled_sheet.dart';
 
 class TrackOrderSheet extends StatefulWidget {
@@ -41,18 +42,22 @@ class _TrackOrderSheetState extends State<TrackOrderSheet> {
       providers: [BlocProvider.value(value: locator<HomeBloc>())],
       child: BlocBuilder<HomeBloc, HomeState>(
         builder: (context, state) {
+          if (_lastTrackPage == TrackOrderPage.chat && state.page != TrackOrderPage.chat) {
+            WidgetsBinding.instance.addPostFrameCallback((_) => FocusManager.instance.primaryFocus?.unfocus());
+          }
+          _lastTrackPage = state.page;
           return AnimatedSwitcher(
             duration: AnimationDuration.pageStateTransitionMobile,
             child: switch (state.activeOrder!.status.toEntity.viewMode) {
               OrderStatusViewMode.looking => SizedBox.expand(child: LookingForDriverSheet()),
               OrderStatusViewMode.scheduled => SizedBox.expand(child: RideScheduledSheet(order: state.activeOrder!)),
               OrderStatusViewMode.inProgress => switch (state.page) {
-                TrackOrderPage.overview => OrderInProgressSheet(order: state.activeOrder!),
+                TrackOrderPage.overview => CollapsibleCard(child: OrderInProgressSheet(order: state.activeOrder!)),
                 TrackOrderPage.chat => ChatSheet(),
                 TrackOrderPage.payment => PayForRideSheet(),
               },
               OrderStatusViewMode.waitingForPayment => switch (state.page) {
-                  TrackOrderPage.overview => OrderInProgressSheet(order: state.activeOrder!),
+                  TrackOrderPage.overview => CollapsibleCard(child: OrderInProgressSheet(order: state.activeOrder!)),
                   TrackOrderPage.chat => ChatSheet(),
                   TrackOrderPage.payment => PayForRideSheet(),
                 },
@@ -64,3 +69,5 @@ class _TrackOrderSheetState extends State<TrackOrderSheet> {
     );
   }
 }
+
+TrackOrderPage? _lastTrackPage;

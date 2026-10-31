@@ -31,7 +31,8 @@ class HomeRepositoryImpl implements HomeRepository {
       NotificationHistoryRepository();
   // Streams
   @override
-  Stream<List<Fragment$RideOffer>> get orderRequests => _orderRequests.stream;
+  final Set<String> _rejectedIds = {};
+  Stream<List<Fragment$RideOffer>> get orderRequests => _orderRequests.stream.map((l) => l.where((r) => !_rejectedIds.contains(r.id)).toList());
   final BehaviorSubject<List<Fragment$RideOffer>> _orderRequests = BehaviorSubject.seeded([]);
 
   @override
@@ -498,6 +499,18 @@ case Enum$DriverEventType.ActiveOrderAssigned:
     eventStreamSubscription?.cancel();
     eventStreamSubscription = null;
   }
+
+@override
+Future<void> rejectOrderRequest({required String requestId}) async {
+  _rejectedIds.add(requestId);
+  _orderRequests.add(_orderRequests.value.where((r) => r.id != requestId).toList());
+  await graphQLDatasource.mutate(
+    Options$Mutation$RejectRideOffer(
+      fetchPolicy: FetchPolicy.noCache,
+      variables: Variables$Mutation$RejectRideOffer(orderId: requestId),
+    ),
+  );
+}
 
 @override
 Future<ApiResponse<Fragment$ActiveOrder>> acceptOrderRequest({

@@ -7,6 +7,8 @@ sealed class HomeEvent with _$HomeEvent {
 
   const factory HomeEvent.onMapReady({required MapViewController controller}) = HomeEvent$OnMapReady;
 
+  const factory HomeEvent.driverRouteRequested() = HomeEvent$DriverRouteRequested;
+
   const factory HomeEvent.onMapMoved({required ApiResponse<Place> selectedLocation}) = HomeEvent$OnMapMoved;
 
   const factory HomeEvent.onAddStop() = HomeEvent$OnAddStop;

@@ -1,7 +1,9 @@
+import 'package:ridy_driver/core/graphql/schema.gql.dart';
+import '../screens/turn_by_turn_navigation_screen.dart';
+import 'package:ridy_driver/core/graphql/fragments/coordinate.extensions.dart';
 import 'package:ridy_driver/config/locator/locator.dart';
 import 'package:ridy_driver/core/blocs/auth_bloc.dart';
 import 'package:ridy_driver/core/blocs/settings.dart';
-import 'package:ridy_driver/core/extensions/extensions.dart';
 import 'package:ridy_driver/core/presentation/app_generic_map.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,6 +23,7 @@ class HomeMapView extends StatefulWidget {
 
 class _HomeMapViewState extends State<HomeMapView> {
   MapViewController? controller;
+  bool _follow = true;
 
   @override
   Widget build(BuildContext context) {
@@ -29,16 +32,10 @@ class _HomeMapViewState extends State<HomeMapView> {
       builder: (context, settingsState) {
         return BlocConsumer<HomeBloc, HomeState>(
           listener: (context, state) {
+            _maybeAutoNavigate(state);
             if (state.markers.length > 1) {
-              final markersDistances = state.markers
-                  .map((e) => e.position.distanceWith(state.markers.first.position))
-                  .reduce((value, element) => value + element);
-              if (markersDistances > 10) {
-                controller?.fitBounds(
-                  state.markers.map((e) => e.position).toList(),
-                );
-              } else {
-                controller?.moveCamera(state.markers.first.position, null);
+              if (_follow) {
+                final d = _driverPos(state); if (d != null) controller?.moveCamera(d, 17);
               }
             } else if (state.markers.length == 1) {
               switch (state.driverStatus) {
@@ -102,7 +99,7 @@ class _HomeMapViewState extends State<HomeMapView> {
                   AuthState$Authenticated(:final profile) => profile.searchDistance,
                   _ => null,
                 };
-                return AppGenericMap(
+                return Stack(children: [Listener(onPointerDown: (_) { if (_follow) setState(() => _follow = false); }, child: AppGenericMap(
                   padding: state.mapPadding(context),
                   onControllerReady: (p0) => controller = p0,
                   circleMarkers: state.circleMarkers(radius),
@@ -111,12 +108,66 @@ class _HomeMapViewState extends State<HomeMapView> {
                   mode: MapViewMode.static,
                   initialLocation: Constants.defaultLocation,
                   markers: state.markers,
-                );
+                )),
+                if (state.driverStatus == HomeStateDriverStatus.onTrip && state.currentOrder?.nextDestination != null && state.driverLocation != null) Positioned(left: 16, top: 16, child: _etaChip(_driverPos(state)!, state.currentOrder!.nextDestination!.location.toPlace.latLng, state.currentOrder!.directions.map((e) => e.toLatLng).toList())),
+                if (!_follow) Positioned(left: 16, top: 70, child: FloatingActionButton.small(heroTag: 'recenter', onPressed: () { setState(() => _follow = true); final d = _driverPos(state); if (d != null) controller?.moveCamera(d, 17); }, child: const Icon(Icons.my_location))),
+                ]);
               },
             );
           },
         );
       },
+    );
+  }
+
+  final Set<String> _autoNavShown = {};
+
+  void _maybeAutoNavigate(HomeState state) {
+    if (state.driverStatus != HomeStateDriverStatus.onTrip) return;
+    final o = state.currentOrder;
+    if (o == null) return;
+    if (o.status != Enum$OrderStatus.DriverAccepted && o.status != Enum$OrderStatus.Started) return;
+    final key = '${o.id}:${o.status}';
+    if (_autoNavShown.contains(key) || TurnByTurnNavigationScreen.isOpen) return;
+    final place = o.nextDestination?.location.toPlace;
+    if (place == null) return;
+    _autoNavShown.add(key);
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => TurnByTurnNavigationScreen(place: place)));
+  }
+
+  LatLng? _driverPos(HomeState s) => s.driverLocation == null ? null : LatLng(s.driverLocation!.lat, s.driverLocation!.lng);
+
+  double _routeKm(LatLng from, LatLng to, List<LatLng> route) {
+    const dist = Distance();
+    double m(LatLng a, LatLng b) => dist.as(LengthUnit.Meter, a, b);
+    if (route.length < 2 || m(route.last, to) > 300) return m(from, to) * 1.4 / 1000;
+    var best = 0;
+    var bestD = double.infinity;
+    for (var i = 0; i < route.length; i++) {
+      final d = m(from, route[i]);
+      if (d < bestD) { bestD = d; best = i; }
+    }
+    if (bestD > 500) return m(from, to) * 1.4 / 1000;
+    var total = bestD;
+    for (var i = best; i < route.length - 1; i++) { total += m(route[i], route[i + 1]); }
+    return total / 1000;
+  }
+
+  Widget _etaChip(LatLng from, LatLng to, List<LatLng> route) {
+    final km = _routeKm(from, to, route);
+    final mins = (km / 18 * 60).ceil().clamp(1, 999);
+    return Material(
+      elevation: 4,
+      borderRadius: BorderRadius.circular(20),
+      color: Theme.of(context).colorScheme.surface,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(Icons.place, size: 18, color: Colors.red),
+          const SizedBox(width: 6),
+          Text('$mins min • ${km.toStringAsFixed(1)} km', style: const TextStyle(fontWeight: FontWeight.w600)),
+        ]),
+      ),
     );
   }
 

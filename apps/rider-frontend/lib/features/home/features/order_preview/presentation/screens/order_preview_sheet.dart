@@ -67,7 +67,6 @@ class _OrderPreviewSheetState extends State<OrderPreviewSheet> with TickerProvid
                           .map((c) => Fragment$ServiceCategory.fromJson({
                             ...c.toJson(),
                             'services': c.services
-                                .where((x) => x.name.toLowerCase().contains('premium') == premiumSelectedNotifier.value)
                                 .map((x) => x.toJson())
                                 .toList(),
                           }))

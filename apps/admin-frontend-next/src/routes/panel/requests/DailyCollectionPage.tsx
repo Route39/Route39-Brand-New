@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@apollo/client";
-import { Calendar, Download } from "lucide-react";
+import { Calendar, Download, FileText } from "lucide-react";
 
 import { PageHeader } from "@/components/panel/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import {
 import { formatCurrency, formatName, formatPhone } from "@/lib/format";
 import { usePageState, type FilterEntry } from "@/lib/panel/page-state";
 import { DriverInvoiceDialog } from "./DriverInvoiceDialog";
+import { DailyCollectionBillDialog } from "./DailyCollectionBillDialog";
 
 type QuickRange = "today" | "week" | "last30";
 
@@ -78,7 +79,11 @@ function dayEndISO(dateStr: string): string {
 /** Accepts either a plain "yyyy-mm-dd" or a full ISO timestamp (legacy stored
  * filter values) and returns just the date part. */
 function toDatePart(value: string): string {
-  return value.length > 10 ? value.slice(0, 10) : value;
+  if (value.length <= 10) return value;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value.slice(0, 10);
+  const pad2 = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 }
 
 interface DriverGroup {
@@ -100,6 +105,7 @@ export default function DailyCollectionPage() {
   const { page, pageSize, filters, setFilters, setPage } = usePageState();
   const [activeCity, setActiveCity] = useState<string | null>(null);
   const [invoiceDriverId, setInvoiceDriverId] = useState<string | null>(null);
+  const [billOpen, setBillOpen] = useState(false);
 
   const dateFrom = toDatePart(
     filters.find((f) => f.field === "createdOn" && f.operator === "gte")?.value ?? "",
@@ -108,6 +114,25 @@ export default function DailyCollectionPage() {
     filters.find((f) => f.field === "createdOn" && f.operator === "lte")?.value ?? "",
   );
   const activeRange = activeQuickRange(dateFrom, dateTo);
+  const [fromD, setFromD] = useState(dateFrom);
+  const [toD, setToD] = useState(dateTo);
+  useEffect(() => {
+    setFromD(dateFrom);
+  }, [dateFrom]);
+  useEffect(() => {
+    setToD(dateTo);
+  }, [dateTo]);
+  const okDate = (d: string) => /^\d{4}-\d{2}-\d{2}$/.test(d) && Number(d.slice(0, 4)) >= 2000;
+  function onFromChange(v: string) {
+    setFromD(v);
+    if (v === "") applyDateRange("", okDate(toD) ? toD : "");
+    else if (okDate(v)) applyDateRange(v, okDate(toD) ? toD : "");
+  }
+  function onToChange(v: string) {
+    setToD(v);
+    if (v === "") applyDateRange(okDate(fromD) ? fromD : "", "");
+    else if (okDate(v)) applyDateRange(okDate(fromD) ? fromD : "", v);
+  }
 
   function applyDateRange(from: string, to: string) {
     const without = filters.filter((f) => f.field !== "createdOn");
@@ -281,15 +306,15 @@ export default function DailyCollectionPage() {
             <Calendar className="size-3.5 text-muted-foreground" />
             <input
               type="date"
-              value={dateFrom}
-              onChange={(e) => applyDateRange(e.target.value, dateTo)}
+              value={fromD}
+              onChange={(e) => onFromChange(e.target.value)}
               className="bg-transparent text-sm outline-none"
             />
             <span className="text-muted-foreground">→</span>
             <input
               type="date"
-              value={dateTo}
-              onChange={(e) => applyDateRange(dateFrom, e.target.value)}
+              value={toD}
+              onChange={(e) => onToChange(e.target.value)}
               className="bg-transparent text-sm outline-none"
             />
           </div>
@@ -307,6 +332,17 @@ export default function DailyCollectionPage() {
         <div className="text-right">
           <div className="text-xs text-muted-foreground">Total collection</div>
           <div className="text-lg font-semibold">{formatCurrency(totalCollection, "INR")}</div>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="mt-2 gap-2"
+            disabled={filteredGroups.length === 0}
+            onClick={() => setBillOpen(true)}
+          >
+            <FileText className="size-4" />
+            Download bill
+          </Button>
         </div>
       </div>
 
@@ -395,6 +431,26 @@ export default function DailyCollectionPage() {
           </div>
         </div>
       </div>
+
+      {billOpen ? (
+        <DailyCollectionBillDialog
+          rows={filteredGroups.map((g) => {
+            const d = driverMap.get(g.driverId);
+            return {
+              driverId: g.driverId,
+              name: formatName(d),
+              phone: formatPhone(d?.mobileNumber),
+              trips: g.trips,
+              collected: g.collected,
+            };
+          })}
+          total={totalCollection}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          cityLabel={CITY_TABS.find((c) => c.key === activeCity)?.label ?? null}
+          onClose={() => setBillOpen(false)}
+        />
+      ) : null}
 
       {invoiceDriverId ? (
         <DriverInvoiceDialog

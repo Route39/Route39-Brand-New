@@ -156,6 +156,18 @@ export class DriverService {
         })
         .execute();
     }
+    try {
+      const rows = await this.driverServicesServiceRepository.find({
+        where: { driverId: Number(input.driverId) } as any,
+      });
+      const ids = rows.map((r) => String(r.serviceId));
+      await this.driverRedisService.updateDriverOfferFilters(Number(input.driverId), {
+        serviceIds: ids as unknown as number[],
+      });
+      Logger.log(`redis serviceIds synced: ${ids.join(',')}`, 'DriverService.setActivatedServicesOnDriver');
+    } catch (e) {
+      Logger.warn(`redis serviceIds sync skipped: ${e}`, 'DriverService.setActivatedServicesOnDriver');
+    }
     return true;
   }
 

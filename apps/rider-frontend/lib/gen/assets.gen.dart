@@ -2044,9 +2044,10 @@ abstract final class Assets {
   static const $AssetsImagesGen images = $AssetsImagesGen();
   static const $AssetsLottieGen lottie = $AssetsLottieGen();
   static const String notification = 'assets/notification.mp3';
+  static const String shorebird = 'shorebird.yaml';
 
   /// List of all assets
-  static List<String> get values => [notification];
+  static List<String> get values => [notification, shorebird];
 }
 
 class AssetGenImage {

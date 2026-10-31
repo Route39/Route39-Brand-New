@@ -67,9 +67,14 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs_nio:2.1.5")
 }
 
 flutter {
     source = "../.."
+}
+
+// Navigation SDK already bundles Google Maps classes
+configurations.all {
+    exclude(group = "com.google.android.gms", module = "play-services-maps")
 }

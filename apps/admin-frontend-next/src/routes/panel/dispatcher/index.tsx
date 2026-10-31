@@ -25,6 +25,7 @@ import {
 import { cn } from "@/lib/utils";
 import { formatCurrency, formatName } from "@/lib/format";
 import RequestsListPage from "@/routes/panel/requests";
+import { OrderStatusCards } from "@/components/panel/OrderStatusCards";
 import { NewBookingDialog } from "./NewBookingDialog";
 
 interface LatLng {
@@ -472,7 +473,10 @@ export default function DispatcherPage() {
       </div>
       )}
 
-      <RequestsListPage showBackLink={false} showExportButton={false} />
+      <div>
+        <OrderStatusCards />
+        <RequestsListPage showBackLink={false} showExportButton={false} showFilters={false} />
+      </div>
     </div>
   );
 }

@@ -1,6 +1,13 @@
+import 'package:ridy_driver/core/graphql/fragments/coordinate.extensions.dart';
+import 'turn_by_turn_navigation_screen.dart';
+import 'package:ridy_driver/core/graphql/fragments/coordinate.extensions.dart';
+import '../overlay/next_ride_overlay.dart';
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:ridy_driver/core/graphql/schema.gql.dart';
+import 'package:ridy_driver/config/env.dart';
+import 'package:ridy_driver/core/blocs/auth_bloc.dart';
+import 'package:ridy_driver/features/home/domain/repositories/home_repository.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
 import 'package:ridy_driver/core/presentation/app_drawer.dart';
 import 'package:ridy_driver/features/home/presentation/blocs/home.bloc.dart';
@@ -63,6 +70,7 @@ class HomeScreenMobile extends StatefulWidget {
 }
 
 class _HomeScreenMobileState extends State<HomeScreenMobile> {
+  bool _mapFull = false;
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   MapViewController? controller;
 
@@ -79,6 +87,7 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
     );
     _overlayActionSub = FlutterOverlayWindow.overlayListener.listen((event) {
       try {
+        debugPrint("R39_MAIN_GOT $event");
         final data = jsonDecode(event.toString());
         if (data is Map && data["action"] == "open_app") {
           _bringAppToForeground();
@@ -88,7 +97,13 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
             locator<HomeBloc>().onAcceptOrder(requests.first);
           }
           _bringAppToForeground();
-        }
+          } else if (data is Map && data["action"] == "reject") {
+            final requests = locator<HomeBloc>().state.orderRequests;
+            debugPrint("R39_REJECT requests=${requests.length}");
+            if (requests.isNotEmpty) {
+              locator<HomeRepository>().rejectOrderRequest(requestId: requests.first.id);
+            }
+          }
       } catch (_) {}
     });
   }
@@ -117,6 +132,9 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
       }
 
       await RideOverlayService.showOrderScreen(
+        orderId: request.id,
+        token: locator<AuthBloc>().state.jwtToken,
+        gqlUrl: Env.gqlEndpoint,
         serviceName: request.serviceName,
         fare: request.fareEstimate.toStringAsFixed(0),
         distance: '${(request.distance / 1000).toStringAsFixed(1)} km',
@@ -161,12 +179,18 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
           previous.orderRequests.firstOrNull?.id != current.orderRequests.firstOrNull?.id ||
           previous.driverStatus != current.driverStatus,
       listener: (context, state) {
-        if (state.driverStatus != HomeStateDriverStatus.online) {
+        if (state.driverStatus != HomeStateDriverStatus.online &&
+            state.driverStatus != HomeStateDriverStatus.onTrip) {
           RideOverlayService.closeOverlay();
         } else if (state.orderRequests.isNotEmpty) {
           final request = state.orderRequests.first;
           RideOverlayService.showOrderScreen(
-            serviceName: request.serviceName,
+            orderId: request.id,
+            token: locator<AuthBloc>().state.jwtToken,
+            gqlUrl: Env.gqlEndpoint,
+            serviceName: state.driverStatus == HomeStateDriverStatus.onTrip
+                ? 'NEXT RIDE • ${request.serviceName}'
+                : request.serviceName,
             fare: request.fareEstimate.toStringAsFixed(0),
             distance: '${(request.distance / 1000).toStringAsFixed(1)} km',
             duration: '${(request.duration / 60).ceil()} min',
@@ -267,7 +291,61 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
               child: IndexedStack(
                 index: _selectedTab,
                 children: [
-                  _buildHomeContent(),
+                  Stack(
+                    children: [
+                      _buildHomeContent(),
+                      BlocBuilder<HomeBloc, HomeState>(
+                        buildWhen: (p, c) =>
+                            p.driverStatus != c.driverStatus || p.orderRequests != c.orderRequests,
+                        builder: (context, state) =>
+                            state.driverStatus == HomeStateDriverStatus.onTrip && state.orderRequests.isNotEmpty
+                                ? NextRideOverlay(request: state.orderRequests.first)
+                                : const SizedBox.shrink(),
+                      ),
+                      BlocBuilder<HomeBloc, HomeState>(
+                        buildWhen: (p, c) =>
+                            p.activeOrders != c.activeOrders ||
+                            p.currentOrderId != c.currentOrderId ||
+                            p.orderRequests != c.orderRequests,
+                        builder: (context, state) {
+                          final cur = state.currentOrder;
+                          final next = state.activeOrders.where((e) => e.id != cur?.id).firstOrNull;
+                          if (state.driverStatus != HomeStateDriverStatus.onTrip ||
+                              next == null || state.orderRequests.isNotEmpty) {
+                            return const SizedBox.shrink();
+                          }
+                          final places = next.waypoints.toPlaces as List;
+                          final pickup = places.isEmpty ? '-' : ((places.first as dynamic)?.address ?? '-').toString();
+                          return Align(
+                            alignment: Alignment.topCenter,
+                            child: Container(
+                              margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.orange.shade700,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 8)],
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.notifications_active, color: Colors.white, size: 18),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'NEXT RIDE • Pickup: $pickup',
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                   const EarningsScreen(),
                   const RideHistoryScreen(),
                   const WalletScreen(),
@@ -318,7 +396,7 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
         );
         return CustomMultiChildLayout(
           delegate: MobileLayoutDelegate(
-            isMapFull: state.orderRequests.isNotEmpty,
+            isMapFull: state.orderRequests.isNotEmpty || _mapFull,
           ),
           children: [
             LayoutId(
@@ -368,7 +446,7 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
                           order: order!,
                         ),
                         _ => switch (state.page) {
-                          OnTripPage.overview => ActiveOrderSheet(),
+                          OnTripPage.overview => _mapFull ? _collapsedTripBar() : ActiveOrderSheet(),
                           OnTripPage.chat => ChatSheet(),
                         },
                       },
@@ -379,7 +457,7 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
             ),
             LayoutId(
               id: MobileLayoutDelegate.navigateButtonId,
-              child: const SizedBox.shrink(),
+              child: state.driverStatus == HomeStateDriverStatus.onTrip ? Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.end, children: [FloatingActionButton.extended(heroTag: 'navGo', onPressed: () { final place = state.currentOrder?.nextDestination?.location.toPlace; if (place == null) return; Navigator.of(context).push(MaterialPageRoute(builder: (_) => TurnByTurnNavigationScreen(place: place))); }, icon: const Icon(Icons.navigation), label: const Text('Navigate')), const SizedBox(height: 12), FloatingActionButton.small(heroTag: 'mapFull', onPressed: () => setState(() => _mapFull = !_mapFull), child: Icon(_mapFull ? Icons.fullscreen_exit : Icons.fullscreen))]) : const SizedBox.shrink(),
             ),
             LayoutId(
               id: MobileLayoutDelegate.searchRadiusButtonId,
@@ -393,6 +471,23 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
         );
       },
     );
+  }
+
+  Widget _collapsedTripBar() {
+    return SizedBox(width: double.infinity, child: Material(
+      elevation: 8,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      child: InkWell(
+        onTap: () => setState(() => _mapFull = false),
+        child: const SafeArea(top: false, child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Icon(Icons.keyboard_arrow_up), SizedBox(width: 8),
+            Text('Show trip details', style: TextStyle(fontWeight: FontWeight.w600)),
+          ]),
+        )),
+      ),
+    ));
   }
 
   Widget _navBarItem({

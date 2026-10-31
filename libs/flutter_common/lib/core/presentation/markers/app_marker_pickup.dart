@@ -6,8 +6,9 @@ import 'package:flutter_common/core/presentation/markers/app_marker.dart';
 
 class AppMarkerPickup extends StatelessWidget {
   final String address;
+  final String? eta;
 
-  const AppMarkerPickup({super.key, required this.address});
+  const AppMarkerPickup({super.key, required this.address, this.eta});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,7 @@ class AppMarkerPickup extends StatelessWidget {
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Pick-up point", style: context.labelMedium),
+          Text(eta != null ? "Pickup in $eta" : "Pick-up point", style: context.labelMedium?.copyWith(fontWeight: eta != null ? FontWeight.w700 : null)),
           Text(
             address,
             maxLines: 1,

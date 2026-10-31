@@ -37,5 +37,7 @@ abstract class AuthRepository {
     required int mediaId,
   });
 
+  Future<ApiResponse<Query$ServicesForCity>> getServicesForCity(String city);
+
   Future<ApiResponse<Mutation$DeleteAccount>> deleteAccount();
 }

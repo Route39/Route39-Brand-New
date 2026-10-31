@@ -622,6 +622,7 @@ __webpack_require__.d(__webpack_exports__, {
   WeekdayScheduleDTO: () => (/* reexport */ WeekdayScheduleDTO),
   ZonePriceCategoryEntity: () => (/* reexport */ ZonePriceCategoryEntity),
   ZonePriceEntity: () => (/* reexport */ ZonePriceEntity),
+  detectCity: () => (/* reexport */ detectCity),
   entities: () => (/* reexport */ entities),
   generateDriverCode: () => (/* reexport */ generateDriverCode),
   getCityPrefix: () => (/* reexport */ getCityPrefix),
@@ -4448,6 +4449,7 @@ function service_category_entity_ts_metadata(k, v) {
 }
 
 
+
 var ServiceCategoryEntity = function ServiceCategoryEntity() {
     "use strict";
 };
@@ -4461,6 +4463,40 @@ service_category_entity_ts_decorate([
     }),
     service_category_entity_ts_metadata("design:type", String)
 ], ServiceCategoryEntity.prototype, "name", void 0);
+service_category_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    service_category_entity_ts_metadata("design:type", String)
+], ServiceCategoryEntity.prototype, "description", void 0);
+service_category_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: 0
+    }),
+    service_category_entity_ts_metadata("design:type", Number)
+], ServiceCategoryEntity.prototype, "displayPriority", void 0);
+service_category_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: true
+    }),
+    service_category_entity_ts_metadata("design:type", Boolean)
+], ServiceCategoryEntity.prototype, "isEnabled", void 0);
+service_category_entity_ts_decorate([
+    (0,external_typeorm_.OneToOne)(function() {
+        return MediaEntity;
+    }, {
+        eager: true,
+        nullable: true
+    }),
+    (0,external_typeorm_.JoinColumn)(),
+    service_category_entity_ts_metadata("design:type", typeof MediaEntity === "undefined" ? Object : MediaEntity)
+], ServiceCategoryEntity.prototype, "media", void 0);
+service_category_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    service_category_entity_ts_metadata("design:type", Number)
+], ServiceCategoryEntity.prototype, "mediaId", void 0);
 service_category_entity_ts_decorate([
     (0,external_typeorm_.OneToMany)(function() {
         return ServiceEntity;
@@ -17455,6 +17491,12 @@ taxi_order_entity_ts_decorate([
     taxi_order_entity_ts_metadata("design:type", Number)
 ], TaxiOrderEntity.prototype, "regionId", void 0);
 taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", String)
+], TaxiOrderEntity.prototype, "city", void 0);
+taxi_order_entity_ts_decorate([
     (0,external_typeorm_.OneToMany)(function() {
         return RequestActivityEntity;
     }, function(activity) {
@@ -17483,6 +17525,13 @@ taxi_order_entity_ts_decorate([
     }),
     taxi_order_entity_ts_metadata("design:type", Array)
 ], TaxiOrderEntity.prototype, "points", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar', {
+        length: 30,
+        nullable: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", String)
+], TaxiOrderEntity.prototype, "city", void 0);
 taxi_order_entity_ts_decorate([
     (0,external_typeorm_.Column)('multipoint', {
         transformer: new MultipointTransformer(),
@@ -25525,17 +25574,30 @@ var ActiveOrderDriverRedisService = /*#__PURE__*/ function() {
     var _proto = ActiveOrderDriverRedisService.prototype;
     _proto.updateLastSeenForDriver = function updateLastSeenForDriver(orderId, lastSeenAt) {
         return active_order_driver_redis_service_async_to_generator(function() {
-            var pipeline;
+            var key, res, _res_, len, pipeline, i;
             return active_order_driver_redis_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
+                        key = "active_order:" + orderId;
+                        return [
+                            4,
+                            this.redisService.json.arrLen(key, '$.chatMessages')
+                        ];
+                    case 1:
+                        res = _state.sent();
+                        len = Array.isArray(res) ? Number((_res_ = res[0]) != null ? _res_ : 0) : Number(res != null ? res : 0);
+                        if (!len) return [
+                            2
+                        ];
                         pipeline = this.redisService.multi();
-                        pipeline.json.set("active_order:" + orderId, '$.chatMessages[*].driverLastSeenAt', lastSeenAt.getTime());
+                        for(i = 0; i < len; i++){
+                            pipeline.json.set(key, "$.chatMessages[" + i + "].driverLastSeenAt", lastSeenAt.getTime());
+                        }
                         return [
                             4,
                             pipeline.exec()
                         ];
-                    case 1:
+                    case 2:
                         _state.sent();
                         return [
                             2
@@ -25701,17 +25763,30 @@ var ActiveOrderRiderRedisService = /*#__PURE__*/ function() {
     var _proto = ActiveOrderRiderRedisService.prototype;
     _proto.updateLastSeenForRider = function updateLastSeenForRider(orderId, lastSeenAt) {
         return active_order_rider_redis_service_async_to_generator(function() {
-            var pipeline;
+            var key, res, _res_, len, pipeline, i;
             return active_order_rider_redis_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
+                        key = "active_order:" + orderId;
+                        return [
+                            4,
+                            this.redisService.json.arrLen(key, '$.chatMessages')
+                        ];
+                    case 1:
+                        res = _state.sent();
+                        len = Array.isArray(res) ? Number((_res_ = res[0]) != null ? _res_ : 0) : Number(res != null ? res : 0);
+                        if (!len) return [
+                            2
+                        ];
                         pipeline = this.redisService.multi();
-                        pipeline.json.set("active_order:" + orderId, '$.chatMessages[*].riderLastSeenAt', lastSeenAt.getTime());
+                        for(i = 0; i < len; i++){
+                            pipeline.json.set(key, "$.chatMessages[" + i + "].riderLastSeenAt", lastSeenAt.getTime());
+                        }
                         return [
                             4,
                             pipeline.exec()
                         ];
-                    case 1:
+                    case 2:
                         _state.sent();
                         return [
                             2
@@ -30131,7 +30206,7 @@ var RegionService = /*#__PURE__*/ function() {
                     case 0:
                         return [
                             4,
-                            this.regionRepository.query("SELECT * FROM region WHERE enabled=TRUE AND ST_Within(st_geomfromtext('POINT(? ?)'), region.location)", [
+                            this.regionRepository.query("SELECT * FROM region WHERE enabled=TRUE AND ST_Within(st_geomfromtext('POINT(? ?)'), region.location) ORDER BY ST_Area(region.location) ASC", [
                                 point.lng,
                                 point.lat
                             ])
@@ -32895,7 +32970,8 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             2,
                             {
                                 distance: metrics.distance,
-                                duration: metrics.duration
+                                duration: metrics.duration,
+                                directions: metrics.directions
                             }
                         ];
                 }
@@ -33001,10 +33077,20 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         return [
                             4,
                             this.serviceCategoryRepository.find({
+                                where: {
+                                    isEnabled: true
+                                },
                                 relations: {
+                                    media: true,
                                     services: {
                                         media: true,
                                         options: true
+                                    }
+                                },
+                                order: {
+                                    displayPriority: 'ASC',
+                                    services: {
+                                        displayPriority: 'ASC'
                                     }
                                 }
                             })
@@ -33191,7 +33277,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.createOrder = function createOrder(input) {
         return shared_order_service_async_to_generator(function() {
-            var _this, _regions_, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, orderSurgeCtx, surgeAmount, baseCostBeforeSurge, _orderSurgeCtx_commissionPercent, surgeCommission, regions, _regions__currency, orderCurrency, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, isOnlinePayment, _service_gstPercent, gstAmount, _service_platformFee, platformFeeAmount, _service_paymentGatewayFee, paymentGatewayFeeAmount, _input_waitMinutes2, _input_waitMinutes3, _orderSurgeCtx_zoneId, orderObject, order, couponResult, activityType;
+            var _input_waypoints_, _this, _regions_, _regions_1, _input_waypoints_1, _input_waypoints_2, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, orderSurgeCtx, surgeAmount, baseCostBeforeSurge, _orderSurgeCtx_commissionPercent, surgeCommission, regions, _regions__currency, orderCurrency, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, isOnlinePayment, _service_gstPercent, gstAmount, _service_platformFee, platformFeeAmount, _service_paymentGatewayFee, paymentGatewayFeeAmount, _input_waitMinutes2, _input_waitMinutes3, _detectCityFromAddress, _orderSurgeCtx_zoneId, orderObject, order, couponResult, activityType;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -33265,6 +33351,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             points: input.waypoints.map(function(w) {
                                 return w.point;
                             }),
+                            city: detectCity((_input_waypoints_ = input.waypoints[0]) == null ? void 0 : _input_waypoints_.point),
                             distance: metrics.distance,
                             duration: metrics.duration
                         }, 'SharedOrderService.createOrder.metrics');
@@ -33440,6 +33527,8 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             waitCost: service.perMinuteWait * ((_input_waitMinutes3 = input.waitMinutes) != null ? _input_waitMinutes3 : 0),
                             rideOptionsCost: optionFee,
                             fleetId: input.fleetId,
+                            regionId: (_regions_1 = regions[0]) == null ? void 0 : _regions_1.id,
+                            city: (_detectCityFromAddress = detectCityFromAddress((_input_waypoints_1 = input.waypoints[0]) == null ? void 0 : _input_waypoints_1.address)) != null ? _detectCityFromAddress : detectCity((_input_waypoints_2 = input.waypoints[0]) == null ? void 0 : _input_waypoints_2.point),
                             providerShare: service.providerShareFlat + service.providerSharePercent * baseCostBeforeSurge / 100 + surgeCommission,
                             surgeAmount: surgeAmount,
                             surgeZoneId: (_orderSurgeCtx_zoneId = orderSurgeCtx == null ? void 0 : orderSurgeCtx.zoneId) != null ? _orderSurgeCtx_zoneId : null,
@@ -34522,6 +34611,53 @@ var CalculateFareError = /*#__PURE__*/ function(CalculateFareError) {
     CalculateFareError["NoServiceInRegion"] = "NO_SERVICE_IN_REGION";
     return CalculateFareError;
 }(CalculateFareError || {});
+var CITY_CENTERS = [
+    {
+        name: 'Tiruppur',
+        lat: 11.1085,
+        lng: 77.3411
+    },
+    {
+        name: 'Coimbatore',
+        lat: 11.0168,
+        lng: 76.9558
+    },
+    {
+        name: 'Chennai',
+        lat: 13.0827,
+        lng: 80.2707
+    },
+    {
+        name: 'Bangalore',
+        lat: 12.9716,
+        lng: 77.5946
+    }
+];
+function detectCity(p) {
+    if (!p) return undefined;
+    var R = 6371, rad = function(d) {
+        return d * Math.PI / 180;
+    };
+    var best, min = 40;
+    for(var _iterator = shared_order_service_create_for_of_iterator_helper_loose(CITY_CENTERS), _step; !(_step = _iterator()).done;){
+        var c = _step.value;
+        var a = Math.pow(Math.sin(rad(c.lat - p.lat) / 2), 2) + Math.cos(rad(p.lat)) * Math.cos(rad(c.lat)) * Math.pow(Math.sin(rad(c.lng - p.lng) / 2), 2);
+        var d = 2 * R * Math.asin(Math.sqrt(a));
+        if (d < min) {
+            min = d;
+            best = c.name;
+        }
+    }
+    return best;
+}
+function detectCityFromAddress(address) {
+    var a = (address != null ? address : '').toLowerCase();
+    if (a.includes('tirup')) return 'Tiruppur';
+    if (a.includes('coimbatore')) return 'Coimbatore';
+    if (a.includes('chennai')) return 'Chennai';
+    if (a.includes('bangalore') || a.includes('bengaluru')) return 'Bangalore';
+    return undefined;
+}
 
 ;// external "typeorm/repository/Repository"
 const Repository_namespaceObject = require("typeorm/repository/Repository");
@@ -46202,9 +46338,9 @@ let DriverService = class DriverService {
         });
         return {
             rating: driver.rating != null ? Math.round(driver.rating / 20) : undefined,
-            acceptanceRate: (driver.acceptedOrdersCount / (driver.acceptedOrdersCount + driver.rejectedOrdersCount) || 0) * 100,
+            acceptanceRate: Math.round((driver.acceptedOrdersCount / (driver.acceptedOrdersCount + driver.rejectedOrdersCount) || 0) * 100),
             totalRides: driverOrders,
-            distanceTraveled: distanceTraveled || 0
+            distanceTraveled: Math.round(distanceTraveled || 0)
         };
     }
     // Converts a DriverEntity to a DTO. NOTE: Ensure enabledServices & wallet relations are loaded when calling this method.
@@ -46266,9 +46402,25 @@ let DriverService = class DriverService {
     async updateDriverOfferFilter(driverId, input) {
         const driver = await this.driverRedisService.getOnlineDriverMetaData(driverId.toString());
         if (driver) {
+            let serviceIds = input.serviceIds;
+            if (serviceIds != null) {
+                const entityForCheck = await this.driverRepository.findOneOrFail({
+                    where: {
+                        id: driverId
+                    },
+                    relations: {
+                        enabledServices: true
+                    }
+                });
+                const allowed = new Set((entityForCheck.enabledServices ?? []).map((s)=>Number(s.serviceId)));
+                serviceIds = serviceIds.filter((id)=>allowed.has(Number(id)));
+                if (serviceIds.length < 1) {
+                    throw new _apollo.ForbiddenError('No valid service selected for the driver.');
+                }
+            }
             await this.driverRedisService.updateDriverOfferFilters(driverId, {
                 searchDistance: input.searchDistance,
-                serviceIds: input.serviceIds
+                serviceIds
             });
             return this.createDTOFromSnapshot(driver);
         } else {
@@ -46280,7 +46432,7 @@ let DriverService = class DriverService {
                     enabledServices: true
                 }
             });
-            this.driverRepository.update(entity.id, {
+            await this.driverRepository.update(entity.id, {
                 searchDistance: input.searchDistance,
                 enabledServices: input.serviceIds == null ? entity.enabledServices : entity.enabledServices.map((s)=>({
                         driverEnabled: input.serviceIds.includes(s.serviceId),
@@ -48014,8 +48166,9 @@ let OrderService = class OrderService {
             if (driver == null) {
                 throw new _apollo.ForbiddenError(`Driver with ID ${input.driverId} not found`);
             }
-            if (driver.activeOrderIds && driver.activeOrderIds.length > 0) {
-                throw new _apollo.ForbiddenError('DRIVER_ALREADY_ON_TRIP');
+            const maxActive = process.env.QUEUED_RIDES_ENABLED === "true" ? 1 : 0;
+            if (driver.activeOrderIds && driver.activeOrderIds.length > maxActive) {
+                throw new _apollo.ForbiddenError("DRIVER_ALREADY_ON_TRIP");
             }
             const rider = await this.riderRedisService.getOnlineRider(orderMetadata.riderId);
             // Calculate ETAs with Google Services
@@ -48128,6 +48281,13 @@ let OrderService = class OrderService {
         await this.rideOfferRedisService.rideOfferRejected({
             orderId: input.orderId.toString(),
             driverId: input.driverId.toString()
+        });
+        this.pubsub.publish("driver.event", {
+            driverId: input.driverId
+        }, {
+            type: _database.DriverEventType.RideOfferRevoked,
+            orderId: input.orderId,
+            driverId: input.driverId
         });
         return true;
     }
@@ -48574,6 +48734,19 @@ let OrderService = class OrderService {
         }
         if (order.driverId !== input.driverId.toString()) {
             throw new Error(`Driver with ID ${input.driverId} is not assigned to order ${input.orderId}`);
+        }
+        const cancelLimit = Number(process.env.DRIVER_MONTHLY_CANCEL_LIMIT ?? 5);
+        const ist = new Date(Date.now() + 330 * 60000);
+        const monthStart = new Date(Date.UTC(ist.getUTCFullYear(), ist.getUTCMonth(), 1) - 330 * 60000);
+        const cancelsThisMonth = await this.orderRepository.count({
+            where: {
+                driverId: input.driverId,
+                status: _database.OrderStatus.DriverCanceled,
+                finishTimestamp: (0, _typeorm1.MoreThanOrEqual)(monthStart)
+            }
+        });
+        if (cancelLimit > 0 && cancelsThisMonth >= cancelLimit) {
+            throw new _apollo.ForbiddenError(`MONTHLY_CANCEL_LIMIT_REACHED: You have used all ${cancelLimit} ride cancellations for this month.`);
         }
         await this.orderRepository.update(order.id, {
             status: _database.OrderStatus.DriverCanceled,
@@ -49611,6 +49784,7 @@ const _typeorm1 = __webpack_require__(11);
 const _carmodeldto = __webpack_require__(69);
 const _saveregistrationprogressinput = __webpack_require__(70);
 const _carcolordto = __webpack_require__(71);
+const _servicedto = __webpack_require__(48);
 const _completeregistrationinput = __webpack_require__(72);
 const _googlelibphonenumber = __webpack_require__(73);
 let AuthResolver = class AuthResolver {
@@ -49751,6 +49925,14 @@ let AuthResolver = class AuthResolver {
             userId: this.userContext.req.user.id,
             input
         });
+    }
+    async servicesForCity(city) {
+        const services = await this.authService.servicesForCity(city);
+        return services.map((s)=>({
+                id: s.id,
+                name: s.name,
+                imageUrl: s.media?.address ?? ''
+            }));
     }
     async carModels(query) {
         return this.carModelRepository.find({
@@ -50006,6 +50188,19 @@ _ts_decorate._([
     ]),
     _ts_metadata._("design:returntype", Promise)
 ], AuthResolver.prototype, "saveRegistrationProgress", null);
+_ts_decorate._([
+    (0, _graphql.Query)(()=>[
+            _servicedto.ServiceDTO
+        ]),
+    _ts_param._(0, (0, _graphql.Args)('city', {
+        type: ()=>String
+    })),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        String
+    ]),
+    _ts_metadata._("design:returntype", Promise)
+], AuthResolver.prototype, "servicesForCity", null);
 _ts_decorate._([
     (0, _graphql.Query)(()=>[
             _carmodeldto.CarModelDTO
@@ -50442,6 +50637,12 @@ const _apollo = __webpack_require__(17);
 const _typeorm = __webpack_require__(11);
 const _typeorm1 = __webpack_require__(13);
 const _driverservice = __webpack_require__(36);
+const CITY_TO_REGION = {
+    chennai: 'tamilnadu',
+    tiruppur: 'tamilnadu',
+    coimbatore: 'tamilnadu',
+    bangalore: 'karnataka'
+};
 let AuthService = class AuthService {
     constructor(driverService, jwtService, smsService, authRedisService, emailNotificationService, sharedAuthMethodService, driverRepository, serviceRepository, mediaRepository, driverServiceRepository, driverToDocumentRepository){
         this.driverService = driverService;
@@ -50456,6 +50657,13 @@ let AuthService = class AuthService {
         this.driverServiceRepository = driverServiceRepository;
         this.driverToDocumentRepository = driverToDocumentRepository;
         this.logger = new _common.Logger(AuthService.name);
+    }
+    async servicesForCity(city) {
+        const regionName = CITY_TO_REGION[(city ?? '').trim().toLowerCase()];
+        if (!regionName) return [];
+        return this.serviceRepository.createQueryBuilder('service').innerJoin('service.regions', 'region').leftJoinAndSelect('service.media', 'media').where('LOWER(region.name) = :regionName', {
+            regionName
+        }).andWhere('region.enabled = 1').andWhere('service.deletedAt IS NULL').orderBy('service.id', 'ASC').getMany();
     }
     async loginUser(user) {
         const payload = {
@@ -50527,6 +50735,15 @@ let AuthService = class AuthService {
         }
         const isDemoMode = process.env.DEMO_MODE?.toLowerCase() == 'true' || driver.mobileNumber === '911234567890';
         const { firstName, lastName, certificateNumber, email, carProductionYear, carPlate, profilePictureId, gender, address, city, vehicleOwnership, aadhaarNumber, panNumber, dob, carId, carColorId, canDeliver, documentPairs } = input.input;
+        let selectedServiceId = null;
+        if (input.input.serviceId != null) {
+            selectedServiceId = Number(input.input.serviceId);
+            const effectiveCity = (city ?? driver.city)?.trim();
+            const allowed = effectiveCity ? await this.servicesForCity(effectiveCity) : [];
+            if (!allowed.some((s)=>s.id === selectedServiceId)) {
+                throw new _apollo.ForbiddenError('Selected vehicle is not available in this city');
+            }
+        }
         await this.driverRepository.update(input.userId, {
             firstName: firstName?.trim(),
             lastName: lastName?.trim(),
@@ -50554,6 +50771,16 @@ let AuthService = class AuthService {
                     driverCode
                 });
             }
+        }
+        if (!isDemoMode && selectedServiceId != null) {
+            await this.driverServiceRepository.delete({
+                driverId: input.userId
+            });
+            await this.driverServiceRepository.save(this.driverServiceRepository.create({
+                driverId: input.userId,
+                serviceId: selectedServiceId,
+                driverEnabled: true
+            }));
         }
         if (isDemoMode) {
             const allowedServices = await this.serviceRepository.find();
@@ -51136,6 +51363,12 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", Array)
 ], CompleteRegistrationInput.prototype, "legacyDocumentIds", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.ID, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], CompleteRegistrationInput.prototype, "serviceId", void 0);
 CompleteRegistrationInput = _ts_decorate._([
     (0, _graphql.InputType)()
 ], CompleteRegistrationInput);
@@ -55112,7 +55345,12 @@ async function bootstrap() {
     const port = parseInt(process.env.DRIVER_API_PORT || '3000', 10);
     app.enableShutdownHooks();
     app.enableCors();
-    const config = await (0, _licenseverify.getConfig)(process.env.NODE_ENV ?? 'production');
+    const config = await (0, _licenseverify.getConfig)(process.env.NODE_ENV ?? 'production').catch((e)=>{
+        _common.Logger.warn('License server unreachable, using local Firebase key: ' + e?.message, 'Bootstrap');
+        return {
+            firebaseProjectPrivateKey: 'firebase-adminsdk.json'
+        };
+    });
     if (config != null && config.firebaseProjectPrivateKey != null) {
         (0, _app.initializeApp)({
             credential: _firebaseadmin.credential.cert(`${process.cwd()}/config/${config.firebaseProjectPrivateKey}`)

@@ -20,7 +20,7 @@ class DestinationSuggestionsCubit extends Cubit<DestinationSuggestionsState> {
   void onStarted() async {
     emit(
       state.copyWith(
-        destinationSuggesionsState: ApiResponse.loading(),
+        destinationSuggesionsState: const ApiResponse.loading(),
       ),
     );
 

@@ -39,6 +39,7 @@ abstract class ServiceModule {
     //final store = await HiveStore.open(path: directory.path);
     return GraphQLClient(
       link: link,
+      queryRequestTimeout: const Duration(seconds: 30),
       defaultPolicies: DefaultPolicies(
         query: Policies(
           fetch: FetchPolicy.noCache,

@@ -213,6 +213,7 @@ export class SharedOrderService {
   async getRouteDistance(points: Point[]): Promise<{
   distance: number;
   duration: number;
+  directions: Point[];
 }> {
   if (points.length < 2) {
     throw new ForbiddenError(
@@ -225,6 +226,7 @@ export class SharedOrderService {
   return {
     distance: metrics.distance,
     duration: metrics.duration,
+    directions: metrics.directions,
   };
 }
 
@@ -313,11 +315,17 @@ export class SharedOrderService {
       );
     }
     const cats = await this.serviceCategoryRepository.find({
+      where: { isEnabled: true },
       relations: {
+        media: true,
         services: {
           media: true,
           options: true,
         },
+      },
+      order: {
+        displayPriority: 'ASC',
+        services: { displayPriority: 'ASC' },
       },
     });
     const feeMultiplier =
@@ -597,6 +605,7 @@ Logger.log(
       {
         waypointsCount: input.waypoints.length,
         points: input.waypoints.map((w) => w.point),
+      city: detectCity(input.waypoints[0]?.point),
         distance: metrics.distance,
         duration: metrics.duration,
       },
@@ -767,6 +776,8 @@ Logger.log(
       waitCost: service.perMinuteWait * (input.waitMinutes ?? 0),
       rideOptionsCost: optionFee,
       fleetId: input.fleetId,
+      regionId: regions[0]?.id,
+      city: detectCityFromAddress(input.waypoints[0]?.address) ?? detectCity(input.waypoints[0]?.point),
       providerShare:
         service.providerShareFlat +
         (service.providerSharePercent * baseCostBeforeSurge) / 100 +
@@ -1630,4 +1641,31 @@ Logger.log(
 enum CalculateFareError {
   RegionUnsupported = 'REGION_UNSUPPORTED',
   NoServiceInRegion = 'NO_SERVICE_IN_REGION',
+}
+
+const CITY_CENTERS = [
+  { name: 'Tiruppur', lat: 11.1085, lng: 77.3411 },
+  { name: 'Coimbatore', lat: 11.0168, lng: 76.9558 },
+  { name: 'Chennai', lat: 13.0827, lng: 80.2707 },
+  { name: 'Bangalore', lat: 12.9716, lng: 77.5946 },
+];
+export function detectCity(p?: { lat: number; lng: number }): string | undefined {
+  if (!p) return undefined;
+  const R = 6371, rad = (d: number) => (d * Math.PI) / 180;
+  let best: string | undefined, min = 40;
+  for (const c of CITY_CENTERS) {
+    const a = Math.sin(rad(c.lat - p.lat) / 2) ** 2 + Math.cos(rad(p.lat)) * Math.cos(rad(c.lat)) * Math.sin(rad(c.lng - p.lng) / 2) ** 2;
+    const d = 2 * R * Math.asin(Math.sqrt(a));
+    if (d < min) { min = d; best = c.name; }
+  }
+  return best;
+}
+
+function detectCityFromAddress(address?: string): string | undefined {
+  const a = (address ?? '').toLowerCase();
+  if (a.includes('tirup')) return 'Tiruppur';
+  if (a.includes('coimbatore')) return 'Coimbatore';
+  if (a.includes('chennai')) return 'Chennai';
+  if (a.includes('bangalore') || a.includes('bengaluru')) return 'Bangalore';
+  return undefined;
 }

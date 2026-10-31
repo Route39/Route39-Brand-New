@@ -1,4 +1,5 @@
 import 'package:ridy_driver/config/locator/locator.dart';
+import 'package:ridy_driver/features/home/domain/repositories/home_repository.dart';
 import 'package:ridy_driver/core/enums/ride_option_icon.prod.dart';
 import 'package:ridy_driver/core/extensions/extensions.dart';
 import 'package:ridy_driver/core/graphql/fragments/coordinate.extensions.dart';
@@ -156,20 +157,42 @@ class OrderRequestItem extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: BlocBuilder<HomeBloc, HomeState>(
-                      builder: (context, state) {
-                        return AppPrimaryButton(
-                          isDisabled: state.acceptOrderReponse.isLoading,
-                          onPressed: () {
-                            locator<HomeBloc>().onAcceptOrder(request);
+                  Row(
+                    children: [
+                      InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => locator<HomeRepository>()
+                            .rejectOrderRequest(requestId: request.id),
+                        child: Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.error,
+                              width: 2,
+                            ),
+                          ),
+                          child: const Icon(Icons.close, size: 26),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: BlocBuilder<HomeBloc, HomeState>(
+                          builder: (context, state) {
+                            return AppPrimaryButton(
+                              isDisabled: state.acceptOrderReponse.isLoading,
+                              onPressed: () {
+                                locator<HomeBloc>().onAcceptOrder(request);
+                              },
+                              child: Text(context.translate.acceptOrder),
+                            );
                           },
-                          child: Text(context.translate.acceptOrder),
-                        );
-                      },
-                    ),
+                        ),
+                      ),
+                    ],
                   ),
+
                 ],
               ),
             ),

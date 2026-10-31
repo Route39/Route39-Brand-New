@@ -574,13 +574,6 @@ type VerifyEmailDto {
   requiresPhoneVerification: Boolean!
 }
 
-type RazorpayRideOrderDTO {
-  orderId: String!
-  amount: Float!
-  currency: String!
-  keyId: String!
-}
-
 type Media {
   id: ID!
   address: String!
@@ -649,7 +642,17 @@ type RangeCost {
 type ServiceCategory {
   id: ID!
   name: String!
+  description: String
+  displayPriority: Int!
+  media: Media
   services: [Service!]!
+}
+
+type RazorpayRideOrderDTO {
+  orderId: String!
+  amount: Float!
+  currency: String!
+  keyId: String!
 }
 
 type CalculateFareDTO {
@@ -669,6 +672,7 @@ enum CalculateFareError {
 type RouteDistanceDTO {
   distance: Float!
   duration: Int!
+  directions: [Point!]
 }
 
 type TopUpWalletResponse {
@@ -941,6 +945,7 @@ type Query {
   callMaskingConfig: CallMaskingConfig
   lostPropertyEligibility(orderId: ID!): LostPropertyEligibility!
   feedbackParameters: [FeedbackParameter!]!
+  serviceCategories(lat: Float, lng: Float): [ServiceCategory!]!
   activeOrders: [ActiveOrder!]!
   getFares(input: CalculateFareInput!): CalculateFareDTO!
   getRouteDistance(input: GetRouteDistanceInput!): RouteDistanceDTO!
@@ -1036,6 +1041,7 @@ type Mutation {
   sosSignal(orderId: ID!, location: PointInput): SOS!
   topUpWallet(input: TopUpWalletInput!, shouldPreauth: Boolean): TopUpWalletResponse!
   createRazorpayWalletOrder(orderId: ID!): RazorpayOrderDTO!
+  verifyRazorpayRidePaymentLegacy(orderId: ID!, razorpayOrderId: String!, razorpayPaymentId: String!, razorpaySignature: String!): Boolean!
   setupPaymentMethod(gatewayId: ID!): SetupPaymentMethod!
   redeemGiftCard(code: String!): GiftCard!
   markPaymentMethodAsDefault(id: ID!): [PaymentMethodBase!]!

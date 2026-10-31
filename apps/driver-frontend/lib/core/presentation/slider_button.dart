@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'dart:math';
 
 import 'package:ridy_driver/core/extensions/extensions.dart';
@@ -6,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
 
 class SliderButton extends StatefulWidget {
-  final double height = 45;
+  final double height = 56;
   final animationDuration = const Duration(milliseconds: 300);
   final String? text;
   final Function() onSlided;
@@ -155,6 +156,7 @@ class _SliderButtonState extends State<SliderButton>
           }
 
           if (_sliderRelativePosition == 1.0) {
+            HapticFeedback.mediumImpact();
             widget.onSlided();
             reset();
           } else {

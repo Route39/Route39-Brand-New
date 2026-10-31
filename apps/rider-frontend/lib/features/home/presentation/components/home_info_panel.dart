@@ -40,9 +40,9 @@ class HomeInfoPanel extends StatelessWidget {
                     selectedLocation: state.selectedLocationResponse.data!,
                   ),
                 OrderSubmissionPage.deliverySearchPlaceInput =>
-                  Text("Unsupported feature"),
+                  const Text("Unsupported feature"),
                 OrderSubmissionPage.deliveryContactInfoInput =>
-                  Text("Unsupported feature"),
+                  const Text("Unsupported feature"),
               },
             HomeMode.ridePreview => OrderPreviewSheet(
                 wayPoints: state.waypoints.nonNulls.toList(),

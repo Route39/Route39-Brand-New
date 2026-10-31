@@ -8,7 +8,10 @@ import {
   DriverNotificationService,
   DriverRedisService,
   DriverEphemeralMessageType,
-} from '@ridy/database';
+  OrderStatus,
+  ActiveOrderCommonRedisService,
+} from "@ridy/database";
+import { calculateHaversineDistance } from "../driver-profile.service";
 
 @Injectable()
 export class DispatchPubSubService {
@@ -17,7 +20,23 @@ export class DispatchPubSubService {
     private readonly orderRedisService: RideOfferRedisService,
     private readonly driverNotificationService: DriverNotificationService,
     private readonly driverRedisService: DriverRedisService,
+    private readonly activeOrderRedisService: ActiveOrderCommonRedisService,
   ) {}
+
+  private async isAvailable(driver: any, orderId: number): Promise<boolean> {
+    const active: string[] = driver?.activeOrderIds ?? [];
+    if (active.length === 0) return true;
+    if (process.env.QUEUED_RIDES_ENABLED !== 'true' || active.length > 1) return false;
+    const cur = await this.activeOrderRedisService.getActiveOrder(String(active[0]));
+    if (!cur || cur.status !== OrderStatus.Started) return false;
+    const drop = cur.waypoints?.[cur.waypoints.length - 1]?.location;
+    const meta = await this.orderRedisService.getRideOfferMetadata(orderId);
+    if (!drop || !driver.location || !meta?.pickupLocation) return false;
+    const toDrop = calculateHaversineDistance(driver.location, drop);
+    const pickupToDrop = calculateHaversineDistance(meta.pickupLocation, drop);
+    return toDrop <= Number(process.env.QUEUED_DRIVER_TO_DROP_M ?? 1500) &&
+      pickupToDrop <= Number(process.env.QUEUED_PICKUP_TO_DROP_M ?? 2000);
+  }
 
   /**
    * Broadcast mode: Notify multiple drivers at once
@@ -35,7 +54,7 @@ export class DispatchPubSubService {
       );
       const hasPendingOffers = driver?.rideOfferIds && driver.rideOfferIds.length > 0;
       const hasActiveOrders = driver?.activeOrderIds && driver.activeOrderIds.length > 0;
-      if (driver && !hasActiveOrders) {
+      if (driver && (await this.isAvailable(driver, orderId))) {
         availableDriverIds.push(driverId);
       }
     }
@@ -148,7 +167,7 @@ export class DispatchPubSubService {
     const hasPendingOffers = driver?.rideOfferIds && driver.rideOfferIds.length > 0;
     const hasActiveOrders = driver?.activeOrderIds && driver.activeOrderIds.length > 0;
 
-    if (!driver || hasPendingOffers || hasActiveOrders) {
+    if (!driver || hasPendingOffers || !(await this.isAvailable(driver, orderId))) {
       // Driver busy or offline - don't send offer, processor should move to next immediately
       return false;
     }

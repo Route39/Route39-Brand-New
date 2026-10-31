@@ -9,7 +9,7 @@ export 'distance.dart';
 extension ImageUrlString on String {
   String get toImageUrl {
     if (startsWith('http')) return this;
-    final baseUrl = dotenv.maybeGet('BASE_URL') ?? "http://localhost:3000/";
+    final baseUrl = dotenv.maybeGet('CDN_URL') ?? dotenv.maybeGet('BASE_URL') ?? "http://localhost:3000/";
     return '$baseUrl$this';
   }
 }

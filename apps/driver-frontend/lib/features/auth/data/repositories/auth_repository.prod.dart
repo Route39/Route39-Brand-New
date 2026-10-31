@@ -109,6 +109,17 @@ class LoginRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<ApiResponse<Query$ServicesForCity>> getServicesForCity(String city) async {
+    final response = await graphqlDatasource.query(
+      Options$Query$ServicesForCity(
+        fetchPolicy: FetchPolicy.noCache,
+        variables: Variables$Query$ServicesForCity(city: city),
+      ),
+    );
+    return response;
+  }
+
+  @override
   Future<ApiResponse<Mutation$AttachDriverDocument>> attachDriverDocument({
     required int driverDocumentId,
     required int mediaId,

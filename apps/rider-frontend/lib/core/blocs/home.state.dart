@@ -36,6 +36,8 @@ sealed class HomeState with _$HomeState {
 
     // Ride In Progress
     @Default(ApiResponse.initial()) ApiResponse<List<Fragment$ActiveOrder>> currentOrdersResponse,
+    @Default([]) List<Fragment$Coordinate> driverRoute,
+    DateTime? driverRouteFetchedAt,
     String? currentRideId,
     @Default(TrackOrderPage.overview) TrackOrderPage page,
     @Default(ApiResponseInitial()) ApiResponse<void> cancelOrderResponse,

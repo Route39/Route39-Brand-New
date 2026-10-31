@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { googleRainMm } from "./google-weather";
 import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThanOrEqual, Repository } from 'typeorm';
@@ -31,22 +32,13 @@ export class SurgeGridService {
 
   private async rainBatch(points: P[]): Promise<number[]> {
     const out = points.map(() => 0);
-    for (let i = 0; i < points.length; i += 100) {
-      const chunk = points.slice(i, i + 100);
-      try {
-        const lat = chunk.map((p) => p.lat.toFixed(3)).join(',');
-        const lng = chunk.map((p) => p.lng.toFixed(3)).join(',');
-        const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=precipitation`,
-          { signal: AbortSignal.timeout(10000) },
-        );
-        if (!res.ok) continue;
-        const data: any = await res.json();
-        const arr = Array.isArray(data) ? data : [data];
-        arr.forEach((d: any, j: number) => (out[i + j] = Number(d?.current?.precipitation ?? 0)));
-      } catch (e) {
+    for (let i = 0; i < points.length; i += 10) {
+      const chunk = points.slice(i, i + 10);
+      const res = await Promise.all(chunk.map((p) => googleRainMm(p.lat, p.lng).catch((e) => {
         this.logger.warn(`rain batch failed: ${(e as Error).message}`);
-      }
+        return 0;
+      })));
+      res.forEach((mm, j) => (out[i + j] = Number(mm ?? 0)));
     }
     return out;
   }

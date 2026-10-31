@@ -1,0 +1,109 @@
+import 'package:flutter/material.dart';
+import 'package:graphql/client.dart';
+import 'package:ridy/config/locator/locator.dart';
+import 'package:ridy/core/blocs/home.bloc.dart';
+import 'package:ridy/core/graphql/documents/service_categories.graphql.dart';
+import '../premium_notifier.dart';
+
+class _Tile {
+  final Query$ServiceCategories$serviceCategories category;
+  final Query$ServiceCategories$serviceCategories$services service;
+  _Tile(this.category, this.service);
+}
+
+class CategoryTiles extends StatefulWidget {
+  const CategoryTiles({super.key});
+  @override
+  State<CategoryTiles> createState() => _CategoryTilesState();
+}
+
+class _CategoryTilesState extends State<CategoryTiles> {
+  static List<_Tile>? _cache;
+  List<_Tile> _items = _cache ?? [];
+  bool _loading = _cache == null;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final res = await locator<GraphQLClient>().query$ServiceCategories(
+        Options$Query$ServiceCategories(fetchPolicy: FetchPolicy.networkOnly),
+      );
+      final cats = res.parsedData?.serviceCategories ?? [];
+      final list = <_Tile>[for (final c in cats) for (final s in c.services) _Tile(c, s)];
+      _cache = list;
+      if (mounted == false) return;
+      setState(() { _items = list; _loading = false; });
+      final keep = list.any((t) => t.service.id == selectedServiceIdNotifier.value);
+      if (list.isNotEmpty && keep == false) _select(list.first);
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  bool _isCargo(_Tile t) => t.category.name.toLowerCase().contains('cargo');
+
+  void _select(_Tile t) {
+    selectedServiceIdNotifier.value = t.service.id;
+    selectedCategoryIdNotifier.value = t.category.id;
+    premiumSelectedNotifier.value = t.service.name.toLowerCase().contains('premium');
+    locator<HomeBloc>().add(_isCargo(t)
+        ? const HomeEvent.onDeliveryOptionSelected()
+        : const HomeEvent.onRideOptionSelected());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return const SizedBox(height: 104, child: Center(child: CircularProgressIndicator(strokeWidth: 2)));
+    }
+    if (_items.isEmpty) return const SizedBox.shrink();
+    final w = (MediaQuery.of(context).size.width - 32 - 20) / 3;
+    return ValueListenableBuilder<String?>(
+      valueListenable: selectedServiceIdNotifier,
+      builder: (context, selId, _) => SizedBox(
+        height: 110,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: _items.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 10),
+          itemBuilder: (context, i) {
+            final t = _items[i];
+            final selected = selId == t.service.id;
+            final fallback = _isCargo(t) ? 'assets/images/route39_cargo_icon.png' : 'assets/images/ev_auto_icon.png';
+            final url = t.service.media?.address ?? t.category.media?.address;
+            return GestureDetector(
+              onTap: () => _select(t),
+              child: Container(
+                width: w,
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: selected ? Colors.red : Colors.grey.shade300, width: selected ? 2 : 1),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    url == null
+                        ? Image.asset(fallback, height: 44, fit: BoxFit.contain)
+                        : Image.network(url, height: 44, fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => Image.asset(fallback, height: 44)),
+                    const SizedBox(height: 6),
+                    Text(t.service.name, maxLines: 2, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12,
+                            color: selected ? Colors.black : Colors.black54)),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}

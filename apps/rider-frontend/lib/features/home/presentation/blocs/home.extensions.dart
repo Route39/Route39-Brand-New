@@ -39,8 +39,8 @@ extension HomeStateX on HomeState {
         }
         final nextDestination = activeOrder!.nextDestination;
         markers.add(switch (nextDestination?.role) {
-          Enum$WaypointRole.Pickup => nextDestination!.toPlace.markerPickup("${activeOrder!.id}_pickup"),
-          Enum$WaypointRole.Dropoff => nextDestination!.toPlace.markerDropoff("${activeOrder!.id}_dropoff"),
+          Enum$WaypointRole.Pickup => nextDestination!.toPlace.markerPickup("${activeOrder!.id}_pickup", eta: etaLabel(activeOrder!.pickupEta)),
+          Enum$WaypointRole.Dropoff => nextDestination!.toPlace.markerDropoff("${activeOrder!.id}_dropoff", eta: etaLabel(activeOrder!.dropoffEta)),
           Enum$WaypointRole.Stop => nextDestination!.toPlace.markerDropoff("${activeOrder!.id}_stop"),
           _ => nextDestination!.toPlace.markerDropoff("${activeOrder!.id}_unknown"),
         });
@@ -81,11 +81,20 @@ extension HomeStateX on HomeState {
     final driverLocation = order.driver?.location;
     final isEnRouteToPickup =
         order.status.toEntity == OrderStatus.driverAccepted || order.status.toEntity == OrderStatus.arrived;
-    if (isEnRouteToPickup && driverLocation != null && fullRoute.isNotEmpty) {
+    if (isEnRouteToPickup && driverRoute.isNotEmpty) {
+      return driverLocation != null ? driverRoute.trimToNearest(driverLocation.toLatLng) : driverRoute;
+    }
+    if (driverLocation != null && fullRoute.isNotEmpty) {
       return fullRoute.trimToNearest(driverLocation.toLatLng);
     }
     return fullRoute;
   }
 
   List<PolyLineLayer> polylines(BuildContext context) => directions.isEmpty ? [] : [directions.toPolyLineLayer(context)];
+}
+
+String? etaLabel(DateTime? t) {
+  if (t == null) return null;
+  final m = t.difference(DateTime.now()).inMinutes;
+  return m <= 1 ? "1 min" : "$m min";
 }

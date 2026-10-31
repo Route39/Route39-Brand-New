@@ -51,7 +51,7 @@ class OrderInProgressSheet extends StatelessWidget {
         children: [
           context.responsive(const NoticeBar(), xl: const SizedBox()),
           Container(
-            constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.95),
+            constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.42),
             child: AppCardSheet(
               child: SingleChildScrollView(
                 physics: const ClampingScrollPhysics(),
@@ -134,10 +134,14 @@ class OrderInProgressSheet extends StatelessWidget {
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                    Text(
-                                      '  •  ${order.serviceName}',
-                                      style: context.bodySmall?.copyWith(
-                                        color: ColorPalette.neutralVariant50,
+                                    Flexible(
+                                      child: Text(
+                                        '  •  ${order.serviceName}',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: context.bodySmall?.copyWith(
+                                          color: ColorPalette.neutralVariant50,
+                                        ),
                                       ),
                                     ),
                                   ],

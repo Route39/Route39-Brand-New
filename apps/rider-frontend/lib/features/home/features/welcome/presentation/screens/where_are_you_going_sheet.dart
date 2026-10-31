@@ -1,3 +1,4 @@
+import '../components/category_tiles.dart';
 import 'package:api_response/api_response.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -207,76 +208,32 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                         );
                       }
 
-                      return ValueListenableBuilder<bool>(
-                        valueListenable: premiumSelectedNotifier,
-                        builder: (context, premium, _) => Row(
-                          children: [
-                            Expanded(
-                              child: optionCard(
-                                label: 'Passenger Auto Economy',
-                                assetPath: 'assets/images/ev_auto_icon.png',
-                                selected: isRide && premium == false,
-                                onTap: () {
-                                  premiumSelectedNotifier.value = false;
-                                  locator<HomeBloc>().add(
-                                    const HomeEvent.onRideOptionSelected(),
-                                  );
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: optionCard(
-                                label: 'Passenger Auto Premium',
-                                assetPath: 'assets/images/ev_auto_icon.png',
-                                selected: isRide && premium,
-                                onTap: () {
-                                  premiumSelectedNotifier.value = true;
-                                  locator<HomeBloc>().add(
-                                    const HomeEvent.onRideOptionSelected(),
-                                  );
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: optionCard(
-                                label: 'Cargo',
-                                assetPath:
-                                    'assets/images/route39_cargo_icon.png',
-                                selected: isRide == false,
-                                onTap: () {
-                                  premiumSelectedNotifier.value = false;
-                                  locator<HomeBloc>().add(
-                                    const HomeEvent.onDeliveryOptionSelected(),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                      ;
+                      return const CategoryTiles();
                     },
                   ),
                   const SizedBox(height: 16),
                   BlocBuilder<HomeBloc, HomeState>(
                     bloc: locator<HomeBloc>(),
                     builder: (context, homeState) {
-                      final isRideNow =
-                          homeState.orderType == Enum$TaxiOrderType.Ride;
-                      return WhereAreYouGoingButton(
-                        assetPath: isRideNow
-                            ? 'assets/images/ev_auto_icon_small.png'
-                            : 'assets/images/cargo_truck_icon.png',
-                        onPressed: () {
-                          locator<HomeBloc>().add(
-                            HomeEvent.changeOrderSubmissionPage(
-                              orderSubmissionPage:
-                                  OrderSubmissionPage.rideWaypointsInput,
-                            ),
-                          );
-                        },
+                      void openWaypoints({required bool cargo}) {
+                        selectedServiceIdNotifier.value = null;
+                        premiumSelectedNotifier.value = false;
+                        final bloc = locator<HomeBloc>();
+                        bloc.add(cargo
+                            ? const HomeEvent.onDeliveryOptionSelected()
+                            : const HomeEvent.onRideOptionSelected());
+                        bloc.add(const HomeEvent.changeOrderSubmissionPage(
+                          orderSubmissionPage: OrderSubmissionPage.rideWaypointsInput,
+                        ));
+                      }
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          WhereAreYouGoingButton(
+                            assetPath: 'assets/images/ev_auto_icon_small.png',
+                            onPressed: () => openWaypoints(cargo: false),
+                          ),
+                        ],
                       );
                     },
                   ),

@@ -28,6 +28,7 @@ dependencies:
   better_localization:
     path: ../flutter_localizations
   dlibphonenumber: any
+  image_cropper: ^13.0.0
 
 dev_dependencies:
   flutter_test:

@@ -29,7 +29,7 @@ async function bootstrap() {
   const port = parseInt(process.env.RIDER_API_PORT || '3000', 10);
   app.enableShutdownHooks();
   app.enableCors();
-  const config = await getConfig(process.env.NODE_ENV ?? 'production');
+  const config = await getConfig(process.env.NODE_ENV ?? 'production').catch((e: any) => { Logger.warn('License server unreachable, using local Firebase key: ' + e?.message, 'Bootstrap'); return { firebaseProjectPrivateKey: 'firebase-adminsdk.json' } as any; });
   if (config && config.firebaseProjectPrivateKey != null) {
     initializeApp({
       credential: credential.cert(

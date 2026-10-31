@@ -7,6 +7,8 @@ import { CsvExportButton } from "@/components/tables/CsvExportButton";
 import { DataTable, type DataTableColumn } from "@/components/tables/DataTable";
 import { PageHeader } from "@/components/panel/PageHeader";
 import { VEHICLES_LIST_QUERY } from "@/lib/graphql/documents/drivers";
+import { DRIVER_COLLECTION_AGGREGATE_QUERY } from "@/lib/graphql/documents/daily-collection";
+import { useState as useStatusState } from "react";
 import { EXPORT_DRIVERS_QUERY } from "@/lib/graphql/documents/extras-2";
 import {
   buildFilterInput,
@@ -70,9 +72,28 @@ function TabPill({
   );
 }
 
+function normStatus(status: string): string {
+  return (status ?? "").toLowerCase().replace(/[^a-z]/g, "");
+}
+
+function isActiveStatus(status: string): boolean {
+  const s = normStatus(status);
+  return s === "online" || s === "inservice";
+}
+
 function statusMeta(status: string): { label: string; dot: string; text: string } {
-  if (status === "Online" || status === "InService") {
-    return { label: "MOVING", dot: "bg-emerald-500", text: "text-emerald-400" };
+  const s = normStatus(status);
+  if (s === "online") {
+    return { label: "ONLINE", dot: "bg-emerald-500", text: "text-emerald-400" };
+  }
+  if (s === "inservice") {
+    return { label: "MOVING", dot: "bg-sky-500", text: "text-sky-400" };
+  }
+  if (s === "waitingdocuments") {
+    return { label: "DOCS PENDING", dot: "bg-amber-500", text: "text-amber-400" };
+  }
+  if (s === "pendingapproval") {
+    return { label: "PENDING APPROVAL", dot: "bg-amber-500", text: "text-amber-400" };
   }
   return { label: "OFFLINE", dot: "bg-red-500", text: "text-red-400" };
 }
@@ -87,6 +108,7 @@ export default function VehiclesListPage() {
   const { sort, filters } = usePageState();
   const [cityValue, setCityValue] = useFilterField("city", "eq");
   const [typeValue, setTypeValue] = useFilterField("vehicleType", "eq");
+  const [statusFilter, setStatusFilter] = useStatusState<string | null>(null);
 
   // canDeliver isn't filterable on the backend DriverFilter type, so we
   // exclude it from the server-side filter and apply it client-side below.
@@ -108,9 +130,50 @@ export default function VehiclesListPage() {
     return true;
   });
 
+  // Last 7 days incl. today; start-of-day keeps the query variables stable between renders.
+  const tripsSince = new Date();
+  tripsSince.setHours(0, 0, 0, 0);
+  tripsSince.setDate(tripsSince.getDate() - 6);
+  const { data: tripsData } = useQuery(DRIVER_COLLECTION_AGGREGATE_QUERY, {
+    variables: {
+      filter: {
+        driverId: { isNot: true },
+        createdOn: { gte: tripsSince.toISOString() },
+      } as never,
+    },
+  });
+  const tripCounts = new Map<string, number>();
+  for (const g of tripsData?.orderAggregate ?? []) {
+    if (g.groupBy?.driverId) tripCounts.set(String(g.groupBy.driverId), g.count?.id ?? 0);
+  }
+
   const totalCount = rows.length;
-  const activeCount = rows.filter((r) => r.status === "Online").length;
-  const inactiveCount = rows.filter((r) => r.status !== "Online").length;
+  const activeCount = rows.filter((r) => isActiveStatus(r.status)).length;
+  const inactiveCount = rows.filter((r) => !isActiveStatus(r.status)).length;
+  const onlineCount = rows.filter((r) => normStatus(r.status) === "online").length;
+  const movingCount = rows.filter((r) => normStatus(r.status) === "inservice").length;
+  const offlineCount = rows.filter((r) => normStatus(r.status) === "offline").length;
+  const pendingCount = rows.filter((r) => {
+    const st = normStatus(r.status);
+    return st === "waitingdocuments" || st === "pendingapproval";
+  }).length;
+  const matchesStatus = (st: string, key: string) => {
+    const n = normStatus(st);
+    if (key === "online") return n === "online";
+    if (key === "moving") return n === "inservice";
+    if (key === "offline") return n === "offline";
+    if (key === "pending") return n === "waitingdocuments" || n === "pendingapproval";
+    return true;
+  };
+  const tableRows = statusFilter ? rows.filter((r) => matchesStatus(r.status, statusFilter)) : rows;
+  const pickStatus = (key: string) => setStatusFilter(key === "all" || statusFilter === key ? null : key);
+  const summaryCards = [
+    { key: "all", label: "Total vehicles", value: totalCount, dot: "bg-slate-400" },
+    { key: "online", label: "Online", value: onlineCount, dot: "bg-emerald-500" },
+    { key: "moving", label: "Moving", value: movingCount, dot: "bg-sky-500" },
+    { key: "offline", label: "Offline", value: offlineCount, dot: "bg-red-500" },
+    { key: "pending", label: "Pending", value: pendingCount, dot: "bg-amber-500" },
+  ];
 
   const columns: DataTableColumn<VehicleRow>[] = [
     {
@@ -132,13 +195,33 @@ export default function VehiclesListPage() {
       ),
     },
     {
+      key: "driverName",
+      header: "Driver name",
+      cell: (r) => {
+        const d = r as unknown as {
+          firstName?: string | null;
+          lastName?: string | null;
+          mobileNumber?: string | null;
+        };
+        const name = [d.firstName, d.lastName].filter(Boolean).join(" ");
+        return (
+          <div className="flex flex-col">
+            <span className="font-medium">{name || "—"}</span>
+            <span className="text-xs text-muted-foreground">{d.mobileNumber ?? ""}</span>
+          </div>
+        );
+      },
+    },
+    {
       key: "location",
       header: "Location",
       sortField: "city",
       cell: (r) => (
         <div className="flex flex-col">
           <span>{r.city ?? "Unassigned"}</span>
-          <span className="text-xs uppercase tracking-wide text-muted-foreground">Depot</span>
+          <span className="max-w-xs truncate text-xs text-muted-foreground">
+            {(r as unknown as { address?: string | null }).address || "—"}
+          </span>
         </div>
       ),
     },
@@ -159,12 +242,15 @@ export default function VehiclesListPage() {
     {
       key: "trips",
       header: "Trips · 7D",
-      cell: () => (
-        <div className="flex flex-col items-end text-right">
-          <span>—</span>
-          <span className="text-xs text-muted-foreground">no data</span>
-        </div>
-      ),
+      cell: (r) => {
+        const n = tripCounts.get(String(r.id)) ?? 0;
+        return (
+          <div className="flex flex-col items-end text-right">
+            <span>{n}</span>
+            <span className="text-xs text-muted-foreground">{n === 1 ? "trip" : "trips"}</span>
+          </div>
+        );
+      },
     },
   ];
 
@@ -248,10 +334,36 @@ export default function VehiclesListPage() {
         // {totalCount} vehicles · sorted by number
       </div>
 
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+        {summaryCards.map((c) => (
+          <div
+            key={c.label}
+            role="button"
+            tabIndex={0}
+            onClick={() => pickStatus(c.key)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                pickStatus(c.key);
+              }
+            }}
+            className={cn(
+              "cursor-pointer rounded-xl border bg-card p-4 transition hover:border-foreground/40",
+              (statusFilter ?? "all") === c.key ? "border-primary ring-2 ring-primary/30" : "border-border",
+            )}
+          >
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className={cn("size-2 rounded-full", c.dot)} />
+              {c.label}
+            </div>
+            <div className="mt-2 text-2xl font-semibold">{c.value}</div>
+          </div>
+        ))}
+      </div>
       <DataTable
         columns={columns}
-        rows={rows}
-        totalCount={totalCount}
+        rows={tableRows}
+        totalCount={tableRows.length}
         loading={loading}
         error={error?.message ?? null}
         rowKey={(r) => r.id}

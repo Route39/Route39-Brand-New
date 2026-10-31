@@ -25,6 +25,13 @@ import { CompleteRegistrationInput } from './dto/complete-registration.input';
 import { SaveRegistrationProgressInput } from './dto/save-registration-progress.input';
 import { DriverDTO } from '../core/dtos/driver.dto';
 
+const CITY_TO_REGION: Record<string, string> = {
+  chennai: 'tamilnadu',
+  tiruppur: 'tamilnadu',
+  coimbatore: 'tamilnadu',
+  bangalore: 'karnataka',
+};
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -47,6 +54,20 @@ export class AuthService {
     @InjectRepository(DriverToDriverDocumentEntity)
     public driverToDocumentRepository: Repository<DriverToDriverDocumentEntity>,
   ) {}
+
+  async servicesForCity(city: string): Promise<ServiceEntity[]> {
+    const regionName = CITY_TO_REGION[(city ?? '').trim().toLowerCase()];
+    if (!regionName) return [];
+    return this.serviceRepository
+      .createQueryBuilder('service')
+      .innerJoin('service.regions', 'region')
+      .leftJoinAndSelect('service.media', 'media')
+      .where('LOWER(region.name) = :regionName', { regionName })
+      .andWhere('region.enabled = 1')
+      .andWhere('service.deletedAt IS NULL')
+      .orderBy('service.id', 'ASC')
+      .getMany();
+  }
 
   async loginUser(user: DriverEntity): Promise<TokenObject> {
     const payload = { id: user.id };
@@ -171,6 +192,17 @@ export class AuthService {
       canDeliver,
       documentPairs,
     } = input.input;
+    let selectedServiceId: number | null = null;
+    if (input.input.serviceId != null) {
+      selectedServiceId = Number(input.input.serviceId);
+      const effectiveCity = (city ?? driver.city)?.trim();
+      const allowed = effectiveCity
+        ? await this.servicesForCity(effectiveCity)
+        : [];
+      if (!allowed.some((s) => s.id === selectedServiceId)) {
+        throw new ForbiddenError('Selected vehicle is not available in this city');
+      }
+    }
     await this.driverRepository.update(input.userId, {
       firstName: firstName?.trim(),
       lastName: lastName?.trim(),
@@ -198,6 +230,16 @@ export class AuthService {
       }
     }
 
+    if (!isDemoMode && selectedServiceId != null) {
+      await this.driverServiceRepository.delete({ driverId: input.userId });
+      await this.driverServiceRepository.save(
+        this.driverServiceRepository.create({
+          driverId: input.userId,
+          serviceId: selectedServiceId,
+          driverEnabled: true,
+        }),
+      );
+    }
     if (isDemoMode) {
       const allowedServices = await this.serviceRepository.find();
       const services = [];

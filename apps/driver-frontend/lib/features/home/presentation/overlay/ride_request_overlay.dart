@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:android_intent_plus/android_intent.dart';
@@ -87,9 +88,25 @@ class _RideRequestOverlayCardState extends State<RideRequestOverlayCard> {
   Future<void> _openApp() { debugPrint("R39_BUBBLE_TAP"); return _send("open_app"); }
   Future<void> _accept() { debugPrint("R39_ACCEPT_TAP"); return _send("accept"); }
 
-  void _decline() {
+  Future<void> _decline() async {
     _timer?.cancel();
-    FlutterOverlayWindow.closeOverlay();
+    debugPrint("R39_DECLINE_TAP");
+    try {
+      final url = _s('gqlUrl'), token = _s('token'), id = _s('orderId');
+      if (url.isNotEmpty && token.isNotEmpty && id.isNotEmpty) {
+        final r = await http.post(
+          Uri.parse(url),
+          headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+          body: jsonEncode({'query': r'mutation($id: ID!) { rejectRideOffer(orderId: $id) }', 'variables': {'id': id}}),
+        ).timeout(const Duration(seconds: 8));
+        debugPrint('R39_REJECT_HTTP ${r.statusCode} ${r.body}');
+      } else {
+        debugPrint('R39_REJECT_MISSING id=$id');
+      }
+    } catch (e) {
+      debugPrint('R39_REJECT_ERR $e');
+    }
+    await FlutterOverlayWindow.closeOverlay();
   }
 
   String _s(String k) => (_data[k] ?? '').toString();

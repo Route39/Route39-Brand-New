@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
 
+typedef VehicleService = ({String id, String name, String imageUrl});
+
 class VehicleSelectionScreen extends StatefulWidget {
   final void Function(String vehicleType) onConfirm;
+  final Future<List<VehicleService>> Function() loadServices;
   final String? initialVehicle;
   final void Function(String? vehicle)? onDraftChanged;
   final bool embedded;
@@ -10,6 +13,7 @@ class VehicleSelectionScreen extends StatefulWidget {
   const VehicleSelectionScreen({
     super.key,
     required this.onConfirm,
+    required this.loadServices,
     this.initialVehicle,
     this.onDraftChanged,
     this.embedded = false,
@@ -19,37 +23,97 @@ class VehicleSelectionScreen extends StatefulWidget {
   State<VehicleSelectionScreen> createState() => _VehicleSelectionScreenState();
 }
 
-class _VehicleOption {
-  final String id;
-  final String title;
-  final String subtitle;
-  final String imagePath;
-
-  const _VehicleOption({
-    required this.id,
-    required this.title,
-    required this.subtitle,
-    required this.imagePath,
-  });
-}
-
 class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
-  static const List<_VehicleOption> options = [
-    _VehicleOption(
-      id: 'passenger',
-      title: 'Passenger Auto',
-      subtitle: 'Auto rides for passengers',
-      imagePath: 'assets/images/passenger_auto.png',
-    ),
-    _VehicleOption(
-      id: 'cargo',
-      title: 'Cargo Auto',
-      subtitle: 'Goods and parcel delivery',
-      imagePath: 'assets/images/cargo_auto.png',
-    ),
-  ];
+  static const String _fallbackImage = 'assets/images/passenger_auto.png';
 
+  late final Future<List<VehicleService>> _servicesFuture;
   late String? selectedVehicle = widget.initialVehicle;
+
+  @override
+  void initState() {
+    super.initState();
+    _servicesFuture = widget.loadServices().then((list) {
+      if (mounted) {
+        setState(() {
+          if (selectedVehicle != null &&
+              !list.any((s) => s.id == selectedVehicle)) {
+            selectedVehicle = null;
+          }
+        });
+      }
+      return list;
+    });
+  }
+
+  Widget _image(String url) {
+    final fallback = Image.asset(
+      _fallbackImage,
+      width: 64,
+      height: 64,
+      fit: BoxFit.cover,
+    );
+    if (url.isEmpty) return fallback;
+    return Image.network(
+      url,
+      width: 64,
+      height: 64,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => fallback,
+    );
+  }
+
+  Widget _buildOption(VehicleService option) {
+    final isSelected = selectedVehicle == option.id;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () {
+          setState(() => selectedVehicle = option.id);
+          widget.onDraftChanged?.call(option.id);
+        },
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isSelected ? ColorPalette.primary40 : Colors.black12,
+              width: isSelected ? 2 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: _image(option.imageUrl),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  option.name,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+              Radio<String>(
+                value: option.id,
+                groupValue: selectedVehicle,
+                activeColor: ColorPalette.primary40,
+                onChanged: (value) {
+                  setState(() => selectedVehicle = value);
+                  widget.onDraftChanged?.call(value);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _buildBody() {
     return Column(
@@ -70,73 +134,27 @@ class _VehicleSelectionScreenState extends State<VehicleSelectionScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                ...options.map((option) {
-                  final isSelected = selectedVehicle == option.id;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 14),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(14),
-                      onTap: () {
-                        setState(() => selectedVehicle = option.id);
-                        widget.onDraftChanged?.call(option.id);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: isSelected ? ColorPalette.primary40 : Colors.black12,
-                            width: isSelected ? 2 : 1,
-                          ),
+                FutureBuilder<List<VehicleService>>(
+                  future: _servicesFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState != ConnectionState.done) {
+                      return const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(24),
+                          child: CircularProgressIndicator(),
                         ),
-                        child: Row(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Image.asset(
-                                option.imagePath,
-                                width: 64,
-                                height: 64,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    option.title,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    option.subtitle,
-                                    style: const TextStyle(fontSize: 13, color: Colors.black54),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Radio<String>(
-                              value: option.id,
-                              groupValue: selectedVehicle,
-                              activeColor: ColorPalette.primary40,
-                              onChanged: (value) {
-                                setState(() => selectedVehicle = value);
-                                widget.onDraftChanged?.call(value);
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                }),
+                      );
+                    }
+                    final services = snapshot.data ?? const <VehicleService>[];
+                    if (snapshot.hasError || services.isEmpty) {
+                      return const Text(
+                        'No vehicles are available in this city right now.',
+                        style: TextStyle(fontSize: 14, color: Colors.black54),
+                      );
+                    }
+                    return Column(children: services.map(_buildOption).toList());
+                  },
+                ),
               ],
             ),
           ),

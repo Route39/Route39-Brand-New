@@ -47,6 +47,14 @@ mutation ResendOtp($mobileNumber: String!) {
   }
 }
 
+query ServicesForCity($city: String!) {
+  servicesForCity(city: $city) {
+    id
+    name
+    imageUrl
+  }
+}
+
 mutation Register($updateDriverInput: CompleteRegistrationInput!) {
   completeRegistration(input: $updateDriverInput) {
     ...Profile

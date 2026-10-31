@@ -1,3 +1,8 @@
+import 'package:ridy/features/home/presentation/blocs/home.extensions.dart';
+import 'package:ridy/config/locator/locator.dart';
+import 'package:ridy/core/datasources/graphql_datasource.dart';
+import 'package:ridy/core/graphql/documents/get_route_distance.graphql.dart';
+import '../../features/home/features/welcome/presentation/premium_notifier.dart';
 import 'package:api_response/api_response.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
@@ -64,6 +69,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
                   if (!data.isLoaded) {
                     return state;
                   }
+                  add(const HomeEvent.driverRouteRequested());
                   return state.copyWith(currentOrdersResponse: data);
                 },
                 onError: (error, stackTrace) => state,
@@ -101,6 +107,40 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
                 },
               ),
             ]);
+          }
+          break;
+
+        case HomeEvent$DriverRouteRequested():
+          final driverLoc = state.activeOrder?.driver?.location;
+          final dest = state.activeOrder?.nextDestination;
+          if (driverLoc == null || dest == null || dest.role != Enum$WaypointRole.Pickup) {
+            if (state.driverRoute.isNotEmpty) emit(state.copyWith(driverRoute: []));
+            break;
+          }
+          final last = state.driverRouteFetchedAt;
+          if (last != null && DateTime.now().difference(last).inSeconds < 20) break;
+          emit(state.copyWith(driverRouteFetchedAt: DateTime.now()));
+          final d = driverLoc.toLatLng;
+          final p = dest.toPlace.latLng;
+          final res = await locator<GraphqlDatasource>().query(
+            Options$Query$GetRouteDistance(
+              variables: Variables$Query$GetRouteDistance(
+                input: Input$GetRouteDistanceInput(points: [
+                  Input$PointInput(lat: d.latitude, lng: d.longitude),
+                  Input$PointInput(lat: p.latitude, lng: p.longitude),
+                ]),
+              ),
+            ),
+          );
+          final dirs = res.data?.getRouteDistance.directions ?? [];
+          if (dirs.isNotEmpty) {
+            final firstFit = state.driverRoute.isEmpty;
+            emit(state.copyWith(driverRoute: dirs.map((e) => Fragment$Coordinate(lat: e.lat, lng: e.lng)).toList()));
+            if (firstFit) {
+              try {
+                state.mapViewController?.fitBounds([d, p]);
+              } catch (_) {}
+            }
           }
           break;
 
@@ -303,10 +343,27 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
               return categoryKey == desiredCategoryKey;
             });
 
-            final categoryToUse =
+            final pickedId = selectedServiceIdNotifier.value;
+            final pickedCategory = pickedId == null
+                ? null
+                : fares.data?.services.firstWhereOrNull(
+                    (cat) => cat.services.any((s) => s.id == pickedId),
+                  );
+            final catPickId = selectedCategoryIdNotifier.value;
+            final catPicked = catPickId == null
+                ? null
+                : fares.data?.services.firstWhereOrNull((cat) => cat.id == catPickId);
+            final categoryToUse = pickedCategory ?? catPicked ??
                 selectedCategory ?? fares.data?.services.firstOrNull;
 
-            final serviceToUse = categoryToUse?.services.firstOrNull;
+            final serviceToUse =
+                categoryToUse?.services.firstWhereOrNull((s) => s.id == pickedId) ??
+                categoryToUse?.services.firstWhereOrNull(
+                  (s) =>
+                      s.name.toLowerCase().contains('premium') ==
+                      premiumSelectedNotifier.value,
+                ) ??
+                categoryToUse?.services.firstOrNull;
 
             debugPrint(
               '[Rider HomeBloc] Fare category selected: '

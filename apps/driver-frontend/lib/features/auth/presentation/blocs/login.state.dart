@@ -150,6 +150,7 @@ sealed class LoginState with _$LoginState {
         profilePictureId: profilePicture!.id,
         carId: vehicleModelId,
         carColorId: vehicleColorId,
+        serviceId: int.tryParse(selectedVehicleType ?? '') != null ? selectedVehicleType : null,
         legacyDocumentIds: documents.map((e) => e.id).toList(),
         documentPairs: [],
       );

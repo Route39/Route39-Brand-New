@@ -168,12 +168,7 @@ final dropoff =
                           const SizedBox(height: 20),
                           _buildDateStrip(context),
                           const SizedBox(height: 20),
-if (selectedService != null)
-  _buildServiceCard(
-    context,
-    selectedService,
-    selectedCategory?.name,
-  ),                          const SizedBox(height: 16),
+_buildVehicleList(context, state, selectedService),                          const SizedBox(height: 16),
                           _buildRouteSection(context, pickup, dropoff),
                           const SizedBox(height: 16),
                           _buildRidePreferencesRow(context, state, selectedService, pickup, dropoff),
@@ -272,6 +267,63 @@ if (selectedService != null)
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildVehicleList(BuildContext context, HomeState state, dynamic selectedService) {
+    final catId = selectedCategoryIdNotifier.value;
+    final picked = widget.serviceCategories.where((c) => catId == null || c.id == catId).toList();
+    final useCats = picked.isEmpty ? widget.serviceCategories : picked;
+    final tiles = [
+      for (final c in useCats)
+        for (final sv in c.services) (c, sv),
+    ];
+    if (tiles.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Choose a ride', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 10),
+        for (final t in tiles) _buildVehicleTile(context, t.$1, t.$2, selectedService?.id == t.$2.id),
+      ],
+    );
+  }
+
+  Widget _buildVehicleTile(BuildContext context, dynamic category, dynamic service, bool selected) {
+    final cost = ((service.cost ?? 0) as num).toDouble();
+    final gst = cost * ((service.gstPercent ?? 0) as num).toDouble() / 100;
+    final platform = ((service.platformFee ?? 0) as num).toDouble();
+    final total = cost + gst + platform;
+    final isCargo = (category.name as String).toLowerCase().contains('cargo');
+    final fallback = isCargo ? 'assets/images/route39_cargo_icon.png' : 'assets/images/route39_auto_photo.png';
+    final String? url = service.media?.address as String?;
+    return GestureDetector(
+      onTap: () {
+        selectedServiceIdNotifier.value = service.id as String;
+        final bloc = locator<HomeBloc>();
+        bloc.add(HomeEvent.onServiceCategorySelected(serviceCategory: category));
+        bloc.add(HomeEvent.onServiceSelected(service: service, value: true));
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFFFFF1F0) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: selected ? Colors.red : Colors.grey.shade300, width: selected ? 2 : 1),
+        ),
+        child: Row(children: [
+          SizedBox(
+            width: 56, height: 44,
+            child: (url == null || url.isEmpty)
+                ? Image.asset(fallback, fit: BoxFit.contain)
+                : Image.network(url, fit: BoxFit.contain, errorBuilder: (_, __, ___) => Image.asset(fallback, fit: BoxFit.contain)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: Text(service.name as String, style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600))),
+          Text('\u20B9${total.toStringAsFixed(0)}', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+        ]),
       ),
     );
   }
@@ -413,9 +465,7 @@ if (selectedService != null)
           Expanded(
             //child: Text(isCargo ? 'Route39 Cargo' : 'Route39 EV', style: context.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
             child: Text(
-    (categoryName?.trim().toLowerCase() == 'cargo')
-        ? 'Route39 Cargo'
-        : (premiumSelectedNotifier.value ? 'Route39 Passenger-Auto Premium' : 'Route39 Passenger-Auto Economy'),
+    'Route39 ${locator<HomeBloc>().state.selectedService?.name ?? categoryName ?? ''}'.trim(),
     style: context.titleMedium?.copyWith(
       fontWeight: FontWeight.bold,
     ),

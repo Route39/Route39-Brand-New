@@ -158,6 +158,9 @@ class HomeRepositoryMock implements HomeRepository {
 
   @override
   stopListeningToOrderUpdates() {}
+  @override
+  Future<void> rejectOrderRequest({required String requestId}) async {}
+
 
   @override
   Future<ApiResponse<Fragment$ActiveOrder>> acceptOrderRequest({required String requestId}) async {

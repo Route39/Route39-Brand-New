@@ -284,11 +284,12 @@ export class DriverService {
     );
     return {
       rating: driver.rating != null ? Math.round(driver.rating / 20) : undefined,
-      acceptanceRate:
+      acceptanceRate: Math.round(
         (driver.acceptedOrdersCount /
           (driver.acceptedOrdersCount + driver.rejectedOrdersCount) || 0) * 100,
+      ),
       totalRides: driverOrders,
-      distanceTraveled: distanceTraveled || 0,
+      distanceTraveled: Math.round(distanceTraveled || 0),
     };
   }
 
@@ -365,9 +366,23 @@ export class DriverService {
       driverId.toString(),
     );
     if (driver) {
+      let serviceIds = input.serviceIds;
+      if (serviceIds != null) {
+        const entityForCheck = await this.driverRepository.findOneOrFail({
+          where: { id: driverId },
+          relations: { enabledServices: true },
+        });
+        const allowed = new Set(
+          (entityForCheck.enabledServices ?? []).map((s) => Number(s.serviceId)),
+        );
+        serviceIds = serviceIds.filter((id) => allowed.has(Number(id)));
+        if (serviceIds.length < 1) {
+          throw new ForbiddenError('No valid service selected for the driver.');
+        }
+      }
       await this.driverRedisService.updateDriverOfferFilters(driverId, {
         searchDistance: input.searchDistance,
-        serviceIds: input.serviceIds,
+        serviceIds,
       });
       return this.createDTOFromSnapshot(driver);
     } else {
@@ -375,7 +390,7 @@ export class DriverService {
         where: { id: driverId },
         relations: { enabledServices: true },
       });
-      this.driverRepository.update(entity.id, {
+      await this.driverRepository.update(entity.id, {
         searchDistance: input.searchDistance,
         enabledServices:
           input.serviceIds == null

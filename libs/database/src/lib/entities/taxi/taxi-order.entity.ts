@@ -284,6 +284,9 @@ export class TaxiOrderEntity {
   @Column({ nullable: true })
   regionId?: number;
 
+  @Column({ nullable: true })
+  city?: string;
+
   @OneToMany(() => RequestActivityEntity, (activity) => activity.request)
   activities?: RequestActivityEntity[];
 
@@ -305,6 +308,9 @@ export class TaxiOrderEntity {
     transformer: new MultipointTransformer(),
   })
   points!: Point[];
+
+  @Column('varchar', { length: 30, nullable: true })
+  city?: string;
 
   @Column('multipoint', {
     transformer: new MultipointTransformer(),

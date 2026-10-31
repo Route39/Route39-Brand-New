@@ -112,4 +112,8 @@ class AuthRepositoryMock implements AuthRepository {
       Mutation$DeleteAccount(deleteAccount: true),
     );
   }
+
+  @override
+  Future<ApiResponse<Query$ServicesForCity>> getServicesForCity(String city) async =>
+      throw UnimplementedError('servicesForCity is not mocked');
 }

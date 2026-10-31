@@ -278,6 +278,14 @@ export const SERVICE_CATEGORIES_QUERY = graphql(`
     serviceCategories(filter: {}, sorting: []) {
       id
       name
+      description
+      displayPriority
+      isEnabled
+      mediaId
+      media {
+        id
+        address
+      }
     }
   }
 `);

@@ -144,20 +144,20 @@ const _parkingmodule = __webpack_require__(374);
 const _insightsmodule = __webpack_require__(406);
 const _zonepricemodule = __webpack_require__(458);
 const _surgemodule = __webpack_require__(462);
-const _driverdocumentmodule = __webpack_require__(469);
-const _drivershiftrulemodule = __webpack_require__(473);
-const _nestjsprometheus = __webpack_require__(476);
+const _driverdocumentmodule = __webpack_require__(471);
+const _drivershiftrulemodule = __webpack_require__(475);
+const _nestjsprometheus = __webpack_require__(478);
 const _licenseverify = __webpack_require__(21);
-const _taxisupportrequestmodule = __webpack_require__(477);
-const _notificationmodule = __webpack_require__(484);
-const _platformoverviewmodule = __webpack_require__(489);
-const _publicstatsmodule = __webpack_require__(495);
-const _setup = __webpack_require__(499);
+const _taxisupportrequestmodule = __webpack_require__(479);
+const _notificationmodule = __webpack_require__(486);
+const _platformoverviewmodule = __webpack_require__(491);
+const _publicstatsmodule = __webpack_require__(497);
+const _setup = __webpack_require__(501);
 const _core = __webpack_require__(8);
-const _configmodule = __webpack_require__(500);
-const _settingsmodule = __webpack_require__(501);
-const _supportwebhookmodule = __webpack_require__(504);
-const _kycexpirationmodule = __webpack_require__(505);
+const _configmodule = __webpack_require__(502);
+const _settingsmodule = __webpack_require__(503);
+const _supportwebhookmodule = __webpack_require__(506);
+const _kycexpirationmodule = __webpack_require__(507);
 let AdminAPIModule = class AdminAPIModule {
     constructor(licenseVerifyService){
         this.licenseVerifyService = licenseVerifyService;
@@ -761,6 +761,7 @@ __webpack_require__.d(__webpack_exports__, {
   WeekdayScheduleDTO: () => (/* reexport */ WeekdayScheduleDTO),
   ZonePriceCategoryEntity: () => (/* reexport */ ZonePriceCategoryEntity),
   ZonePriceEntity: () => (/* reexport */ ZonePriceEntity),
+  detectCity: () => (/* reexport */ detectCity),
   entities: () => (/* reexport */ entities),
   generateDriverCode: () => (/* reexport */ generateDriverCode),
   getCityPrefix: () => (/* reexport */ getCityPrefix),
@@ -4587,6 +4588,7 @@ function service_category_entity_ts_metadata(k, v) {
 }
 
 
+
 var ServiceCategoryEntity = function ServiceCategoryEntity() {
     "use strict";
 };
@@ -4600,6 +4602,40 @@ service_category_entity_ts_decorate([
     }),
     service_category_entity_ts_metadata("design:type", String)
 ], ServiceCategoryEntity.prototype, "name", void 0);
+service_category_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    service_category_entity_ts_metadata("design:type", String)
+], ServiceCategoryEntity.prototype, "description", void 0);
+service_category_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: 0
+    }),
+    service_category_entity_ts_metadata("design:type", Number)
+], ServiceCategoryEntity.prototype, "displayPriority", void 0);
+service_category_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: true
+    }),
+    service_category_entity_ts_metadata("design:type", Boolean)
+], ServiceCategoryEntity.prototype, "isEnabled", void 0);
+service_category_entity_ts_decorate([
+    (0,external_typeorm_.OneToOne)(function() {
+        return MediaEntity;
+    }, {
+        eager: true,
+        nullable: true
+    }),
+    (0,external_typeorm_.JoinColumn)(),
+    service_category_entity_ts_metadata("design:type", typeof MediaEntity === "undefined" ? Object : MediaEntity)
+], ServiceCategoryEntity.prototype, "media", void 0);
+service_category_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    service_category_entity_ts_metadata("design:type", Number)
+], ServiceCategoryEntity.prototype, "mediaId", void 0);
 service_category_entity_ts_decorate([
     (0,external_typeorm_.OneToMany)(function() {
         return ServiceEntity;
@@ -17594,6 +17630,12 @@ taxi_order_entity_ts_decorate([
     taxi_order_entity_ts_metadata("design:type", Number)
 ], TaxiOrderEntity.prototype, "regionId", void 0);
 taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        nullable: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", String)
+], TaxiOrderEntity.prototype, "city", void 0);
+taxi_order_entity_ts_decorate([
     (0,external_typeorm_.OneToMany)(function() {
         return RequestActivityEntity;
     }, function(activity) {
@@ -17622,6 +17664,13 @@ taxi_order_entity_ts_decorate([
     }),
     taxi_order_entity_ts_metadata("design:type", Array)
 ], TaxiOrderEntity.prototype, "points", void 0);
+taxi_order_entity_ts_decorate([
+    (0,external_typeorm_.Column)('varchar', {
+        length: 30,
+        nullable: true
+    }),
+    taxi_order_entity_ts_metadata("design:type", String)
+], TaxiOrderEntity.prototype, "city", void 0);
 taxi_order_entity_ts_decorate([
     (0,external_typeorm_.Column)('multipoint', {
         transformer: new MultipointTransformer(),
@@ -25664,17 +25713,30 @@ var ActiveOrderDriverRedisService = /*#__PURE__*/ function() {
     var _proto = ActiveOrderDriverRedisService.prototype;
     _proto.updateLastSeenForDriver = function updateLastSeenForDriver(orderId, lastSeenAt) {
         return active_order_driver_redis_service_async_to_generator(function() {
-            var pipeline;
+            var key, res, _res_, len, pipeline, i;
             return active_order_driver_redis_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
+                        key = "active_order:" + orderId;
+                        return [
+                            4,
+                            this.redisService.json.arrLen(key, '$.chatMessages')
+                        ];
+                    case 1:
+                        res = _state.sent();
+                        len = Array.isArray(res) ? Number((_res_ = res[0]) != null ? _res_ : 0) : Number(res != null ? res : 0);
+                        if (!len) return [
+                            2
+                        ];
                         pipeline = this.redisService.multi();
-                        pipeline.json.set("active_order:" + orderId, '$.chatMessages[*].driverLastSeenAt', lastSeenAt.getTime());
+                        for(i = 0; i < len; i++){
+                            pipeline.json.set(key, "$.chatMessages[" + i + "].driverLastSeenAt", lastSeenAt.getTime());
+                        }
                         return [
                             4,
                             pipeline.exec()
                         ];
-                    case 1:
+                    case 2:
                         _state.sent();
                         return [
                             2
@@ -25840,17 +25902,30 @@ var ActiveOrderRiderRedisService = /*#__PURE__*/ function() {
     var _proto = ActiveOrderRiderRedisService.prototype;
     _proto.updateLastSeenForRider = function updateLastSeenForRider(orderId, lastSeenAt) {
         return active_order_rider_redis_service_async_to_generator(function() {
-            var pipeline;
+            var key, res, _res_, len, pipeline, i;
             return active_order_rider_redis_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
+                        key = "active_order:" + orderId;
+                        return [
+                            4,
+                            this.redisService.json.arrLen(key, '$.chatMessages')
+                        ];
+                    case 1:
+                        res = _state.sent();
+                        len = Array.isArray(res) ? Number((_res_ = res[0]) != null ? _res_ : 0) : Number(res != null ? res : 0);
+                        if (!len) return [
+                            2
+                        ];
                         pipeline = this.redisService.multi();
-                        pipeline.json.set("active_order:" + orderId, '$.chatMessages[*].riderLastSeenAt', lastSeenAt.getTime());
+                        for(i = 0; i < len; i++){
+                            pipeline.json.set(key, "$.chatMessages[" + i + "].riderLastSeenAt", lastSeenAt.getTime());
+                        }
                         return [
                             4,
                             pipeline.exec()
                         ];
-                    case 1:
+                    case 2:
                         _state.sent();
                         return [
                             2
@@ -30270,7 +30345,7 @@ var RegionService = /*#__PURE__*/ function() {
                     case 0:
                         return [
                             4,
-                            this.regionRepository.query("SELECT * FROM region WHERE enabled=TRUE AND ST_Within(st_geomfromtext('POINT(? ?)'), region.location)", [
+                            this.regionRepository.query("SELECT * FROM region WHERE enabled=TRUE AND ST_Within(st_geomfromtext('POINT(? ?)'), region.location) ORDER BY ST_Area(region.location) ASC", [
                                 point.lng,
                                 point.lat
                             ])
@@ -33034,7 +33109,8 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             2,
                             {
                                 distance: metrics.distance,
-                                duration: metrics.duration
+                                duration: metrics.duration,
+                                directions: metrics.directions
                             }
                         ];
                 }
@@ -33140,10 +33216,20 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         return [
                             4,
                             this.serviceCategoryRepository.find({
+                                where: {
+                                    isEnabled: true
+                                },
                                 relations: {
+                                    media: true,
                                     services: {
                                         media: true,
                                         options: true
+                                    }
+                                },
+                                order: {
+                                    displayPriority: 'ASC',
+                                    services: {
+                                        displayPriority: 'ASC'
                                     }
                                 }
                             })
@@ -33330,7 +33416,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
     };
     _proto.createOrder = function createOrder(input) {
         return shared_order_service_async_to_generator(function() {
-            var _this, _regions_, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, orderSurgeCtx, surgeAmount, baseCostBeforeSurge, _orderSurgeCtx_commissionPercent, surgeCommission, regions, _regions__currency, orderCurrency, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, isOnlinePayment, _service_gstPercent, gstAmount, _service_platformFee, platformFeeAmount, _service_paymentGatewayFee, paymentGatewayFeeAmount, _input_waitMinutes2, _input_waitMinutes3, _orderSurgeCtx_zoneId, orderObject, order, couponResult, activityType;
+            var _input_waypoints_, _this, _regions_, _regions_1, _input_waypoints_1, _input_waypoints_2, zonePricings, service, fleetIdsInPoint, optionFee, options, _input_twoWay, paidOptions, metrics, expectedTimestamp, rider, _feeMultiplier, feeMultiplier, _tmp, _input_waitMinutes, costCalculation, cost, _input_waitMinutes1, orderSurgeCtx, surgeAmount, baseCostBeforeSurge, _orderSurgeCtx_commissionPercent, surgeCommission, regions, _regions__currency, orderCurrency, effectiveMaxDistance, shouldPrePay, paidAmount, balance, amountNeedsToBePrePaid, isOnlinePayment, _service_gstPercent, gstAmount, _service_platformFee, platformFeeAmount, _service_paymentGatewayFee, paymentGatewayFeeAmount, _input_waitMinutes2, _input_waitMinutes3, _detectCityFromAddress, _orderSurgeCtx_zoneId, orderObject, order, couponResult, activityType;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -33404,6 +33490,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             points: input.waypoints.map(function(w) {
                                 return w.point;
                             }),
+                            city: detectCity((_input_waypoints_ = input.waypoints[0]) == null ? void 0 : _input_waypoints_.point),
                             distance: metrics.distance,
                             duration: metrics.duration
                         }, 'SharedOrderService.createOrder.metrics');
@@ -33579,6 +33666,8 @@ var SharedOrderService = /*#__PURE__*/ function() {
                             waitCost: service.perMinuteWait * ((_input_waitMinutes3 = input.waitMinutes) != null ? _input_waitMinutes3 : 0),
                             rideOptionsCost: optionFee,
                             fleetId: input.fleetId,
+                            regionId: (_regions_1 = regions[0]) == null ? void 0 : _regions_1.id,
+                            city: (_detectCityFromAddress = detectCityFromAddress((_input_waypoints_1 = input.waypoints[0]) == null ? void 0 : _input_waypoints_1.address)) != null ? _detectCityFromAddress : detectCity((_input_waypoints_2 = input.waypoints[0]) == null ? void 0 : _input_waypoints_2.point),
                             providerShare: service.providerShareFlat + service.providerSharePercent * baseCostBeforeSurge / 100 + surgeCommission,
                             surgeAmount: surgeAmount,
                             surgeZoneId: (_orderSurgeCtx_zoneId = orderSurgeCtx == null ? void 0 : orderSurgeCtx.zoneId) != null ? _orderSurgeCtx_zoneId : null,
@@ -34661,6 +34750,53 @@ var CalculateFareError = /*#__PURE__*/ function(CalculateFareError) {
     CalculateFareError["NoServiceInRegion"] = "NO_SERVICE_IN_REGION";
     return CalculateFareError;
 }(CalculateFareError || {});
+var CITY_CENTERS = [
+    {
+        name: 'Tiruppur',
+        lat: 11.1085,
+        lng: 77.3411
+    },
+    {
+        name: 'Coimbatore',
+        lat: 11.0168,
+        lng: 76.9558
+    },
+    {
+        name: 'Chennai',
+        lat: 13.0827,
+        lng: 80.2707
+    },
+    {
+        name: 'Bangalore',
+        lat: 12.9716,
+        lng: 77.5946
+    }
+];
+function detectCity(p) {
+    if (!p) return undefined;
+    var R = 6371, rad = function(d) {
+        return d * Math.PI / 180;
+    };
+    var best, min = 40;
+    for(var _iterator = shared_order_service_create_for_of_iterator_helper_loose(CITY_CENTERS), _step; !(_step = _iterator()).done;){
+        var c = _step.value;
+        var a = Math.pow(Math.sin(rad(c.lat - p.lat) / 2), 2) + Math.cos(rad(p.lat)) * Math.cos(rad(c.lat)) * Math.pow(Math.sin(rad(c.lng - p.lng) / 2), 2);
+        var d = 2 * R * Math.asin(Math.sqrt(a));
+        if (d < min) {
+            min = d;
+            best = c.name;
+        }
+    }
+    return best;
+}
+function detectCityFromAddress(address) {
+    var a = (address != null ? address : '').toLowerCase();
+    if (a.includes('tirup')) return 'Tiruppur';
+    if (a.includes('coimbatore')) return 'Coimbatore';
+    if (a.includes('chennai')) return 'Chennai';
+    if (a.includes('bangalore') || a.includes('bengaluru')) return 'Bangalore';
+    return undefined;
+}
 
 ;// external "typeorm/repository/Repository"
 const Repository_namespaceObject = require("typeorm/repository/Repository");
@@ -51835,6 +51971,12 @@ const _serviceoptiondto = __webpack_require__(155);
 let TaxiOrderDTO = class TaxiOrderDTO {
 };
 _ts_decorate._([
+    (0, _nestjsquerygraphql.FilterableField)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], TaxiOrderDTO.prototype, "city", void 0);
+_ts_decorate._([
     (0, _nestjsquerygraphql.IDField)(()=>_graphql.ID),
     _ts_metadata._("design:type", Number)
 ], TaxiOrderDTO.prototype, "id", void 0);
@@ -51978,6 +52120,12 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", Number)
 ], TaxiOrderDTO.prototype, "regionId", void 0);
+_ts_decorate._([
+    (0, _nestjsquerygraphql.FilterableField)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], TaxiOrderDTO.prototype, "city", void 0);
 _ts_decorate._([
     (0, _nestjsquerygraphql.FilterableField)(()=>_graphql.ID, {
         nullable: true
@@ -56046,6 +56194,20 @@ let DriverService = class DriverService {
             }).andWhere('serviceId IN (:...serviceIds)', {
                 serviceIds: removedServices.map((service)=>service.serviceId)
             }).execute();
+        }
+        try {
+            const rows = await this.driverServicesServiceRepository.find({
+                where: {
+                    driverId: Number(input.driverId)
+                }
+            });
+            const ids = rows.map((r)=>String(r.serviceId));
+            await this.driverRedisService.updateDriverOfferFilters(Number(input.driverId), {
+                serviceIds: ids
+            });
+            _common.Logger.log(`redis serviceIds synced: ${ids.join(',')}`, 'DriverService.setActivatedServicesOnDriver');
+        } catch (e) {
+            _common.Logger.warn(`redis serviceIds sync skipped: ${e}`, 'DriverService.setActivatedServicesOnDriver');
         }
         return true;
     }
@@ -65620,6 +65782,7 @@ const _nestjsquerygraphql = __webpack_require__(22);
 const _graphql = __webpack_require__(15);
 const _serviceauthorizer = __webpack_require__(152);
 const _servicedto = __webpack_require__(117);
+const _mediadto = __webpack_require__(75);
 let ServiceCategoryDTO = class ServiceCategoryDTO {
 };
 _ts_decorate._([
@@ -65632,10 +65795,33 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", String)
 ], ServiceCategoryDTO.prototype, "name", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], ServiceCategoryDTO.prototype, "description", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Int),
+    _ts_metadata._("design:type", Number)
+], ServiceCategoryDTO.prototype, "displayPriority", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>Boolean),
+    _ts_metadata._("design:type", Boolean)
+], ServiceCategoryDTO.prototype, "isEnabled", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.ID, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceCategoryDTO.prototype, "mediaId", void 0);
 ServiceCategoryDTO = _ts_decorate._([
     (0, _graphql.ObjectType)('ServiceCategory'),
     (0, _nestjsquerygraphql.UnPagedRelation)('services', ()=>_servicedto.ServiceDTO, {
         pagingStrategy: _nestjsquerygraphql.PagingStrategies.NONE
+    }),
+    (0, _nestjsquerygraphql.Relation)('media', ()=>_mediadto.MediaDTO, {
+        nullable: true
     }),
     (0, _nestjsquerygraphql.Authorize)(_serviceauthorizer.ServiceAuthorizer)
 ], ServiceCategoryDTO);
@@ -66116,6 +66302,30 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", Boolean)
 ], ServiceCategoryInput.prototype, "enabled", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>String, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", String)
+], ServiceCategoryInput.prototype, "description", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Int, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceCategoryInput.prototype, "displayPriority", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>Boolean, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Boolean)
+], ServiceCategoryInput.prototype, "isEnabled", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.ID, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
+], ServiceCategoryInput.prototype, "mediaId", void 0);
 ServiceCategoryInput = _ts_decorate._([
     (0, _graphql.InputType)()
 ], ServiceCategoryInput);
@@ -77778,10 +77988,11 @@ const _database = __webpack_require__(18);
 const _jwtauthguard = __webpack_require__(38);
 const _surgezoneservice = __webpack_require__(463);
 const _surgeautoservice = __webpack_require__(464);
-const _surgegridservice = __webpack_require__(465);
-const _surgezonedto = __webpack_require__(466);
-const _surgezoneinput = __webpack_require__(467);
-const _surgesettingdto = __webpack_require__(468);
+const _surgegridservice = __webpack_require__(466);
+const _festivalcalendarservice = __webpack_require__(467);
+const _surgezonedto = __webpack_require__(468);
+const _surgezoneinput = __webpack_require__(469);
+const _surgesettingdto = __webpack_require__(470);
 let SurgeModule = class SurgeModule {
 };
 SurgeModule = _ts_decorate._([
@@ -77859,7 +78070,8 @@ SurgeModule = _ts_decorate._([
         providers: [
             _surgezoneservice.SurgeZoneService,
             _surgeautoservice.SurgeAutoService,
-            _surgegridservice.SurgeGridService
+            _surgegridservice.SurgeGridService,
+            _festivalcalendarservice.FestivalCalendarService
         ]
     })
 ], SurgeModule);
@@ -78094,6 +78306,7 @@ const _ts_decorate = __webpack_require__(12);
 const _ts_metadata = __webpack_require__(13);
 const _ts_param = __webpack_require__(37);
 const _common = __webpack_require__(7);
+const _googleweather = __webpack_require__(465);
 const _schedule = __webpack_require__(17);
 const _typeorm = __webpack_require__(16);
 const _typeorm1 = __webpack_require__(19);
@@ -78117,13 +78330,7 @@ let SurgeAutoService = class SurgeAutoService {
     }
     async rainMm(lat, lng) {
         try {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lng.toFixed(4)}&current=precipitation`;
-            const res = await fetch(url, {
-                signal: AbortSignal.timeout(8000)
-            });
-            if (!res.ok) return null;
-            const data = await res.json();
-            return Number(data?.current?.precipitation ?? 0);
+            return await (0, _googleweather.googleRainMm)(lat, lng);
         } catch (e) {
             this.logger.warn(`weather fetch failed: ${e.message}`);
             return null;
@@ -78240,6 +78447,43 @@ SurgeAutoService = _ts_decorate._([
 
 /***/ }),
 /* 465 */
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({
+    value: true
+}));
+Object.defineProperty(exports, "googleRainMm", ({
+    enumerable: true,
+    get: function() {
+        return googleRainMm;
+    }
+}));
+const cache = new Map();
+const TTL = 15 * 60 * 1000;
+async function googleRainMm(lat, lng) {
+    const key = process.env.GOOGLE_WEATHER_API_KEY || process.env.GOOGLE_CALENDAR_API_KEY;
+    if (!key) return null;
+    const k = `${lat.toFixed(2)},${lng.toFixed(2)}`;
+    const hit = cache.get(k);
+    if (hit && Date.now() - hit.at < TTL) return hit.mm;
+    const url = `https://weather.googleapis.com/v1/currentConditions:lookup?key=${key}&location.latitude=${lat.toFixed(4)}&location.longitude=${lng.toFixed(4)}`;
+    const res = await fetch(url, {
+        signal: AbortSignal.timeout(8000)
+    });
+    if (!res.ok) throw new Error(`Google Weather HTTP ${res.status}`);
+    const data = await res.json();
+    const mm = Number(data?.precipitation?.qpf?.quantity ?? 0);
+    cache.set(k, {
+        at: Date.now(),
+        mm
+    });
+    return mm;
+}
+
+
+/***/ }),
+/* 466 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -78256,6 +78500,7 @@ const _ts_decorate = __webpack_require__(12);
 const _ts_metadata = __webpack_require__(13);
 const _ts_param = __webpack_require__(37);
 const _common = __webpack_require__(7);
+const _googleweather = __webpack_require__(465);
 const _schedule = __webpack_require__(17);
 const _typeorm = __webpack_require__(16);
 const _typeorm1 = __webpack_require__(19);
@@ -78280,23 +78525,13 @@ let SurgeGridService = class SurgeGridService {
     }
     async rainBatch(points) {
         const out = points.map(()=>0);
-        for(let i = 0; i < points.length; i += 100){
-            const chunk = points.slice(i, i + 100);
-            try {
-                const lat = chunk.map((p)=>p.lat.toFixed(3)).join(',');
-                const lng = chunk.map((p)=>p.lng.toFixed(3)).join(',');
-                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=precipitation`, {
-                    signal: AbortSignal.timeout(10000)
-                });
-                if (!res.ok) continue;
-                const data = await res.json();
-                const arr = Array.isArray(data) ? data : [
-                    data
-                ];
-                arr.forEach((d, j)=>out[i + j] = Number(d?.current?.precipitation ?? 0));
-            } catch (e) {
-                this.logger.warn(`rain batch failed: ${e.message}`);
-            }
+        for(let i = 0; i < points.length; i += 10){
+            const chunk = points.slice(i, i + 10);
+            const res = await Promise.all(chunk.map((p)=>(0, _googleweather.googleRainMm)(p.lat, p.lng).catch((e)=>{
+                    this.logger.warn(`rain batch failed: ${e.message}`);
+                    return 0;
+                })));
+            res.forEach((mm, j)=>out[i + j] = Number(mm ?? 0));
         }
         return out;
     }
@@ -78478,7 +78713,245 @@ SurgeGridService = _ts_decorate._([
 
 
 /***/ }),
-/* 466 */
+/* 467 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({
+    value: true
+}));
+Object.defineProperty(exports, "FestivalCalendarService", ({
+    enumerable: true,
+    get: function() {
+        return FestivalCalendarService;
+    }
+}));
+const _ts_decorate = __webpack_require__(12);
+const _ts_metadata = __webpack_require__(13);
+const _ts_param = __webpack_require__(37);
+const _common = __webpack_require__(7);
+const _schedule = __webpack_require__(17);
+const _typeorm = __webpack_require__(16);
+const _typeorm1 = __webpack_require__(19);
+const _database = __webpack_require__(18);
+const PREFIX = 'Festival · ';
+const SKIP = [
+    "karaka chaturthi",
+    "karva chauth",
+    "chhat",
+    "bhai duj",
+    "govardhan",
+    "holika dahan",
+    "raksha bandhan",
+    "lohri",
+    "vasant panchami",
+    "basant panchami",
+    "guru nanak",
+    "guru gobind",
+    "guru ravidas",
+    "parsi new year",
+    "dayanand",
+    "valmiki",
+    "rath yatra",
+    "vaisakhi",
+    "bihu",
+    "onam",
+    "chhath"
+];
+// Option 1: fixed-date festivals (MM-DD)
+const STATIC = [
+    {
+        name: 'New Year',
+        md: '01-01'
+    },
+    {
+        name: 'Bhogi',
+        md: '01-13'
+    },
+    {
+        name: 'Pongal',
+        md: '01-14'
+    },
+    {
+        name: 'Mattu Pongal',
+        md: '01-15'
+    },
+    {
+        name: 'Kaanum Pongal',
+        md: '01-16'
+    },
+    {
+        name: 'Republic Day',
+        md: '01-26'
+    },
+    {
+        name: 'Tamil New Year',
+        md: '04-14'
+    },
+    {
+        name: 'Independence Day',
+        md: '08-15'
+    },
+    {
+        name: 'Christmas',
+        md: '12-25'
+    },
+    {
+        name: 'New Year Eve',
+        md: '12-31'
+    }
+];
+const istDate = (offsetDays = 0)=>new Date(Date.now() + 330 * 60000 + offsetDays * 86400000).toISOString().substring(0, 10);
+let FestivalCalendarService = class FestivalCalendarService {
+    constructor(zoneRepo, settingRepo, regionRepo){
+        this.zoneRepo = zoneRepo;
+        this.settingRepo = settingRepo;
+        this.regionRepo = regionRepo;
+        this.logger = new _common.Logger(FestivalCalendarService.name);
+        this.apiCache = null;
+    }
+    // Option 2: Google Calendar API (Indian holidays)
+    async fromApi(year) {
+        const key = process.env.GOOGLE_CALENDAR_API_KEY;
+        if (!key) {
+            this.logger.warn('GOOGLE_CALENDAR_API_KEY not set, using static festivals only');
+            return [];
+        }
+        if (this.apiCache?.year === year) return this.apiCache.list;
+        try {
+            const cal = encodeURIComponent('en.indian#holiday@group.v.calendar.google.com');
+            const qs = new URLSearchParams({
+                key,
+                timeMin: `${year}-01-01T00:00:00Z`,
+                timeMax: `${year + 1}-01-01T00:00:00Z`,
+                singleEvents: 'true',
+                maxResults: '250'
+            });
+            const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${cal}/events?${qs}`, {
+                signal: AbortSignal.timeout(15000)
+            });
+            if (!res.ok) {
+                this.logger.warn(`Google Calendar HTTP ${res.status}`);
+                return [];
+            }
+            const data = await res.json();
+            const list = (data?.items ?? []).filter((e)=>!String(e.description ?? '').toLowerCase().includes('observance')).filter((e)=>!SKIP.some((k)=>String(e.summary ?? "").toLowerCase().includes(k))).map((e)=>({
+                    name: String(e.summary ?? ''),
+                    date: String(e.start?.date ?? '').substring(0, 10)
+                })).filter((f)=>f.name && f.date.length === 10);
+            this.apiCache = {
+                year,
+                list
+            };
+            this.logger.log(`Google Calendar: ${list.length} festivals for ${year}`);
+            return list;
+        } catch (e) {
+            this.logger.warn(`Google Calendar fetch failed: ${e.message}`);
+            return [];
+        }
+    }
+    async upcoming(days) {
+        const from = istDate(0), to = istDate(days);
+        const years = [
+            ...new Set([
+                from,
+                to
+            ].map((d)=>Number(d.substring(0, 4))))
+        ];
+        const all = [];
+        for (const y of years){
+            all.push(...STATIC.map((s)=>({
+                    name: s.name,
+                    date: `${y}-${s.md}`
+                })));
+            all.push(...await this.fromApi(y));
+        }
+        const seen = new Set();
+        return all.filter((f)=>{
+            const k = f.date;
+            if (f.date < from || f.date > to || seen.has(k)) return false;
+            seen.add(k);
+            return true;
+        });
+    }
+    onApplicationBootstrap() {
+        setTimeout(()=>this.sync().catch((e)=>this.logger.warn("Startup sync failed: " + e.message)), 10000);
+    }
+    async sync() {
+        const [s] = await this.settingRepo.find({
+            take: 1
+        });
+        if (!s?.isEnabled || !s?.autoSurgeEnabled) return;
+        const old = await this.zoneRepo.find({
+            where: {
+                name: (0, _typeorm1.Like)(`${PREFIX}%`),
+                type: 'Festival',
+                endDate: (0, _typeorm1.LessThan)(istDate(0))
+            }
+        });
+        if (old.length) await this.zoneRepo.remove(old);
+        const fests = await this.upcoming(3);
+        const regions = await this.regionRepo.find({
+            where: {
+                enabled: true
+            }
+        });
+        for (const f of fests){
+            for (const r of regions){
+                if (!r.location?.[0] || r.location[0].length < 3) continue;
+                const name = `${PREFIX}${f.name} · ${r.name}`;
+                const exists = await this.zoneRepo.findOne({
+                    where: {
+                        name,
+                        startDate: f.date
+                    }
+                });
+                if (exists) continue; // admin edits / Off status preserved
+                await this.zoneRepo.save(this.zoneRepo.create({
+                    name,
+                    type: 'Festival',
+                    status: 'Auto',
+                    autoCreated: false,
+                    autoLive: false,
+                    regionId: r.id,
+                    area: [
+                        r.location[0]
+                    ],
+                    startDate: f.date,
+                    endDate: f.date,
+                    startTime: '06:00',
+                    endTime: '23:59',
+                    surgePercent: Number(s.defaultSurgePercent ?? 20)
+                }));
+                this.logger.log(`Created festival zone: ${name} (${f.date})`);
+            }
+        }
+    }
+};
+_ts_decorate._([
+    (0, _schedule.Cron)('0 5 0 * * *', {
+        timeZone: 'Asia/Kolkata'
+    }),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", []),
+    _ts_metadata._("design:returntype", Promise)
+], FestivalCalendarService.prototype, "sync", null);
+FestivalCalendarService = _ts_decorate._([
+    (0, _common.Injectable)(),
+    _ts_param._(0, (0, _typeorm.InjectRepository)(_database.SurgeZoneEntity)),
+    _ts_param._(1, (0, _typeorm.InjectRepository)(_database.SurgeSettingEntity)),
+    _ts_param._(2, (0, _typeorm.InjectRepository)(_database.RegionEntity)),
+    _ts_metadata._("design:type", Function),
+    _ts_metadata._("design:paramtypes", [
+        typeof _typeorm1.Repository === "undefined" ? Object : _typeorm1.Repository,
+        typeof _typeorm1.Repository === "undefined" ? Object : _typeorm1.Repository,
+        typeof _typeorm1.Repository === "undefined" ? Object : _typeorm1.Repository
+    ])
+], FestivalCalendarService);
+
+
+/***/ }),
+/* 468 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -78602,7 +79075,7 @@ SurgeZoneDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 467 */
+/* 469 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -78697,7 +79170,7 @@ SurgeZoneInput = _ts_decorate._([
 
 
 /***/ }),
-/* 468 */
+/* 470 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -78929,7 +79402,7 @@ SurgeSettingInput = _ts_decorate._([
 
 
 /***/ }),
-/* 469 */
+/* 471 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -78950,10 +79423,10 @@ const _database = __webpack_require__(18);
 const _driverdocumentdto = __webpack_require__(144);
 const _jwtauthguard = __webpack_require__(38);
 const _driverdocumentretentionpolicydto = __webpack_require__(145);
-const _driverdocumentinput = __webpack_require__(470);
-const _driverdocumentretentionpolicyinput = __webpack_require__(471);
+const _driverdocumentinput = __webpack_require__(472);
+const _driverdocumentretentionpolicyinput = __webpack_require__(473);
 const _drivertodriverdocumentdto = __webpack_require__(143);
-const _drivertodriverdocumentinput = __webpack_require__(472);
+const _drivertodriverdocumentinput = __webpack_require__(474);
 let DriverDocumentModule = class DriverDocumentModule {
 };
 DriverDocumentModule = _ts_decorate._([
@@ -79034,7 +79507,7 @@ DriverDocumentModule = _ts_decorate._([
 
 
 /***/ }),
-/* 470 */
+/* 472 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -79090,7 +79563,7 @@ DriverDocumentInput = _ts_decorate._([
 
 
 /***/ }),
-/* 471 */
+/* 473 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -79128,7 +79601,7 @@ DriverDocumentRetentionPolicyInput = _ts_decorate._([
 
 
 /***/ }),
-/* 472 */
+/* 474 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -79174,7 +79647,7 @@ DriverToDriverDocumentInput = _ts_decorate._([
 
 
 /***/ }),
-/* 473 */
+/* 475 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -79192,9 +79665,9 @@ const _common = __webpack_require__(7);
 const _nestjsquerygraphql = __webpack_require__(22);
 const _nestjsquerytypeorm = __webpack_require__(35);
 const _database = __webpack_require__(18);
-const _drivershiftruledto = __webpack_require__(474);
+const _drivershiftruledto = __webpack_require__(476);
 const _jwtauthguard = __webpack_require__(38);
-const _drivershiftruleinput = __webpack_require__(475);
+const _drivershiftruleinput = __webpack_require__(477);
 let DriverShiftRuleModule = class DriverShiftRuleModule {
 };
 DriverShiftRuleModule = _ts_decorate._([
@@ -79230,7 +79703,7 @@ DriverShiftRuleModule = _ts_decorate._([
 
 
 /***/ }),
-/* 474 */
+/* 476 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -79274,7 +79747,7 @@ DriverShiftRuleDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 475 */
+/* 477 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -79313,13 +79786,13 @@ DriverShiftRuleInput = _ts_decorate._([
 
 
 /***/ }),
-/* 476 */
+/* 478 */
 /***/ ((module) => {
 
 module.exports = require("@willsoto/nestjs-prometheus");
 
 /***/ }),
-/* 477 */
+/* 479 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -79338,11 +79811,11 @@ const _nestjsquerytypeorm = __webpack_require__(35);
 const _common = __webpack_require__(7);
 const _database = __webpack_require__(18);
 const _jwtauthguard = __webpack_require__(38);
-const _complaintsubscriptionservice = __webpack_require__(478);
+const _complaintsubscriptionservice = __webpack_require__(480);
 const _taxisupportrequestactivitydto = __webpack_require__(122);
 const _taxisupportrequestdto = __webpack_require__(121);
-const _taxisupportrequestresolver = __webpack_require__(479);
-const _taxisupportrequestservice = __webpack_require__(480);
+const _taxisupportrequestresolver = __webpack_require__(481);
+const _taxisupportrequestservice = __webpack_require__(482);
 let ComplaintModule = class ComplaintModule {
 };
 ComplaintModule = _ts_decorate._([
@@ -79412,7 +79885,7 @@ ComplaintModule = _ts_decorate._([
 
 
 /***/ }),
-/* 478 */
+/* 480 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -79461,7 +79934,7 @@ ComplaintSubscriptionService = _ts_decorate._([
 
 
 /***/ }),
-/* 479 */
+/* 481 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -79478,12 +79951,12 @@ const _ts_decorate = __webpack_require__(12);
 const _ts_metadata = __webpack_require__(13);
 const _ts_param = __webpack_require__(37);
 const _graphql = __webpack_require__(15);
-const _taxisupportrequestservice = __webpack_require__(480);
+const _taxisupportrequestservice = __webpack_require__(482);
 const _common = __webpack_require__(7);
 const _jwtauthguard = __webpack_require__(38);
-const _createtaxisupportrequestcommentinput = __webpack_require__(481);
-const _assigntaxisupportrequestinput = __webpack_require__(482);
-const _changetaxisupportrequeststatusinput = __webpack_require__(483);
+const _createtaxisupportrequestcommentinput = __webpack_require__(483);
+const _assigntaxisupportrequestinput = __webpack_require__(484);
+const _changetaxisupportrequeststatusinput = __webpack_require__(485);
 const _taxisupportrequestactivitydto = __webpack_require__(122);
 let TaxiSupportRequestResolver = class TaxiSupportRequestResolver {
     constructor(taxiSupportRequestService, context){
@@ -79550,7 +80023,7 @@ TaxiSupportRequestResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 480 */
+/* 482 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -79632,7 +80105,7 @@ TaxiSupportRequestService = _ts_decorate._([
 
 
 /***/ }),
-/* 481 */
+/* 483 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -79666,7 +80139,7 @@ CreateTaxiSupportRequestCommentInput = _ts_decorate._([
 
 
 /***/ }),
-/* 482 */
+/* 484 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -79700,7 +80173,7 @@ AssignTaxiSupportRequestInput = _ts_decorate._([
 
 
 /***/ }),
-/* 483 */
+/* 485 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -79735,7 +80208,7 @@ ChangeTaxiSupportRequestStatusInput = _ts_decorate._([
 
 
 /***/ }),
-/* 484 */
+/* 486 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -79752,9 +80225,9 @@ const _ts_decorate = __webpack_require__(12);
 const _common = __webpack_require__(7);
 const _typeorm = __webpack_require__(16);
 const _database = __webpack_require__(18);
-const _notificationsubscriptionservice = __webpack_require__(485);
-const _notificationresolver = __webpack_require__(487);
-const _notificationservice = __webpack_require__(488);
+const _notificationsubscriptionservice = __webpack_require__(487);
+const _notificationresolver = __webpack_require__(489);
+const _notificationservice = __webpack_require__(490);
 let NotificationModule = class NotificationModule {
 };
 NotificationModule = _ts_decorate._([
@@ -79779,7 +80252,7 @@ NotificationModule = _ts_decorate._([
 
 
 /***/ }),
-/* 485 */
+/* 487 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -79797,7 +80270,7 @@ const _ts_metadata = __webpack_require__(13);
 const _ts_param = __webpack_require__(37);
 const _common = __webpack_require__(7);
 const _graphql = __webpack_require__(15);
-const _adminnotificationdto = __webpack_require__(486);
+const _adminnotificationdto = __webpack_require__(488);
 const _database = __webpack_require__(18);
 let NotificationSubscriptionService = class NotificationSubscriptionService {
     constructor(pubSub){
@@ -79824,7 +80297,7 @@ NotificationSubscriptionService = _ts_decorate._([
 
 
 /***/ }),
-/* 486 */
+/* 488 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -80104,7 +80577,7 @@ const AdminNotificationUnion = (0, _graphql.createUnionType)({
 
 
 /***/ }),
-/* 487 */
+/* 489 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -80121,10 +80594,10 @@ const _ts_decorate = __webpack_require__(12);
 const _ts_metadata = __webpack_require__(13);
 const _ts_param = __webpack_require__(37);
 const _graphql = __webpack_require__(15);
-const _notificationservice = __webpack_require__(488);
+const _notificationservice = __webpack_require__(490);
 const _common = __webpack_require__(7);
 const _jwtauthguard = __webpack_require__(38);
-const _adminnotificationdto = __webpack_require__(486);
+const _adminnotificationdto = __webpack_require__(488);
 const _database = __webpack_require__(18);
 let NotificationResolver = class NotificationResolver {
     constructor(context, notificationService){
@@ -80202,7 +80675,7 @@ NotificationResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 488 */
+/* 490 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -80284,7 +80757,7 @@ NotiifcationService = _ts_decorate._([
 
 
 /***/ }),
-/* 489 */
+/* 491 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -80299,8 +80772,8 @@ Object.defineProperty(exports, "PlatformOverviewModule", ({
 }));
 const _ts_decorate = __webpack_require__(12);
 const _common = __webpack_require__(7);
-const _platformoverviewservice = __webpack_require__(490);
-const _platformoverviewresolver = __webpack_require__(492);
+const _platformoverviewservice = __webpack_require__(492);
+const _platformoverviewresolver = __webpack_require__(494);
 const _typeorm = __webpack_require__(16);
 const _database = __webpack_require__(18);
 let PlatformOverviewModule = class PlatformOverviewModule {
@@ -80323,7 +80796,7 @@ PlatformOverviewModule = _ts_decorate._([
 
 
 /***/ }),
-/* 490 */
+/* 492 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -80340,7 +80813,7 @@ const _ts_decorate = __webpack_require__(12);
 const _ts_metadata = __webpack_require__(13);
 const _ts_param = __webpack_require__(37);
 const _common = __webpack_require__(7);
-const _platformkpiinput = __webpack_require__(491);
+const _platformkpiinput = __webpack_require__(493);
 const _typeorm = __webpack_require__(16);
 const _typeorm1 = __webpack_require__(19);
 const _database = __webpack_require__(18);
@@ -80608,7 +81081,7 @@ PlatformOverviewService = _ts_decorate._([
 
 
 /***/ }),
-/* 491 */
+/* 493 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -80664,7 +81137,7 @@ var KPIPeriod = /*#__PURE__*/ function(KPIPeriod) {
 
 
 /***/ }),
-/* 492 */
+/* 494 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -80681,12 +81154,12 @@ const _ts_decorate = __webpack_require__(12);
 const _ts_metadata = __webpack_require__(13);
 const _ts_param = __webpack_require__(37);
 const _graphql = __webpack_require__(15);
-const _platformkpidto = __webpack_require__(493);
-const _platformoverviewservice = __webpack_require__(490);
-const _platformkpiinput = __webpack_require__(491);
+const _platformkpidto = __webpack_require__(495);
+const _platformoverviewservice = __webpack_require__(492);
+const _platformkpiinput = __webpack_require__(493);
 const _common = __webpack_require__(7);
 const _jwtauthguard = __webpack_require__(38);
-const _ordervolumetimeseriesdto = __webpack_require__(494);
+const _ordervolumetimeseriesdto = __webpack_require__(496);
 let PlatformOverviewResolver = class PlatformOverviewResolver {
     constructor(platformOverviewService){
         this.platformOverviewService = platformOverviewService;
@@ -80733,7 +81206,7 @@ PlatformOverviewResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 493 */
+/* 495 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -80842,7 +81315,7 @@ PlatformKPI = _ts_decorate._([
 
 
 /***/ }),
-/* 494 */
+/* 496 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -80898,7 +81371,7 @@ OrderVolumeBucket = _ts_decorate._([
 
 
 /***/ }),
-/* 495 */
+/* 497 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -80915,8 +81388,8 @@ const _ts_decorate = __webpack_require__(12);
 const _common = __webpack_require__(7);
 const _typeorm = __webpack_require__(16);
 const _database = __webpack_require__(18);
-const _publicstatsservice = __webpack_require__(496);
-const _publicstatsresolver = __webpack_require__(497);
+const _publicstatsservice = __webpack_require__(498);
+const _publicstatsresolver = __webpack_require__(499);
 let PublicStatsModule = class PublicStatsModule {
 };
 PublicStatsModule = _ts_decorate._([
@@ -80936,7 +81409,7 @@ PublicStatsModule = _ts_decorate._([
 
 
 /***/ }),
-/* 496 */
+/* 498 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -81001,7 +81474,7 @@ PublicStatsService = _ts_decorate._([
 
 
 /***/ }),
-/* 497 */
+/* 499 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -81017,8 +81490,8 @@ Object.defineProperty(exports, "PublicStatsResolver", ({
 const _ts_decorate = __webpack_require__(12);
 const _ts_metadata = __webpack_require__(13);
 const _graphql = __webpack_require__(15);
-const _publicstatsservice = __webpack_require__(496);
-const _publiclivestatsdto = __webpack_require__(498);
+const _publicstatsservice = __webpack_require__(498);
+const _publiclivestatsdto = __webpack_require__(500);
 let PublicStatsResolver = class PublicStatsResolver {
     constructor(publicStatsService){
         this.publicStatsService = publicStatsService;
@@ -81043,7 +81516,7 @@ PublicStatsResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 498 */
+/* 500 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -81081,19 +81554,19 @@ PublicLiveStatsDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 499 */
+/* 501 */
 /***/ ((module) => {
 
 module.exports = require("@sentry/nestjs/setup");
 
 /***/ }),
-/* 500 */
+/* 502 */
 /***/ ((module) => {
 
 module.exports = require("@nestjs/config/dist/config.module");
 
 /***/ }),
-/* 501 */
+/* 503 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -81108,7 +81581,7 @@ Object.defineProperty(exports, "SettingsModule", ({
 }));
 const _ts_decorate = __webpack_require__(12);
 const _common = __webpack_require__(7);
-const _settingsresolver = __webpack_require__(502);
+const _settingsresolver = __webpack_require__(504);
 const _operatormodule = __webpack_require__(84);
 let SettingsModule = class SettingsModule {
 };
@@ -81125,7 +81598,7 @@ SettingsModule = _ts_decorate._([
 
 
 /***/ }),
-/* 502 */
+/* 504 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -81142,7 +81615,7 @@ const _ts_decorate = __webpack_require__(12);
 const _ts_metadata = __webpack_require__(13);
 const _ts_param = __webpack_require__(37);
 const _graphql = __webpack_require__(15);
-const _dispatchconfigdto = __webpack_require__(503);
+const _dispatchconfigdto = __webpack_require__(505);
 const _database = __webpack_require__(18);
 const _common = __webpack_require__(7);
 const _jwtauthguard = __webpack_require__(38);
@@ -81194,7 +81667,7 @@ SettingsResolver = _ts_decorate._([
 
 
 /***/ }),
-/* 503 */
+/* 505 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -81471,7 +81944,7 @@ DispatchConfigDTO = _ts_decorate._([
 
 
 /***/ }),
-/* 504 */
+/* 506 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -81511,7 +81984,7 @@ SupportWebhookModule = _ts_decorate._([
 
 
 /***/ }),
-/* 505 */
+/* 507 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -81532,8 +82005,8 @@ const _typeorm = __webpack_require__(16);
 const _bullmq = __webpack_require__(28);
 const _bullmq1 = __webpack_require__(29);
 const _database = __webpack_require__(18);
-const _kycexpirationservice = __webpack_require__(506);
-const _kycexpirationprocessor = __webpack_require__(507);
+const _kycexpirationservice = __webpack_require__(508);
+const _kycexpirationprocessor = __webpack_require__(509);
 const KYC_EXPIRATION_QUEUE = 'kyc-expiration-checker';
 let KycExpirationModule = class KycExpirationModule {
     constructor(kycExpirationQueue){
@@ -81595,7 +82068,7 @@ KycExpirationModule = _ts_decorate._([
 
 
 /***/ }),
-/* 506 */
+/* 508 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -81773,7 +82246,7 @@ KycExpirationService = _ts_decorate._([
 
 
 /***/ }),
-/* 507 */
+/* 509 */
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 
@@ -81790,7 +82263,7 @@ const _ts_decorate = __webpack_require__(12);
 const _ts_metadata = __webpack_require__(13);
 const _bullmq = __webpack_require__(28);
 const _common = __webpack_require__(7);
-const _kycexpirationservice = __webpack_require__(506);
+const _kycexpirationservice = __webpack_require__(508);
 let KycExpirationProcessor = class KycExpirationProcessor extends _bullmq.WorkerHost {
     constructor(kycExpirationService){
         super(), this.kycExpirationService = kycExpirationService, this.logger = new _common.Logger(KycExpirationProcessor.name);
@@ -81923,7 +82396,12 @@ async function bootstrap() {
     const port = parseInt(process.env.ADMIN_API_PORT || '3000', 10);
     app.enableShutdownHooks();
     app.enableCors();
-    const config = await (0, _licenseverify.getConfig)(process.env.NODE_ENV ?? 'production');
+    const config = await (0, _licenseverify.getConfig)(process.env.NODE_ENV ?? 'production').catch((e)=>{
+        _common.Logger.warn('License server unreachable, using local Firebase key: ' + e?.message, 'Bootstrap');
+        return {
+            firebaseProjectPrivateKey: 'firebase-adminsdk.json'
+        };
+    });
     if (config != null && config.firebaseProjectPrivateKey != null) {
         (0, _app.initializeApp)({
             credential: _firebaseadmin.credential.cert(`${process.cwd()}/config/${config.firebaseProjectPrivateKey}`)

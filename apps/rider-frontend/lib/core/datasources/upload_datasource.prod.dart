@@ -17,21 +17,21 @@ class UploadDatasourceImpl implements UploadDatasource {
   UploadDatasourceImpl();
 
   @override
-  Future<Fragment$Media> uploadProfilePicture(String filePath) async {
+  Future<Fragment$Media> uploadProfilePicture(String filePath, {List<int>? bytes}) async {
     String? token = locator<AuthBloc>().state.jwtToken;
     if (token == null) {
       throw Exception('Token is null');
     }
     final serverUrl = path.join(Env.serverUrl, 'upload_profile');
-    return _uploadFile(serverUrl, token, filePath);
+    return _uploadFile(serverUrl, token, filePath, bytes);
   }
 
   Future<Fragment$Media> _uploadFile(
-      String serverUrl, String authorizationToken, String filePath) async {
+      String serverUrl, String authorizationToken, String filePath, [List<int>? bytes]) async {
     var postUri = Uri.parse(serverUrl);
     var request = MultipartRequest("POST", postUri);
     request.headers['Authorization'] = 'Bearer $authorizationToken';
-    request.files.add(await MultipartFile.fromPath('file', filePath));
+    request.files.add(bytes != null ? MultipartFile.fromBytes("file", bytes, filename: filePath) : await MultipartFile.fromPath("file", filePath));
     final stramedResponse = await request.send();
     var response = await Response.fromStream(stramedResponse);
     var json = jsonDecode(response.body);

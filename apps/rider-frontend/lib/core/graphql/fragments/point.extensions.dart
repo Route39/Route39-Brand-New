@@ -1,3 +1,4 @@
+import 'package:ridy/core/presentation/top_view_auto.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
@@ -32,8 +33,9 @@ extension CoordinateListX on List<Fragment$Coordinate> {
 
   PolyLineLayer toPolyLineLayer(BuildContext context) => PolyLineLayer(
     points: map((e) => e.toLatLng).toList(),
-    width: 3,
-    gradientColors: [ColorPalette.primary40, ColorPalette.tertiary60],
+    width: 6,
+    color: ColorPalette.primary40,
+    gradientColors: [ColorPalette.primary40, ColorPalette.primary40],
   );
 
   /// Returns the remaining part of this route starting from the point
@@ -65,7 +67,7 @@ extension DriverLocationX on Fragment$Coordinate {
   CustomMarker driverMarker(String driverId) => CustomMarker(
     id: driverId,
     position: LatLng(lat, lng),
-    widget: Image.asset('assets/images/ev_auto_icon_small.png'),
+    widget: const Center(child: TopViewAuto(width: 28)),
     fallbackAssetPath: 'assets/images/ev_auto_icon_small.png',
     alignment: Alignment.center,
     rotation: heading ?? 0,

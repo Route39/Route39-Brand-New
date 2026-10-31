@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_common/core/extensions/extensions.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
 import 'package:flutter_common/core/extensions/extensions.dart';
@@ -17,6 +19,8 @@ class UploadImageField<T> extends StatelessWidget {
   final BoxShape shape;
   final double? borderRadius;
   final String uploadButtonText;
+  final bool allowCamera;
+  final bool enableCrop;
 
   const UploadImageField({
     super.key,
@@ -29,6 +33,8 @@ class UploadImageField<T> extends StatelessWidget {
     required this.uploadButtonText,
     this.onChanged,
     required this.displayValue,
+    this.allowCamera = false,
+    this.enableCrop = false,
   });
 
   @override
@@ -79,12 +85,10 @@ class UploadImageField<T> extends StatelessWidget {
             CupertinoButton(
               padding: const EdgeInsets.all(0),
               onPressed: () async {
-                final result =
-                    await ImagePicker().pickImage(source: ImageSource.gallery);
+                final result = await _pickImage(context);
                 if (result != null && state.mounted) {
-                  // Read raw bytes — works on both web (blob URLs) and native.
-                  final bytes = await result.readAsBytes();
-                  final filename = result.name;
+                  final filename = result.$1;
+                  final bytes = result.$2;
                   final media = await fileUploader(filename, bytes);
                   if (state.mounted) {
                     state.didChange(media);
@@ -115,5 +119,38 @@ class UploadImageField<T> extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<(String, List<int>)?> _pickImage(BuildContext context) async {
+    ImageSource source = ImageSource.gallery;
+    if (allowCamera && !kIsWeb) {
+      final chosen = await showModalBottomSheet<ImageSource>(
+        context: context,
+        builder: (ctx) => SafeArea(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            ListTile(leading: const Icon(Icons.photo_camera), title: const Text('Camera'), onTap: () => Navigator.pop(ctx, ImageSource.camera)),
+            ListTile(leading: const Icon(Icons.photo_library), title: const Text('Gallery'), onTap: () => Navigator.pop(ctx, ImageSource.gallery)),
+          ]),
+        ),
+      );
+      if (chosen == null) return null;
+      source = chosen;
+    }
+    final picked = await ImagePicker().pickImage(source: source, imageQuality: 85, maxWidth: 1080);
+    if (picked == null) return null;
+    if (enableCrop && !kIsWeb) {
+      final cropped = await ImageCropper().cropImage(
+        sourcePath: picked.path,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+        compressFormat: ImageCompressFormat.jpg,
+        uiSettings: [
+          AndroidUiSettings(toolbarTitle: 'Edit photo', cropStyle: CropStyle.circle, lockAspectRatio: true, initAspectRatio: CropAspectRatioPreset.square),
+          IOSUiSettings(title: 'Edit photo', cropStyle: CropStyle.circle, aspectRatioLockEnabled: true),
+        ],
+      );
+      if (cropped == null) return null;
+      return ('profile_${DateTime.now().millisecondsSinceEpoch}.jpg', await cropped.readAsBytes());
+    }
+    return (picked.name, await picked.readAsBytes());
   }
 }

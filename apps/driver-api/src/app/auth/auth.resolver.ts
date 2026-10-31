@@ -35,6 +35,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CarModelDTO } from '../core/dtos/car-model.dto';
 import { SaveRegistrationProgressInput } from './dto/save-registration-progress.input';
 import { CarColorDTO } from '../core/dtos/car-color.dto';
+import { ServiceDTO } from '../core/dtos/service.dto';
 import { CompleteRegistrationInput } from './dto/complete-registration.input';
 import { PhoneNumberUtil, PhoneNumberFormat } from 'google-libphonenumber';
 
@@ -244,6 +245,18 @@ export class AuthResolver {
       userId: this.userContext.req.user.id,
       input,
     });
+  }
+
+  @Query(() => [ServiceDTO])
+  async servicesForCity(
+    @Args('city', { type: () => String }) city: string,
+  ): Promise<ServiceDTO[]> {
+    const services = await this.authService.servicesForCity(city);
+    return services.map((s) => ({
+      id: s.id,
+      name: s.name,
+      imageUrl: s.media?.address ?? '',
+    }));
   }
 
   @Query(() => [CarModelDTO])

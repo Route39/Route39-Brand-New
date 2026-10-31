@@ -106,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
             locator<HomeBloc>().add(HomeEvent.initializeWelcome(pickupPoint: locator<LocationCubit>().state.place));
           } else if (state.mode == HomeMode.preSubmission && state.orderSubmissionPage == OrderSubmissionPage.confirmLocation) {
             locator<HomeBloc>().add(
-              HomeEvent.changeOrderSubmissionPage(orderSubmissionPage: OrderSubmissionPage.rideWaypointsInput),
+              const HomeEvent.changeOrderSubmissionPage(orderSubmissionPage: OrderSubmissionPage.rideWaypointsInput),
             );
           }
         },
@@ -155,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               },
                               title: context.translate.ok,
                             ),
-                            child: SizedBox(),
+                            child: const SizedBox(),
                           );
                         },
                       );
@@ -184,7 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               },
                               title: context.translate.ok,
                             ),
-                            child: SizedBox(),
+                            child: const SizedBox(),
                           );
                         },
                       );
