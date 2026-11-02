@@ -95,22 +95,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   },
                                 ),
                                 const SizedBox(height: 16),
-                                SizedBox(
-                                  width: double.infinity,
-                                  height: 52,
-                                  child: OutlinedButton.icon(
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: Colors.red,
-                                      side: const BorderSide(color: Colors.red, width: 1.5),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    ),
-                                    icon: const Icon(Icons.delete_forever),
-                                    label: const Text('Delete Account',
-                                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                                    onPressed: () => _confirmAndDeleteAccount(context),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
                                 AppMenuItem(
                                   icon: Ionicons.business,
                                   title: context.translate.payoutMethods,
@@ -168,6 +152,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   icon: Icons.logout,
                                   title: context.translate.logout,
                                   onPressed: () => NavItem.logout.onPressed(context),
+                                ),
+                                const SizedBox(height: 16),
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 52,
+                                  child: OutlinedButton.icon(
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: Colors.red,
+                                      side: const BorderSide(color: Colors.red, width: 1.5),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                    icon: const Icon(Icons.delete_forever),
+                                    label: const Text('Delete Account',
+                                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                                    onPressed: () => _confirmAndDeleteAccount(context),
+                                  ),
                                 ),
                                 const SizedBox(height: 16),
                               ],

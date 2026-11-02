@@ -1476,6 +1476,7 @@ enum TransactionStatus {
 input OrderAggregateFilter {
   and: [OrderAggregateFilter!]
   or: [OrderAggregateFilter!]
+  city: StringFieldComparison
   id: IDFilterComparison
   createdOn: DateFieldComparison
   type: TaxiOrderTypeFilterComparison
@@ -1678,6 +1679,7 @@ enum RiderTransactionSortFields {
 input OrderFilter {
   and: [OrderFilter!]
   or: [OrderFilter!]
+  city: StringFieldComparison
   id: IDFilterComparison
   createdOn: DateFieldComparison
   type: TaxiOrderTypeFilterComparison
@@ -1705,6 +1707,7 @@ input OrderSort {
 }
 
 enum OrderSortFields {
+  city
   id
   createdOn
   type
@@ -2188,6 +2191,7 @@ input FeedbackAggregateFilter {
 input FeedbackAggregateFilterOrderAggregateFilter {
   and: [FeedbackAggregateFilterOrderAggregateFilter!]
   or: [FeedbackAggregateFilterOrderAggregateFilter!]
+  city: StringFieldComparison
   id: IDFilterComparison
   createdOn: DateFieldComparison
   type: TaxiOrderTypeFilterComparison
@@ -2337,6 +2341,7 @@ input FeedbackFilter {
 input FeedbackFilterOrderFilter {
   and: [FeedbackFilterOrderFilter!]
   or: [FeedbackFilterOrderFilter!]
+  city: StringFieldComparison
   id: IDFilterComparison
   createdOn: DateFieldComparison
   type: TaxiOrderTypeFilterComparison
@@ -2998,6 +3003,7 @@ enum ServiceOptionType {
 }
 
 type Order {
+  city: String
   id: ID!
   createdOn: DateTime!
   startTimestamp: DateTime
@@ -3159,6 +3165,7 @@ input ComplaintStatusFilterComparison {
 input TaxiSupportRequestAggregateFilterOrderAggregateFilter {
   and: [TaxiSupportRequestAggregateFilterOrderAggregateFilter!]
   or: [TaxiSupportRequestAggregateFilterOrderAggregateFilter!]
+  city: StringFieldComparison
   id: IDFilterComparison
   createdOn: DateFieldComparison
   type: TaxiOrderTypeFilterComparison
@@ -3256,6 +3263,7 @@ input TaxiSupportRequestFilter {
 input TaxiSupportRequestFilterOrderFilter {
   and: [TaxiSupportRequestFilterOrderFilter!]
   or: [TaxiSupportRequestFilterOrderFilter!]
+  city: StringFieldComparison
   id: IDFilterComparison
   createdOn: DateFieldComparison
   type: TaxiOrderTypeFilterComparison
@@ -3999,6 +4007,7 @@ type DriverPayoutAccountsAggregateResponse {
 }
 
 type DriverOrdersAggregateGroupBy {
+  city: String
   id: ID
   createdOn: DateTime
   type: TaxiOrderType
@@ -4020,6 +4029,7 @@ type DriverOrdersAggregateGroupBy {
 }
 
 type DriverOrdersCountAggregate {
+  city: Int
   id: Int
   createdOn: Int
   type: Int
@@ -4073,6 +4083,7 @@ type DriverOrdersAvgAggregate {
 }
 
 type DriverOrdersMinAggregate {
+  city: String
   id: ID
   createdOn: DateTime
   type: TaxiOrderType
@@ -4094,6 +4105,7 @@ type DriverOrdersMinAggregate {
 }
 
 type DriverOrdersMaxAggregate {
+  city: String
   id: ID
   createdOn: DateTime
   type: TaxiOrderType
@@ -5210,6 +5222,7 @@ type OrderConnection {
 }
 
 type OrderAggregateGroupBy {
+  city: String
   id: ID
   createdOn(by: GroupBy! = DAY): DateTime
   type: TaxiOrderType
@@ -5231,6 +5244,7 @@ type OrderAggregateGroupBy {
 }
 
 type OrderCountAggregate {
+  city: Int
   id: Int
   createdOn: Int
   type: Int
@@ -5284,6 +5298,7 @@ type OrderAvgAggregate {
 }
 
 type OrderMinAggregate {
+  city: String
   id: ID
   createdOn: DateTime
   type: TaxiOrderType
@@ -5305,6 +5320,7 @@ type OrderMinAggregate {
 }
 
 type OrderMaxAggregate {
+  city: String
   id: ID
   createdOn: DateTime
   type: TaxiOrderType
@@ -5860,6 +5876,7 @@ type OrderCancelReasonOrdersConnection {
 }
 
 type OrderCancelReasonOrdersAggregateGroupBy {
+  city: String
   id: ID
   createdOn: DateTime
   type: TaxiOrderType
@@ -5881,6 +5898,7 @@ type OrderCancelReasonOrdersAggregateGroupBy {
 }
 
 type OrderCancelReasonOrdersCountAggregate {
+  city: Int
   id: Int
   createdOn: Int
   type: Int
@@ -5934,6 +5952,7 @@ type OrderCancelReasonOrdersAvgAggregate {
 }
 
 type OrderCancelReasonOrdersMinAggregate {
+  city: String
   id: ID
   createdOn: DateTime
   type: TaxiOrderType
@@ -5955,6 +5974,7 @@ type OrderCancelReasonOrdersMinAggregate {
 }
 
 type OrderCancelReasonOrdersMaxAggregate {
+  city: String
   id: ID
   createdOn: DateTime
   type: TaxiOrderType
@@ -8603,6 +8623,7 @@ type RegionTaxiOrdersConnection {
 }
 
 type RegionTaxiOrdersAggregateGroupBy {
+  city: String
   id: ID
   createdOn: DateTime
   type: TaxiOrderType
@@ -8624,6 +8645,7 @@ type RegionTaxiOrdersAggregateGroupBy {
 }
 
 type RegionTaxiOrdersCountAggregate {
+  city: Int
   id: Int
   createdOn: Int
   type: Int
@@ -8677,6 +8699,7 @@ type RegionTaxiOrdersAvgAggregate {
 }
 
 type RegionTaxiOrdersMinAggregate {
+  city: String
   id: ID
   createdOn: DateTime
   type: TaxiOrderType
@@ -8698,6 +8721,7 @@ type RegionTaxiOrdersMinAggregate {
 }
 
 type RegionTaxiOrdersMaxAggregate {
+  city: String
   id: ID
   createdOn: DateTime
   type: TaxiOrderType
@@ -8942,6 +8966,7 @@ type RiderAddressesConnection {
 }
 
 type RiderOrdersAggregateGroupBy {
+  city: String
   id: ID
   createdOn: DateTime
   type: TaxiOrderType
@@ -8963,6 +8988,7 @@ type RiderOrdersAggregateGroupBy {
 }
 
 type RiderOrdersCountAggregate {
+  city: Int
   id: Int
   createdOn: Int
   type: Int
@@ -9016,6 +9042,7 @@ type RiderOrdersAvgAggregate {
 }
 
 type RiderOrdersMinAggregate {
+  city: String
   id: ID
   createdOn: DateTime
   type: TaxiOrderType
@@ -9037,6 +9064,7 @@ type RiderOrdersMinAggregate {
 }
 
 type RiderOrdersMaxAggregate {
+  city: String
   id: ID
   createdOn: DateTime
   type: TaxiOrderType

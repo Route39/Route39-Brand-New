@@ -1159,8 +1159,8 @@ type Query {
   chatwootIdentifierHash: String
   requireUpdate(versionCode: Int!): VersionStatus!
   driverRequiredDocuments: [DriverDocument!]!
-  carModels(query: String): [CarModel!]!
   servicesForCity(city: String!): [Service!]!
+  carModels(query: String): [CarModel!]!
   carColors: [CarColor!]!
 
   """Get all authentication methods linked to the current account."""
@@ -1434,7 +1434,6 @@ input SaveRegistrationProgressInput {
 }
 
 input CompleteRegistrationInput {
-  serviceId: ID
   firstName: String!
   lastName: String!
   certificateNumber: String
@@ -1454,6 +1453,7 @@ input CompleteRegistrationInput {
   carColorId: ID
   documentPairs: [DocumentPairInput!]!
   legacyDocumentIds: [ID!]
+  serviceId: ID
 }
 
 enum Gender {

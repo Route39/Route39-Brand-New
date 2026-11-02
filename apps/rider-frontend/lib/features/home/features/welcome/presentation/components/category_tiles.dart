@@ -131,10 +131,15 @@ class _CategoryTilesState extends State<CategoryTiles> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    url == null
-                        ? Image.asset('assets/images/ev_auto_icon.png', height: 44, fit: BoxFit.contain)
-                        : Image.network(url, height: 44, fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => Image.asset('assets/images/ev_auto_icon.png', height: 44)),
+                    locked
+                        ? SizedBox(
+                            height: 44,
+                            child: Image.asset('assets/images/car_moving.png', width: 72, fit: BoxFit.contain),
+                          )
+                        : (url == null
+                            ? Image.asset('assets/images/ev_auto_icon.png', height: 44, fit: BoxFit.contain)
+                            : Image.network(url, height: 44, fit: BoxFit.contain,
+                                errorBuilder: (_, __, ___) => Image.asset('assets/images/ev_auto_icon.png', height: 44))),
                     const SizedBox(height: 6),
                     Text(c.name, maxLines: 2, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13,

@@ -49610,6 +49610,32 @@ let RiderOrderService = class RiderOrderService {
                 this.activeOrderRedisService.getActiveOrders(orderIds),
                 this.rideOfferRedisService.getRideOffers(orderIds.map((id)=>id.toString()))
             ]);
+        // Scheduled (Booked) orders are only written to Redis when their delayed
+        // dispatch job fires (shortly before pickup), so they are not in Redis yet.
+        // Load them from the database so they show up in the rider's Scheduled tab.
+        const bookedOrders = await this.orderRepository.find({
+            where: {
+                id: (0, _typeorm1.In)(orderIds.map((id)=>parseInt(id))),
+                riderId,
+                status: _database.OrderStatus.Booked
+            },
+            relations: {
+                service: {
+                    media: true
+                },
+                options: true,
+                paymentGateway: {
+                    media: true
+                },
+                savedPaymentMethod: true
+            }
+        });
+        const bookedById = new Map(bookedOrders.map((o)=>[
+                o.id.toString(),
+                o
+            ]));
+        // Booked orders are expected to be missing from Redis, so don't wait on them.
+        const awaitedIds = orderIds.filter((id)=>!bookedById.has(id));
         // A just-created order may not be in Redis yet (dispatch job runs
         // async), so retry briefly before treating it as missing.
         let [activeOrders, rideOffers] = await fetchSources();
@@ -49618,7 +49644,7 @@ let RiderOrderService = class RiderOrderService {
                 ...activeOrders.map((o)=>o.id),
                 ...rideOffers.map((o)=>o.id)
             ]);
-            if (orderIds.every((id)=>found.has(id))) break;
+            if (awaitedIds.every((id)=>found.has(id))) break;
             await new Promise((r)=>setTimeout(r, 500));
             [activeOrders, rideOffers] = await fetchSources();
         }
@@ -49637,6 +49663,12 @@ let RiderOrderService = class RiderOrderService {
         for (const orderId of orderIds){
             const activeOrder = activeById.get(orderId);
             const rideOffer = offerById.get(orderId);
+            const bookedOrder = bookedById.get(orderId);
+            if (!activeOrder && !rideOffer && bookedOrder) {
+                // Scheduled ride that has not been dispatched yet (not in Redis).
+                results.push(this.buildBookedOrderDTO(bookedOrder));
+                continue;
+            }
             if (!activeOrder && !rideOffer) {
                 // Order might have been completed/canceled between reads; skip gracefully
                 _common.Logger.debug(`Order ${orderId} not found in activeOrders or rideOffers, skipping`, 'RiderOrderService');
@@ -49776,6 +49808,47 @@ let RiderOrderService = class RiderOrderService {
             unreadMessagesCount: 0
         };
         return dto;
+    }
+    // Builds the rider-facing DTO for a scheduled (Booked) order straight from
+    // the database, for the window before its dispatch job creates a ride offer.
+    buildBookedOrderDTO(order) {
+        const waypoints = order.waypoints();
+        const costEstimateForRider = order.costAfterCoupon + order.gstAmount + order.platformFeeAmount + order.paymentGatewayFeeAmount;
+        return {
+            id: order.id,
+            driver: undefined,
+            type: order.type,
+            status: order.status,
+            waitMinutes: order.waitMinutes ?? 0,
+            serviceName: order.service?.name ?? '',
+            serviceImageAddress: order.service?.media?.address ?? '',
+            chatMessages: [],
+            estimatedDistance: order.distanceBest ?? 0,
+            estimatedDuration: order.durationBest ?? 0,
+            options: Array.isArray(order.options) ? order.options : [],
+            createdAt: order.createdOn,
+            scheduledAt: order.expectedTimestamp,
+            pickupEta: undefined,
+            dropoffEta: undefined,
+            waypoints,
+            paymentMethod: order.paymentMethod(),
+            totalCost: costEstimateForRider,
+            paymentGatewayFeePercent: order.service?.paymentGatewayFee ?? 0,
+            costResult: order.pricingMode === _database.PricingMode.RANGE && order.costMin != null && order.costMax != null ? {
+                cost: costEstimateForRider,
+                min: order.costMin,
+                max: order.costMax,
+                mode: _database.PricingMode.RANGE,
+                rangePolicy: order.rangePolicy
+            } : {
+                cost: costEstimateForRider,
+                mode: _database.PricingMode.FIXED
+            },
+            currency: order.currency ?? '',
+            directions: Array.isArray(order.directions) ? order.directions : [],
+            nextDestination: waypoints[0] ?? undefined,
+            unreadMessagesCount: 0
+        };
     }
     async updateOrderWaitTime(orderId, waitTime) {
         const updatedOrder = await this.activeOrderRedisService.updateOrderWaitTime(orderId.toString(), waitTime);
