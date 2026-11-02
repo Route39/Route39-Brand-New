@@ -1,6 +1,6 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:ridy_driver/core/graphql/fragments/coordinate.extensions.dart';
 import 'turn_by_turn_navigation_screen.dart';
-import 'package:ridy_driver/core/graphql/fragments/coordinate.extensions.dart';
 import '../overlay/next_ride_overlay.dart';
 // ignore_for_file: use_build_context_synchronously
 
@@ -12,7 +12,6 @@ import 'package:flutter_common/core/color_palette/color_palette.dart';
 import 'package:ridy_driver/core/presentation/app_drawer.dart';
 import 'package:ridy_driver/features/home/presentation/blocs/home.bloc.dart';
 import 'package:ridy_driver/core/services/ride_overlay_service.dart';
-import 'package:ridy_driver/config/locator/locator.dart';
 import 'package:ridy_driver/config/locator/locator.dart';
 import 'dart:convert';
 import 'dart:async';
@@ -457,7 +456,7 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> {
             ),
             LayoutId(
               id: MobileLayoutDelegate.navigateButtonId,
-              child: state.driverStatus == HomeStateDriverStatus.onTrip ? Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.end, children: [FloatingActionButton.extended(heroTag: 'navGo', onPressed: () { final place = state.currentOrder?.nextDestination?.location.toPlace; if (place == null) return; Navigator.of(context).push(MaterialPageRoute(builder: (_) => TurnByTurnNavigationScreen(place: place))); }, icon: const Icon(Icons.navigation), label: const Text('Navigate')), const SizedBox(height: 12), FloatingActionButton.small(heroTag: 'mapFull', onPressed: () => setState(() => _mapFull = !_mapFull), child: Icon(_mapFull ? Icons.fullscreen_exit : Icons.fullscreen))]) : const SizedBox.shrink(),
+              child: state.driverStatus == HomeStateDriverStatus.onTrip ? Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.end, children: [FloatingActionButton.extended(heroTag: 'navGo', onPressed: () { if (kIsWeb) return; final place = state.currentOrder?.nextDestination?.location.toPlace; if (place == null) return; Navigator.of(context).push(MaterialPageRoute(builder: (_) => TurnByTurnNavigationScreen(place: place))); }, icon: const Icon(Icons.navigation), label: const Text('Navigate')), const SizedBox(height: 12), FloatingActionButton.small(heroTag: 'mapFull', onPressed: () => setState(() => _mapFull = !_mapFull), child: Icon(_mapFull ? Icons.fullscreen_exit : Icons.fullscreen))]) : const SizedBox.shrink(),
             ),
             LayoutId(
               id: MobileLayoutDelegate.searchRadiusButtonId,

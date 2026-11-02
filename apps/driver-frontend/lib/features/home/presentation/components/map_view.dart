@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:ridy_driver/core/graphql/schema.gql.dart';
 import '../screens/turn_by_turn_navigation_screen.dart';
 import 'package:ridy_driver/core/graphql/fragments/coordinate.extensions.dart';
@@ -123,6 +124,7 @@ class _HomeMapViewState extends State<HomeMapView> {
   final Set<String> _autoNavShown = {};
 
   void _maybeAutoNavigate(HomeState state) {
+    if (kIsWeb) return;
     if (state.driverStatus != HomeStateDriverStatus.onTrip) return;
     final o = state.currentOrder;
     if (o == null) return;

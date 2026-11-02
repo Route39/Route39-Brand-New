@@ -271,7 +271,7 @@ sealed class HomeState with _$HomeState {
 }
 
 // Set to e.g. 3.0 to preview the rain overlay without real rain. Keep 0 for real data.
-const double _debugFakeRainMm = 3;
+const double _debugFakeRainMm = 0;
 
 enum OnTripPage { overview, chat }
 
