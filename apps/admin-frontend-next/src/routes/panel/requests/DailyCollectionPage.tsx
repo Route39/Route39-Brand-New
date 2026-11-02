@@ -113,7 +113,16 @@ export default function DailyCollectionPage() {
   const dateTo = toDatePart(
     filters.find((f) => f.field === "createdOn" && f.operator === "lte")?.value ?? "",
   );
-  const activeRange = activeQuickRange(dateFrom, dateTo);
+  const [pickedRange, setPickedRange] = useState<QuickRange | null>(null);
+  const detectedRange = activeQuickRange(dateFrom, dateTo);
+  // On days when two presets cover the same dates (e.g. "Today" and "This week"
+  // on a Monday), keep the button the user actually clicked highlighted.
+  const activeRange =
+    pickedRange &&
+    dateFrom === presetRange(pickedRange).from &&
+    dateTo === presetRange(pickedRange).to
+      ? pickedRange
+      : detectedRange;
   const [fromD, setFromD] = useState(dateFrom);
   const [toD, setToD] = useState(dateTo);
   useEffect(() => {
@@ -144,6 +153,7 @@ export default function DailyCollectionPage() {
 
   function handleQuickRange(range: QuickRange) {
     const { from, to } = presetRange(range);
+    setPickedRange(range);
     applyDateRange(from, to);
   }
 
