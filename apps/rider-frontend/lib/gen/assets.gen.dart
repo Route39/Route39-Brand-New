@@ -1920,6 +1920,10 @@ class $AssetsImagesGen {
   /// File path: assets/images/car.png
   AssetGenImage get car => const AssetGenImage('assets/images/car.png');
 
+  /// File path: assets/images/car_moving.png
+  AssetGenImage get carMoving =>
+      const AssetGenImage('assets/images/car_moving.png');
+
   /// File path: assets/images/cargo_truck_icon.png
   AssetGenImage get cargoTruckIcon =>
       const AssetGenImage('assets/images/cargo_truck_icon.png');
@@ -1995,6 +1999,7 @@ class $AssetsImagesGen {
     appIcon,
     blueArrow,
     car,
+    carMoving,
     cargoTruckIcon,
     cityBg,
     evAutoIcon,

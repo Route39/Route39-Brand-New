@@ -16,6 +16,7 @@ fragment PastOrder on PastOrder {
   }
   totalCost
   paymentMode
+  customerRating
   directions {
     ...Coordinate
   }

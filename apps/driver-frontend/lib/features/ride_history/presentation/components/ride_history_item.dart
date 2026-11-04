@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:ridy_driver/core/graphql/fragments/coordinate.extensions.dart';
 import 'package:ridy_driver/core/graphql/fragments/past_order.fragment.graphql.dart';
 import 'package:ridy_driver/core/graphql/schema.gql.dart';
@@ -105,7 +106,27 @@ class RideHistoryItem extends StatelessWidget {
                                 ),
                               ),
                           ],
-                        )
+                        ),
+                        if (entity.customerRating != null) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              ...List.generate(5, (i) {
+                                final r = entity.customerRating! / 20;
+                                return Icon(
+                                  r >= i + 1 ? Icons.star_rounded : (r >= i + 0.5 ? Icons.star_half_rounded : Icons.star_border_rounded),
+                                  size: 14,
+                                  color: const Color(0xFFFFD54F),
+                                );
+                              }),
+                              const SizedBox(width: 6),
+                              Text(
+                                (entity.customerRating! / 20).toStringAsFixed(1),
+                                style: context.bodyMedium?.copyWith(color: ColorPalette.neutral99),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   )

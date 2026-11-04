@@ -9,6 +9,8 @@ import 'package:ridy_driver/core/router/app_router.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
 import 'package:flutter_common/core/presentation/snackbar/snackbar.dart';
@@ -229,6 +231,16 @@ class TopNavBar extends StatelessWidget {
                           },
                           child: const Icon(
                             Ionicons.shield,
+                            color: ColorPalette.neutral50,
+                          ),
+                        ),
+                      if ((dotenv.maybeGet('SUPPORT_PHONE') ?? '').isNotEmpty)
+                        CupertinoButton(
+                          minimumSize: Size(0, 0),
+                          padding: const EdgeInsets.all(8),
+                          onPressed: () => launchUrlString('tel:${dotenv.maybeGet('SUPPORT_PHONE')}'),
+                          child: const Icon(
+                            Ionicons.headset,
                             color: ColorPalette.neutral50,
                           ),
                         ),

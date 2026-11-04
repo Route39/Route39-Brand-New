@@ -108,10 +108,10 @@ export default function DailyCollectionPage() {
   const [billOpen, setBillOpen] = useState(false);
 
   const dateFrom = toDatePart(
-    filters.find((f) => f.field === "createdOn" && f.operator === "gte")?.value ?? "",
+    filters.find((f) => f.field === "finishTimestamp" && f.operator === "gte")?.value ?? "",
   );
   const dateTo = toDatePart(
-    filters.find((f) => f.field === "createdOn" && f.operator === "lte")?.value ?? "",
+    filters.find((f) => f.field === "finishTimestamp" && f.operator === "lte")?.value ?? "",
   );
   const [pickedRange, setPickedRange] = useState<QuickRange | null>(null);
   const detectedRange = activeQuickRange(dateFrom, dateTo);
@@ -144,10 +144,10 @@ export default function DailyCollectionPage() {
   }
 
   function applyDateRange(from: string, to: string) {
-    const without = filters.filter((f) => f.field !== "createdOn");
+    const without = filters.filter((f) => f.field !== "finishTimestamp");
     const next: FilterEntry[] = [...without];
-    if (from) next.push({ field: "createdOn", operator: "gte", value: from });
-    if (to) next.push({ field: "createdOn", operator: "lte", value: to });
+    if (from) next.push({ field: "finishTimestamp", operator: "gte", value: from });
+    if (to) next.push({ field: "finishTimestamp", operator: "lte", value: to });
     setFilters(next);
   }
 
@@ -158,12 +158,15 @@ export default function DailyCollectionPage() {
   }
 
   function handleClearFilters() {
-    setFilters(filters.filter((f) => f.field !== "createdOn"));
+    setFilters(filters.filter((f) => f.field !== "finishTimestamp"));
     setActiveCity(null);
   }
 
   const orderFilter = useMemo(() => {
-    const f: Record<string, Record<string, unknown>> = { driverId: { isNot: true } };
+    const f: Record<string, Record<string, unknown>> = {
+      driverId: { isNot: true },
+      status: { eq: "Finished" },
+    };
     if (dateFrom && dateTo) {
       f.createdOn = { between: { lower: dayStartISO(dateFrom), upper: dayEndISO(dateTo) } };
     } else if (dateFrom) {
@@ -193,7 +196,8 @@ export default function DailyCollectionPage() {
           (r.sum?.costAfterCoupon ?? 0) +
           (r.sum?.gstAmount ?? 0) +
           (r.sum?.platformFeeAmount ?? 0) +
-          (r.sum?.paymentGatewayFeeAmount ?? 0),
+          (r.sum?.paymentGatewayFeeAmount ?? 0) +
+          (r.sum?.tipAmount ?? 0),
       }))
       .sort((a, b) => b.collected - a.collected);
   }, [aggregateData]);

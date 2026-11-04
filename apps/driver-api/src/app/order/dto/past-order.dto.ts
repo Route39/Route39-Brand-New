@@ -61,6 +61,8 @@ export class PastOrderDTO {
   totalCost!: number;
   @Field(() => PaymentMode, { nullable: false })
   paymentMode!: PaymentMode;
+  @Field(() => Int, { nullable: true, description: "Customer rating for this ride, 0 to 100" })
+  customerRating?: number;
   @Field(() => [Point], { defaultValue: [] })
   directions!: Point[];
 }

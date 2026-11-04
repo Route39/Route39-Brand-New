@@ -64,6 +64,7 @@ export class ActiveOrderRedisSnapshot {
   duration?: string;
   currentLegIndex: number;
   totalPaid: number;
+  tipAmount?: number;
   options: RideOptionDTO[];
   chatMessages: ChatMessageRedisSnapshot[];
 

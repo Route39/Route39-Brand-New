@@ -16,6 +16,7 @@ export const ORDER_DETAIL_QUERY = graphql(`
       gstAmount
       platformFeeAmount
       paymentGatewayFeeAmount
+      surgeAmount
       waitCost
       rideOptionsCost
       taxCost

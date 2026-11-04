@@ -1479,6 +1479,7 @@ input OrderAggregateFilter {
   city: StringFieldComparison
   id: IDFilterComparison
   createdOn: DateFieldComparison
+  finishTimestamp: DateFieldComparison
   type: TaxiOrderTypeFilterComparison
   status: OrderStatusFilterComparison
   distanceBest: IntFieldComparison
@@ -1487,6 +1488,7 @@ input OrderAggregateFilter {
   costAfterCoupon: FloatFieldComparison
   gstAmount: FloatFieldComparison
   platformFeeAmount: FloatFieldComparison
+  tipAmount: FloatFieldComparison
   paymentGatewayFeeAmount: FloatFieldComparison
   currency: StringFieldComparison
   riderId: IDFilterComparison
@@ -1682,6 +1684,7 @@ input OrderFilter {
   city: StringFieldComparison
   id: IDFilterComparison
   createdOn: DateFieldComparison
+  finishTimestamp: DateFieldComparison
   type: TaxiOrderTypeFilterComparison
   status: OrderStatusFilterComparison
   distanceBest: IntFieldComparison
@@ -1690,6 +1693,7 @@ input OrderFilter {
   costAfterCoupon: FloatFieldComparison
   gstAmount: FloatFieldComparison
   platformFeeAmount: FloatFieldComparison
+  tipAmount: FloatFieldComparison
   paymentGatewayFeeAmount: FloatFieldComparison
   currency: StringFieldComparison
   riderId: IDFilterComparison
@@ -1710,6 +1714,7 @@ enum OrderSortFields {
   city
   id
   createdOn
+  finishTimestamp
   type
   status
   distanceBest
@@ -1718,6 +1723,7 @@ enum OrderSortFields {
   costAfterCoupon
   gstAmount
   platformFeeAmount
+  tipAmount
   paymentGatewayFeeAmount
   currency
   riderId
@@ -2194,6 +2200,7 @@ input FeedbackAggregateFilterOrderAggregateFilter {
   city: StringFieldComparison
   id: IDFilterComparison
   createdOn: DateFieldComparison
+  finishTimestamp: DateFieldComparison
   type: TaxiOrderTypeFilterComparison
   status: OrderStatusFilterComparison
   distanceBest: IntFieldComparison
@@ -2202,6 +2209,7 @@ input FeedbackAggregateFilterOrderAggregateFilter {
   costAfterCoupon: FloatFieldComparison
   gstAmount: FloatFieldComparison
   platformFeeAmount: FloatFieldComparison
+  tipAmount: FloatFieldComparison
   paymentGatewayFeeAmount: FloatFieldComparison
   currency: StringFieldComparison
   riderId: IDFilterComparison
@@ -2344,6 +2352,7 @@ input FeedbackFilterOrderFilter {
   city: StringFieldComparison
   id: IDFilterComparison
   createdOn: DateFieldComparison
+  finishTimestamp: DateFieldComparison
   type: TaxiOrderTypeFilterComparison
   status: OrderStatusFilterComparison
   distanceBest: IntFieldComparison
@@ -2352,6 +2361,7 @@ input FeedbackFilterOrderFilter {
   costAfterCoupon: FloatFieldComparison
   gstAmount: FloatFieldComparison
   platformFeeAmount: FloatFieldComparison
+  tipAmount: FloatFieldComparison
   paymentGatewayFeeAmount: FloatFieldComparison
   currency: StringFieldComparison
   riderId: IDFilterComparison
@@ -3019,7 +3029,9 @@ type Order {
   taxCost: Float!
   gstAmount: Float!
   platformFeeAmount: Float!
+  tipAmount: Float
   paymentGatewayFeeAmount: Float!
+  surgeAmount: Float
   totalCost: Float
   serviceCost: Float!
   currency: String!
@@ -3168,6 +3180,7 @@ input TaxiSupportRequestAggregateFilterOrderAggregateFilter {
   city: StringFieldComparison
   id: IDFilterComparison
   createdOn: DateFieldComparison
+  finishTimestamp: DateFieldComparison
   type: TaxiOrderTypeFilterComparison
   status: OrderStatusFilterComparison
   distanceBest: IntFieldComparison
@@ -3176,6 +3189,7 @@ input TaxiSupportRequestAggregateFilterOrderAggregateFilter {
   costAfterCoupon: FloatFieldComparison
   gstAmount: FloatFieldComparison
   platformFeeAmount: FloatFieldComparison
+  tipAmount: FloatFieldComparison
   paymentGatewayFeeAmount: FloatFieldComparison
   currency: StringFieldComparison
   riderId: IDFilterComparison
@@ -3266,6 +3280,7 @@ input TaxiSupportRequestFilterOrderFilter {
   city: StringFieldComparison
   id: IDFilterComparison
   createdOn: DateFieldComparison
+  finishTimestamp: DateFieldComparison
   type: TaxiOrderTypeFilterComparison
   status: OrderStatusFilterComparison
   distanceBest: IntFieldComparison
@@ -3274,6 +3289,7 @@ input TaxiSupportRequestFilterOrderFilter {
   costAfterCoupon: FloatFieldComparison
   gstAmount: FloatFieldComparison
   platformFeeAmount: FloatFieldComparison
+  tipAmount: FloatFieldComparison
   paymentGatewayFeeAmount: FloatFieldComparison
   currency: StringFieldComparison
   riderId: IDFilterComparison
@@ -4010,6 +4026,7 @@ type DriverOrdersAggregateGroupBy {
   city: String
   id: ID
   createdOn: DateTime
+  finishTimestamp: DateTime
   type: TaxiOrderType
   status: OrderStatus
   distanceBest: Int
@@ -4018,6 +4035,7 @@ type DriverOrdersAggregateGroupBy {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   currency: String
   riderId: ID
@@ -4032,6 +4050,7 @@ type DriverOrdersCountAggregate {
   city: Int
   id: Int
   createdOn: Int
+  finishTimestamp: Int
   type: Int
   status: Int
   distanceBest: Int
@@ -4040,6 +4059,7 @@ type DriverOrdersCountAggregate {
   costAfterCoupon: Int
   gstAmount: Int
   platformFeeAmount: Int
+  tipAmount: Int
   paymentGatewayFeeAmount: Int
   currency: Int
   riderId: Int
@@ -4058,6 +4078,7 @@ type DriverOrdersSumAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   riderId: Float
   driverId: Float
@@ -4074,6 +4095,7 @@ type DriverOrdersAvgAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   riderId: Float
   driverId: Float
@@ -4086,6 +4108,7 @@ type DriverOrdersMinAggregate {
   city: String
   id: ID
   createdOn: DateTime
+  finishTimestamp: DateTime
   type: TaxiOrderType
   status: OrderStatus
   distanceBest: Int
@@ -4094,6 +4117,7 @@ type DriverOrdersMinAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   currency: String
   riderId: ID
@@ -4108,6 +4132,7 @@ type DriverOrdersMaxAggregate {
   city: String
   id: ID
   createdOn: DateTime
+  finishTimestamp: DateTime
   type: TaxiOrderType
   status: OrderStatus
   distanceBest: Int
@@ -4116,6 +4141,7 @@ type DriverOrdersMaxAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   currency: String
   riderId: ID
@@ -5225,6 +5251,7 @@ type OrderAggregateGroupBy {
   city: String
   id: ID
   createdOn(by: GroupBy! = DAY): DateTime
+  finishTimestamp(by: GroupBy! = DAY): DateTime
   type: TaxiOrderType
   status: OrderStatus
   distanceBest: Int
@@ -5233,6 +5260,7 @@ type OrderAggregateGroupBy {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   currency: String
   riderId: ID
@@ -5247,6 +5275,7 @@ type OrderCountAggregate {
   city: Int
   id: Int
   createdOn: Int
+  finishTimestamp: Int
   type: Int
   status: Int
   distanceBest: Int
@@ -5255,6 +5284,7 @@ type OrderCountAggregate {
   costAfterCoupon: Int
   gstAmount: Int
   platformFeeAmount: Int
+  tipAmount: Int
   paymentGatewayFeeAmount: Int
   currency: Int
   riderId: Int
@@ -5273,6 +5303,7 @@ type OrderSumAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   riderId: Float
   driverId: Float
@@ -5289,6 +5320,7 @@ type OrderAvgAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   riderId: Float
   driverId: Float
@@ -5301,6 +5333,7 @@ type OrderMinAggregate {
   city: String
   id: ID
   createdOn: DateTime
+  finishTimestamp: DateTime
   type: TaxiOrderType
   status: OrderStatus
   distanceBest: Int
@@ -5309,6 +5342,7 @@ type OrderMinAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   currency: String
   riderId: ID
@@ -5323,6 +5357,7 @@ type OrderMaxAggregate {
   city: String
   id: ID
   createdOn: DateTime
+  finishTimestamp: DateTime
   type: TaxiOrderType
   status: OrderStatus
   distanceBest: Int
@@ -5331,6 +5366,7 @@ type OrderMaxAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   currency: String
   riderId: ID
@@ -5879,6 +5915,7 @@ type OrderCancelReasonOrdersAggregateGroupBy {
   city: String
   id: ID
   createdOn: DateTime
+  finishTimestamp: DateTime
   type: TaxiOrderType
   status: OrderStatus
   distanceBest: Int
@@ -5887,6 +5924,7 @@ type OrderCancelReasonOrdersAggregateGroupBy {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   currency: String
   riderId: ID
@@ -5901,6 +5939,7 @@ type OrderCancelReasonOrdersCountAggregate {
   city: Int
   id: Int
   createdOn: Int
+  finishTimestamp: Int
   type: Int
   status: Int
   distanceBest: Int
@@ -5909,6 +5948,7 @@ type OrderCancelReasonOrdersCountAggregate {
   costAfterCoupon: Int
   gstAmount: Int
   platformFeeAmount: Int
+  tipAmount: Int
   paymentGatewayFeeAmount: Int
   currency: Int
   riderId: Int
@@ -5927,6 +5967,7 @@ type OrderCancelReasonOrdersSumAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   riderId: Float
   driverId: Float
@@ -5943,6 +5984,7 @@ type OrderCancelReasonOrdersAvgAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   riderId: Float
   driverId: Float
@@ -5955,6 +5997,7 @@ type OrderCancelReasonOrdersMinAggregate {
   city: String
   id: ID
   createdOn: DateTime
+  finishTimestamp: DateTime
   type: TaxiOrderType
   status: OrderStatus
   distanceBest: Int
@@ -5963,6 +6006,7 @@ type OrderCancelReasonOrdersMinAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   currency: String
   riderId: ID
@@ -5977,6 +6021,7 @@ type OrderCancelReasonOrdersMaxAggregate {
   city: String
   id: ID
   createdOn: DateTime
+  finishTimestamp: DateTime
   type: TaxiOrderType
   status: OrderStatus
   distanceBest: Int
@@ -5985,6 +6030,7 @@ type OrderCancelReasonOrdersMaxAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   currency: String
   riderId: ID
@@ -8626,6 +8672,7 @@ type RegionTaxiOrdersAggregateGroupBy {
   city: String
   id: ID
   createdOn: DateTime
+  finishTimestamp: DateTime
   type: TaxiOrderType
   status: OrderStatus
   distanceBest: Int
@@ -8634,6 +8681,7 @@ type RegionTaxiOrdersAggregateGroupBy {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   currency: String
   riderId: ID
@@ -8648,6 +8696,7 @@ type RegionTaxiOrdersCountAggregate {
   city: Int
   id: Int
   createdOn: Int
+  finishTimestamp: Int
   type: Int
   status: Int
   distanceBest: Int
@@ -8656,6 +8705,7 @@ type RegionTaxiOrdersCountAggregate {
   costAfterCoupon: Int
   gstAmount: Int
   platformFeeAmount: Int
+  tipAmount: Int
   paymentGatewayFeeAmount: Int
   currency: Int
   riderId: Int
@@ -8674,6 +8724,7 @@ type RegionTaxiOrdersSumAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   riderId: Float
   driverId: Float
@@ -8690,6 +8741,7 @@ type RegionTaxiOrdersAvgAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   riderId: Float
   driverId: Float
@@ -8702,6 +8754,7 @@ type RegionTaxiOrdersMinAggregate {
   city: String
   id: ID
   createdOn: DateTime
+  finishTimestamp: DateTime
   type: TaxiOrderType
   status: OrderStatus
   distanceBest: Int
@@ -8710,6 +8763,7 @@ type RegionTaxiOrdersMinAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   currency: String
   riderId: ID
@@ -8724,6 +8778,7 @@ type RegionTaxiOrdersMaxAggregate {
   city: String
   id: ID
   createdOn: DateTime
+  finishTimestamp: DateTime
   type: TaxiOrderType
   status: OrderStatus
   distanceBest: Int
@@ -8732,6 +8787,7 @@ type RegionTaxiOrdersMaxAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   currency: String
   riderId: ID
@@ -8969,6 +9025,7 @@ type RiderOrdersAggregateGroupBy {
   city: String
   id: ID
   createdOn: DateTime
+  finishTimestamp: DateTime
   type: TaxiOrderType
   status: OrderStatus
   distanceBest: Int
@@ -8977,6 +9034,7 @@ type RiderOrdersAggregateGroupBy {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   currency: String
   riderId: ID
@@ -8991,6 +9049,7 @@ type RiderOrdersCountAggregate {
   city: Int
   id: Int
   createdOn: Int
+  finishTimestamp: Int
   type: Int
   status: Int
   distanceBest: Int
@@ -8999,6 +9058,7 @@ type RiderOrdersCountAggregate {
   costAfterCoupon: Int
   gstAmount: Int
   platformFeeAmount: Int
+  tipAmount: Int
   paymentGatewayFeeAmount: Int
   currency: Int
   riderId: Int
@@ -9017,6 +9077,7 @@ type RiderOrdersSumAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   riderId: Float
   driverId: Float
@@ -9033,6 +9094,7 @@ type RiderOrdersAvgAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   riderId: Float
   driverId: Float
@@ -9045,6 +9107,7 @@ type RiderOrdersMinAggregate {
   city: String
   id: ID
   createdOn: DateTime
+  finishTimestamp: DateTime
   type: TaxiOrderType
   status: OrderStatus
   distanceBest: Int
@@ -9053,6 +9116,7 @@ type RiderOrdersMinAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   currency: String
   riderId: ID
@@ -9067,6 +9131,7 @@ type RiderOrdersMaxAggregate {
   city: String
   id: ID
   createdOn: DateTime
+  finishTimestamp: DateTime
   type: TaxiOrderType
   status: OrderStatus
   distanceBest: Int
@@ -9075,6 +9140,7 @@ type RiderOrdersMaxAggregate {
   costAfterCoupon: Float
   gstAmount: Float
   platformFeeAmount: Float
+  tipAmount: Float
   paymentGatewayFeeAmount: Float
   currency: String
   riderId: ID

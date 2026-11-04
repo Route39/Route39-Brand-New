@@ -17072,8 +17072,8 @@ var TaxiOrderEntity = /*#__PURE__*/ function() {
     function TaxiOrderEntity() {}
     var _proto = TaxiOrderEntity.prototype;
     _proto.computeTotalCost = function computeTotalCost() {
-        var _this_costAfterCoupon, _ref, _this_gstAmount, _this_platformFeeAmount, _this_paymentGatewayFeeAmount, _this_waitingChargeAmount;
-        this.totalCost = ((_ref = (_this_costAfterCoupon = this.costAfterCoupon) != null ? _this_costAfterCoupon : this.costBest) != null ? _ref : 0) + ((_this_gstAmount = this.gstAmount) != null ? _this_gstAmount : 0) + ((_this_platformFeeAmount = this.platformFeeAmount) != null ? _this_platformFeeAmount : 0) + ((_this_paymentGatewayFeeAmount = this.paymentGatewayFeeAmount) != null ? _this_paymentGatewayFeeAmount : 0) + ((_this_waitingChargeAmount = this.waitingChargeAmount) != null ? _this_waitingChargeAmount : 0);
+        var _this_costAfterCoupon, _ref, _this_gstAmount, _this_platformFeeAmount, _this_paymentGatewayFeeAmount, _this_waitingChargeAmount, _this_tipAmount;
+        this.totalCost = ((_ref = (_this_costAfterCoupon = this.costAfterCoupon) != null ? _this_costAfterCoupon : this.costBest) != null ? _ref : 0) + ((_this_gstAmount = this.gstAmount) != null ? _this_gstAmount : 0) + ((_this_platformFeeAmount = this.platformFeeAmount) != null ? _this_platformFeeAmount : 0) + ((_this_paymentGatewayFeeAmount = this.paymentGatewayFeeAmount) != null ? _this_paymentGatewayFeeAmount : 0) + ((_this_waitingChargeAmount = this.waitingChargeAmount) != null ? _this_waitingChargeAmount : 0) + ((_this_tipAmount = this.tipAmount) != null ? _this_tipAmount : 0);
     };
     _proto.waypoints = function waypoints() {
         var _this = this;
@@ -33820,7 +33820,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
         if (cashAmount === void 0) cashAmount = 0;
         if (deduceFromWallet === void 0) deduceFromWallet = true;
         return shared_order_service_async_to_generator(function() {
-            var _this, order, driver, _order_waitingChargeAmount, waitingChargeAmount, providerShare, tip, _order_totalPaid, alreadyPaid, remainingDue, commissionAlreadyDeducted, driverWallet, fleetShare, fleet, providerCommission, ensurePostPay, _, credit, walletCredit, auth, capture, driverNonCash, _payoutAccount_payoutMethod, orderFeeWallet, payoutAccount, riderDeductAmount, _process_env_DRIVER_MINIMUM_ALLOWED_BALANCE, minimumAllowedBalance, closingBalance;
+            var _this, order, driver, _order_waitingChargeAmount, waitingChargeAmount, providerShare, _order_tipAmount, tip, _order_totalPaid, alreadyPaid, remainingDue, commissionAlreadyDeducted, driverWallet, fleetShare, fleet, providerCommission, ensurePostPay, _, credit, walletCredit, auth, capture, driverNonCash, _payoutAccount_payoutMethod, orderFeeWallet, payoutAccount, riderDeductAmount, _order_tipAmount1, _process_env_DRIVER_MINIMUM_ALLOWED_BALANCE, minimumAllowedBalance, closingBalance;
             return shared_order_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -33847,7 +33847,7 @@ var SharedOrderService = /*#__PURE__*/ function() {
                         // 2) Totals
                         waitingChargeAmount = (_order_waitingChargeAmount = order.waitingChargeAmount) != null ? _order_waitingChargeAmount : 0;
                         providerShare = order.costEstimateForRider - order.costEstimateForDriver;
-                        tip = 0;
+                        tip = order.paymentMethod.mode === PaymentMode.Cash || cashAmount > 0 ? (_order_tipAmount = order.tipAmount) != null ? _order_tipAmount : 0 : 0;
                         alreadyPaid = (_order_totalPaid = order.totalPaid) != null ? _order_totalPaid : 0;
                         // What the rider still owes for this trip (fare+tip+waiting charge minus alreadyPaid)
                         remainingDue = order.costEstimateForRider + waitingChargeAmount + tip - alreadyPaid;
@@ -34337,7 +34337,8 @@ var SharedOrderService = /*#__PURE__*/ function() {
                                 totalPaid: order.costEstimateForRider + waitingChargeAmount,
                                 status: OrderStatus.Finished
                             }), {
-                                finishTimestamp: new Date()
+                                finishTimestamp: new Date(),
+                                tipAmount: (_order_tipAmount1 = order.tipAmount) != null ? _order_tipAmount1 : 0
                             })
                         ];
                     case 41:
@@ -48717,6 +48718,7 @@ let OrderService = class OrderService {
             gstAmount: order.gstAmount ?? 0,
             platformFee: order.platformFee,
             platformFeeAmount: order.platformFeeAmount ?? 0,
+            tipAmount: order.tipAmount ?? 0,
             paymentGatewayFeePercent: order.paymentGatewayFeePercent,
             paymentGatewayFeeAmount: order.paymentGatewayFeeAmount ?? 0,
             waitingChargeAmount: order.waitingChargeAmount ?? 0,
@@ -48791,6 +48793,8 @@ let OrderService = class OrderService {
             skip: page ? page * (limit ?? 0) : 0,
             relations: {
                 service: true,
+                customerReviewForDriver: true,
+                review: true,
                 options: true,
                 rider: {
                     media: true
@@ -48821,8 +48825,9 @@ let OrderService = class OrderService {
                         point: point,
                         address: order.addresses[order.points.indexOf(point)]
                     })) ?? [],
-                totalCost: order.costAfterCoupon + (order.gstAmount ?? 0) + (order.platformFeeAmount ?? 0) + (order.paymentGatewayFeeAmount ?? 0) + (order.waitingChargeAmount ?? 0),
+                totalCost: order.costAfterCoupon + (order.gstAmount ?? 0) + (order.platformFeeAmount ?? 0) + (order.paymentGatewayFeeAmount ?? 0) + (order.waitingChargeAmount ?? 0) + (order.tipAmount ?? 0),
                 paymentMode: order.paymentMode ?? _database.PaymentMode.Cash,
+                customerRating: order.review?.score ?? order.customerReviewForDriver?.score ?? undefined,
                 directions: order.directions ?? []
             };
         });
@@ -48885,7 +48890,7 @@ let OrderService = class OrderService {
         });
         // Call finish with the full cost + waiting charge as cash amount, to properly settle wallets.
         // This ensures commission is deducted from driver and balance check is performed
-        const cashAmount = order.costEstimateForRider + (order.waitingChargeAmount ?? 0);
+        const cashAmount = order.costEstimateForRider + (order.waitingChargeAmount ?? 0) + (order.tipAmount ?? 0);
         const finishResult = await this.sharedOrderService.finish(input.orderId, cashAmount, false);
         if (finishResult != null) {
             // finish() couldn't fully settle it and moved the order to WaitingForPostPay —
@@ -49429,6 +49434,12 @@ _ts_decorate._([
         nullable: true
     }),
     _ts_metadata._("design:type", Number)
+], ActiveOrderDTO.prototype, "tipAmount", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
 ], ActiveOrderDTO.prototype, "paymentGatewayFeePercent", void 0);
 _ts_decorate._([
     (0, _graphql.Field)(()=>_graphql.Float, {
@@ -49628,6 +49639,13 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", typeof _database.PaymentMode === "undefined" ? Object : _database.PaymentMode)
 ], PastOrderDTO.prototype, "paymentMode", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Int, {
+        nullable: true,
+        description: "Customer rating for this ride, 0 to 100"
+    }),
+    _ts_metadata._("design:type", Number)
+], PastOrderDTO.prototype, "customerRating", void 0);
 _ts_decorate._([
     (0, _graphql.Field)(()=>[
             _database.Point

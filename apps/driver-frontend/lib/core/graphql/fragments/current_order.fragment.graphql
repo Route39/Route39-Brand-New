@@ -48,6 +48,7 @@ fragment ActiveOrder on ActiveOrder {
   gstAmount
   platformFee
   platformFeeAmount
+  tipAmount
   paymentGatewayFeePercent
   paymentGatewayFeeAmount
   waitingChargeAmount

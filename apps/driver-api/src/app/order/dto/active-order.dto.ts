@@ -86,6 +86,8 @@ export class ActiveOrderDTO {
   @Field(() => Float, { nullable: false })
   platformFeeAmount!: number;
   @Field(() => Float, { nullable: true })
+  tipAmount?: number;
+  @Field(() => Float, { nullable: true })
   paymentGatewayFeePercent?: number;
   @Field(() => Float, { nullable: false })
   paymentGatewayFeeAmount!: number;

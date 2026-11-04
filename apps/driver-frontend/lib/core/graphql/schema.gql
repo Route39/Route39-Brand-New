@@ -608,6 +608,7 @@ type ActiveOrder {
   gstAmount: Float!
   platformFee: Float
   platformFeeAmount: Float!
+  tipAmount: Float
   paymentGatewayFeePercent: Float
   paymentGatewayFeeAmount: Float!
   waitingChargeAmount: Float
@@ -662,6 +663,9 @@ type PastOrder {
   waypoints: [PlaceDTO!]!
   totalCost: Float!
   paymentMode: PaymentMode!
+
+  """Customer rating for this ride, 0 to 100"""
+  customerRating: Int
   directions: [Point!]!
 }
 

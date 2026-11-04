@@ -65,6 +65,18 @@ class TrackOrderRepositoryImpl implements TrackOrderRepository {
   }
 
   @override
+  Future<ApiResponse<Mutation$SetRideTip>> setRideTip({
+    required String orderId,
+    required double tip,
+  }) async {
+    return graphQLDatasource.mutate(
+      Options$Mutation$SetRideTip(
+        variables: Variables$Mutation$SetRideTip(orderId: orderId, tip: tip),
+      ),
+    );
+  }
+
+  @override
   Future<ApiResponse<Mutation$VerifyRazorpayRidePayment>> verifyRazorpayRidePayment({
     required String orderId,
     required String razorpayOrderId,

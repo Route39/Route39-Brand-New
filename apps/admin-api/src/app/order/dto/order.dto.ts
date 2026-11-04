@@ -60,7 +60,7 @@ export class TaxiOrderDTO {
   createdOn!: Date;
   @Field(() => GraphQLISODateTime, { nullable: true })
   startTimestamp?: Date;
-  @Field(() => GraphQLISODateTime, { nullable: true })
+  @FilterableField(() => GraphQLISODateTime, { nullable: true })
   finishTimestamp?: Date;
   @FilterableField(() => TaxiOrderType)
   type!: TaxiOrderType;
@@ -84,8 +84,12 @@ export class TaxiOrderDTO {
   gstAmount!: number;
   @FilterableField(() => Float)
   platformFeeAmount!: number;
+  @FilterableField(() => Float, { nullable: true })
+  tipAmount?: number;
   @FilterableField(() => Float)
   paymentGatewayFeeAmount!: number;
+  @Field(() => Float, { nullable: true })
+  surgeAmount?: number;
   @Field(() => Float, { nullable: true })
   totalCost?: number;
   @Field(() => Float, { nullable: false })

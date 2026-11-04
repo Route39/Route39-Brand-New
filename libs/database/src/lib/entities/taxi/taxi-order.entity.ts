@@ -238,7 +238,8 @@ export class TaxiOrderEntity {
       (this.gstAmount ?? 0) +
       (this.platformFeeAmount ?? 0) +
       (this.paymentGatewayFeeAmount ?? 0) +
-      (this.waitingChargeAmount ?? 0);
+      (this.waitingChargeAmount ?? 0) +
+      (this.tipAmount ?? 0);
   }
 
   @Column('float', {

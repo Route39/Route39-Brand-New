@@ -47,7 +47,8 @@ export function CityCollectionTable() {
           (row.sum?.costAfterCoupon ?? 0) +
           (row.sum?.gstAmount ?? 0) +
           (row.sum?.platformFeeAmount ?? 0) +
-          (row.sum?.paymentGatewayFeeAmount ?? 0),
+          (row.sum?.paymentGatewayFeeAmount ?? 0) +
+          (row.sum?.tipAmount ?? 0),
       });
     }
     const cash = new Map<string, number>();
@@ -59,7 +60,8 @@ export function CityCollectionTable() {
         (row.sum?.costAfterCoupon ?? 0) +
           (row.sum?.gstAmount ?? 0) +
           (row.sum?.platformFeeAmount ?? 0) +
-          (row.sum?.paymentGatewayFeeAmount ?? 0),
+          (row.sum?.paymentGatewayFeeAmount ?? 0) +
+          (row.sum?.tipAmount ?? 0),
       );
     }
     return { trips, cash };

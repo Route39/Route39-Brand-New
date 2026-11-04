@@ -73,20 +73,23 @@ export function DriverInvoiceDialog({
   dateTo,
   onClose,
 }: DriverInvoiceDialogProps) {
-  const filter: Record<string, Record<string, unknown>> = { driverId: { eq: driverId } };
+  const filter: Record<string, Record<string, unknown>> = {
+    driverId: { eq: driverId },
+    status: { eq: "Finished" },
+  };
   if (dateFrom && dateTo) {
-    filter.createdOn = { between: { lower: dayStartISO(dateFrom), upper: dayEndISO(dateTo) } };
+    filter.finishTimestamp = { between: { lower: dayStartISO(dateFrom), upper: dayEndISO(dateTo) } };
   } else if (dateFrom) {
-    filter.createdOn = { gte: dayStartISO(dateFrom) };
+    filter.finishTimestamp = { gte: dayStartISO(dateFrom) };
   } else if (dateTo) {
-    filter.createdOn = { lte: dayEndISO(dateTo) };
+    filter.finishTimestamp = { lte: dayEndISO(dateTo) };
   }
 
   const { data, loading } = useQuery(DRIVER_TRIP_DETAILS_QUERY, {
     variables: {
       paging: { limit: 500, offset: 0 },
       filter: filter as never,
-      sorting: [{ field: "createdOn", direction: "ASC" }] as never,
+      sorting: [{ field: "finishTimestamp", direction: "ASC" }] as never,
     },
   });
 

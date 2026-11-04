@@ -128,6 +128,14 @@ class TrackOrderRepositoryMock implements TrackOrderRepository {
   }
 
   @override
+  Future<ApiResponse<Mutation$SetRideTip>> setRideTip({
+    required String orderId,
+    required double tip,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
   Future<ApiResponse<Mutation$VerifyRazorpayRidePayment>> verifyRazorpayRidePayment({
     required String orderId,
     required String razorpayOrderId,

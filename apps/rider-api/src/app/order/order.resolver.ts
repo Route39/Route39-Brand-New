@@ -254,6 +254,19 @@ export class OrderResolver {
     });
   }
 
+  @Mutation(() => Boolean)
+  @UseGuards(GqlAuthGuard)
+  async setRideTip(
+    @Args('orderId', { type: () => ID }) orderId: number,
+    @Args('tip', { type: () => Float }) tip: number,
+  ): Promise<boolean> {
+    return this.riderOrderService.setRideTip({
+      orderId,
+      riderId: this.context.req.user!.id,
+      tip,
+    });
+  }
+
   @Mutation(() => RazorpayRideOrderDTO)
   @UseGuards(GqlAuthGuard)
   async createRazorpayRideOrder(
