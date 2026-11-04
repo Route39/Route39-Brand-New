@@ -1,3 +1,4 @@
+import 'core/services/app_update_checker.dart';
 import 'package:better_localization/l10n/messages.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
@@ -23,6 +24,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 void main() async {
   try {
     SentryWidgetsFlutterBinding.ensureInitialized();
+    Future.delayed(const Duration(seconds: 4), () => checkForAppUpdate(force: false));
     await dotenv.load(
         fileName: '.env.${kReleaseMode ? 'prod' : 'dev'}', isOptional: true);
     HydratedBloc.storage = await HydratedStorage.build(

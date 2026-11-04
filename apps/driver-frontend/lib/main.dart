@@ -1,3 +1,4 @@
+import 'core/services/app_update_checker.dart';
 import 'package:better_localization/l10n/messages.dart';
 import 'package:better_localization/localizations.dart' as common_messages;
 import 'package:ridy_driver/config/env.dart';
@@ -391,6 +392,7 @@ class _InfoItem extends StatelessWidget {
 void main() async {
   try {
     SentryWidgetsFlutterBinding.ensureInitialized();
+    Future.delayed(const Duration(seconds: 4), () => checkForAppUpdate(force: true));
     await dotenv.load(
         fileName: '.env.${kReleaseMode ? 'prod' : 'dev'}', isOptional: true);
     HydratedBloc.storage = await HydratedStorage.build(
