@@ -1009,6 +1009,7 @@ enum VersionStatus {
 }
 
 type Mutation {
+  setRideTip(orderId: ID!, tip: Float!): Boolean!
   markEphemeralMessagesAsRead(messageId: ID!): Boolean!
   updateFcmToken(fcmToken: String!): Boolean!
   updateProfile(input: UpdateRiderInput!): Rider!

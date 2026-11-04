@@ -1019,7 +1019,10 @@ Logger.log(
     const providerShare =
       order.costEstimateForRider - order.costEstimateForDriver;
 
-    const tip = 0;
+    const tip =
+      order.paymentMethod.mode === PaymentMode.Cash || cashAmount > 0
+        ? (order.tipAmount ?? 0)
+        : 0;
     const alreadyPaid = order.totalPaid ?? 0;
 
     // What the rider still owes for this trip (fare+tip+waiting charge minus alreadyPaid)
@@ -1440,6 +1443,7 @@ Logger.log(
       },
       {
         finishTimestamp: new Date(),
+        tipAmount: order.tipAmount ?? 0,
       },
     );
     await this.activeOrderRedisService.deleteOrder(order.id);

@@ -14,6 +14,7 @@ export const CITY_ORDERS_TODAY_QUERY = graphql(`
         gstAmount
         platformFeeAmount
         paymentGatewayFeeAmount
+        tipAmount
       }
     }
     cashOrders: orderAggregate(filter: $cashFilter) {
@@ -25,6 +26,7 @@ export const CITY_ORDERS_TODAY_QUERY = graphql(`
         gstAmount
         platformFeeAmount
         paymentGatewayFeeAmount
+        tipAmount
       }
     }
   }

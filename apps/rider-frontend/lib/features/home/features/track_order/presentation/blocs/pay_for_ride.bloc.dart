@@ -50,6 +50,12 @@ class PayForRideCubit extends Cubit<PayForRideState> {
     );
   }
 
+  Future<void> setRideTip({required String orderId, required double tip}) async {
+    print('[TIP] calling setRideTip order=$orderId tip=$tip');
+    final res = await _repository.setRideTip(orderId: orderId, tip: tip);
+    print('[TIP] result: $res');
+  }
+
   void payWithRazorpay({
     required String currency,
     required double amount,

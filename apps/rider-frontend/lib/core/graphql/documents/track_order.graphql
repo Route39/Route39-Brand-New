@@ -79,3 +79,7 @@ mutation VerifyRazorpayRidePayment(
     razorpaySignature: $razorpaySignature
   )
 }
+
+mutation SetRideTip($orderId: ID!, $tip: Float!) {
+  setRideTip(orderId: $orderId, tip: $tip)
+}

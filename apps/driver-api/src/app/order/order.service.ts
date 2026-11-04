@@ -958,6 +958,7 @@ export class OrderService {
       gstAmount: order.gstAmount ?? 0,
       platformFee: order.platformFee,
       platformFeeAmount: order.platformFeeAmount ?? 0,
+      tipAmount: order.tipAmount ?? 0,
       paymentGatewayFeePercent: order.paymentGatewayFeePercent,
       paymentGatewayFeeAmount: order.paymentGatewayFeeAmount ?? 0,
       waitingChargeAmount: order.waitingChargeAmount ?? 0,
@@ -1043,6 +1044,8 @@ export class OrderService {
       skip: page ? page * (limit ?? 0) : 0,
       relations: {
         service: true,
+        customerReviewForDriver: true,
+        review: true,
         options: true,
         rider: {
           media: true,
@@ -1078,8 +1081,10 @@ export class OrderService {
           (order.gstAmount ?? 0) +
           (order.platformFeeAmount ?? 0) +
           (order.paymentGatewayFeeAmount ?? 0) +
-          (order.waitingChargeAmount ?? 0),
+          (order.waitingChargeAmount ?? 0) +
+          (order.tipAmount ?? 0),
         paymentMode: order.paymentMode ?? PaymentMode.Cash,
+        customerRating: order.review?.score ?? order.customerReviewForDriver?.score ?? undefined,
         directions: order.directions ?? [],
       };
     });
@@ -1164,7 +1169,7 @@ export class OrderService {
     );
     // Call finish with the full cost + waiting charge as cash amount, to properly settle wallets.
     // This ensures commission is deducted from driver and balance check is performed
-    const cashAmount = order.costEstimateForRider + (order.waitingChargeAmount ?? 0);
+    const cashAmount = order.costEstimateForRider + (order.waitingChargeAmount ?? 0) + (order.tipAmount ?? 0);
     const finishResult = await this.sharedOrderService.finish(
       input.orderId,
       cashAmount,

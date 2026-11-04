@@ -19,6 +19,7 @@ export const DRIVER_COLLECTION_AGGREGATE_QUERY = graphql(`
         gstAmount
         platformFeeAmount
         paymentGatewayFeeAmount
+        tipAmount
       }
     }
   }
@@ -53,6 +54,7 @@ export const DRIVER_TRIP_DETAILS_QUERY = graphql(`
         gstAmount
         platformFeeAmount
         paymentGatewayFeeAmount
+        tipAmount
         currency
       }
     }

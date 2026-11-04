@@ -37,13 +37,15 @@ function sumRevenue(row: {
     gstAmount?: number | null;
     platformFeeAmount?: number | null;
     paymentGatewayFeeAmount?: number | null;
+    tipAmount?: number | null;
   } | null;
 } | undefined) {
   return (
     (row?.sum?.costAfterCoupon ?? 0) +
     (row?.sum?.gstAmount ?? 0) +
     (row?.sum?.platformFeeAmount ?? 0) +
-    (row?.sum?.paymentGatewayFeeAmount ?? 0)
+    (row?.sum?.paymentGatewayFeeAmount ?? 0) +
+    (row?.sum?.tipAmount ?? 0)
   );
 }
 

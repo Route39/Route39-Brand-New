@@ -11,6 +11,7 @@ export const ORDERS_AGGREGATE_QUERY = graphql(`
         gstAmount
         platformFeeAmount
         paymentGatewayFeeAmount
+        tipAmount
       }
     }
   }

@@ -1,0 +1,16 @@
+name: maplibre_gl_web
+description: Stubbed maplibre_gl_web to prevent web registration
+version: 0.22.0
+environment:
+  sdk: ">=2.17.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      web:
+        pluginClass: StubMaplibrePlugin
+        fileName: maplibre_gl_web.dart

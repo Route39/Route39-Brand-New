@@ -896,10 +896,9 @@ packages:
   generic_map:
     dependency: "direct overridden"
     description:
-      name: generic_map
-      sha256: b51b5ad0ca4e526976b7e7294105f587a40e6b81c8e6374abb744d00cd1dbeb1
-      url: "https://pub.dev"
-    source: hosted
+      path: "libs/generic_map"
+      relative: true
+    source: path
     version: "0.12.0"
   geoclue:
     dependency: transitive

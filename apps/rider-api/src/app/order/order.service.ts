@@ -1040,6 +1040,27 @@ const driver = await this.driverRedisService.getOnlineDriverMetaData(
   }
 
 
+  async setRideTip(input: {
+    orderId: number;
+    riderId: number;
+    tip: number;
+  }): Promise<boolean> {
+    const activeOrder = await this.activeOrderRedisService.getActiveOrder(
+      input.orderId.toString(),
+    );
+    if (activeOrder == null) {
+      throw new ForbiddenError('ACTIVE_ORDER_NOT_FOUND');
+    }
+    if (parseInt(activeOrder.riderId) !== input.riderId) {
+      throw new ForbiddenError('ORDER_NOT_BELONG_TO_RIDER');
+    }
+    const tip = Math.max(0, Math.round((input.tip ?? 0) * 100) / 100);
+    await this.activeOrderRedisService.updateOrderStatus(activeOrder.id, {
+      tipAmount: tip,
+    });
+    return true;
+  }
+
   async createRazorpayRideOrder(input: {
     orderId: number;
     riderId: number;

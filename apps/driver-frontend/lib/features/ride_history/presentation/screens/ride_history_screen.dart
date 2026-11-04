@@ -35,8 +35,9 @@ class _RideHistoryScreenState extends State<RideHistoryScreen> {
       value: locator<RideHistoryBloc>(),
       child: Container(
         color: context.theme.scaffoldBackgroundColor,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         child: SafeArea(
+          top: false,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -44,7 +45,7 @@ class _RideHistoryScreenState extends State<RideHistoryScreen> {
                 const SizedBox.shrink(),
                 xl: const SizedBox.shrink(),
               ),
-              SizedBox(height: context.responsive(16, xl: 84)),
+              SizedBox(height: context.responsive(0, xl: 84)),
               Text(context.translate.rideHistory, style: context.headlineSmall),
               const SizedBox(height: 24),
               Expanded(

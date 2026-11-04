@@ -380,6 +380,9 @@ class _SelectPaymentMethodSheetState extends State<PayForRideSheet> {
                                       ),
                                     ),
                                                                         onPressed: () {
+                                      if (tip > 0) {
+                                        locator<PayForRideCubit>().setRideTip(orderId: activeOrder.id, tip: tip);
+                                      }
                                       showDialog(
                                         context: context,
                                         useSafeArea: false,
@@ -416,6 +419,9 @@ class _SelectPaymentMethodSheetState extends State<PayForRideSheet> {
                                       ),
                                     ),
                                     onPressed: () {
+                                      if (tip > 0) {
+                                        locator<PayForRideCubit>().setRideTip(orderId: activeOrder.id, tip: tip);
+                                      }
                                       _startRazorpayRidePayment(context, activeOrder.id, upiTotal, activeOrder.currency);
                                     },
                                     icon: const Icon(
