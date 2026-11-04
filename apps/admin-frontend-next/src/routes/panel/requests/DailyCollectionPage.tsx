@@ -163,7 +163,10 @@ export default function DailyCollectionPage() {
   }
 
   const orderFilter = useMemo(() => {
-    const f: Record<string, Record<string, unknown>> = { driverId: { isNot: true } };
+    const f: Record<string, Record<string, unknown>> = {
+      driverId: { isNot: true },
+      status: { eq: "Finished" },
+    };
     if (dateFrom && dateTo) {
       f.createdOn = { between: { lower: dayStartISO(dateFrom), upper: dayEndISO(dateTo) } };
     } else if (dateFrom) {

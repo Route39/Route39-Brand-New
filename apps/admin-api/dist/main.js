@@ -52062,6 +52062,12 @@ _ts_decorate._([
         nullable: true
     }),
     _ts_metadata._("design:type", Number)
+], TaxiOrderDTO.prototype, "surgeAmount", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>_graphql.Float, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Number)
 ], TaxiOrderDTO.prototype, "totalCost", void 0);
 _ts_decorate._([
     (0, _graphql.Field)(()=>_graphql.Float, {

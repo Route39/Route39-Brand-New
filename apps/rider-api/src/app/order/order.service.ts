@@ -255,6 +255,7 @@ export class RiderOrderService {
         );
       }
       await this.sharedOrderService.saveActiveOrderToDisk(activeOrder, {
+        status: OrderStatus.RiderCanceled,
         finishTimestamp: new Date(),
         costAfterCoupon: 0,
         cancelReasonId: input.reasonId,

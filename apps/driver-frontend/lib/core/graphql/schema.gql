@@ -641,8 +641,6 @@ type PastOrderRider {
 }
 
 type PastOrder {
-  """Customer rating for this ride, 0 to 100"""
-  customerRating: Int
   id: ID!
   type: TaxiOrderType!
   rider: PastOrderRider!
@@ -665,6 +663,9 @@ type PastOrder {
   waypoints: [PlaceDTO!]!
   totalCost: Float!
   paymentMode: PaymentMode!
+
+  """Customer rating for this ride, 0 to 100"""
+  customerRating: Int
   directions: [Point!]!
 }
 

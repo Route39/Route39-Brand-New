@@ -89,6 +89,8 @@ export class TaxiOrderDTO {
   @FilterableField(() => Float)
   paymentGatewayFeeAmount!: number;
   @Field(() => Float, { nullable: true })
+  surgeAmount?: number;
+  @Field(() => Float, { nullable: true })
   totalCost?: number;
   @Field(() => Float, { nullable: false })
   serviceCost!: number;

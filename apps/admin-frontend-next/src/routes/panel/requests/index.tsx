@@ -160,7 +160,14 @@ export default function RequestsListPage({
   });
 
   const { data: aggregateData } = useQuery(ORDERS_AGGREGATE_QUERY, {
-    variables: { filter: buildFilterInput(filters) as never },
+    variables: {
+      filter: {
+        and: [
+          buildFilterInput(filters),
+          { status: { notIn: ["RiderCanceled", "DriverCanceled"] } },
+        ],
+      } as never,
+    },
   });
   const totalCollection =
     (aggregateData?.orderAggregate?.[0]?.sum?.costAfterCoupon ?? 0) +
@@ -223,11 +230,13 @@ export default function RequestsListPage({
       // waiting charge) on top.
       cell: (r) =>
         formatCurrency(
-          r.costAfterCoupon +
-            r.gstAmount +
-            r.platformFeeAmount +
-            r.paymentGatewayFeeAmount +
-            (r.waitingChargeAmount ?? 0),
+          r.status === "RiderCanceled" || r.status === "DriverCanceled"
+            ? 0
+            : r.costAfterCoupon +
+                r.gstAmount +
+                r.platformFeeAmount +
+                r.paymentGatewayFeeAmount +
+                (r.waitingChargeAmount ?? 0),
           r.currency,
         ),
     },

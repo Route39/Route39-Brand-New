@@ -49527,6 +49527,7 @@ let RiderOrderService = class RiderOrderService {
                 await (0, _rxjs.firstValueFrom)(this.httpService.get(`${process.env.GATEWAY_SERVER_URL}/cancel_preauth?id=${payment.transactionNumber}`));
             }
             await this.sharedOrderService.saveActiveOrderToDisk(activeOrder, {
+                status: _database.OrderStatus.RiderCanceled,
                 finishTimestamp: new Date(),
                 costAfterCoupon: 0,
                 cancelReasonId: input.reasonId,

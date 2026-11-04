@@ -73,7 +73,10 @@ export function DriverInvoiceDialog({
   dateTo,
   onClose,
 }: DriverInvoiceDialogProps) {
-  const filter: Record<string, Record<string, unknown>> = { driverId: { eq: driverId } };
+  const filter: Record<string, Record<string, unknown>> = {
+    driverId: { eq: driverId },
+    status: { eq: "Finished" },
+  };
   if (dateFrom && dateTo) {
     filter.finishTimestamp = { between: { lower: dayStartISO(dateFrom), upper: dayEndISO(dateTo) } };
   } else if (dateFrom) {

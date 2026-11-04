@@ -19,15 +19,19 @@ export default function OrderFinancialsTab() {
     ? order.paymentGatewayFeeAmount ?? 0
     : 0;
   const waitingChargeAmount = order.waitingChargeAmount ?? 0;
+  const surgeAmount = order.surgeAmount ?? 0;
   const isCargo = order.type === "ParcelDelivery";
   const waitCost = isCargo ? waitingChargeAmount : order.waitCost;
 
-  const totalCharged =
-    (order.costAfterCoupon ?? 0) +
-    gstAmount +
-    platformFeeAmount +
-    paymentGatewayFeeAmount +
-    waitingChargeAmount;
+  const isCancelled =
+    order.status === "RiderCanceled" || order.status === "DriverCanceled";
+  const totalCharged = isCancelled
+    ? 0
+    : (order.costAfterCoupon ?? 0) +
+      gstAmount +
+      platformFeeAmount +
+      paymentGatewayFeeAmount +
+      waitingChargeAmount;
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -47,6 +51,9 @@ export default function OrderFinancialsTab() {
               { label: "GST", value: fmt(gstAmount) },
               { label: "Platform Fee", value: fmt(platformFeeAmount) },
               { label: "Payment Gateway Fee", value: fmt(paymentGatewayFeeAmount) },
+              ...(surgeAmount > 0
+                ? [{ label: "Surge price", value: fmt(surgeAmount) }]
+                : []),
             ]}
           />
         </CardContent>
