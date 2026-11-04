@@ -50,3 +50,8 @@ pm2_jlist.json
 apps/*/android/key.properties
 apps/*/android/keystore/
 *.jks
+
+# build outputs & backups
+**/build/
+*.bak
+*.dill
