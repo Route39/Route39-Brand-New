@@ -9,6 +9,8 @@ class PlaceResultItem extends StatelessWidget {
   final String? trailing;
   final bool isRecent;
   final VoidCallback? onPressed;
+  final bool isFavorite;
+  final VoidCallback? onFavoriteToggle;
 
   const PlaceResultItem({
     super.key,
@@ -17,11 +19,13 @@ class PlaceResultItem extends StatelessWidget {
     this.isRecent = false,
     required this.onPressed,
     this.trailing,
+    this.isFavorite = false,
+    this.onFavoriteToggle,
   });
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoButton(
+    final mainButton = CupertinoButton(
       onPressed: onPressed,
       padding: const EdgeInsets.all(0),
       minimumSize: Size(0, 0),
@@ -76,6 +80,23 @@ class PlaceResultItem extends StatelessWidget {
           ],
         ],
       ),
+    );
+    if (onFavoriteToggle == null) return mainButton;
+    return Row(
+      children: [
+        Expanded(child: mainButton),
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onFavoriteToggle,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Icon(
+              isFavorite ? Ionicons.heart : Ionicons.heartOutline,
+              color: isFavorite ? const Color(0xFFE53935) : ColorPalette.neutral50,
+            ),
+          ),
+        ),
+      ],
     );
   }
 

@@ -1,3 +1,8 @@
+import 'package:latlong2/latlong.dart';
+import 'package:ridy/core/graphql/fragments/favorite_location.fragment.graphql.dart';
+import 'package:ridy/features/favorite_locations/domain/repositories/favorite_locations_repository.dart';
+import 'package:ridy/features/favorite_locations/models/update_favorite_location_input.dart';
+import 'package:ridy/features/home/presentation/blocs/destination_suggestions.bloc.dart';
 import '../components/category_tiles.dart';
 import 'package:api_response/api_response.dart';
 import 'package:flutter/material.dart';
@@ -396,52 +401,37 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                                 children: [
                                   Container(
                                     constraints: const BoxConstraints(
-                                      maxHeight: 100,
+                                      maxHeight: 240,
                                     ),
                                     child: ListView.separated(
                                       shrinkWrap: true,
                                       padding: EdgeInsets.zero,
                                       itemBuilder: (context, index) {
-                                        final item = state
-                                            .destinationSuggestions!
-                                            .$2[index];
-
+                                        final sug = state.destinationSuggestions!;
+                                        final favs = sug.$1;
+                                        final recents = _recentsNotSaved(sug);
+                                        final isFav = index < favs.length;
+                                        final Place place = isFav
+                                            ? Place(LatLng(favs[index].location.lat, favs[index].location.lng), favs[index].details ?? favs[index].title, favs[index].title)
+                                            : recents[index - favs.length];
                                         return PlaceResultItem(
-                                          subtitle: item.address,
-                                          title: item.title,
-                                          isRecent: true,
+                                          subtitle: place.address,
+                                          title: place.title,
+                                          isRecent: !isFav,
+                                          isFavorite: isFav,
+                                          onFavoriteToggle: () => _toggleSavedPlace(place, isFav ? favs[index].id : null, () => locator<DestinationSuggestionsCubit>().onStarted()),
                                           onPressed: () {
-                                            final pickupLocation =
-                                                widget.waypoints.firstOrNull ??
-                                                locator<LocationCubit>()
-                                                    .state
-                                                    .place;
+                                            final pickupLocation = widget.waypoints.firstOrNull ?? locator<LocationCubit>().state.place;
                                             if (pickupLocation == null) {
-                                              context.showSnackBar(
-                                                message: context
-                                                    .translate
-                                                    .pickupLocationNotFound,
-                                              );
+                                              context.showSnackBar(message: context.translate.pickupLocationNotFound);
                                               return;
                                             }
-                                            locator<HomeBloc>().add(
-                                              HomeEvent.showPreview(
-                                                destination: Place(
-                                                  item.latLng,
-                                                  item.address,
-                                                  item.title,
-                                                ),
-                                              ),
-                                            );
+                                            locator<HomeBloc>().add(HomeEvent.showPreview(destination: place));
                                           },
                                         );
                                       },
-                                      separatorBuilder: (context, index) =>
-                                          const Divider(indent: 42),
-                                      itemCount: state
-                                          .destinationSuggestions!
-                                          .$2
-                                          .length,
+                                      separatorBuilder: (context, index) => const Divider(indent: 42),
+                                      itemCount: state.destinationSuggestions!.$1.length + _recentsNotSaved(state.destinationSuggestions!).length,
                                     ),
                                   ),
                                 ],
@@ -531,4 +521,39 @@ class _PopularPlaceCard extends StatelessWidget {
       ),
     );
   }
+}
+
+
+List<Place> _recentsNotSaved((List<Fragment$FavoriteLocation>, List<Place>) s) =>
+    s.$2.where((p) => !s.$1.any((f) => f.title == (p.title ?? p.address))).toList();
+
+Future<void> _toggleSavedPlace(Place place, String? favoriteId, VoidCallback refresh) async {
+  debugPrint('[SAVED] tapped: ${place.title ?? place.address} favId=$favoriteId');
+  try {
+    final repo = locator<FavoriteLocationsRepository>();
+    if (favoriteId != null) {
+      final r = await repo.deleteFavoriteLocation(id: favoriteId);
+    debugPrint('[SAVED] delete result: $r');
+    } else {
+      final r = await repo.addFavoriteLocation(
+        input: UpdateFavoriteLocationInput(
+          name: place.title ?? place.address,
+          type: Enum$RiderAddressType.Other,
+          place: place,
+          phone: (Env.defaultCountry, _riderNumber()),
+        ),
+      );
+    }
+    debugPrint('[SAVED] done');
+  } catch (e, st) {
+    debugPrint('[SAVED] ERROR: $e');
+    debugPrint('$st');
+  }
+  refresh();
+}
+
+String _riderNumber() {
+  final m = locator<AuthBloc>().state.profile?.mobileNumber ?? '';
+  final digits = m.replaceAll(RegExp(r'\D'), '');
+  return digits.length > 10 ? digits.substring(digits.length - 10) : digits;
 }
