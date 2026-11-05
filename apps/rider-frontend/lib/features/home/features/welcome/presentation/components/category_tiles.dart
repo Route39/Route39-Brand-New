@@ -1,3 +1,5 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:ridy/config/env.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:graphql/client.dart';
@@ -120,7 +122,8 @@ class _CategoryTilesState extends State<CategoryTiles> {
             final c = _items[i];
             final locked = _isEv(c) && !_inBangalore;
             final selected = selId == c.id && !locked;
-            final url = c.media?.address ?? (c.services.isEmpty ? null : c.services.first.media?.address);
+            final rawUrl = c.media?.address ?? (c.services.isEmpty ? null : c.services.first.media?.address);
+            final url = (rawUrl == null || rawUrl.isEmpty) ? null : (rawUrl.startsWith('http') ? rawUrl : '${dotenv.env['MEDIA_BASE_URL'] ?? 'https://route39.in/uploads/'}${rawUrl.startsWith('/') ? rawUrl.substring(1) : rawUrl}');
             return GestureDetector(
               onTap: locked ? null : () => _select(c),
               child: Container(
