@@ -86,6 +86,14 @@ function toDatePart(value: string): string {
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 }
 
+/** Normalises city names so spelling variants (e.g. "Tirupur" / "Tiruppur") match. */
+function normalizeCity(value?: string | null): string {
+  const v = (value ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+  if (v.includes("tirup")) return "tiruppur";
+  if (v.includes("bengaluru")) return "bangalore";
+  return v;
+}
+
 interface DriverGroup {
   driverId: string;
   trips: number;
@@ -239,10 +247,7 @@ export default function DailyCollectionPage() {
     return groups.filter((group) => {
       const driver = driverMap.get(group.driverId);
 
-      return (
-        driver?.city?.trim().toLowerCase() ===
-        selectedCity.trim().toLowerCase()
-      );
+      return normalizeCity(driver?.city) === normalizeCity(selectedCity);
     });
   }, [groups, driverMap, activeCity]);
 
