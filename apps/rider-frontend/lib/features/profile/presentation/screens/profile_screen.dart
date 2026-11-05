@@ -129,6 +129,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         const SizedBox(
                                           height: 16,
                                         ),
+                                        AppMenuItem(
+                                          icon: Ionicons.heart,
+                                          title: 'Saved Places',
+                                          onPressed: () {
+                                            context.router.push(const FavoriteLocationsRoute());
+                                          },
+                                        ),
+                                        const SizedBox(
+                                          height: 16,
+                                        ),
                                                                                 AppMenuItem(
                                           icon: Icons.privacy_tip_outlined,
                                           title: 'Privacy Policy',
