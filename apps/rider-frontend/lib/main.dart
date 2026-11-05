@@ -1,3 +1,4 @@
+import 'core/services/ios_update_gate.dart';
 import 'core/services/app_update_checker.dart';
 import 'package:better_localization/l10n/messages.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -112,7 +113,11 @@ class MyApp extends StatelessWidget {
               navigatorObservers: () => [RouterObserver()],
             ),
             builder: (context, child) {
-              return Route39Splash(child: child ?? const SizedBox());
+              return IosUpdateGate(
+                bundleId: 'com.route39.rider',
+                force: false,
+                child: Route39Splash(child: child ?? const SizedBox()),
+              );
             },
           );
         },

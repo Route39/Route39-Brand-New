@@ -1,3 +1,4 @@
+import 'core/services/ios_update_gate.dart';
 import 'core/services/app_update_checker.dart';
 import 'package:better_localization/l10n/messages.dart';
 import 'package:better_localization/localizations.dart' as common_messages;
@@ -471,7 +472,11 @@ class MyApp extends StatelessWidget {
             supportedLocales: S.supportedLocales,
             routerConfig: locator<AppRouter>().config(navigatorObservers: () => [RouterObserver()]),
             builder: (context, child) {
-              return Route39Splash(child: child ?? const SizedBox());
+              return IosUpdateGate(
+                bundleId: 'com.route39.pilot',
+                force: true,
+                child: Route39Splash(child: child ?? const SizedBox()),
+              );
             },
           );
         },
