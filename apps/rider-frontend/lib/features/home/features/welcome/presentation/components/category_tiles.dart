@@ -25,7 +25,10 @@ class _CategoryTilesState extends State<CategoryTiles> {
     super.dispose();
   }
 
-  bool _isEv(Query$ServiceCategories$serviceCategories c) => RegExp(r'\bev\b').hasMatch(c.name.toLowerCase());
+  bool _isEv(Query$ServiceCategories$serviceCategories c) {
+    final n = c.name.toLowerCase();
+    return RegExp(r'\bev\b').hasMatch(n) && !n.contains('auto') && !_isCargo(c);
+  }
 
   bool _computeBangalore(dynamic state) {
     try {
@@ -74,7 +77,7 @@ class _CategoryTilesState extends State<CategoryTiles> {
         Options$Query$ServiceCategories(fetchPolicy: FetchPolicy.networkOnly),
       );
       final all = res.parsedData?.serviceCategories ?? [];
-      final list = all.where((c) => _isCargo(c) == false && c.services.isNotEmpty).toList();
+      final list = all.where((c) => c.services.isNotEmpty).toList();
       _cache = list;
       if (mounted == false) return;
       setState(() { _items = list; _loading = false; });
