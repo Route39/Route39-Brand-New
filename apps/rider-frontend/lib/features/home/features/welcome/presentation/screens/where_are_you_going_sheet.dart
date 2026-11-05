@@ -555,5 +555,6 @@ Future<void> _toggleSavedPlace(Place place, String? favoriteId, VoidCallback ref
 String _riderNumber() {
   final m = locator<AuthBloc>().state.profile?.mobileNumber ?? '';
   final digits = m.replaceAll(RegExp(r'\D'), '');
+  if (digits.isEmpty) return '0';
   return digits.length > 10 ? digits.substring(digits.length - 10) : digits;
 }
