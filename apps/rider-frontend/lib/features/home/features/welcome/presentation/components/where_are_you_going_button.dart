@@ -36,14 +36,6 @@ class WhereAreYouGoingButton extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Image.asset(
-              assetPath,
-              width: 60,
-              height: 60,
-              fit: BoxFit.contain,
-              filterQuality: FilterQuality.high,
-            ),
-            const SizedBox(width: 16),
             Expanded(
               child: Text(
                 'Where do you want to go?',
