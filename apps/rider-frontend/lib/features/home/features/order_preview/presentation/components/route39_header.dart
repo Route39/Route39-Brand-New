@@ -16,7 +16,7 @@ class Route39Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -26,6 +26,9 @@ class Route39Header extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: showLeading
               ? IconButton(
+                  padding: EdgeInsets.zero,
+                  alignment: Alignment.centerLeft,
+                  constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
                   icon: Icon(onBackPressed != null ? Icons.arrow_back : Icons.menu, color: Colors.black),
                   onPressed: onBackPressed ?? () => Scaffold.of(context).openDrawer(),
                 )

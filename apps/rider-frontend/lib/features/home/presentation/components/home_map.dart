@@ -1,3 +1,4 @@
+import 'package:ridy/core/extensions/extensions.dart';
 import 'package:ridy/features/home/presentation/screens/mobile_layout_delegate.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:api_response/api_response.dart';
@@ -180,7 +181,7 @@ class _HomeMapState extends State<HomeMap> with SingleTickerProviderStateMixin {
                 left: 120,
                 right: 120,
                 top: 150,
-                bottom: state.mode == HomeMode.rideInProgress ? cardHeightNotifier.value + 20 : 60,
+                bottom: (state.mode == HomeMode.rideInProgress || context.responsive(true, xl: false)) ? cardHeightNotifier.value + 20 : 60,
               ),
               buttonPadding: const EdgeInsets.symmetric(
                 vertical: 32,

@@ -19,6 +19,16 @@ class EnterOtpForm extends StatefulWidget {
 
 class _EnterOtpFormState extends State<EnterOtpForm> {
   String code = "";
+  final _otpController = TextEditingController();
+  final _otpFocus = FocusNode();
+  bool _hasError = false;
+
+  @override
+  void dispose() {
+    _otpController.dispose();
+    _otpFocus.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +38,12 @@ class _EnterOtpFormState extends State<EnterOtpForm> {
           case LoginPage$EnterOtp(:final state):
             switch (state) {
               case PageState$Error():
-                context.showSnackBar(message: "Wrong OTP");
+                setState(() {
+                  _hasError = true;
+                  code = "";
+                });
+                _otpController.clear();
+                _otpFocus.requestFocus();
               case _:
             }
           case _:
@@ -39,6 +54,14 @@ class _EnterOtpFormState extends State<EnterOtpForm> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: state.isLoading ? null : () => locator<LoginBloc>().onBackButtonPressed(),
+                    icon: const Icon(Icons.arrow_back),
+                    label: const Text('Change number'),
+                  ),
+                ),
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -61,9 +84,14 @@ class _EnterOtpFormState extends State<EnterOtpForm> {
                       Center(
                         child: OtpTextField(
                           length: 6,
+                          controller: _otpController,
+                          focusNode: _otpFocus,
+                          hasError: _hasError,
+                          errorText: _hasError ? 'Incorrect OTP. Please try again.' : null,
                           onChanged: (p0) {
                             setState(() {
                               code = p0;
+                              if (p0.isNotEmpty) _hasError = false;
                             });
                           },
                             onCompleted: (p0) {
@@ -108,7 +136,7 @@ class _EnterOtpFormState extends State<EnterOtpForm> {
                   ),
                 ),
                 AppPrimaryButton(
-                  isDisabled: (() { print('DEBUG code="' + code + '" length=' + code.length.toString() + ' isLoading=' + state.isLoading.toString()); return state.isLoading || code.length < 6; })(),
+                  isDisabled: state.isLoading || code.length < 6,
                   color: PrimaryButtonColor.error,
                   onPressed: () {
                     locator<LoginBloc>().onOtpVerificationRequested(code);

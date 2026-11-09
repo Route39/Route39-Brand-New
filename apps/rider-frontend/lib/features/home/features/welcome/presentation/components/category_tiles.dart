@@ -109,7 +109,8 @@ class _CategoryTilesState extends State<CategoryTiles> {
     }
     if (_items.isEmpty) return const SizedBox.shrink();
     final per = _items.length < 3 ? _items.length : 3;
-    final w = (MediaQuery.of(context).size.width - 32 - 10 * (per - 1)) / per;
+    return LayoutBuilder(builder: (context, cons) {
+    final w = (cons.maxWidth - 10 * (per - 1)) / per;
     return ValueListenableBuilder<String?>(
       valueListenable: selectedCategoryIdNotifier,
       builder: (context, selId, _) => SizedBox(
@@ -165,5 +166,6 @@ class _CategoryTilesState extends State<CategoryTiles> {
         ),
       ),
     );
+    });
   }
 }

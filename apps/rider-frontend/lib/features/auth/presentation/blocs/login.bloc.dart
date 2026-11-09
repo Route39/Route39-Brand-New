@@ -80,6 +80,7 @@ class LoginBloc extends Cubit<LoginState> {
   }
 
   void onOtpVerificationRequested(String otp) async {
+    emit(state.copyWith.loginPage.call(state: const PageState.loading()));
     final verifyOtpResponse = await repository.verifyOtp(state.hash!, otp);
 
     switch (verifyOtpResponse) {

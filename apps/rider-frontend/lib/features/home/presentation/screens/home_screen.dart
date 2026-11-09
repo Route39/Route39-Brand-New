@@ -94,20 +94,26 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
       child: DoubleTapToExit(
         canExit: () {
-          final state = locator<HomeBloc>().state;
-          if (state.mode == HomeMode.rideInProgress) return false;
-          if (state.mode == HomeMode.ridePreview) return false;
-          if (state.mode == HomeMode.preSubmission && state.orderSubmissionPage == OrderSubmissionPage.confirmLocation) return false;
+          final s = locator<HomeBloc>().state;
+          if (s.mode == HomeMode.rideInProgress || s.mode == HomeMode.ridePreview) return false;
+          if (s.mode == HomeMode.preSubmission && s.orderSubmissionPage != OrderSubmissionPage.welcome) return false;
           return true;
         },
         onBackPress: () {
-          final state = locator<HomeBloc>().state;
-          if (state.mode == HomeMode.ridePreview) {
-            locator<HomeBloc>().add(HomeEvent.initializeWelcome(pickupPoint: locator<LocationCubit>().state.place));
-          } else if (state.mode == HomeMode.preSubmission && state.orderSubmissionPage == OrderSubmissionPage.confirmLocation) {
-            locator<HomeBloc>().add(
-              const HomeEvent.changeOrderSubmissionPage(orderSubmissionPage: OrderSubmissionPage.rideWaypointsInput),
-            );
+          final s = locator<HomeBloc>().state;
+          final bloc = locator<HomeBloc>();
+          void toWelcome() => bloc.add(HomeEvent.initializeWelcome(pickupPoint: locator<HomeBloc>().state.waypoints.firstOrNull ?? locator<LocationCubit>().state.place));
+          if (s.mode == HomeMode.ridePreview) return toWelcome();
+          if (s.mode != HomeMode.preSubmission) return;
+          switch (s.orderSubmissionPage) {
+            case OrderSubmissionPage.confirmLocation:
+              bloc.add(const HomeEvent.changeOrderSubmissionPage(orderSubmissionPage: OrderSubmissionPage.rideWaypointsInput));
+            case OrderSubmissionPage.deliveryContactInfoInput:
+              bloc.add(const HomeEvent.changeOrderSubmissionPage(orderSubmissionPage: OrderSubmissionPage.deliverySearchPlaceInput));
+            case OrderSubmissionPage.rideWaypointsInput:
+            case OrderSubmissionPage.deliverySearchPlaceInput:
+              toWelcome();
+            case OrderSubmissionPage.welcome:
           }
         },
         child: MultiBlocListener(

@@ -22,6 +22,7 @@ async function bootstrap() {
 
   if ((process.env.STORAGE_DRIVER ?? 'local').toLowerCase() === 'local') {
     app.useStaticAssets(join(process.env.LOCAL_ROOT ?? '', 'uploads'), {
+      setHeaders: (res) => res.setHeader('Access-Control-Allow-Origin', '*'),
       prefix: '/uploads/',
     });
   }
