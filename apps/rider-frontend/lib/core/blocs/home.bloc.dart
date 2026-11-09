@@ -217,6 +217,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           switch (state.orderSubmissionPage) {
             case OrderSubmissionPage.welcome:
               if (selectedLocation.data == null) return;
+              emit(state.copyWith(
+                waypoints: state.waypoints
+                    .mapIndexed((i, e) => i == 0 ? selectedLocation.data : e)
+                    .toList(),
+              ));
               await _showDriversAround(
                 waypoints: state.currentWaypoints
                     .mapIndexed(

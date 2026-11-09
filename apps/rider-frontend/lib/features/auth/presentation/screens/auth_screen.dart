@@ -21,6 +21,12 @@ class AuthScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        if (locator<LoginBloc>().state.loginPage is LoginPage$EnterOtp) {
+          locator<LoginBloc>().onBackButtonPressed();
+        }
+      },
       child: MultiBlocProvider(
         providers: [
           BlocProvider.value(

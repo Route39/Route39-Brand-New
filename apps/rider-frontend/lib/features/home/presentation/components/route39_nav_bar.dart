@@ -40,7 +40,7 @@ class Route39NavBar extends StatelessWidget {
                 label: 'RIDE HISTORY',
                 isActive: currentIndex == 1,
                 onTap: () {
-                  if (currentIndex != 1) context.router.push(const RideHistoryRoute());
+                  if (currentIndex != 1) { context.router.popUntilRoot(); context.router.push(const RideHistoryRoute()); }
                 },
               ),
               _NavBarItem(
@@ -48,7 +48,7 @@ class Route39NavBar extends StatelessWidget {
                 label: 'SCHEDULED',
                 isActive: currentIndex == 2,
                 onTap: () {
-                  if (currentIndex != 2) context.router.push(const ScheduledRidesRoute());
+                  if (currentIndex != 2) { context.router.popUntilRoot(); context.router.push(const ScheduledRidesRoute()); }
                 },
               ),
               _NavBarItem(
@@ -56,7 +56,7 @@ class Route39NavBar extends StatelessWidget {
                 label: 'PROFILE',
                 isActive: currentIndex == 4,
                 onTap: () {
-                  if (currentIndex != 4) context.router.push(const ProfileParentRoute());
+                  if (currentIndex != 4) { context.router.popUntilRoot(); context.router.push(const ProfileParentRoute()); }
                 },
               ),
             ],

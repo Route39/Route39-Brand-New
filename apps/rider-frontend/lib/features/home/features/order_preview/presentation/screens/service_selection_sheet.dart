@@ -369,6 +369,15 @@ _buildVehicleList(context, state, selectedService),                          con
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (context.responsive(false, xl: true))
+                InkWell(
+                  onTap: () => locator<HomeBloc>().add(HomeEvent.initializeWelcome(
+                      pickupPoint: locator<HomeBloc>().state.waypoints.firstOrNull)),
+                  child: const Padding(
+                    padding: EdgeInsets.only(bottom: 8),
+                    child: Icon(Icons.arrow_back, color: Colors.white),
+                  ),
+                ),
               Text(
                 'Booking',
                 style: context.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),

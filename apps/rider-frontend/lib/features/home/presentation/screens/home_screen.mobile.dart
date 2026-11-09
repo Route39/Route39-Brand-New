@@ -121,7 +121,7 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> with SingleTickerPr
     final state = locator<HomeBloc>().state;
     switch (state.mode) {
       case HomeMode.ridePreview:
-        _homeBloc.add(HomeEvent.initializeWelcome(pickupPoint: locator<LocationCubit>().state.place));
+        _homeBloc.add(HomeEvent.initializeWelcome(pickupPoint: locator<HomeBloc>().state.waypoints.firstOrNull ?? locator<LocationCubit>().state.place));
       case HomeMode.preSubmission:
         if (state.orderSubmissionPage == OrderSubmissionPage.welcome) {
           _scaffoldKey.currentState?.openDrawer();
@@ -159,7 +159,7 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> with SingleTickerPr
       final state = locator<HomeBloc>().state;
       switch (state.mode) {
         case HomeMode.ridePreview:
-          _homeBloc.add(HomeEvent.initializeWelcome(pickupPoint: locator<LocationCubit>().state.place));
+          _homeBloc.add(HomeEvent.initializeWelcome(pickupPoint: locator<HomeBloc>().state.waypoints.firstOrNull ?? locator<LocationCubit>().state.place));
         case HomeMode.preSubmission:
           if (state.orderSubmissionPage == OrderSubmissionPage.confirmLocation) {
             _homeBloc.add(
