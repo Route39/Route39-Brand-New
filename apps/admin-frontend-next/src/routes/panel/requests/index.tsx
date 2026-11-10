@@ -388,9 +388,15 @@ export default function RequestsListPage({
   );
 }
 
-const CITY_COLORS = ["#22c55e", "#3b82f6", "#f59e0b", "#ec4899", "#8b5cf6", "#14b8a6"];
+const CITY_TABS: { value: string; label: string; dot: string }[] = [
+  { value: "", label: "All cities", dot: "" },
+  { value: "Bangalore", label: "Bangalore", dot: "bg-emerald-400" },
+  { value: "Tiruppur", label: "Tiruppur", dot: "bg-violet-400" },
+  { value: "Coimbatore", label: "Coimbatore", dot: "bg-red-400" },
+  { value: "Chennai", label: "Chennai", dot: "bg-blue-400" },
+];
 function CityDateFilters({ filters, setFilters }: { filters: any[]; setFilters: (f: any[]) => void }) {
-  const CITY_OPTIONS = ["Coimbatore", "Chennai", "Tiruppur", "Bangalore"].map((c, i) => ({ value: c, label: c, color: CITY_COLORS[i % CITY_COLORS.length] }));
+  //const CITY_OPTIONS = ["Coimbatore", "Chennai", "Tiruppur", "Bangalore"].map((c, i) => ({ value: c, label: c, color: CITY_COLORS[i % CITY_COLORS.length] }));
   const get = (field: string, op: string) => filters.find((f) => f.field === field && f.operator === op)?.value ?? "";
   const toLocal = (v: string) => (v ? new Date(v).toLocaleDateString("en-CA") : "");
   const city = get("city", "eq");
@@ -426,13 +432,13 @@ function CityDateFilters({ filters, setFilters }: { filters: any[]; setFilters: 
   const cls = "h-9 rounded-md border border-input bg-transparent px-3 text-sm";
   return (
     <div className="mb-3 flex flex-wrap items-center gap-2">
-      <div className="mb-2 flex w-full flex-wrap gap-3">
-        {CITY_OPTIONS.map((c) => {
+      <div className="mb-2 flex w-full flex-wrap items-center gap-2">
+        {CITY_TABS.map((c) => {
           const active = city === c.value;
           return (
-            <button key={c.value} type="button" onClick={() => setCity(active ? "" : c.value)}
-              className={`flex items-center gap-2.5 rounded-full border px-5 py-2.5 text-[15px] font-semibold transition ${active ? "border-white/50 bg-white/10" : "border-white/15 hover:border-white/30"}`}>
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: c.color }} />
+            <button key={c.value || "all"} type="button" onClick={() => setCity(active ? "" : c.value)}
+              className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${active ? "border-[#c62828] bg-[#c62828]/5 text-[#c62828]" : "border-border bg-background text-foreground hover:bg-muted"}`}>
+              {c.dot ? <span className={`size-2 shrink-0 rounded-full ${c.dot}`} /> : null}
               {c.label}
             </button>
           );

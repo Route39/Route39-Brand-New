@@ -273,22 +273,38 @@ export default function DailyCollectionPage() {
         description="Driver-wise collection summary across the platform."
       />
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+            activeCity === null
+              ? "border-[#c62828] bg-[#c62828]/5 text-[#c62828]"
+              : "border-border bg-background text-foreground hover:bg-muted"
+          }`}
+          onClick={() => {
+            setPage(1);
+            setActiveCity(null);
+          }}
+        >
+          All cities
+        </button>
         {CITY_TABS.map((city) => (
-          <Button
+          <button
             key={city.key}
             type="button"
-            size="sm"
-            variant={activeCity === city.key ? "default" : "outline"}
-            className="gap-2 rounded-full"
+            className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+              activeCity === city.key
+                ? "border-[#c62828] bg-[#c62828]/5 text-[#c62828]"
+                : "border-border bg-background text-foreground hover:bg-muted"
+            }`}
             onClick={() => {
-  setPage(1);
-  setActiveCity((cur) => (cur === city.key ? null : city.key));
-}}
+              setPage(1);
+              setActiveCity((cur) => (cur === city.key ? null : city.key));
+            }}
           >
-            <span className="size-2 rounded-full" style={{ backgroundColor: city.color }} />
+            <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: city.color }} />
             {city.label}
-          </Button>
+          </button>
         ))}
       </div>
 
