@@ -143,9 +143,9 @@ extension NavItemX on NavItem {
           applicationIcon: ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Image.asset(
-              dotenv.maybeGet('LOGO') ?? Assets.images.logo.path,
-              width: 100,
-              height: 100,
+              dotenv.maybeGet('LOGO') ?? Assets.images.route39Logo.path,
+              width: 160,
+              fit: BoxFit.contain,
             ),
           ),
           applicationVersion:

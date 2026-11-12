@@ -105,9 +105,9 @@ extension NavItemX on NavItem {
           context: context,
           applicationIcon: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Assets.images.logo.image(
-              width: 100,
-              height: 100,
+            child: Assets.images.route39Logo.image(
+              width: 160,
+              fit: BoxFit.contain,
             ),
           ),
           applicationVersion: "${platformInfo.version} (Build ${platformInfo.buildNumber})",
