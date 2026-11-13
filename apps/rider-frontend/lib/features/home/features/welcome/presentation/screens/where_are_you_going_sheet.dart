@@ -401,10 +401,12 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                                 children: [
                                   Container(
                                     constraints: const BoxConstraints(
-                                      maxHeight: 240,
+                                      maxHeight: double.infinity,
                                     ),
                                     child: ListView.separated(
                                       shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
                                       padding: EdgeInsets.zero,
                                       itemBuilder: (context, index) {
                                         final sug = state.destinationSuggestions!;

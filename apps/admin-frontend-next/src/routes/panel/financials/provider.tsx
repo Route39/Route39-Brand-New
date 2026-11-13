@@ -1,16 +1,14 @@
-import { useQuery } from "@apollo/client";
+import { gql, useQuery } from "@apollo/client";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type DataTableColumn } from "@/components/tables/DataTable";
+// import { DateRangeFilter } from "@/components/tables/DateRangeFilter";
 import { CsvExportButton } from "@/components/tables/CsvExportButton";
 import { WalletExportButton } from "@/components/tables/WalletExportButton";
 import { PageHeader } from "@/components/panel/PageHeader";
 import { LoadingBlock } from "@/components/panel/StateBlock";
-import {
-  PROVIDER_TRANSACTIONS_QUERY,
-  PROVIDER_WALLETS_QUERY,
-} from "@/lib/graphql/documents/payouts";
+import { PROVIDER_WALLETS_QUERY } from "@/lib/graphql/documents/payouts";
 import { EXPORT_PROVIDER_TRANSACTIONS_QUERY } from "@/lib/graphql/documents/extras-2";
 import {
   buildFilterInput,
@@ -29,12 +27,46 @@ type TxRow = {
   deductType?: string | null;
   rechargeType?: string | null;
   expenseType?: string | null;
+  driver?: {
+    id: string;
+    firstName?: string | null;
+    lastName?: string | null;
+    mobileNumber?: string | null;
+  } | null;
 };
+
+const PROVIDER_TRANSACTIONS_WITH_DRIVER_QUERY = gql`
+  query ProviderTransactionsWithDriver(
+    $paging: OffsetPaging!
+    $filter: ProviderTransactionFilter!
+    $sorting: [ProviderTransactionSort!]!
+  ) {
+    providerTransactions(paging: $paging, filter: $filter, sorting: $sorting) {
+      totalCount
+      nodes {
+        id
+        createdAt
+        action
+        amount
+        currency
+        deductType
+        rechargeType
+        expenseType
+        driver {
+          id
+          firstName
+          lastName
+          mobileNumber
+        }
+      }
+    }
+  }
+`;
 
 export default function ProviderFinancialsPage() {
   const { page, pageSize, sort, filters } = usePageState();
   const { data: walletsData, loading: walletsLoading } = useQuery(PROVIDER_WALLETS_QUERY);
-  const { data, loading, error } = useQuery(PROVIDER_TRANSACTIONS_QUERY, {
+  const { data, loading, error } = useQuery<any>(PROVIDER_TRANSACTIONS_WITH_DRIVER_QUERY, {
     variables: {
       paging: buildOffsetPaging({ page, pageSize }),
       sorting: buildSortInput(sort) as never,
@@ -44,11 +76,30 @@ export default function ProviderFinancialsPage() {
 
   if (walletsLoading && !walletsData) return <LoadingBlock />;
 
-  const wallets = walletsData?.providerWallets ?? [];
+  // "Rs" balance card is hidden. Remove the .filter(...) below to show it again.
+  const wallets = (walletsData?.providerWallets ?? []).filter(
+    (w) => w.currency.toLowerCase() !== "rs",
+  );
   const transactions = (data?.providerTransactions.nodes ?? []) as TxRow[];
 
   const columns: DataTableColumn<TxRow>[] = [
     { key: "createdAt", header: "Date", cell: (r) => formatDateTime(r.createdAt) },
+    {
+      key: "driver",
+      header: "Driver",
+      cell: (r) => {
+        if (!r.driver) return <span className="text-muted-foreground">—</span>;
+        const name = `${r.driver.firstName ?? ""} ${r.driver.lastName ?? ""}`.trim();
+        return (
+          <div>
+            <div className="font-medium">{name || `Driver #${r.driver.id}`}</div>
+            {r.driver.mobileNumber ? (
+              <div className="text-xs text-muted-foreground">{r.driver.mobileNumber}</div>
+            ) : null}
+          </div>
+        );
+      },
+    },
     { key: "action", header: "Action", cell: (r) => <Badge variant="outline">{r.action}</Badge> },
     {
       key: "type",
@@ -90,6 +141,7 @@ export default function ProviderFinancialsPage() {
           ))
         )}
       </div>
+      {/* <DateRangeFilter field="createdAt" /> */}
       <div className="flex justify-end">
         <CsvExportButton
           query={EXPORT_PROVIDER_TRANSACTIONS_QUERY}
@@ -100,7 +152,7 @@ export default function ProviderFinancialsPage() {
             { field: "amount", label: "Amount" },
             { field: "currency", label: "Currency" },
           ]}
-          filter={filters.length > 0 ? Object.fromEntries(filters.map((f) => [f.field, { [f.operator]: f.value }])) : {}}
+          filter={buildFilterInput(filters)}
           sorting={sort ? [{ field: sort.field, direction: sort.direction }] : []}
           entityLabel="provider-transactions"
         />
@@ -113,6 +165,7 @@ export default function ProviderFinancialsPage() {
         error={error?.message ?? null}
         rowKey={(r) => r.id}
         emptyMessage="No transactions yet."
+        pageSizeOptions={[10, 20, 30, 40, 50]}
       />
     </div>
   );

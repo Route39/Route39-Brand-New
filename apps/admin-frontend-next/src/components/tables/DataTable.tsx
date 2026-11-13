@@ -35,6 +35,8 @@ interface DataTableProps<T> {
   emptyMessage?: string;
   rowKey: (row: T) => string;
   onRowClick?: (row: T) => void;
+  /** Optional "rows per page" dropdown options (e.g. [10, 20, 30]). Hidden when not passed. */
+  pageSizeOptions?: number[];
 }
 
 function defaultCell<T>(row: T, key: string): ReactNode {
@@ -58,8 +60,9 @@ export function DataTable<T>({
   emptyMessage = "No records found.",
   rowKey,
   onRowClick,
+  pageSizeOptions,
 }: DataTableProps<T>) {
-  const { page, pageSize, sort, setPage, toggleSort } = usePageState();
+  const { page, pageSize, sort, setPage, setPageSize, toggleSort } = usePageState();
   const totalPages = Math.max(1, Math.ceil((totalCount ?? rows.length) / pageSize));
   const showingFrom = (page - 1) * pageSize + 1;
   const showingTo = Math.min(page * pageSize, totalCount ?? rows.length);
@@ -138,10 +141,28 @@ export function DataTable<T>({
         <TableEmpty>{error ? <span className="text-destructive">{error}</span> : emptyMessage}</TableEmpty>
       ) : null}
       <div className="flex items-center justify-between border-t border-border/60 px-4 py-3 text-xs text-muted-foreground">
-        <div>
-          {totalCount != null && rows.length > 0
-            ? `Showing ${showingFrom}–${showingTo} of ${totalCount}`
-            : null}
+        <div className="flex items-center gap-4">
+          <div>
+            {totalCount != null && rows.length > 0
+              ? `Showing ${showingFrom}–${showingTo} of ${totalCount}`
+              : null}
+          </div>
+          {pageSizeOptions ? (
+            <label className="flex items-center gap-2">
+              Rows per page
+              <select
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+                className="h-8 rounded-md border border-input bg-background px-2 text-xs text-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              >
+                {pageSizeOptions.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
         </div>
         <div className="flex items-center gap-1.5">
           <Button

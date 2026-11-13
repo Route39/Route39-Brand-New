@@ -9,7 +9,7 @@ import { ProviderExpenseType } from '@ridy/database';
 export class ProviderTransactionDTO {
   @IDField(() => ID)
   id: number;
-  @Field(() => GraphQLISODateTime, { nullable: false })
+  @FilterableField(() => GraphQLISODateTime)
   createdAt!: Date;
   @FilterableField(() => TransactionAction)
   action: TransactionAction;

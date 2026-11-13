@@ -165,6 +165,8 @@ class _HomeMapState extends State<HomeMap> with SingleTickerProviderStateMixin {
       },
       builder: (context, state) {
         WidgetsBinding.instance.addPostFrameCallback((_) => fullMapNotifier.value = state.mode == HomeMode.rideInProgress);
+        WidgetsBinding.instance.addPostFrameCallback((_) => compactMapNotifier.value =
+            state.mode == HomeMode.preSubmission && state.orderSubmissionPage == OrderSubmissionPage.welcome);
         return BlocBuilder<SettingsCubit, SettingsState>(
           buildWhen: (previous, current) =>
               previous.mapProvider != current.mapProvider,

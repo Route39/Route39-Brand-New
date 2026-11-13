@@ -5,9 +5,9 @@ import { useTranslation } from "react-i18next";
 import { DataTable, type DataTableColumn } from "@/components/tables/DataTable";
 import { PageHeader } from "@/components/panel/PageHeader";
 import { Badge } from "@/components/ui/badge";
-import { FilterSelect, TableToolbar } from "@/components/tables/TableToolbar";
+import { SosStatusCards } from "@/components/panel/SosStatusCards";
+import { FilterTabs, TableToolbar } from "@/components/tables/TableToolbar";
 import { SOS_LIST_QUERY } from "@/lib/graphql/documents/sos";
-import { SOS_STATUS_OPTIONS } from "@/lib/panel/enum-options";
 import {
   buildFilterInput,
   buildOffsetPaging,
@@ -105,16 +105,16 @@ export default function SosListPage() {
           defaultValue: "Distress signals raised by riders or drivers.",
         })}
       />
+      <SosStatusCards />
       <TableToolbar>
-        <FilterSelect field="status" options={SOS_STATUS_OPTIONS} placeholder="Any status" />
-        <FilterSelect
+        <FilterTabs
           field="submittedByRider"
           operator="is"
           options={[
-            { value: "true", label: "Rider" },
             { value: "false", label: "Driver" },
+            { value: "true", label: "Rider" },
           ]}
-          placeholder="Anyone"
+          allLabel="Anyone"
         />
       </TableToolbar>
       <DataTable

@@ -17,7 +17,7 @@ import { OperatorDTO } from '../../operator/dto/operator.dto';
 export class TaxiSupportRequestDTO {
   @IDField(() => ID)
   id!: number;
-  @Field(() => GraphQLISODateTime, { nullable: false })
+  @FilterableField(() => GraphQLISODateTime)
   inscriptionTimestamp!: Date;
   @FilterableField()
   requestedByDriver: boolean;

@@ -84,6 +84,11 @@ function toDatePart(value: string): string {
   return Number.isNaN(d.getTime()) ? value.slice(0, 10) : toDateInput(d);
 }
 
+function initials(first?: string | null, last?: string | null): string {
+  const s = `${(first ?? "").trim().charAt(0)}${(last ?? "").trim().charAt(0)}`.toUpperCase();
+  return s || "?";
+}
+
 type DriverRow = {
   id: string;
   driverCode?: string | null;
@@ -198,9 +203,14 @@ export default function DriversListPage() {
       header: t("driver.name", { defaultValue: "Name" }),
       sortField: "lastName",
       cell: (r) => (
-        <div className="flex flex-col">
-          <span className="font-medium">{formatName(r)}</span>
-          <span className="text-xs text-muted-foreground">{r.mobileNumber}</span>
+        <div className="flex items-center gap-3">
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+            {initials(r.firstName, r.lastName)}
+          </span>
+          <div className="flex flex-col">
+            <span className="font-medium">{formatName(r)}</span>
+            <span className="text-xs text-muted-foreground">{r.mobileNumber}</span>
+          </div>
         </div>
       ),
     },
@@ -209,7 +219,7 @@ export default function DriversListPage() {
       header: t("status", { defaultValue: "Status" }),
       sortField: "status",
       cell: (r) => (
-        <Badge variant={driverStatusVariant(r.status)}>
+        <Badge variant={driverStatusVariant(r.status)} className="rounded-full px-2.5 py-1 text-xs font-semibold">
           {t(`enum.driver.status.${r.status[0]?.toLowerCase()}${r.status.slice(1)}`, {
             defaultValue: r.status,
           })}
@@ -300,12 +310,16 @@ export default function DriversListPage() {
           </div>
         }
       />
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3">
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3.5 shadow-sm">
         <Button
           type="button"
           size="sm"
-          variant={activeRange === "today" ? "default" : "outline"}
-          className="rounded-full"
+          variant="outline"
+          className={`rounded-full ${
+            activeRange === "today"
+              ? "border-primary bg-primary/5 text-primary shadow-none hover:bg-primary/10 hover:text-primary"
+              : ""
+          }`}
           onClick={() => handleQuickRange("today")}
         >
           Today
@@ -313,8 +327,12 @@ export default function DriversListPage() {
         <Button
           type="button"
           size="sm"
-          variant={activeRange === "week" ? "default" : "outline"}
-          className="rounded-full"
+          variant="outline"
+          className={`rounded-full ${
+            activeRange === "week"
+              ? "border-primary bg-primary/5 text-primary shadow-none hover:bg-primary/10 hover:text-primary"
+              : ""
+          }`}
           onClick={() => handleQuickRange("week")}
         >
           This week
@@ -322,13 +340,17 @@ export default function DriversListPage() {
         <Button
           type="button"
           size="sm"
-          variant={activeRange === "last30" ? "default" : "outline"}
-          className="rounded-full"
+          variant="outline"
+          className={`rounded-full ${
+            activeRange === "last30"
+              ? "border-primary bg-primary/5 text-primary shadow-none hover:bg-primary/10 hover:text-primary"
+              : ""
+          }`}
           onClick={() => handleQuickRange("last30")}
         >
           Last 30
         </Button>
-        <div className="flex items-center gap-1.5 rounded-full border border-input bg-background px-3 py-1.5">
+        <div className="flex items-center gap-1.5 rounded-xl bg-muted px-3 py-1.5">
           <Calendar className="size-3.5 text-muted-foreground" />
           <input
             type="date"
@@ -349,6 +371,7 @@ export default function DriversListPage() {
           size="sm"
           variant="ghost"
           disabled={!dateFrom && !dateTo}
+          className="ml-auto text-primary"
           onClick={handleClearDateRange}
         >
           Clear filter
@@ -356,10 +379,19 @@ export default function DriversListPage() {
       </div>
       <DriverStatusCards filters={filters} setFilters={setFilters} />
       <TableToolbar>
-        <FilterText field="name" placeholder="Search by name" />
-        <FilterText field="mobileNumber" placeholder="Phone number" />
+        <FilterText
+          field="name"
+          placeholder="Search by name"
+          className="min-w-[220px] flex-1 [&>svg]:left-3.5 [&>svg]:size-4 [&_input]:h-11 [&_input]:w-full [&_input]:rounded-xl [&_input]:bg-card [&_input]:pl-10"
+        />
+        <FilterText
+          field="mobileNumber"
+          placeholder="Phone number"
+          className="min-w-[220px] flex-1 [&>svg]:left-3.5 [&>svg]:size-4 [&_input]:h-11 [&_input]:w-full [&_input]:rounded-xl [&_input]:bg-card [&_input]:pl-10"
+        />
       </TableToolbar>
       <FilterTabs field="city" options={DRIVER_CITY_OPTIONS} allLabel="All cities" />
+      <div className="[&>div]:rounded-2xl [&>div]:shadow-sm">
       <DataTable
         columns={columns}
         rows={rows}
@@ -377,6 +409,7 @@ export default function DriversListPage() {
           navigate(dest);
         }}
       />
+      </div>
     </div>
   );
 }

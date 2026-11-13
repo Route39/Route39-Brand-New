@@ -5,12 +5,11 @@ import { useTranslation } from "react-i18next";
 import { DataTable, type DataTableColumn } from "@/components/tables/DataTable";
 import { PageHeader } from "@/components/panel/PageHeader";
 import { Badge } from "@/components/ui/badge";
-import { FilterSelect, TableToolbar } from "@/components/tables/TableToolbar";
+import { ComplaintStatusCards } from "@/components/panel/ComplaintStatusCards";
+import { DateRangeFilter } from "@/components/tables/DateRangeFilter";
+import { FilterTabs, TableToolbar } from "@/components/tables/TableToolbar";
 import { COMPLAINTS_LIST_QUERY } from "@/lib/graphql/documents/complaints";
-import {
-  COMPLAINT_STATUS_OPTIONS,
-  SUBMITTED_BY_OPTIONS,
-} from "@/lib/panel/enum-options";
+import { SUBMITTED_BY_OPTIONS } from "@/lib/panel/enum-options";
 import {
   buildFilterInput,
   buildOffsetPaging,
@@ -100,13 +99,14 @@ export default function ComplaintsListPage() {
           defaultValue: "Customer support tickets requiring follow-up.",
         })}
       />
+      <DateRangeFilter field="inscriptionTimestamp" />
+      <ComplaintStatusCards />
       <TableToolbar>
-        <FilterSelect field="status" options={COMPLAINT_STATUS_OPTIONS} placeholder="Any status" width="12rem" />
-        <FilterSelect
+        <FilterTabs
           field="requestedByDriver"
           operator="is"
           options={SUBMITTED_BY_OPTIONS}
-          placeholder="Anyone"
+          allLabel="Anyone"
         />
       </TableToolbar>
       <DataTable

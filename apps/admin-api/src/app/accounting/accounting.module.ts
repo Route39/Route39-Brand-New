@@ -26,6 +26,7 @@ import { RiderTransactionEntity } from '@ridy/database';
 import { DriverTransactionEntity } from '@ridy/database';
 import { FleetTransactionEntity } from '@ridy/database';
 import { ProviderTransactionExportResolver } from './accounting.export.resolver';
+import { ProviderTransactionDriverResolver } from './provider-transaction-driver.resolver';
 
 @Module({
   imports: [
@@ -80,6 +81,7 @@ import { ProviderTransactionExportResolver } from './accounting.export.resolver'
     AccountingService,
     AccountingResolver,
     ProviderTransactionExportResolver,
+    ProviderTransactionDriverResolver,
   ],
 })
 export class AccountingModule {}

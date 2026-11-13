@@ -475,6 +475,7 @@ type ProviderTransaction {
   requestId: ID
   parkOrderId: ID
   shopOrderCartId: ID
+  driver: Driver
 }
 
 enum TransactionAction {
@@ -507,197 +508,111 @@ type ProviderWallet {
   currency: String!
 }
 
-type DeleteManyResponse {
-  """The number of records deleted."""
-  deletedCount: Int!
-}
-
-type UpdateManyResponse {
-  """The number of records updated."""
-  updatedCount: Int!
-}
-
-type OffsetPageInfo {
-  """true if paging forward and there are more records."""
-  hasNextPage: Boolean
-
-  """true if paging backwards and there are more records."""
-  hasPreviousPage: Boolean
-}
-
-type ProviderTransactionConnection {
-  """Paging information"""
-  pageInfo: OffsetPageInfo!
-
-  """Array of nodes."""
-  nodes: [ProviderTransaction!]!
-
-  """Fetch total count of records"""
-  totalCount: Int!
-}
-
-type ProviderTransactionAggregateGroupBy {
-  id: ID
-  action: TransactionAction
-  deductType: ProviderDeductTransactionType
-  rechargeType: ProviderRechargeTransactionType
-  expenseType: ProviderExpenseType
-  amount: Float
-  currency: String
-  operatorId: ID
-  requestId: ID
-  parkOrderId: ID
-  shopOrderCartId: ID
-}
-
-type ProviderTransactionCountAggregate {
-  id: Int
-  action: Int
-  deductType: Int
-  rechargeType: Int
-  expenseType: Int
-  amount: Int
-  currency: Int
-  operatorId: Int
-  requestId: Int
-  parkOrderId: Int
-  shopOrderCartId: Int
-}
-
-type ProviderTransactionSumAggregate {
-  id: Float
-  amount: Float
-  operatorId: Float
-  requestId: Float
-  parkOrderId: Float
-  shopOrderCartId: Float
-}
-
-type ProviderTransactionAvgAggregate {
-  id: Float
-  amount: Float
-  operatorId: Float
-  requestId: Float
-  parkOrderId: Float
-  shopOrderCartId: Float
-}
-
-type ProviderTransactionMinAggregate {
-  id: ID
-  action: TransactionAction
-  deductType: ProviderDeductTransactionType
-  rechargeType: ProviderRechargeTransactionType
-  expenseType: ProviderExpenseType
-  amount: Float
-  currency: String
-  operatorId: ID
-  requestId: ID
-  parkOrderId: ID
-  shopOrderCartId: ID
-}
-
-type ProviderTransactionMaxAggregate {
-  id: ID
-  action: TransactionAction
-  deductType: ProviderDeductTransactionType
-  rechargeType: ProviderRechargeTransactionType
-  expenseType: ProviderExpenseType
-  amount: Float
-  currency: String
-  operatorId: ID
-  requestId: ID
-  parkOrderId: ID
-  shopOrderCartId: ID
-}
-
-type ProviderTransactionAggregateResponse {
-  groupBy: ProviderTransactionAggregateGroupBy
-  count: ProviderTransactionCountAggregate
-  sum: ProviderTransactionSumAggregate
-  avg: ProviderTransactionAvgAggregate
-  min: ProviderTransactionMinAggregate
-  max: ProviderTransactionMaxAggregate
-}
-
-type Address {
+type FeedbackParameter {
   id: ID!
   title: String!
-  type: RiderAddressType!
-  details: String
-  location: Point!
-  riderId: ID!
+  isGood: Boolean!
+  feedbacksAggregate(
+    """Filter to find records to aggregate on"""
+    filter: FeedbackParameterAggregateFilter
+  ): [FeedbackParameterFeedbacksAggregateResponse!]!
+  feedbacks(
+    """Limit or page results."""
+    paging: OffsetPaging! = {limit: 10}
+
+    """Specify to filter the records returned."""
+    filter: FeedbackParameterFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [FeedbackParameterSort!]! = []
+  ): FeedbackParameterFeedbacksConnection!
 }
 
-enum RiderAddressType {
-  Home
-  Work
-  Partner
-  Gym
-  Parent
-  Cafe
-  Park
-  Other
+input FeedbackParameterAggregateFilter {
+  and: [FeedbackParameterAggregateFilter!]
+  or: [FeedbackParameterAggregateFilter!]
+  id: IDFilterComparison
+  title: StringFieldComparison
+  isGood: BooleanFieldComparison
 }
 
-type AddressConnection {
-  """Paging information"""
-  pageInfo: OffsetPageInfo!
-
-  """Array of nodes."""
-  nodes: [Address!]!
-
-  """Fetch total count of records"""
-  totalCount: Int!
+input IDFilterComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: ID
+  neq: ID
+  gt: ID
+  gte: ID
+  lt: ID
+  lte: ID
+  like: ID
+  notLike: ID
+  iLike: ID
+  notILike: ID
+  in: [ID!]
+  notIn: [ID!]
 }
 
-type Media {
-  id: ID!
-  address: String!
-  base64: String
+input StringFieldComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: String
+  neq: String
+  gt: String
+  gte: String
+  lt: String
+  lte: String
+  like: String
+  notLike: String
+  iLike: String
+  notILike: String
+  in: [String!]
+  notIn: [String!]
 }
 
-type Announcement {
-  id: ID!
-  title: String!
-  description: String!
-  url: String
-  userType: [AnnouncementUserType!]!
-  appType: AppType
-  startAt: DateTime!
-  expireAt: DateTime!
-  mediaId: ID
-  notificationSentAt: DateTime
-  media: Media
+input BooleanFieldComparison {
+  is: Boolean
+  isNot: Boolean
 }
 
-enum AnnouncementUserType {
-  Driver
-  Rider
-  Operator
+input OffsetPaging {
+  """Limit the number of records returned"""
+  limit: Int
+
+  """Offset to start returning records from"""
+  offset: Int
 }
 
-type AnnouncementDeleteResponse {
-  id: ID
-  title: String
-  description: String
-  url: String
-  userType: [AnnouncementUserType!]
-  appType: AppType
-  startAt: DateTime
-  expireAt: DateTime
-  mediaId: ID
-  notificationSentAt: DateTime
+input FeedbackParameterFilter {
+  and: [FeedbackParameterFilter!]
+  or: [FeedbackParameterFilter!]
+  id: IDFilterComparison
+  title: StringFieldComparison
+  isGood: BooleanFieldComparison
 }
 
-type AnnouncementConnection {
-  """Paging information"""
-  pageInfo: OffsetPageInfo!
+input FeedbackParameterSort {
+  field: FeedbackParameterSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
 
-  """Array of nodes."""
-  nodes: [Announcement!]!
+enum FeedbackParameterSortFields {
+  id
+  title
+  isGood
+}
 
-  """Fetch total count of records"""
-  totalCount: Int!
+"""Sort Directions"""
+enum SortDirection {
+  ASC
+  DESC
+}
+
+"""Sort Nulls Options"""
+enum SortNulls {
+  NULLS_FIRST
+  NULLS_LAST
 }
 
 type OperatorRole {
@@ -787,6 +702,12 @@ enum ParkingPermission {
   ORDER_EDIT
 }
 
+type Media {
+  id: ID!
+  address: String!
+  base64: String
+}
+
 type SessionInfo {
   createdAt: DateTime!
   lastActivityAt: DateTime
@@ -853,36 +774,11 @@ enum EnabledNotification {
   UserPendingVerification
 }
 
-input OffsetPaging {
-  """Limit the number of records returned"""
-  limit: Int
-
-  """Offset to start returning records from"""
-  offset: Int
-}
-
 input OperatorSessionFilter {
   and: [OperatorSessionFilter!]
   or: [OperatorSessionFilter!]
   id: IDFilterComparison
   operatorId: IDFilterComparison
-}
-
-input IDFilterComparison {
-  is: Boolean
-  isNot: Boolean
-  eq: ID
-  neq: ID
-  gt: ID
-  gte: ID
-  lt: ID
-  lte: ID
-  like: ID
-  notLike: ID
-  iLike: ID
-  notILike: ID
-  in: [ID!]
-  notIn: [ID!]
 }
 
 input OperatorSessionSort {
@@ -894,116 +790,6 @@ input OperatorSessionSort {
 enum OperatorSessionSortFields {
   id
   operatorId
-}
-
-"""Sort Directions"""
-enum SortDirection {
-  ASC
-  DESC
-}
-
-"""Sort Nulls Options"""
-enum SortNulls {
-  NULLS_FIRST
-  NULLS_LAST
-}
-
-type OperatorRoleDeleteResponse {
-  id: ID
-  title: String
-  permissions: [OperatorPermission!]
-  taxiPermissions: [TaxiPermission!]
-  shopPermissions: [ShopPermission!]
-  parkingPermissions: [ParkingPermission!]
-  allowedApps: [AppType!]
-}
-
-type OperatorDeleteResponse {
-  id: ID
-  firstName: String
-  createdAt: DateTime
-  updatedAt: DateTime
-  lastName: String
-  userName: String
-  mobileNumber: String
-  lastActivity: DateTime
-  enabledNotifications: [EnabledNotification!]
-  isBlocked: Boolean
-  email: String
-  roleId: ID
-}
-
-type OperatorConnection {
-  """Paging information"""
-  pageInfo: OffsetPageInfo!
-
-  """Array of nodes."""
-  nodes: [Operator!]!
-
-  """Fetch total count of records"""
-  totalCount: Int!
-}
-
-type OperatorSessionsConnection {
-  """Paging information"""
-  pageInfo: OffsetPageInfo!
-
-  """Array of nodes."""
-  nodes: [OperatorSession!]!
-
-  """Fetch total count of records"""
-  totalCount: Int!
-}
-
-type TokenObject {
-  token: String!
-}
-
-type TokenObject2 {
-  refreshToken: String!
-  accessToken: String!
-}
-
-type CarColor {
-  id: ID!
-  name: String!
-}
-
-type CarModel {
-  id: ID!
-  name: String!
-}
-
-type CarModelDeleteResponse {
-  id: ID
-  name: String
-}
-
-type CarModelConnection {
-  """Paging information"""
-  pageInfo: OffsetPageInfo!
-
-  """Array of nodes."""
-  nodes: [CarModel!]!
-
-  """Fetch total count of records"""
-  totalCount: Int!
-}
-
-type CarColorDeleteResponse {
-  id: ID
-  name: String
-}
-
-type CarColorConnection {
-  """Paging information"""
-  pageInfo: OffsetPageInfo!
-
-  """Array of nodes."""
-  nodes: [CarColor!]!
-
-  """Fetch total count of records"""
-  totalCount: Int!
 }
 
 type TaxiSupportRequestActivity {
@@ -1058,28 +844,6 @@ input OperatorFilter {
   isBlocked: BooleanFieldComparison
   email: StringFieldComparison
   roleId: IDFilterComparison
-}
-
-input StringFieldComparison {
-  is: Boolean
-  isNot: Boolean
-  eq: String
-  neq: String
-  gt: String
-  gte: String
-  lt: String
-  lte: String
-  like: String
-  notLike: String
-  iLike: String
-  notILike: String
-  in: [String!]
-  notIn: [String!]
-}
-
-input BooleanFieldComparison {
-  is: Boolean
-  isNot: Boolean
 }
 
 input OperatorSort {
@@ -1170,6 +934,411 @@ enum TaxiSupportRequestActivitySortFields {
   complaintId
 }
 
+type RegionCategory {
+  id: ID!
+  name: String!
+  currency: String!
+  regionsAggregate(
+    """Filter to find records to aggregate on"""
+    filter: RegionAggregateFilter
+  ): [RegionCategoryRegionsAggregateResponse!]!
+  regions(
+    """Limit or page results."""
+    paging: OffsetPaging! = {limit: 10}
+
+    """Specify to filter the records returned."""
+    filter: RegionFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [RegionSort!]! = []
+  ): RegionCategoryRegionsConnection!
+}
+
+input RegionAggregateFilter {
+  and: [RegionAggregateFilter!]
+  or: [RegionAggregateFilter!]
+  id: IDFilterComparison
+  name: StringFieldComparison
+  currency: StringFieldComparison
+  categoryId: IDFilterComparison
+}
+
+input RegionFilter {
+  and: [RegionFilter!]
+  or: [RegionFilter!]
+  id: IDFilterComparison
+  name: StringFieldComparison
+  currency: StringFieldComparison
+  categoryId: IDFilterComparison
+}
+
+input RegionSort {
+  field: RegionSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum RegionSortFields {
+  id
+  name
+  currency
+  categoryId
+}
+
+type Region {
+  id: ID!
+  name: String!
+  currency: String!
+  enabled: Boolean!
+  location: [[Point!]!]!
+  categoryId: ID
+  taxiOrdersAggregate(
+    """Filter to find records to aggregate on"""
+    filter: OrderAggregateFilter
+  ): [RegionTaxiOrdersAggregateResponse!]!
+  category: RegionCategory
+  taxiOrders(
+    """Limit or page results."""
+    paging: OffsetPaging! = {limit: 10}
+
+    """Specify to filter the records returned."""
+    filter: OrderFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [OrderSort!]! = []
+  ): RegionTaxiOrdersConnection!
+}
+
+input OrderAggregateFilter {
+  and: [OrderAggregateFilter!]
+  or: [OrderAggregateFilter!]
+  city: StringFieldComparison
+  id: IDFilterComparison
+  createdOn: DateFieldComparison
+  finishTimestamp: DateFieldComparison
+  type: TaxiOrderTypeFilterComparison
+  status: OrderStatusFilterComparison
+  distanceBest: IntFieldComparison
+  durationBest: IntFieldComparison
+  costBest: FloatFieldComparison
+  costAfterCoupon: FloatFieldComparison
+  gstAmount: FloatFieldComparison
+  platformFeeAmount: FloatFieldComparison
+  tipAmount: FloatFieldComparison
+  paymentGatewayFeeAmount: FloatFieldComparison
+  currency: StringFieldComparison
+  riderId: IDFilterComparison
+  paymentMode: PaymentModeFilterComparison
+  driverId: IDFilterComparison
+  regionId: IDFilterComparison
+  fleetId: IDFilterComparison
+  serviceId: IDFilterComparison
+}
+
+input DateFieldComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: DateTime
+  neq: DateTime
+  gt: DateTime
+  gte: DateTime
+  lt: DateTime
+  lte: DateTime
+  in: [DateTime!]
+  notIn: [DateTime!]
+  between: DateFieldComparisonBetween
+  notBetween: DateFieldComparisonBetween
+}
+
+input DateFieldComparisonBetween {
+  lower: DateTime!
+  upper: DateTime!
+}
+
+input TaxiOrderTypeFilterComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: TaxiOrderType
+  neq: TaxiOrderType
+  gt: TaxiOrderType
+  gte: TaxiOrderType
+  lt: TaxiOrderType
+  lte: TaxiOrderType
+  like: TaxiOrderType
+  notLike: TaxiOrderType
+  iLike: TaxiOrderType
+  notILike: TaxiOrderType
+  in: [TaxiOrderType!]
+  notIn: [TaxiOrderType!]
+}
+
+input OrderStatusFilterComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: OrderStatus
+  neq: OrderStatus
+  gt: OrderStatus
+  gte: OrderStatus
+  lt: OrderStatus
+  lte: OrderStatus
+  like: OrderStatus
+  notLike: OrderStatus
+  iLike: OrderStatus
+  notILike: OrderStatus
+  in: [OrderStatus!]
+  notIn: [OrderStatus!]
+}
+
+input IntFieldComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: Int
+  neq: Int
+  gt: Int
+  gte: Int
+  lt: Int
+  lte: Int
+  in: [Int!]
+  notIn: [Int!]
+  between: IntFieldComparisonBetween
+  notBetween: IntFieldComparisonBetween
+}
+
+input IntFieldComparisonBetween {
+  lower: Int!
+  upper: Int!
+}
+
+input FloatFieldComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: Float
+  neq: Float
+  gt: Float
+  gte: Float
+  lt: Float
+  lte: Float
+  in: [Float!]
+  notIn: [Float!]
+  between: FloatFieldComparisonBetween
+  notBetween: FloatFieldComparisonBetween
+}
+
+input FloatFieldComparisonBetween {
+  lower: Float!
+  upper: Float!
+}
+
+input PaymentModeFilterComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: PaymentMode
+  neq: PaymentMode
+  gt: PaymentMode
+  gte: PaymentMode
+  lt: PaymentMode
+  lte: PaymentMode
+  like: PaymentMode
+  notLike: PaymentMode
+  iLike: PaymentMode
+  notILike: PaymentMode
+  in: [PaymentMode!]
+  notIn: [PaymentMode!]
+}
+
+input OrderFilter {
+  and: [OrderFilter!]
+  or: [OrderFilter!]
+  city: StringFieldComparison
+  id: IDFilterComparison
+  createdOn: DateFieldComparison
+  finishTimestamp: DateFieldComparison
+  type: TaxiOrderTypeFilterComparison
+  status: OrderStatusFilterComparison
+  distanceBest: IntFieldComparison
+  durationBest: IntFieldComparison
+  costBest: FloatFieldComparison
+  costAfterCoupon: FloatFieldComparison
+  gstAmount: FloatFieldComparison
+  platformFeeAmount: FloatFieldComparison
+  tipAmount: FloatFieldComparison
+  paymentGatewayFeeAmount: FloatFieldComparison
+  currency: StringFieldComparison
+  riderId: IDFilterComparison
+  paymentMode: PaymentModeFilterComparison
+  driverId: IDFilterComparison
+  regionId: IDFilterComparison
+  fleetId: IDFilterComparison
+  serviceId: IDFilterComparison
+}
+
+input OrderSort {
+  field: OrderSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum OrderSortFields {
+  city
+  id
+  createdOn
+  finishTimestamp
+  type
+  status
+  distanceBest
+  durationBest
+  costBest
+  costAfterCoupon
+  gstAmount
+  platformFeeAmount
+  tipAmount
+  paymentGatewayFeeAmount
+  currency
+  riderId
+  paymentMode
+  driverId
+  regionId
+  fleetId
+  serviceId
+}
+
+type ServiceOption {
+  id: ID!
+  name: String!
+  type: ServiceOptionType!
+  additionalFee: Float
+  icon: ServiceOptionIcon!
+}
+
+enum ServiceOptionType {
+  Free
+  Paid
+  TwoWay
+}
+
+type Service {
+  id: ID!
+  name: String!
+  description: String
+  orderTypes: [TaxiOrderType!]!
+  personCapacity: Int
+  displayPriority: Int!
+  categoryId: ID!
+  baseFare: Float!
+  roundingFactor: Float
+  gstPercent: Float
+  platformFee: Float
+  paymentGatewayFee: Float
+  cargoExtraKmChargeAfter45Min: Float
+  cargoWaitingTimeMinutes: Int
+  perHundredMeters: Float!
+  perMinuteDrive: Float!
+  perMinuteWait: Float!
+  prepayPercent: Float!
+  minimumFee: Float!
+  searchRadius: Int!
+  paymentMethod: ServicePaymentMethod!
+  cancellationTotalFee: Float!
+  cancellationDriverShare: Float!
+  providerSharePercent: Int!
+  providerShareFlat: Float!
+  twoWayAvailable: Boolean!
+  maximumDestinationDistance: Int!
+  pricingMode: PricingMode!
+  rangePolicy: RangePolicy!
+  priceRangeMinPercent: Float!
+  priceRangeMaxPercent: Float!
+  timeMultipliers: [TimeMultiplier!]!
+  distanceMultipliers: [DistanceMultiplier!]!
+  weekdayMultipliers: [WeekdayMultiplier!]!
+  dateRangeMultipliers: [DateRangeMultiplier!]!
+  mediaId: ID
+  media: Media
+  regions(
+    """Specify to filter the records returned."""
+    filter: RegionFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [RegionSort!]! = []
+  ): [Region!]!
+  options(
+    """Specify to filter the records returned."""
+    filter: ServiceOptionFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [ServiceOptionSort!]! = []
+  ): [ServiceOption!]!
+}
+
+enum ServicePaymentMethod {
+  CashCredit
+  OnlyCredit
+  OnlyCash
+}
+
+input ServiceOptionFilter {
+  and: [ServiceOptionFilter!]
+  or: [ServiceOptionFilter!]
+  id: IDFilterComparison
+}
+
+input ServiceOptionSort {
+  field: ServiceOptionSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum ServiceOptionSortFields {
+  id
+}
+
+type Coupon {
+  id: ID!
+  code: String!
+  title: String!
+  description: String!
+  manyUsersCanUse: Int!
+  manyTimesUserCanUse: Int!
+  minimumCost: Float!
+  maximumCost: Float!
+  startAt: DateTime!
+  expireAt: DateTime!
+  discountPercent: Int!
+  discountFlat: Int!
+  creditGift: Float!
+  isEnabled: Boolean!
+  isFirstTravelOnly: Boolean!
+  allowedServices(
+    """Specify to filter the records returned."""
+    filter: ServiceFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [ServiceSort!]! = []
+  ): [Service!]!
+}
+
+input ServiceFilter {
+  and: [ServiceFilter!]
+  or: [ServiceFilter!]
+  id: IDFilterComparison
+  name: StringFieldComparison
+  displayPriority: IntFieldComparison
+  categoryId: IDFilterComparison
+}
+
+input ServiceSort {
+  field: ServiceSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum ServiceSortFields {
+  id
+  name
+  displayPriority
+  categoryId
+}
+
 type RiderAddress {
   id: ID!
   type: RiderAddressType!
@@ -1177,6 +1346,17 @@ type RiderAddress {
   details: String
   location: Point!
   riderId: ID!
+}
+
+enum RiderAddressType {
+  Home
+  Work
+  Partner
+  Gym
+  Parent
+  Cafe
+  Park
+  Other
 }
 
 type RiderWallet {
@@ -1313,26 +1493,6 @@ input RiderWalletAggregateFilter {
   riderId: IDFilterComparison
 }
 
-input FloatFieldComparison {
-  is: Boolean
-  isNot: Boolean
-  eq: Float
-  neq: Float
-  gt: Float
-  gte: Float
-  lt: Float
-  lte: Float
-  in: [Float!]
-  notIn: [Float!]
-  between: FloatFieldComparisonBetween
-  notBetween: FloatFieldComparisonBetween
-}
-
-input FloatFieldComparisonBetween {
-  lower: Float!
-  upper: Float!
-}
-
 input ParkingWalletAggregateFilter {
   and: [ParkingWalletAggregateFilter!]
   or: [ParkingWalletAggregateFilter!]
@@ -1378,26 +1538,6 @@ input TransactionActionFilterComparison {
   notILike: TransactionAction
   in: [TransactionAction!]
   notIn: [TransactionAction!]
-}
-
-input DateFieldComparison {
-  is: Boolean
-  isNot: Boolean
-  eq: DateTime
-  neq: DateTime
-  gt: DateTime
-  gte: DateTime
-  lt: DateTime
-  lte: DateTime
-  in: [DateTime!]
-  notIn: [DateTime!]
-  between: DateFieldComparisonBetween
-  notBetween: DateFieldComparisonBetween
-}
-
-input DateFieldComparisonBetween {
-  lower: DateTime!
-  upper: DateTime!
 }
 
 input RiderDeductTransactionTypeFilterComparison {
@@ -1471,103 +1611,6 @@ enum TransactionStatus {
   Done
   Canceled
   Rejected
-}
-
-input OrderAggregateFilter {
-  and: [OrderAggregateFilter!]
-  or: [OrderAggregateFilter!]
-  city: StringFieldComparison
-  id: IDFilterComparison
-  createdOn: DateFieldComparison
-  finishTimestamp: DateFieldComparison
-  type: TaxiOrderTypeFilterComparison
-  status: OrderStatusFilterComparison
-  distanceBest: IntFieldComparison
-  durationBest: IntFieldComparison
-  costBest: FloatFieldComparison
-  costAfterCoupon: FloatFieldComparison
-  gstAmount: FloatFieldComparison
-  platformFeeAmount: FloatFieldComparison
-  tipAmount: FloatFieldComparison
-  paymentGatewayFeeAmount: FloatFieldComparison
-  currency: StringFieldComparison
-  riderId: IDFilterComparison
-  paymentMode: PaymentModeFilterComparison
-  driverId: IDFilterComparison
-  regionId: IDFilterComparison
-  fleetId: IDFilterComparison
-  serviceId: IDFilterComparison
-}
-
-input TaxiOrderTypeFilterComparison {
-  is: Boolean
-  isNot: Boolean
-  eq: TaxiOrderType
-  neq: TaxiOrderType
-  gt: TaxiOrderType
-  gte: TaxiOrderType
-  lt: TaxiOrderType
-  lte: TaxiOrderType
-  like: TaxiOrderType
-  notLike: TaxiOrderType
-  iLike: TaxiOrderType
-  notILike: TaxiOrderType
-  in: [TaxiOrderType!]
-  notIn: [TaxiOrderType!]
-}
-
-input OrderStatusFilterComparison {
-  is: Boolean
-  isNot: Boolean
-  eq: OrderStatus
-  neq: OrderStatus
-  gt: OrderStatus
-  gte: OrderStatus
-  lt: OrderStatus
-  lte: OrderStatus
-  like: OrderStatus
-  notLike: OrderStatus
-  iLike: OrderStatus
-  notILike: OrderStatus
-  in: [OrderStatus!]
-  notIn: [OrderStatus!]
-}
-
-input IntFieldComparison {
-  is: Boolean
-  isNot: Boolean
-  eq: Int
-  neq: Int
-  gt: Int
-  gte: Int
-  lt: Int
-  lte: Int
-  in: [Int!]
-  notIn: [Int!]
-  between: IntFieldComparisonBetween
-  notBetween: IntFieldComparisonBetween
-}
-
-input IntFieldComparisonBetween {
-  lower: Int!
-  upper: Int!
-}
-
-input PaymentModeFilterComparison {
-  is: Boolean
-  isNot: Boolean
-  eq: PaymentMode
-  neq: PaymentMode
-  gt: PaymentMode
-  gte: PaymentMode
-  lt: PaymentMode
-  lte: PaymentMode
-  like: PaymentMode
-  notLike: PaymentMode
-  iLike: PaymentMode
-  notILike: PaymentMode
-  in: [PaymentMode!]
-  notIn: [PaymentMode!]
 }
 
 input RiderAddressFilter {
@@ -1676,62 +1719,6 @@ enum RiderTransactionSortFields {
   shopOrderId
   parkOrderParkOwnerId
   parkOrderCustomerId
-}
-
-input OrderFilter {
-  and: [OrderFilter!]
-  or: [OrderFilter!]
-  city: StringFieldComparison
-  id: IDFilterComparison
-  createdOn: DateFieldComparison
-  finishTimestamp: DateFieldComparison
-  type: TaxiOrderTypeFilterComparison
-  status: OrderStatusFilterComparison
-  distanceBest: IntFieldComparison
-  durationBest: IntFieldComparison
-  costBest: FloatFieldComparison
-  costAfterCoupon: FloatFieldComparison
-  gstAmount: FloatFieldComparison
-  platformFeeAmount: FloatFieldComparison
-  tipAmount: FloatFieldComparison
-  paymentGatewayFeeAmount: FloatFieldComparison
-  currency: StringFieldComparison
-  riderId: IDFilterComparison
-  paymentMode: PaymentModeFilterComparison
-  driverId: IDFilterComparison
-  regionId: IDFilterComparison
-  fleetId: IDFilterComparison
-  serviceId: IDFilterComparison
-}
-
-input OrderSort {
-  field: OrderSortFields!
-  direction: SortDirection!
-  nulls: SortNulls
-}
-
-enum OrderSortFields {
-  city
-  id
-  createdOn
-  finishTimestamp
-  type
-  status
-  distanceBest
-  durationBest
-  costBest
-  costAfterCoupon
-  gstAmount
-  platformFeeAmount
-  tipAmount
-  paymentGatewayFeeAmount
-  currency
-  riderId
-  paymentMode
-  driverId
-  regionId
-  fleetId
-  serviceId
 }
 
 type SavedPaymentMethod {
@@ -1878,52 +1865,935 @@ type PayoutAccount {
   payoutMethod: PayoutMethod!
 }
 
-type FeedbackParameter {
+type DriverTransaction {
   id: ID!
-  title: String!
-  isGood: Boolean!
-  feedbacksAggregate(
-    """Filter to find records to aggregate on"""
-    filter: FeedbackParameterAggregateFilter
-  ): [FeedbackParameterFeedbacksAggregateResponse!]!
-  feedbacks(
-    """Limit or page results."""
-    paging: OffsetPaging! = {limit: 10}
+  createdAt: DateTime!
+  action: TransactionAction!
+  status: TransactionStatus!
+  deductType: DriverDeductTransactionType
+  rechargeType: DriverRechargeTransactionType
+  amount: Float!
+  currency: String!
+  refrenceNumber: String
+  driverId: ID
+  paymentGatewayId: ID
+  payoutSessionId: ID
+  payoutAccountId: ID
+  payoutMethodId: ID
+  payoutSessionMethodId: ID
+  operatorId: ID
+  requestId: ID
+  description: String
+  operator: Operator
+  driver: Driver
+  payoutAccount: PayoutAccount
+  payoutMethod: PayoutMethod
+  paymentGateway: PaymentGateway
+  savedPaymentMethod: SavedPaymentMethod
+}
 
+enum DriverDeductTransactionType {
+  Withdraw
+  Commission
+  Correction
+}
+
+enum DriverRechargeTransactionType {
+  OrderFee
+  BankTransfer
+  InAppPayment
+  Gift
+}
+
+type FleetTransaction {
+  id: ID!
+  transactionTimestamp: DateTime!
+  status: TransactionStatus!
+  action: TransactionAction!
+  deductType: ProviderDeductTransactionType
+  rechargeType: ProviderRechargeTransactionType
+  amount: Float!
+  currency: String!
+  refrenceNumber: String
+  description: String
+  operatorId: ID
+  requestId: ID
+  fleetId: ID!
+  operator: Operator
+}
+
+type OrderMessage {
+  id: ID!
+  sentAt: DateTime!
+  sentByDriver: Boolean!
+  status: MessageStatus!
+  content: String!
+}
+
+enum MessageStatus {
+  Sent
+  Delivered
+  Seen
+}
+
+type RequestActivity {
+  id: ID!
+  createdAt: DateTime!
+  type: RequestActivityType!
+}
+
+enum RequestActivityType {
+  RequestedByOperator
+  BookedByOperator
+  RequestedByRider
+  BookedByRider
+  DriverAccepted
+  ArrivedToPickupPoint
+  CanceledByDriver
+  CanceledByRider
+  CanceledByOperator
+  Started
+  ArrivedToDestination
+  Paid
+  Reviewed
+  Expired
+}
+
+type ZonePrice {
+  id: ID!
+  name: String!
+  from: [[Point!]!]!
+  to: [[Point!]!]!
+  cost: Float!
+  timeMultipliers: [TimeMultiplier!]!
+  fleets(
     """Specify to filter the records returned."""
-    filter: FeedbackParameterFilter! = {}
+    filter: FleetFilter! = {}
 
     """Specify to sort results."""
-    sorting: [FeedbackParameterSort!]! = []
-  ): FeedbackParameterFeedbacksConnection!
+    sorting: [FleetSort!]! = []
+  ): [Fleet!]!
+  services(
+    """Specify to filter the records returned."""
+    filter: ServiceFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [ServiceSort!]! = []
+  ): [Service!]!
 }
 
-input FeedbackParameterAggregateFilter {
-  and: [FeedbackParameterAggregateFilter!]
-  or: [FeedbackParameterAggregateFilter!]
+input FleetFilter {
+  and: [FleetFilter!]
+  or: [FleetFilter!]
   id: IDFilterComparison
-  title: StringFieldComparison
-  isGood: BooleanFieldComparison
+  name: StringFieldComparison
 }
 
-input FeedbackParameterFilter {
-  and: [FeedbackParameterFilter!]
-  or: [FeedbackParameterFilter!]
-  id: IDFilterComparison
-  title: StringFieldComparison
-  isGood: BooleanFieldComparison
-}
-
-input FeedbackParameterSort {
-  field: FeedbackParameterSortFields!
+input FleetSort {
+  field: FleetSortFields!
   direction: SortDirection!
   nulls: SortNulls
 }
 
-enum FeedbackParameterSortFields {
+enum FleetSortFields {
   id
-  title
-  isGood
+  name
+}
+
+type FleetWallet {
+  id: ID!
+  balance: Float!
+  currency: String!
+  fleetId: ID!
+  fleet: Fleet!
+}
+
+type Fleet {
+  id: ID!
+  name: String!
+  createdAt: DateTime
+  isBlocked: Boolean!
+  phoneNumber: String!
+  mobileNumber: String!
+  userName: String
+  password: String
+  accountNumber: String!
+  commissionSharePercent: Float!
+  commissionShareFlat: Float!
+  feeMultiplier: Float
+  address: String
+  exclusivityAreas: [[Point!]!]
+  driversAggregate(
+    """Filter to find records to aggregate on"""
+    filter: DriverAggregateFilter
+  ): [FleetDriversAggregateResponse!]!
+  profilePicture: Media
+  wallet(
+    """Specify to filter the records returned."""
+    filter: FleetWalletFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [FleetWalletSort!]! = []
+  ): [FleetWallet!]!
+  transactions(
+    """Limit or page results."""
+    paging: OffsetPaging! = {limit: 10}
+
+    """Specify to filter the records returned."""
+    filter: FleetTransactionFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [FleetTransactionSort!]! = []
+  ): FleetTransactionsConnection!
+  zonePrices(
+    """Limit or page results."""
+    paging: OffsetPaging! = {limit: 10}
+
+    """Specify to filter the records returned."""
+    filter: ZonePriceFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [ZonePriceSort!]! = []
+  ): FleetZonePricesConnection!
+  drivers(
+    """Limit or page results."""
+    paging: OffsetPaging! = {limit: 10}
+
+    """Specify to filter the records returned."""
+    filter: DriverFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [DriverSort!]! = []
+  ): FleetDriversConnection!
+}
+
+input DriverAggregateFilter {
+  and: [DriverAggregateFilter!]
+  or: [DriverAggregateFilter!]
+  id: IDFilterComparison
+  driverCode: StringFieldComparison
+  fleetId: IDFilterComparison
+  firstName: StringFieldComparison
+  lastName: StringFieldComparison
+  mobileNumber: StringFieldComparison
+  city: StringFieldComparison
+  maxDeliveryPackageSize: DeliveryPackageSizeFilterComparison
+  carId: IDFilterComparison
+  carColorId: IDFilterComparison
+  carPlate: StringFieldComparison
+  status: DriverStatusFilterComparison
+  gender: GenderFilterComparison
+  rating: IntFieldComparison
+  reviewCount: IntFieldComparison
+  registrationTimestamp: DateFieldComparison
+  lastSeenTimestamp: DateFieldComparison
+}
+
+input DeliveryPackageSizeFilterComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: DeliveryPackageSize
+  neq: DeliveryPackageSize
+  gt: DeliveryPackageSize
+  gte: DeliveryPackageSize
+  lt: DeliveryPackageSize
+  lte: DeliveryPackageSize
+  like: DeliveryPackageSize
+  notLike: DeliveryPackageSize
+  iLike: DeliveryPackageSize
+  notILike: DeliveryPackageSize
+  in: [DeliveryPackageSize!]
+  notIn: [DeliveryPackageSize!]
+}
+
+enum DeliveryPackageSize {
+  Small
+  Medium
+  Large
+}
+
+input DriverStatusFilterComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: DriverStatus
+  neq: DriverStatus
+  gt: DriverStatus
+  gte: DriverStatus
+  lt: DriverStatus
+  lte: DriverStatus
+  like: DriverStatus
+  notLike: DriverStatus
+  iLike: DriverStatus
+  notILike: DriverStatus
+  in: [DriverStatus!]
+  notIn: [DriverStatus!]
+}
+
+enum DriverStatus {
+  Online
+  Offline
+  Blocked
+  InService
+  WaitingDocuments
+  PendingApproval
+  SoftReject
+  HardReject
+}
+
+input GenderFilterComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: Gender
+  neq: Gender
+  gt: Gender
+  gte: Gender
+  lt: Gender
+  lte: Gender
+  like: Gender
+  notLike: Gender
+  iLike: Gender
+  notILike: Gender
+  in: [Gender!]
+  notIn: [Gender!]
+}
+
+input FleetWalletFilter {
+  and: [FleetWalletFilter!]
+  or: [FleetWalletFilter!]
+  id: IDFilterComparison
+  balance: FloatFieldComparison
+  currency: StringFieldComparison
+  fleetId: IDFilterComparison
+}
+
+input FleetWalletSort {
+  field: FleetWalletSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum FleetWalletSortFields {
+  id
+  balance
+  currency
+  fleetId
+}
+
+input FleetTransactionFilter {
+  and: [FleetTransactionFilter!]
+  or: [FleetTransactionFilter!]
+  id: IDFilterComparison
+  status: TransactionStatusFilterComparison
+  action: TransactionActionFilterComparison
+  deductType: ProviderDeductTransactionTypeFilterComparison
+  rechargeType: ProviderRechargeTransactionTypeFilterComparison
+  operatorId: IDFilterComparison
+  requestId: IDFilterComparison
+  fleetId: IDFilterComparison
+}
+
+input ProviderDeductTransactionTypeFilterComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: ProviderDeductTransactionType
+  neq: ProviderDeductTransactionType
+  gt: ProviderDeductTransactionType
+  gte: ProviderDeductTransactionType
+  lt: ProviderDeductTransactionType
+  lte: ProviderDeductTransactionType
+  like: ProviderDeductTransactionType
+  notLike: ProviderDeductTransactionType
+  iLike: ProviderDeductTransactionType
+  notILike: ProviderDeductTransactionType
+  in: [ProviderDeductTransactionType!]
+  notIn: [ProviderDeductTransactionType!]
+}
+
+input ProviderRechargeTransactionTypeFilterComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: ProviderRechargeTransactionType
+  neq: ProviderRechargeTransactionType
+  gt: ProviderRechargeTransactionType
+  gte: ProviderRechargeTransactionType
+  lt: ProviderRechargeTransactionType
+  lte: ProviderRechargeTransactionType
+  like: ProviderRechargeTransactionType
+  notLike: ProviderRechargeTransactionType
+  iLike: ProviderRechargeTransactionType
+  notILike: ProviderRechargeTransactionType
+  in: [ProviderRechargeTransactionType!]
+  notIn: [ProviderRechargeTransactionType!]
+}
+
+input FleetTransactionSort {
+  field: FleetTransactionSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum FleetTransactionSortFields {
+  id
+  status
+  action
+  deductType
+  rechargeType
+  operatorId
+  requestId
+  fleetId
+}
+
+input ZonePriceFilter {
+  and: [ZonePriceFilter!]
+  or: [ZonePriceFilter!]
+  id: IDFilterComparison
+}
+
+input ZonePriceSort {
+  field: ZonePriceSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum ZonePriceSortFields {
+  id
+}
+
+input DriverFilter {
+  and: [DriverFilter!]
+  or: [DriverFilter!]
+  id: IDFilterComparison
+  driverCode: StringFieldComparison
+  fleetId: IDFilterComparison
+  firstName: StringFieldComparison
+  lastName: StringFieldComparison
+  mobileNumber: StringFieldComparison
+  city: StringFieldComparison
+  maxDeliveryPackageSize: DeliveryPackageSizeFilterComparison
+  carId: IDFilterComparison
+  carColorId: IDFilterComparison
+  carPlate: StringFieldComparison
+  status: DriverStatusFilterComparison
+  gender: GenderFilterComparison
+  rating: IntFieldComparison
+  reviewCount: IntFieldComparison
+  registrationTimestamp: DateFieldComparison
+  lastSeenTimestamp: DateFieldComparison
+}
+
+input DriverSort {
+  field: DriverSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum DriverSortFields {
+  id
+  driverCode
+  fleetId
+  firstName
+  lastName
+  mobileNumber
+  city
+  maxDeliveryPackageSize
+  carId
+  carColorId
+  carPlate
+  status
+  gender
+  rating
+  reviewCount
+  registrationTimestamp
+  lastSeenTimestamp
+}
+
+type Order {
+  city: String
+  id: ID!
+  createdOn: DateTime!
+  startTimestamp: DateTime
+  finishTimestamp: DateTime
+  type: TaxiOrderType!
+  status: OrderStatus!
+  distanceBest: Int!
+  durationBest: Int!
+  costBest: Float!
+  costAfterCoupon: Float!
+  waitCost: Float!
+  rideOptionsCost: Float!
+  taxCost: Float!
+  gstAmount: Float!
+  platformFeeAmount: Float!
+  tipAmount: Float
+  paymentGatewayFeeAmount: Float!
+  surgeAmount: Float
+  totalCost: Float
+  serviceCost: Float!
+  currency: String!
+  destinationArrivedTo: Int!
+  waitMinutes: Float!
+  addresses: [String!]!
+  points: [Point!]!
+  expectedTimestamp: DateTime
+  riderId: ID!
+  paymentMode: PaymentMode
+  driverId: ID
+  regionId: ID
+  fleetId: ID
+  serviceId: ID
+  directions: [Point!]
+  arrivedAt: DateTime
+  waitingChargeAmount: Float
+  waitSeconds: Int
+  complaintsAggregate(
+    """Filter to find records to aggregate on"""
+    filter: TaxiSupportRequestAggregateFilter
+  ): [OrderComplaintsAggregateResponse!]!
+  conversationAggregate(
+    """Filter to find records to aggregate on"""
+    filter: OrderMessageAggregateFilter
+  ): [OrderConversationAggregateResponse!]!
+  riderTransactionsAggregate(
+    """Filter to find records to aggregate on"""
+    filter: RiderTransactionAggregateFilter
+  ): [OrderRiderTransactionsAggregateResponse!]!
+  driverTransactionsAggregate(
+    """Filter to find records to aggregate on"""
+    filter: DriverTransactionAggregateFilter
+  ): [OrderDriverTransactionsAggregateResponse!]!
+  fleetTransactionsAggregate(
+    """Filter to find records to aggregate on"""
+    filter: FleetTransactionAggregateFilter
+  ): [OrderFleetTransactionsAggregateResponse!]!
+  providerTransactionsAggregate(
+    """Filter to find records to aggregate on"""
+    filter: ProviderTransactionAggregateFilter
+  ): [OrderProviderTransactionsAggregateResponse!]!
+  activitiesAggregate(
+    """Filter to find records to aggregate on"""
+    filter: RequestActivityAggregateFilter
+  ): [OrderActivitiesAggregateResponse!]!
+  optionsAggregate(
+    """Filter to find records to aggregate on"""
+    filter: ServiceOptionAggregateFilter
+  ): [OrderOptionsAggregateResponse!]!
+  driver: Driver
+  rider: Rider
+  service: Service
+  coupon: Coupon
+  paymentGateway: PaymentGateway
+  savedPaymentMethod: SavedPaymentMethod
+  fleet: Fleet
+  complaints(
+    """Specify to filter the records returned."""
+    filter: TaxiSupportRequestFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [TaxiSupportRequestSort!]! = []
+  ): [TaxiSupportRequest!]!
+  conversation(
+    """Specify to filter the records returned."""
+    filter: OrderMessageFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [OrderMessageSort!]! = []
+  ): [OrderMessage!]!
+  riderTransactions(
+    """Specify to filter the records returned."""
+    filter: RiderTransactionFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [RiderTransactionSort!]! = []
+  ): [RiderTransaction!]!
+  driverTransactions(
+    """Specify to filter the records returned."""
+    filter: DriverTransactionFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [DriverTransactionSort!]! = []
+  ): [DriverTransaction!]!
+  fleetTransactions(
+    """Specify to filter the records returned."""
+    filter: FleetTransactionFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [FleetTransactionSort!]! = []
+  ): [FleetTransaction!]!
+  providerTransactions(
+    """Specify to filter the records returned."""
+    filter: ProviderTransactionFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [ProviderTransactionSort!]! = []
+  ): [ProviderTransaction!]!
+  activities(
+    """Specify to filter the records returned."""
+    filter: RequestActivityFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [RequestActivitySort!]! = []
+  ): [RequestActivity!]!
+  options(
+    """Specify to filter the records returned."""
+    filter: ServiceOptionFilter! = {}
+
+    """Specify to sort results."""
+    sorting: [ServiceOptionSort!]! = []
+  ): [ServiceOption!]!
+}
+
+input TaxiSupportRequestAggregateFilter {
+  and: [TaxiSupportRequestAggregateFilter!]
+  or: [TaxiSupportRequestAggregateFilter!]
+  id: IDFilterComparison
+  inscriptionTimestamp: DateFieldComparison
+  requestedByDriver: BooleanFieldComparison
+  status: ComplaintStatusFilterComparison
+  requestId: IDFilterComparison
+  request: TaxiSupportRequestAggregateFilterOrderAggregateFilter
+}
+
+input ComplaintStatusFilterComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: ComplaintStatus
+  neq: ComplaintStatus
+  gt: ComplaintStatus
+  gte: ComplaintStatus
+  lt: ComplaintStatus
+  lte: ComplaintStatus
+  like: ComplaintStatus
+  notLike: ComplaintStatus
+  iLike: ComplaintStatus
+  notILike: ComplaintStatus
+  in: [ComplaintStatus!]
+  notIn: [ComplaintStatus!]
+}
+
+input TaxiSupportRequestAggregateFilterOrderAggregateFilter {
+  and: [TaxiSupportRequestAggregateFilterOrderAggregateFilter!]
+  or: [TaxiSupportRequestAggregateFilterOrderAggregateFilter!]
+  city: StringFieldComparison
+  id: IDFilterComparison
+  createdOn: DateFieldComparison
+  finishTimestamp: DateFieldComparison
+  type: TaxiOrderTypeFilterComparison
+  status: OrderStatusFilterComparison
+  distanceBest: IntFieldComparison
+  durationBest: IntFieldComparison
+  costBest: FloatFieldComparison
+  costAfterCoupon: FloatFieldComparison
+  gstAmount: FloatFieldComparison
+  platformFeeAmount: FloatFieldComparison
+  tipAmount: FloatFieldComparison
+  paymentGatewayFeeAmount: FloatFieldComparison
+  currency: StringFieldComparison
+  riderId: IDFilterComparison
+  paymentMode: PaymentModeFilterComparison
+  driverId: IDFilterComparison
+  regionId: IDFilterComparison
+  fleetId: IDFilterComparison
+  serviceId: IDFilterComparison
+}
+
+input OrderMessageAggregateFilter {
+  and: [OrderMessageAggregateFilter!]
+  or: [OrderMessageAggregateFilter!]
+  id: IDFilterComparison
+}
+
+input DriverTransactionAggregateFilter {
+  and: [DriverTransactionAggregateFilter!]
+  or: [DriverTransactionAggregateFilter!]
+  id: IDFilterComparison
+  createdAt: DateFieldComparison
+  action: TransactionActionFilterComparison
+  status: TransactionStatusFilterComparison
+  amount: NumberFieldComparison
+  currency: StringFieldComparison
+  driverId: IDFilterComparison
+  paymentGatewayId: IDFilterComparison
+  payoutSessionId: IDFilterComparison
+  payoutAccountId: IDFilterComparison
+  payoutMethodId: IDFilterComparison
+  payoutSessionMethodId: IDFilterComparison
+  payoutMethod: DriverTransactionAggregateFilterPayoutMethodAggregateFilter
+}
+
+input NumberFieldComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: Float
+  neq: Float
+  gt: Float
+  gte: Float
+  lt: Float
+  lte: Float
+  in: [Float!]
+  notIn: [Float!]
+  between: NumberFieldComparisonBetween
+  notBetween: NumberFieldComparisonBetween
+}
+
+input NumberFieldComparisonBetween {
+  lower: Float!
+  upper: Float!
+}
+
+input DriverTransactionAggregateFilterPayoutMethodAggregateFilter {
+  and: [DriverTransactionAggregateFilterPayoutMethodAggregateFilter!]
+  or: [DriverTransactionAggregateFilterPayoutMethodAggregateFilter!]
+  id: IDFilterComparison
+  enabled: BooleanFieldComparison
+  currency: StringFieldComparison
+  name: StringFieldComparison
+  type: PayoutMethodTypeFilterComparison
+}
+
+input PayoutMethodTypeFilterComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: PayoutMethodType
+  neq: PayoutMethodType
+  gt: PayoutMethodType
+  gte: PayoutMethodType
+  lt: PayoutMethodType
+  lte: PayoutMethodType
+  like: PayoutMethodType
+  notLike: PayoutMethodType
+  iLike: PayoutMethodType
+  notILike: PayoutMethodType
+  in: [PayoutMethodType!]
+  notIn: [PayoutMethodType!]
+}
+
+input FleetTransactionAggregateFilter {
+  and: [FleetTransactionAggregateFilter!]
+  or: [FleetTransactionAggregateFilter!]
+  id: IDFilterComparison
+  status: TransactionStatusFilterComparison
+  action: TransactionActionFilterComparison
+  deductType: ProviderDeductTransactionTypeFilterComparison
+  rechargeType: ProviderRechargeTransactionTypeFilterComparison
+  operatorId: IDFilterComparison
+  requestId: IDFilterComparison
+  fleetId: IDFilterComparison
+}
+
+input ProviderTransactionAggregateFilter {
+  and: [ProviderTransactionAggregateFilter!]
+  or: [ProviderTransactionAggregateFilter!]
+  id: IDFilterComparison
+  createdAt: DateFieldComparison
+  action: TransactionActionFilterComparison
+  deductType: ProviderDeductTransactionTypeFilterComparison
+  rechargeType: ProviderRechargeTransactionTypeFilterComparison
+  expenseType: ProviderExpenseTypeFilterComparison
+  amount: NumberFieldComparison
+  currency: StringFieldComparison
+  operatorId: IDFilterComparison
+  requestId: IDFilterComparison
+  parkOrderId: IDFilterComparison
+  shopOrderCartId: IDFilterComparison
+}
+
+input ProviderExpenseTypeFilterComparison {
+  is: Boolean
+  isNot: Boolean
+  eq: ProviderExpenseType
+  neq: ProviderExpenseType
+  gt: ProviderExpenseType
+  gte: ProviderExpenseType
+  lt: ProviderExpenseType
+  lte: ProviderExpenseType
+  like: ProviderExpenseType
+  notLike: ProviderExpenseType
+  iLike: ProviderExpenseType
+  notILike: ProviderExpenseType
+  in: [ProviderExpenseType!]
+  notIn: [ProviderExpenseType!]
+}
+
+input RequestActivityAggregateFilter {
+  and: [RequestActivityAggregateFilter!]
+  or: [RequestActivityAggregateFilter!]
+  id: IDFilterComparison
+}
+
+input ServiceOptionAggregateFilter {
+  and: [ServiceOptionAggregateFilter!]
+  or: [ServiceOptionAggregateFilter!]
+  id: IDFilterComparison
+}
+
+input TaxiSupportRequestFilter {
+  and: [TaxiSupportRequestFilter!]
+  or: [TaxiSupportRequestFilter!]
+  id: IDFilterComparison
+  inscriptionTimestamp: DateFieldComparison
+  requestedByDriver: BooleanFieldComparison
+  status: ComplaintStatusFilterComparison
+  requestId: IDFilterComparison
+  request: TaxiSupportRequestFilterOrderFilter
+}
+
+input TaxiSupportRequestFilterOrderFilter {
+  and: [TaxiSupportRequestFilterOrderFilter!]
+  or: [TaxiSupportRequestFilterOrderFilter!]
+  city: StringFieldComparison
+  id: IDFilterComparison
+  createdOn: DateFieldComparison
+  finishTimestamp: DateFieldComparison
+  type: TaxiOrderTypeFilterComparison
+  status: OrderStatusFilterComparison
+  distanceBest: IntFieldComparison
+  durationBest: IntFieldComparison
+  costBest: FloatFieldComparison
+  costAfterCoupon: FloatFieldComparison
+  gstAmount: FloatFieldComparison
+  platformFeeAmount: FloatFieldComparison
+  tipAmount: FloatFieldComparison
+  paymentGatewayFeeAmount: FloatFieldComparison
+  currency: StringFieldComparison
+  riderId: IDFilterComparison
+  paymentMode: PaymentModeFilterComparison
+  driverId: IDFilterComparison
+  regionId: IDFilterComparison
+  fleetId: IDFilterComparison
+  serviceId: IDFilterComparison
+}
+
+input TaxiSupportRequestSort {
+  field: TaxiSupportRequestSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum TaxiSupportRequestSortFields {
+  id
+  inscriptionTimestamp
+  requestedByDriver
+  status
+  requestId
+}
+
+input OrderMessageFilter {
+  and: [OrderMessageFilter!]
+  or: [OrderMessageFilter!]
+  id: IDFilterComparison
+}
+
+input OrderMessageSort {
+  field: OrderMessageSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum OrderMessageSortFields {
+  id
+}
+
+input DriverTransactionFilter {
+  and: [DriverTransactionFilter!]
+  or: [DriverTransactionFilter!]
+  id: IDFilterComparison
+  createdAt: DateFieldComparison
+  action: TransactionActionFilterComparison
+  status: TransactionStatusFilterComparison
+  amount: NumberFieldComparison
+  currency: StringFieldComparison
+  driverId: IDFilterComparison
+  paymentGatewayId: IDFilterComparison
+  payoutSessionId: IDFilterComparison
+  payoutAccountId: IDFilterComparison
+  payoutMethodId: IDFilterComparison
+  payoutSessionMethodId: IDFilterComparison
+  payoutMethod: DriverTransactionFilterPayoutMethodFilter
+}
+
+input DriverTransactionFilterPayoutMethodFilter {
+  and: [DriverTransactionFilterPayoutMethodFilter!]
+  or: [DriverTransactionFilterPayoutMethodFilter!]
+  id: IDFilterComparison
+  enabled: BooleanFieldComparison
+  currency: StringFieldComparison
+  name: StringFieldComparison
+  type: PayoutMethodTypeFilterComparison
+}
+
+input DriverTransactionSort {
+  field: DriverTransactionSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum DriverTransactionSortFields {
+  id
+  createdAt
+  action
+  status
+  amount
+  currency
+  driverId
+  paymentGatewayId
+  payoutSessionId
+  payoutAccountId
+  payoutMethodId
+  payoutSessionMethodId
+}
+
+input ProviderTransactionFilter {
+  and: [ProviderTransactionFilter!]
+  or: [ProviderTransactionFilter!]
+  id: IDFilterComparison
+  createdAt: DateFieldComparison
+  action: TransactionActionFilterComparison
+  deductType: ProviderDeductTransactionTypeFilterComparison
+  rechargeType: ProviderRechargeTransactionTypeFilterComparison
+  expenseType: ProviderExpenseTypeFilterComparison
+  amount: NumberFieldComparison
+  currency: StringFieldComparison
+  operatorId: IDFilterComparison
+  requestId: IDFilterComparison
+  parkOrderId: IDFilterComparison
+  shopOrderCartId: IDFilterComparison
+}
+
+input ProviderTransactionSort {
+  field: ProviderTransactionSortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum ProviderTransactionSortFields {
+  id
+  createdAt
+  action
+  deductType
+  rechargeType
+  expenseType
+  amount
+  currency
+  operatorId
+  requestId
+  parkOrderId
+  shopOrderCartId
+}
+
+input RequestActivityFilter {
+  and: [RequestActivityFilter!]
+  or: [RequestActivityFilter!]
+  id: IDFilterComparison
+}
+
+input RequestActivitySort {
+  field: RequestActivitySortFields!
+  direction: SortDirection!
+  nulls: SortNulls
+}
+
+enum RequestActivitySortFields {
+  id
 }
 
 type Feedback {
@@ -2167,23 +3037,6 @@ type Driver {
   ): DriverPayoutAccountsConnection!
 }
 
-enum DeliveryPackageSize {
-  Small
-  Medium
-  Large
-}
-
-enum DriverStatus {
-  Online
-  Offline
-  Blocked
-  InService
-  WaitingDocuments
-  PendingApproval
-  SoftReject
-  HardReject
-}
-
 input FeedbackAggregateFilter {
   and: [FeedbackAggregateFilter!]
   or: [FeedbackAggregateFilter!]
@@ -2262,71 +3115,6 @@ input MediaAggregateFilter {
   and: [MediaAggregateFilter!]
   or: [MediaAggregateFilter!]
   id: IDFilterComparison
-}
-
-input DriverTransactionAggregateFilter {
-  and: [DriverTransactionAggregateFilter!]
-  or: [DriverTransactionAggregateFilter!]
-  id: IDFilterComparison
-  createdAt: DateFieldComparison
-  action: TransactionActionFilterComparison
-  status: TransactionStatusFilterComparison
-  amount: NumberFieldComparison
-  currency: StringFieldComparison
-  driverId: IDFilterComparison
-  paymentGatewayId: IDFilterComparison
-  payoutSessionId: IDFilterComparison
-  payoutAccountId: IDFilterComparison
-  payoutMethodId: IDFilterComparison
-  payoutSessionMethodId: IDFilterComparison
-  payoutMethod: DriverTransactionAggregateFilterPayoutMethodAggregateFilter
-}
-
-input NumberFieldComparison {
-  is: Boolean
-  isNot: Boolean
-  eq: Float
-  neq: Float
-  gt: Float
-  gte: Float
-  lt: Float
-  lte: Float
-  in: [Float!]
-  notIn: [Float!]
-  between: NumberFieldComparisonBetween
-  notBetween: NumberFieldComparisonBetween
-}
-
-input NumberFieldComparisonBetween {
-  lower: Float!
-  upper: Float!
-}
-
-input DriverTransactionAggregateFilterPayoutMethodAggregateFilter {
-  and: [DriverTransactionAggregateFilterPayoutMethodAggregateFilter!]
-  or: [DriverTransactionAggregateFilterPayoutMethodAggregateFilter!]
-  id: IDFilterComparison
-  enabled: BooleanFieldComparison
-  currency: StringFieldComparison
-  name: StringFieldComparison
-  type: PayoutMethodTypeFilterComparison
-}
-
-input PayoutMethodTypeFilterComparison {
-  is: Boolean
-  isNot: Boolean
-  eq: PayoutMethodType
-  neq: PayoutMethodType
-  gt: PayoutMethodType
-  gte: PayoutMethodType
-  lt: PayoutMethodType
-  lte: PayoutMethodType
-  like: PayoutMethodType
-  notLike: PayoutMethodType
-  iLike: PayoutMethodType
-  notILike: PayoutMethodType
-  in: [PayoutMethodType!]
-  notIn: [PayoutMethodType!]
 }
 
 input PayoutAccountAggregateFilter {
@@ -2484,55 +3272,6 @@ enum MediaSortFields {
   id
 }
 
-input DriverTransactionFilter {
-  and: [DriverTransactionFilter!]
-  or: [DriverTransactionFilter!]
-  id: IDFilterComparison
-  createdAt: DateFieldComparison
-  action: TransactionActionFilterComparison
-  status: TransactionStatusFilterComparison
-  amount: NumberFieldComparison
-  currency: StringFieldComparison
-  driverId: IDFilterComparison
-  paymentGatewayId: IDFilterComparison
-  payoutSessionId: IDFilterComparison
-  payoutAccountId: IDFilterComparison
-  payoutMethodId: IDFilterComparison
-  payoutSessionMethodId: IDFilterComparison
-  payoutMethod: DriverTransactionFilterPayoutMethodFilter
-}
-
-input DriverTransactionFilterPayoutMethodFilter {
-  and: [DriverTransactionFilterPayoutMethodFilter!]
-  or: [DriverTransactionFilterPayoutMethodFilter!]
-  id: IDFilterComparison
-  enabled: BooleanFieldComparison
-  currency: StringFieldComparison
-  name: StringFieldComparison
-  type: PayoutMethodTypeFilterComparison
-}
-
-input DriverTransactionSort {
-  field: DriverTransactionSortFields!
-  direction: SortDirection!
-  nulls: SortNulls
-}
-
-enum DriverTransactionSortFields {
-  id
-  createdAt
-  action
-  status
-  amount
-  currency
-  driverId
-  paymentGatewayId
-  payoutSessionId
-  payoutAccountId
-  payoutMethodId
-  payoutSessionMethodId
-}
-
 input PayoutAccountFilter {
   and: [PayoutAccountFilter!]
   or: [PayoutAccountFilter!]
@@ -2551,1010 +3290,290 @@ enum PayoutAccountSortFields {
   isDefault
 }
 
-type DriverTransaction {
-  id: ID!
-  createdAt: DateTime!
-  action: TransactionAction!
-  status: TransactionStatus!
-  deductType: DriverDeductTransactionType
-  rechargeType: DriverRechargeTransactionType
-  amount: Float!
-  currency: String!
-  refrenceNumber: String
-  driverId: ID
-  paymentGatewayId: ID
-  payoutSessionId: ID
-  payoutAccountId: ID
-  payoutMethodId: ID
-  payoutSessionMethodId: ID
-  operatorId: ID
-  requestId: ID
-  description: String
-  operator: Operator
-  driver: Driver
-  payoutAccount: PayoutAccount
-  payoutMethod: PayoutMethod
-  paymentGateway: PaymentGateway
-  savedPaymentMethod: SavedPaymentMethod
+type DeleteManyResponse {
+  """The number of records deleted."""
+  deletedCount: Int!
 }
 
-enum DriverDeductTransactionType {
-  Withdraw
-  Commission
-  Correction
+type UpdateManyResponse {
+  """The number of records updated."""
+  updatedCount: Int!
 }
 
-enum DriverRechargeTransactionType {
-  OrderFee
-  BankTransfer
-  InAppPayment
-  Gift
+type OffsetPageInfo {
+  """true if paging forward and there are more records."""
+  hasNextPage: Boolean
+
+  """true if paging backwards and there are more records."""
+  hasPreviousPage: Boolean
 }
 
-type FleetTransaction {
-  id: ID!
-  transactionTimestamp: DateTime!
-  status: TransactionStatus!
-  action: TransactionAction!
+type ProviderTransactionConnection {
+  """Paging information"""
+  pageInfo: OffsetPageInfo!
+
+  """Array of nodes."""
+  nodes: [ProviderTransaction!]!
+
+  """Fetch total count of records"""
+  totalCount: Int!
+}
+
+type ProviderTransactionAggregateGroupBy {
+  id: ID
+  createdAt(by: GroupBy! = DAY): DateTime
+  action: TransactionAction
   deductType: ProviderDeductTransactionType
   rechargeType: ProviderRechargeTransactionType
-  amount: Float!
-  currency: String!
-  refrenceNumber: String
-  description: String
+  expenseType: ProviderExpenseType
+  amount: Float
+  currency: String
   operatorId: ID
   requestId: ID
-  fleetId: ID!
-  operator: Operator
+  parkOrderId: ID
+  shopOrderCartId: ID
 }
 
-type OrderMessage {
-  id: ID!
-  sentAt: DateTime!
-  sentByDriver: Boolean!
-  status: MessageStatus!
-  content: String!
+"""Group by"""
+enum GroupBy {
+  DAY
+  WEEK
+  MONTH
+  YEAR
 }
 
-enum MessageStatus {
-  Sent
-  Delivered
-  Seen
+type ProviderTransactionCountAggregate {
+  id: Int
+  createdAt: Int
+  action: Int
+  deductType: Int
+  rechargeType: Int
+  expenseType: Int
+  amount: Int
+  currency: Int
+  operatorId: Int
+  requestId: Int
+  parkOrderId: Int
+  shopOrderCartId: Int
 }
 
-type RequestActivity {
-  id: ID!
-  createdAt: DateTime!
-  type: RequestActivityType!
+type ProviderTransactionSumAggregate {
+  id: Float
+  amount: Float
+  operatorId: Float
+  requestId: Float
+  parkOrderId: Float
+  shopOrderCartId: Float
 }
 
-enum RequestActivityType {
-  RequestedByOperator
-  BookedByOperator
-  RequestedByRider
-  BookedByRider
-  DriverAccepted
-  ArrivedToPickupPoint
-  CanceledByDriver
-  CanceledByRider
-  CanceledByOperator
-  Started
-  ArrivedToDestination
-  Paid
-  Reviewed
-  Expired
+type ProviderTransactionAvgAggregate {
+  id: Float
+  amount: Float
+  operatorId: Float
+  requestId: Float
+  parkOrderId: Float
+  shopOrderCartId: Float
 }
 
-type ZonePrice {
-  id: ID!
-  name: String!
-  from: [[Point!]!]!
-  to: [[Point!]!]!
-  cost: Float!
-  timeMultipliers: [TimeMultiplier!]!
-  fleets(
-    """Specify to filter the records returned."""
-    filter: FleetFilter! = {}
-
-    """Specify to sort results."""
-    sorting: [FleetSort!]! = []
-  ): [Fleet!]!
-  services(
-    """Specify to filter the records returned."""
-    filter: ServiceFilter! = {}
-
-    """Specify to sort results."""
-    sorting: [ServiceSort!]! = []
-  ): [Service!]!
-}
-
-input FleetFilter {
-  and: [FleetFilter!]
-  or: [FleetFilter!]
-  id: IDFilterComparison
-  name: StringFieldComparison
-}
-
-input FleetSort {
-  field: FleetSortFields!
-  direction: SortDirection!
-  nulls: SortNulls
-}
-
-enum FleetSortFields {
-  id
-  name
-}
-
-input ServiceFilter {
-  and: [ServiceFilter!]
-  or: [ServiceFilter!]
-  id: IDFilterComparison
-  name: StringFieldComparison
-  displayPriority: IntFieldComparison
-  categoryId: IDFilterComparison
-}
-
-input ServiceSort {
-  field: ServiceSortFields!
-  direction: SortDirection!
-  nulls: SortNulls
-}
-
-enum ServiceSortFields {
-  id
-  name
-  displayPriority
-  categoryId
-}
-
-type FleetWallet {
-  id: ID!
-  balance: Float!
-  currency: String!
-  fleetId: ID!
-  fleet: Fleet!
-}
-
-type Fleet {
-  id: ID!
-  name: String!
+type ProviderTransactionMinAggregate {
+  id: ID
   createdAt: DateTime
-  isBlocked: Boolean!
-  phoneNumber: String!
-  mobileNumber: String!
-  userName: String
-  password: String
-  accountNumber: String!
-  commissionSharePercent: Float!
-  commissionShareFlat: Float!
-  feeMultiplier: Float
-  address: String
-  exclusivityAreas: [[Point!]!]
-  driversAggregate(
-    """Filter to find records to aggregate on"""
-    filter: DriverAggregateFilter
-  ): [FleetDriversAggregateResponse!]!
-  profilePicture: Media
-  wallet(
-    """Specify to filter the records returned."""
-    filter: FleetWalletFilter! = {}
-
-    """Specify to sort results."""
-    sorting: [FleetWalletSort!]! = []
-  ): [FleetWallet!]!
-  transactions(
-    """Limit or page results."""
-    paging: OffsetPaging! = {limit: 10}
-
-    """Specify to filter the records returned."""
-    filter: FleetTransactionFilter! = {}
-
-    """Specify to sort results."""
-    sorting: [FleetTransactionSort!]! = []
-  ): FleetTransactionsConnection!
-  zonePrices(
-    """Limit or page results."""
-    paging: OffsetPaging! = {limit: 10}
-
-    """Specify to filter the records returned."""
-    filter: ZonePriceFilter! = {}
-
-    """Specify to sort results."""
-    sorting: [ZonePriceSort!]! = []
-  ): FleetZonePricesConnection!
-  drivers(
-    """Limit or page results."""
-    paging: OffsetPaging! = {limit: 10}
-
-    """Specify to filter the records returned."""
-    filter: DriverFilter! = {}
-
-    """Specify to sort results."""
-    sorting: [DriverSort!]! = []
-  ): FleetDriversConnection!
+  action: TransactionAction
+  deductType: ProviderDeductTransactionType
+  rechargeType: ProviderRechargeTransactionType
+  expenseType: ProviderExpenseType
+  amount: Float
+  currency: String
+  operatorId: ID
+  requestId: ID
+  parkOrderId: ID
+  shopOrderCartId: ID
 }
 
-input DriverAggregateFilter {
-  and: [DriverAggregateFilter!]
-  or: [DriverAggregateFilter!]
-  id: IDFilterComparison
-  driverCode: StringFieldComparison
-  fleetId: IDFilterComparison
-  firstName: StringFieldComparison
-  lastName: StringFieldComparison
-  mobileNumber: StringFieldComparison
-  city: StringFieldComparison
-  maxDeliveryPackageSize: DeliveryPackageSizeFilterComparison
-  carId: IDFilterComparison
-  carColorId: IDFilterComparison
-  carPlate: StringFieldComparison
-  status: DriverStatusFilterComparison
-  gender: GenderFilterComparison
-  rating: IntFieldComparison
-  reviewCount: IntFieldComparison
-  registrationTimestamp: DateFieldComparison
-  lastSeenTimestamp: DateFieldComparison
+type ProviderTransactionMaxAggregate {
+  id: ID
+  createdAt: DateTime
+  action: TransactionAction
+  deductType: ProviderDeductTransactionType
+  rechargeType: ProviderRechargeTransactionType
+  expenseType: ProviderExpenseType
+  amount: Float
+  currency: String
+  operatorId: ID
+  requestId: ID
+  parkOrderId: ID
+  shopOrderCartId: ID
 }
 
-input DeliveryPackageSizeFilterComparison {
-  is: Boolean
-  isNot: Boolean
-  eq: DeliveryPackageSize
-  neq: DeliveryPackageSize
-  gt: DeliveryPackageSize
-  gte: DeliveryPackageSize
-  lt: DeliveryPackageSize
-  lte: DeliveryPackageSize
-  like: DeliveryPackageSize
-  notLike: DeliveryPackageSize
-  iLike: DeliveryPackageSize
-  notILike: DeliveryPackageSize
-  in: [DeliveryPackageSize!]
-  notIn: [DeliveryPackageSize!]
+type ProviderTransactionAggregateResponse {
+  groupBy: ProviderTransactionAggregateGroupBy
+  count: ProviderTransactionCountAggregate
+  sum: ProviderTransactionSumAggregate
+  avg: ProviderTransactionAvgAggregate
+  min: ProviderTransactionMinAggregate
+  max: ProviderTransactionMaxAggregate
 }
 
-input DriverStatusFilterComparison {
-  is: Boolean
-  isNot: Boolean
-  eq: DriverStatus
-  neq: DriverStatus
-  gt: DriverStatus
-  gte: DriverStatus
-  lt: DriverStatus
-  lte: DriverStatus
-  like: DriverStatus
-  notLike: DriverStatus
-  iLike: DriverStatus
-  notILike: DriverStatus
-  in: [DriverStatus!]
-  notIn: [DriverStatus!]
-}
-
-input GenderFilterComparison {
-  is: Boolean
-  isNot: Boolean
-  eq: Gender
-  neq: Gender
-  gt: Gender
-  gte: Gender
-  lt: Gender
-  lte: Gender
-  like: Gender
-  notLike: Gender
-  iLike: Gender
-  notILike: Gender
-  in: [Gender!]
-  notIn: [Gender!]
-}
-
-input FleetWalletFilter {
-  and: [FleetWalletFilter!]
-  or: [FleetWalletFilter!]
-  id: IDFilterComparison
-  balance: FloatFieldComparison
-  currency: StringFieldComparison
-  fleetId: IDFilterComparison
-}
-
-input FleetWalletSort {
-  field: FleetWalletSortFields!
-  direction: SortDirection!
-  nulls: SortNulls
-}
-
-enum FleetWalletSortFields {
-  id
-  balance
-  currency
-  fleetId
-}
-
-input FleetTransactionFilter {
-  and: [FleetTransactionFilter!]
-  or: [FleetTransactionFilter!]
-  id: IDFilterComparison
-  status: TransactionStatusFilterComparison
-  action: TransactionActionFilterComparison
-  deductType: ProviderDeductTransactionTypeFilterComparison
-  rechargeType: ProviderRechargeTransactionTypeFilterComparison
-  operatorId: IDFilterComparison
-  requestId: IDFilterComparison
-  fleetId: IDFilterComparison
-}
-
-input ProviderDeductTransactionTypeFilterComparison {
-  is: Boolean
-  isNot: Boolean
-  eq: ProviderDeductTransactionType
-  neq: ProviderDeductTransactionType
-  gt: ProviderDeductTransactionType
-  gte: ProviderDeductTransactionType
-  lt: ProviderDeductTransactionType
-  lte: ProviderDeductTransactionType
-  like: ProviderDeductTransactionType
-  notLike: ProviderDeductTransactionType
-  iLike: ProviderDeductTransactionType
-  notILike: ProviderDeductTransactionType
-  in: [ProviderDeductTransactionType!]
-  notIn: [ProviderDeductTransactionType!]
-}
-
-input ProviderRechargeTransactionTypeFilterComparison {
-  is: Boolean
-  isNot: Boolean
-  eq: ProviderRechargeTransactionType
-  neq: ProviderRechargeTransactionType
-  gt: ProviderRechargeTransactionType
-  gte: ProviderRechargeTransactionType
-  lt: ProviderRechargeTransactionType
-  lte: ProviderRechargeTransactionType
-  like: ProviderRechargeTransactionType
-  notLike: ProviderRechargeTransactionType
-  iLike: ProviderRechargeTransactionType
-  notILike: ProviderRechargeTransactionType
-  in: [ProviderRechargeTransactionType!]
-  notIn: [ProviderRechargeTransactionType!]
-}
-
-input FleetTransactionSort {
-  field: FleetTransactionSortFields!
-  direction: SortDirection!
-  nulls: SortNulls
-}
-
-enum FleetTransactionSortFields {
-  id
-  status
-  action
-  deductType
-  rechargeType
-  operatorId
-  requestId
-  fleetId
-}
-
-input ZonePriceFilter {
-  and: [ZonePriceFilter!]
-  or: [ZonePriceFilter!]
-  id: IDFilterComparison
-}
-
-input ZonePriceSort {
-  field: ZonePriceSortFields!
-  direction: SortDirection!
-  nulls: SortNulls
-}
-
-enum ZonePriceSortFields {
-  id
-}
-
-input DriverFilter {
-  and: [DriverFilter!]
-  or: [DriverFilter!]
-  id: IDFilterComparison
-  driverCode: StringFieldComparison
-  fleetId: IDFilterComparison
-  firstName: StringFieldComparison
-  lastName: StringFieldComparison
-  mobileNumber: StringFieldComparison
-  city: StringFieldComparison
-  maxDeliveryPackageSize: DeliveryPackageSizeFilterComparison
-  carId: IDFilterComparison
-  carColorId: IDFilterComparison
-  carPlate: StringFieldComparison
-  status: DriverStatusFilterComparison
-  gender: GenderFilterComparison
-  rating: IntFieldComparison
-  reviewCount: IntFieldComparison
-  registrationTimestamp: DateFieldComparison
-  lastSeenTimestamp: DateFieldComparison
-}
-
-input DriverSort {
-  field: DriverSortFields!
-  direction: SortDirection!
-  nulls: SortNulls
-}
-
-enum DriverSortFields {
-  id
-  driverCode
-  fleetId
-  firstName
-  lastName
-  mobileNumber
-  city
-  maxDeliveryPackageSize
-  carId
-  carColorId
-  carPlate
-  status
-  gender
-  rating
-  reviewCount
-  registrationTimestamp
-  lastSeenTimestamp
-}
-
-type ServiceOption {
+type Address {
   id: ID!
-  name: String!
-  type: ServiceOptionType!
-  additionalFee: Float
-  icon: ServiceOptionIcon!
-}
-
-enum ServiceOptionType {
-  Free
-  Paid
-  TwoWay
-}
-
-type Order {
-  city: String
-  id: ID!
-  createdOn: DateTime!
-  startTimestamp: DateTime
-  finishTimestamp: DateTime
-  type: TaxiOrderType!
-  status: OrderStatus!
-  distanceBest: Int!
-  durationBest: Int!
-  costBest: Float!
-  costAfterCoupon: Float!
-  waitCost: Float!
-  rideOptionsCost: Float!
-  taxCost: Float!
-  gstAmount: Float!
-  platformFeeAmount: Float!
-  tipAmount: Float
-  paymentGatewayFeeAmount: Float!
-  surgeAmount: Float
-  totalCost: Float
-  serviceCost: Float!
-  currency: String!
-  destinationArrivedTo: Int!
-  waitMinutes: Float!
-  addresses: [String!]!
-  points: [Point!]!
-  expectedTimestamp: DateTime
+  title: String!
+  type: RiderAddressType!
+  details: String
+  location: Point!
   riderId: ID!
-  paymentMode: PaymentMode
-  driverId: ID
-  regionId: ID
-  fleetId: ID
-  serviceId: ID
-  directions: [Point!]
-  arrivedAt: DateTime
-  waitingChargeAmount: Float
-  waitSeconds: Int
-  complaintsAggregate(
-    """Filter to find records to aggregate on"""
-    filter: TaxiSupportRequestAggregateFilter
-  ): [OrderComplaintsAggregateResponse!]!
-  conversationAggregate(
-    """Filter to find records to aggregate on"""
-    filter: OrderMessageAggregateFilter
-  ): [OrderConversationAggregateResponse!]!
-  riderTransactionsAggregate(
-    """Filter to find records to aggregate on"""
-    filter: RiderTransactionAggregateFilter
-  ): [OrderRiderTransactionsAggregateResponse!]!
-  driverTransactionsAggregate(
-    """Filter to find records to aggregate on"""
-    filter: DriverTransactionAggregateFilter
-  ): [OrderDriverTransactionsAggregateResponse!]!
-  fleetTransactionsAggregate(
-    """Filter to find records to aggregate on"""
-    filter: FleetTransactionAggregateFilter
-  ): [OrderFleetTransactionsAggregateResponse!]!
-  providerTransactionsAggregate(
-    """Filter to find records to aggregate on"""
-    filter: ProviderTransactionAggregateFilter
-  ): [OrderProviderTransactionsAggregateResponse!]!
-  activitiesAggregate(
-    """Filter to find records to aggregate on"""
-    filter: RequestActivityAggregateFilter
-  ): [OrderActivitiesAggregateResponse!]!
-  optionsAggregate(
-    """Filter to find records to aggregate on"""
-    filter: ServiceOptionAggregateFilter
-  ): [OrderOptionsAggregateResponse!]!
-  driver: Driver
-  rider: Rider
-  service: Service
-  coupon: Coupon
-  paymentGateway: PaymentGateway
-  savedPaymentMethod: SavedPaymentMethod
-  fleet: Fleet
-  complaints(
-    """Specify to filter the records returned."""
-    filter: TaxiSupportRequestFilter! = {}
-
-    """Specify to sort results."""
-    sorting: [TaxiSupportRequestSort!]! = []
-  ): [TaxiSupportRequest!]!
-  conversation(
-    """Specify to filter the records returned."""
-    filter: OrderMessageFilter! = {}
-
-    """Specify to sort results."""
-    sorting: [OrderMessageSort!]! = []
-  ): [OrderMessage!]!
-  riderTransactions(
-    """Specify to filter the records returned."""
-    filter: RiderTransactionFilter! = {}
-
-    """Specify to sort results."""
-    sorting: [RiderTransactionSort!]! = []
-  ): [RiderTransaction!]!
-  driverTransactions(
-    """Specify to filter the records returned."""
-    filter: DriverTransactionFilter! = {}
-
-    """Specify to sort results."""
-    sorting: [DriverTransactionSort!]! = []
-  ): [DriverTransaction!]!
-  fleetTransactions(
-    """Specify to filter the records returned."""
-    filter: FleetTransactionFilter! = {}
-
-    """Specify to sort results."""
-    sorting: [FleetTransactionSort!]! = []
-  ): [FleetTransaction!]!
-  providerTransactions(
-    """Specify to filter the records returned."""
-    filter: ProviderTransactionFilter! = {}
-
-    """Specify to sort results."""
-    sorting: [ProviderTransactionSort!]! = []
-  ): [ProviderTransaction!]!
-  activities(
-    """Specify to filter the records returned."""
-    filter: RequestActivityFilter! = {}
-
-    """Specify to sort results."""
-    sorting: [RequestActivitySort!]! = []
-  ): [RequestActivity!]!
-  options(
-    """Specify to filter the records returned."""
-    filter: ServiceOptionFilter! = {}
-
-    """Specify to sort results."""
-    sorting: [ServiceOptionSort!]! = []
-  ): [ServiceOption!]!
 }
 
-input TaxiSupportRequestAggregateFilter {
-  and: [TaxiSupportRequestAggregateFilter!]
-  or: [TaxiSupportRequestAggregateFilter!]
-  id: IDFilterComparison
-  requestedByDriver: BooleanFieldComparison
-  status: ComplaintStatusFilterComparison
-  requestId: IDFilterComparison
-  request: TaxiSupportRequestAggregateFilterOrderAggregateFilter
+type AddressConnection {
+  """Paging information"""
+  pageInfo: OffsetPageInfo!
+
+  """Array of nodes."""
+  nodes: [Address!]!
+
+  """Fetch total count of records"""
+  totalCount: Int!
 }
 
-input ComplaintStatusFilterComparison {
-  is: Boolean
-  isNot: Boolean
-  eq: ComplaintStatus
-  neq: ComplaintStatus
-  gt: ComplaintStatus
-  gte: ComplaintStatus
-  lt: ComplaintStatus
-  lte: ComplaintStatus
-  like: ComplaintStatus
-  notLike: ComplaintStatus
-  iLike: ComplaintStatus
-  notILike: ComplaintStatus
-  in: [ComplaintStatus!]
-  notIn: [ComplaintStatus!]
-}
-
-input TaxiSupportRequestAggregateFilterOrderAggregateFilter {
-  and: [TaxiSupportRequestAggregateFilterOrderAggregateFilter!]
-  or: [TaxiSupportRequestAggregateFilterOrderAggregateFilter!]
-  city: StringFieldComparison
-  id: IDFilterComparison
-  createdOn: DateFieldComparison
-  finishTimestamp: DateFieldComparison
-  type: TaxiOrderTypeFilterComparison
-  status: OrderStatusFilterComparison
-  distanceBest: IntFieldComparison
-  durationBest: IntFieldComparison
-  costBest: FloatFieldComparison
-  costAfterCoupon: FloatFieldComparison
-  gstAmount: FloatFieldComparison
-  platformFeeAmount: FloatFieldComparison
-  tipAmount: FloatFieldComparison
-  paymentGatewayFeeAmount: FloatFieldComparison
-  currency: StringFieldComparison
-  riderId: IDFilterComparison
-  paymentMode: PaymentModeFilterComparison
-  driverId: IDFilterComparison
-  regionId: IDFilterComparison
-  fleetId: IDFilterComparison
-  serviceId: IDFilterComparison
-}
-
-input OrderMessageAggregateFilter {
-  and: [OrderMessageAggregateFilter!]
-  or: [OrderMessageAggregateFilter!]
-  id: IDFilterComparison
-}
-
-input FleetTransactionAggregateFilter {
-  and: [FleetTransactionAggregateFilter!]
-  or: [FleetTransactionAggregateFilter!]
-  id: IDFilterComparison
-  status: TransactionStatusFilterComparison
-  action: TransactionActionFilterComparison
-  deductType: ProviderDeductTransactionTypeFilterComparison
-  rechargeType: ProviderRechargeTransactionTypeFilterComparison
-  operatorId: IDFilterComparison
-  requestId: IDFilterComparison
-  fleetId: IDFilterComparison
-}
-
-input ProviderTransactionAggregateFilter {
-  and: [ProviderTransactionAggregateFilter!]
-  or: [ProviderTransactionAggregateFilter!]
-  id: IDFilterComparison
-  action: TransactionActionFilterComparison
-  deductType: ProviderDeductTransactionTypeFilterComparison
-  rechargeType: ProviderRechargeTransactionTypeFilterComparison
-  expenseType: ProviderExpenseTypeFilterComparison
-  amount: NumberFieldComparison
-  currency: StringFieldComparison
-  operatorId: IDFilterComparison
-  requestId: IDFilterComparison
-  parkOrderId: IDFilterComparison
-  shopOrderCartId: IDFilterComparison
-}
-
-input ProviderExpenseTypeFilterComparison {
-  is: Boolean
-  isNot: Boolean
-  eq: ProviderExpenseType
-  neq: ProviderExpenseType
-  gt: ProviderExpenseType
-  gte: ProviderExpenseType
-  lt: ProviderExpenseType
-  lte: ProviderExpenseType
-  like: ProviderExpenseType
-  notLike: ProviderExpenseType
-  iLike: ProviderExpenseType
-  notILike: ProviderExpenseType
-  in: [ProviderExpenseType!]
-  notIn: [ProviderExpenseType!]
-}
-
-input RequestActivityAggregateFilter {
-  and: [RequestActivityAggregateFilter!]
-  or: [RequestActivityAggregateFilter!]
-  id: IDFilterComparison
-}
-
-input ServiceOptionAggregateFilter {
-  and: [ServiceOptionAggregateFilter!]
-  or: [ServiceOptionAggregateFilter!]
-  id: IDFilterComparison
-}
-
-input TaxiSupportRequestFilter {
-  and: [TaxiSupportRequestFilter!]
-  or: [TaxiSupportRequestFilter!]
-  id: IDFilterComparison
-  requestedByDriver: BooleanFieldComparison
-  status: ComplaintStatusFilterComparison
-  requestId: IDFilterComparison
-  request: TaxiSupportRequestFilterOrderFilter
-}
-
-input TaxiSupportRequestFilterOrderFilter {
-  and: [TaxiSupportRequestFilterOrderFilter!]
-  or: [TaxiSupportRequestFilterOrderFilter!]
-  city: StringFieldComparison
-  id: IDFilterComparison
-  createdOn: DateFieldComparison
-  finishTimestamp: DateFieldComparison
-  type: TaxiOrderTypeFilterComparison
-  status: OrderStatusFilterComparison
-  distanceBest: IntFieldComparison
-  durationBest: IntFieldComparison
-  costBest: FloatFieldComparison
-  costAfterCoupon: FloatFieldComparison
-  gstAmount: FloatFieldComparison
-  platformFeeAmount: FloatFieldComparison
-  tipAmount: FloatFieldComparison
-  paymentGatewayFeeAmount: FloatFieldComparison
-  currency: StringFieldComparison
-  riderId: IDFilterComparison
-  paymentMode: PaymentModeFilterComparison
-  driverId: IDFilterComparison
-  regionId: IDFilterComparison
-  fleetId: IDFilterComparison
-  serviceId: IDFilterComparison
-}
-
-input TaxiSupportRequestSort {
-  field: TaxiSupportRequestSortFields!
-  direction: SortDirection!
-  nulls: SortNulls
-}
-
-enum TaxiSupportRequestSortFields {
-  id
-  requestedByDriver
-  status
-  requestId
-}
-
-input OrderMessageFilter {
-  and: [OrderMessageFilter!]
-  or: [OrderMessageFilter!]
-  id: IDFilterComparison
-}
-
-input OrderMessageSort {
-  field: OrderMessageSortFields!
-  direction: SortDirection!
-  nulls: SortNulls
-}
-
-enum OrderMessageSortFields {
-  id
-}
-
-input ProviderTransactionFilter {
-  and: [ProviderTransactionFilter!]
-  or: [ProviderTransactionFilter!]
-  id: IDFilterComparison
-  action: TransactionActionFilterComparison
-  deductType: ProviderDeductTransactionTypeFilterComparison
-  rechargeType: ProviderRechargeTransactionTypeFilterComparison
-  expenseType: ProviderExpenseTypeFilterComparison
-  amount: NumberFieldComparison
-  currency: StringFieldComparison
-  operatorId: IDFilterComparison
-  requestId: IDFilterComparison
-  parkOrderId: IDFilterComparison
-  shopOrderCartId: IDFilterComparison
-}
-
-input ProviderTransactionSort {
-  field: ProviderTransactionSortFields!
-  direction: SortDirection!
-  nulls: SortNulls
-}
-
-enum ProviderTransactionSortFields {
-  id
-  action
-  deductType
-  rechargeType
-  expenseType
-  amount
-  currency
-  operatorId
-  requestId
-  parkOrderId
-  shopOrderCartId
-}
-
-input RequestActivityFilter {
-  and: [RequestActivityFilter!]
-  or: [RequestActivityFilter!]
-  id: IDFilterComparison
-}
-
-input RequestActivitySort {
-  field: RequestActivitySortFields!
-  direction: SortDirection!
-  nulls: SortNulls
-}
-
-enum RequestActivitySortFields {
-  id
-}
-
-input ServiceOptionFilter {
-  and: [ServiceOptionFilter!]
-  or: [ServiceOptionFilter!]
-  id: IDFilterComparison
-}
-
-input ServiceOptionSort {
-  field: ServiceOptionSortFields!
-  direction: SortDirection!
-  nulls: SortNulls
-}
-
-enum ServiceOptionSortFields {
-  id
-}
-
-type RegionCategory {
+type Announcement {
   id: ID!
-  name: String!
-  currency: String!
-  regionsAggregate(
-    """Filter to find records to aggregate on"""
-    filter: RegionAggregateFilter
-  ): [RegionCategoryRegionsAggregateResponse!]!
-  regions(
-    """Limit or page results."""
-    paging: OffsetPaging! = {limit: 10}
-
-    """Specify to filter the records returned."""
-    filter: RegionFilter! = {}
-
-    """Specify to sort results."""
-    sorting: [RegionSort!]! = []
-  ): RegionCategoryRegionsConnection!
-}
-
-input RegionAggregateFilter {
-  and: [RegionAggregateFilter!]
-  or: [RegionAggregateFilter!]
-  id: IDFilterComparison
-  name: StringFieldComparison
-  currency: StringFieldComparison
-  categoryId: IDFilterComparison
-}
-
-input RegionFilter {
-  and: [RegionFilter!]
-  or: [RegionFilter!]
-  id: IDFilterComparison
-  name: StringFieldComparison
-  currency: StringFieldComparison
-  categoryId: IDFilterComparison
-}
-
-input RegionSort {
-  field: RegionSortFields!
-  direction: SortDirection!
-  nulls: SortNulls
-}
-
-enum RegionSortFields {
-  id
-  name
-  currency
-  categoryId
-}
-
-type Region {
-  id: ID!
-  name: String!
-  currency: String!
-  enabled: Boolean!
-  location: [[Point!]!]!
-  categoryId: ID
-  taxiOrdersAggregate(
-    """Filter to find records to aggregate on"""
-    filter: OrderAggregateFilter
-  ): [RegionTaxiOrdersAggregateResponse!]!
-  category: RegionCategory
-  taxiOrders(
-    """Limit or page results."""
-    paging: OffsetPaging! = {limit: 10}
-
-    """Specify to filter the records returned."""
-    filter: OrderFilter! = {}
-
-    """Specify to sort results."""
-    sorting: [OrderSort!]! = []
-  ): RegionTaxiOrdersConnection!
-}
-
-type Service {
-  id: ID!
-  name: String!
-  description: String
-  orderTypes: [TaxiOrderType!]!
-  personCapacity: Int
-  displayPriority: Int!
-  categoryId: ID!
-  baseFare: Float!
-  roundingFactor: Float
-  gstPercent: Float
-  platformFee: Float
-  paymentGatewayFee: Float
-  cargoExtraKmChargeAfter45Min: Float
-  cargoWaitingTimeMinutes: Int
-  perHundredMeters: Float!
-  perMinuteDrive: Float!
-  perMinuteWait: Float!
-  prepayPercent: Float!
-  minimumFee: Float!
-  searchRadius: Int!
-  paymentMethod: ServicePaymentMethod!
-  cancellationTotalFee: Float!
-  cancellationDriverShare: Float!
-  providerSharePercent: Int!
-  providerShareFlat: Float!
-  twoWayAvailable: Boolean!
-  maximumDestinationDistance: Int!
-  pricingMode: PricingMode!
-  rangePolicy: RangePolicy!
-  priceRangeMinPercent: Float!
-  priceRangeMaxPercent: Float!
-  timeMultipliers: [TimeMultiplier!]!
-  distanceMultipliers: [DistanceMultiplier!]!
-  weekdayMultipliers: [WeekdayMultiplier!]!
-  dateRangeMultipliers: [DateRangeMultiplier!]!
-  mediaId: ID
-  media: Media
-  regions(
-    """Specify to filter the records returned."""
-    filter: RegionFilter! = {}
-
-    """Specify to sort results."""
-    sorting: [RegionSort!]! = []
-  ): [Region!]!
-  options(
-    """Specify to filter the records returned."""
-    filter: ServiceOptionFilter! = {}
-
-    """Specify to sort results."""
-    sorting: [ServiceOptionSort!]! = []
-  ): [ServiceOption!]!
-}
-
-enum ServicePaymentMethod {
-  CashCredit
-  OnlyCredit
-  OnlyCash
-}
-
-type Coupon {
-  id: ID!
-  code: String!
   title: String!
   description: String!
-  manyUsersCanUse: Int!
-  manyTimesUserCanUse: Int!
-  minimumCost: Float!
-  maximumCost: Float!
+  url: String
+  userType: [AnnouncementUserType!]!
+  appType: AppType
   startAt: DateTime!
   expireAt: DateTime!
-  discountPercent: Int!
-  discountFlat: Int!
-  creditGift: Float!
-  isEnabled: Boolean!
-  isFirstTravelOnly: Boolean!
-  allowedServices(
-    """Specify to filter the records returned."""
-    filter: ServiceFilter! = {}
+  mediaId: ID
+  notificationSentAt: DateTime
+  media: Media
+}
 
-    """Specify to sort results."""
-    sorting: [ServiceSort!]! = []
-  ): [Service!]!
+enum AnnouncementUserType {
+  Driver
+  Rider
+  Operator
+}
+
+type AnnouncementDeleteResponse {
+  id: ID
+  title: String
+  description: String
+  url: String
+  userType: [AnnouncementUserType!]
+  appType: AppType
+  startAt: DateTime
+  expireAt: DateTime
+  mediaId: ID
+  notificationSentAt: DateTime
+}
+
+type AnnouncementConnection {
+  """Paging information"""
+  pageInfo: OffsetPageInfo!
+
+  """Array of nodes."""
+  nodes: [Announcement!]!
+
+  """Fetch total count of records"""
+  totalCount: Int!
+}
+
+type OperatorRoleDeleteResponse {
+  id: ID
+  title: String
+  permissions: [OperatorPermission!]
+  taxiPermissions: [TaxiPermission!]
+  shopPermissions: [ShopPermission!]
+  parkingPermissions: [ParkingPermission!]
+  allowedApps: [AppType!]
+}
+
+type OperatorDeleteResponse {
+  id: ID
+  firstName: String
+  createdAt: DateTime
+  updatedAt: DateTime
+  lastName: String
+  userName: String
+  mobileNumber: String
+  lastActivity: DateTime
+  enabledNotifications: [EnabledNotification!]
+  isBlocked: Boolean
+  email: String
+  roleId: ID
+}
+
+type OperatorConnection {
+  """Paging information"""
+  pageInfo: OffsetPageInfo!
+
+  """Array of nodes."""
+  nodes: [Operator!]!
+
+  """Fetch total count of records"""
+  totalCount: Int!
+}
+
+type OperatorSessionsConnection {
+  """Paging information"""
+  pageInfo: OffsetPageInfo!
+
+  """Array of nodes."""
+  nodes: [OperatorSession!]!
+
+  """Fetch total count of records"""
+  totalCount: Int!
+}
+
+type TokenObject {
+  token: String!
+}
+
+type TokenObject2 {
+  refreshToken: String!
+  accessToken: String!
+}
+
+type CarColor {
+  id: ID!
+  name: String!
+}
+
+type CarModel {
+  id: ID!
+  name: String!
+}
+
+type CarModelDeleteResponse {
+  id: ID
+  name: String
+}
+
+type CarModelConnection {
+  """Paging information"""
+  pageInfo: OffsetPageInfo!
+
+  """Array of nodes."""
+  nodes: [CarModel!]!
+
+  """Fetch total count of records"""
+  totalCount: Int!
+}
+
+type CarColorDeleteResponse {
+  id: ID
+  name: String
+}
+
+type CarColorConnection {
+  """Paging information"""
+  pageInfo: OffsetPageInfo!
+
+  """Array of nodes."""
+  nodes: [CarColor!]!
+
+  """Fetch total count of records"""
+  totalCount: Int!
 }
 
 type CampaignCode {
@@ -3846,14 +3865,6 @@ type DriverAggregateGroupBy {
   reviewCount: Int
   registrationTimestamp(by: GroupBy! = DAY): DateTime
   lastSeenTimestamp(by: GroupBy! = DAY): DateTime
-}
-
-"""Group by"""
-enum GroupBy {
-  DAY
-  WEEK
-  MONTH
-  YEAR
 }
 
 type DriverCountAggregate {
@@ -5454,6 +5465,7 @@ type OrderActivitiesAggregateResponse {
 
 type OrderProviderTransactionsAggregateGroupBy {
   id: ID
+  createdAt: DateTime
   action: TransactionAction
   deductType: ProviderDeductTransactionType
   rechargeType: ProviderRechargeTransactionType
@@ -5468,6 +5480,7 @@ type OrderProviderTransactionsAggregateGroupBy {
 
 type OrderProviderTransactionsCountAggregate {
   id: Int
+  createdAt: Int
   action: Int
   deductType: Int
   rechargeType: Int
@@ -5500,6 +5513,7 @@ type OrderProviderTransactionsAvgAggregate {
 
 type OrderProviderTransactionsMinAggregate {
   id: ID
+  createdAt: DateTime
   action: TransactionAction
   deductType: ProviderDeductTransactionType
   rechargeType: ProviderRechargeTransactionType
@@ -5514,6 +5528,7 @@ type OrderProviderTransactionsMinAggregate {
 
 type OrderProviderTransactionsMaxAggregate {
   id: ID
+  createdAt: DateTime
   action: TransactionAction
   deductType: ProviderDeductTransactionType
   rechargeType: ProviderRechargeTransactionType
@@ -5839,6 +5854,7 @@ type OrderConversationAggregateResponse {
 
 type OrderComplaintsAggregateGroupBy {
   id: ID
+  inscriptionTimestamp: DateTime
   requestedByDriver: Boolean
   status: ComplaintStatus
   requestId: ID
@@ -5846,6 +5862,7 @@ type OrderComplaintsAggregateGroupBy {
 
 type OrderComplaintsCountAggregate {
   id: Int
+  inscriptionTimestamp: Int
   requestedByDriver: Int
   status: Int
   requestId: Int
@@ -5863,12 +5880,14 @@ type OrderComplaintsAvgAggregate {
 
 type OrderComplaintsMinAggregate {
   id: ID
+  inscriptionTimestamp: DateTime
   status: ComplaintStatus
   requestId: ID
 }
 
 type OrderComplaintsMaxAggregate {
   id: ID
+  inscriptionTimestamp: DateTime
   status: ComplaintStatus
   requestId: ID
 }
@@ -13235,6 +13254,7 @@ type ParkOrderActivitiesAggregateResponse {
 
 type ParkOrderProviderTransactionsAggregateGroupBy {
   id: ID
+  createdAt: DateTime
   action: TransactionAction
   deductType: ProviderDeductTransactionType
   rechargeType: ProviderRechargeTransactionType
@@ -13249,6 +13269,7 @@ type ParkOrderProviderTransactionsAggregateGroupBy {
 
 type ParkOrderProviderTransactionsCountAggregate {
   id: Int
+  createdAt: Int
   action: Int
   deductType: Int
   rechargeType: Int
@@ -13281,6 +13302,7 @@ type ParkOrderProviderTransactionsAvgAggregate {
 
 type ParkOrderProviderTransactionsMinAggregate {
   id: ID
+  createdAt: DateTime
   action: TransactionAction
   deductType: ProviderDeductTransactionType
   rechargeType: ProviderRechargeTransactionType
@@ -13295,6 +13317,7 @@ type ParkOrderProviderTransactionsMinAggregate {
 
 type ParkOrderProviderTransactionsMaxAggregate {
   id: ID
+  createdAt: DateTime
   action: TransactionAction
   deductType: ProviderDeductTransactionType
   rechargeType: ProviderRechargeTransactionType
@@ -14023,6 +14046,7 @@ type TaxiSupportRequestConnection {
 
 type TaxiSupportRequestAggregateGroupBy {
   id: ID
+  inscriptionTimestamp(by: GroupBy! = DAY): DateTime
   requestedByDriver: Boolean
   status: ComplaintStatus
   requestId: ID
@@ -14030,6 +14054,7 @@ type TaxiSupportRequestAggregateGroupBy {
 
 type TaxiSupportRequestCountAggregate {
   id: Int
+  inscriptionTimestamp: Int
   requestedByDriver: Int
   status: Int
   requestId: Int
@@ -14047,12 +14072,14 @@ type TaxiSupportRequestAvgAggregate {
 
 type TaxiSupportRequestMinAggregate {
   id: ID
+  inscriptionTimestamp: DateTime
   status: ComplaintStatus
   requestId: ID
 }
 
 type TaxiSupportRequestMaxAggregate {
   id: ID
+  inscriptionTimestamp: DateTime
   status: ComplaintStatus
   requestId: ID
 }

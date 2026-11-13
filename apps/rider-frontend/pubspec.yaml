@@ -64,6 +64,7 @@ dependencies:
   fl_chart: any
   dotted_border: any
   generic_map: any
+  pointer_interceptor: any
   flutter_common:
     path: ../../libs/flutter_common
   lottie: any

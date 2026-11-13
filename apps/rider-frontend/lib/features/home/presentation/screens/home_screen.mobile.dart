@@ -107,7 +107,7 @@ class _HomeScreenMobileState extends State<HomeScreenMobile> with SingleTickerPr
                     },
                   ),
                 ),
-                LayoutId(id: MobileLayoutDelegate.cardLayoutId, child: const HomeInfoPanel()),
+                LayoutId(id: MobileLayoutDelegate.cardLayoutId, child: const HomeInfoPanel(collapsible: true)),
                 LayoutId(id: MobileLayoutDelegate.myLocationButtonId, child: const AppMyLocationButton()),
               ],
             ),

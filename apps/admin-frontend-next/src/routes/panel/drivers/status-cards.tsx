@@ -39,12 +39,12 @@ function StatusCard({
     <button
       type="button"
       onClick={onClick}
-      className={`min-w-[150px] rounded-xl border px-5 py-4 text-left transition ${
-        active ? "border-white/50 bg-white/10" : "border-white/15 hover:border-white/30"
+      className={`rounded-2xl border bg-card px-4 py-3.5 text-left shadow-sm transition ${
+        active ? "border-primary bg-primary/5" : "border-border hover:border-primary/40 hover:shadow-md"
       }`}
     >
-      <div className="text-sm text-muted-foreground">{label}</div>
-      <div className="mt-1 text-3xl font-bold">{loading && count == null ? "…" : count ?? 0}</div>
+      <div className="text-xs font-medium text-muted-foreground">{label}</div>
+      <div className={`mt-1 text-2xl font-bold ${active ? "text-primary" : ""}`}>{loading && count == null ? "…" : count ?? 0}</div>
     </button>
   );
 }
@@ -61,7 +61,7 @@ export function DriverStatusCards({
   const select = (value: string) =>
     setFilters(value && value !== current ? [...baseFilters, { field: "status", operator: value.includes(",") ? "in" : "eq", value }] : baseFilters);
   return (
-    <div className="mb-4 flex flex-wrap gap-3">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
       <StatusCard label="All" value="" baseFilters={baseFilters} active={!current} onClick={() => select("")} />
       <StatusCard
         label="Approved"

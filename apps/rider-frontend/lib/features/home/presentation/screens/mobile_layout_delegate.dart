@@ -3,13 +3,18 @@ import 'package:flutter/material.dart';
 final fullMapNotifier = ValueNotifier<bool>(false);
 final cardHeightNotifier = ValueNotifier<double>(0);
 
+/// When true (welcome screen only) the map is laid out only in the gap above
+/// the card, so the center "Pickup point" marker is centered in the visible map.
+final compactMapNotifier = ValueNotifier<bool>(false);
+
 class MobileLayoutDelegate extends MultiChildLayoutDelegate {
   static const String mapLayoutId = 'map';
   static const String cardLayoutId = 'card';
   static const String actionButtonId = 'action';
   static const String myLocationButtonId = 'myLocation';
 
-  MobileLayoutDelegate() : super(relayout: fullMapNotifier);
+  MobileLayoutDelegate()
+      : super(relayout: Listenable.merge([fullMapNotifier, compactMapNotifier]));
 
   @override
   void performLayout(Size size) {
@@ -33,7 +38,12 @@ class MobileLayoutDelegate extends MultiChildLayoutDelegate {
         mapLayoutId,
         BoxConstraints(
           maxWidth: size.width,
-          maxHeight: size.height, // full-screen map behind card (Rapido style)
+          // full-screen map behind card (Rapido style); on the welcome screen the
+          // map only fills the gap above the card (+24px so it still shows
+          // behind the card's rounded top corners)
+          maxHeight: compactMapNotifier.value
+              ? (size.height - cardSize.height + 24).clamp(0.0, size.height)
+              : size.height,
         ),
       );
       positionChild(mapLayoutId, Offset.zero);

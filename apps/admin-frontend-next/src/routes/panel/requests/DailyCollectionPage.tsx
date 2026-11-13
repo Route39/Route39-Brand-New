@@ -308,13 +308,17 @@ export default function DailyCollectionPage() {
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card px-5 py-4 shadow-sm">
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
             size="sm"
-            variant={activeRange === "today" ? "default" : "outline"}
-            className="rounded-full"
+            variant="outline"
+            className={`rounded-full ${
+              activeRange === "today"
+                ? "border-primary bg-primary/5 text-primary shadow-none hover:bg-primary/10 hover:text-primary"
+                : ""
+            }`}
             onClick={() => handleQuickRange("today")}
           >
             Today
@@ -322,8 +326,12 @@ export default function DailyCollectionPage() {
           <Button
             type="button"
             size="sm"
-            variant={activeRange === "week" ? "default" : "outline"}
-            className="rounded-full"
+            variant="outline"
+            className={`rounded-full ${
+              activeRange === "week"
+                ? "border-primary bg-primary/5 text-primary shadow-none hover:bg-primary/10 hover:text-primary"
+                : ""
+            }`}
             onClick={() => handleQuickRange("week")}
           >
             This week
@@ -331,13 +339,17 @@ export default function DailyCollectionPage() {
           <Button
             type="button"
             size="sm"
-            variant={activeRange === "last30" ? "default" : "outline"}
-            className="rounded-full"
+            variant="outline"
+            className={`rounded-full ${
+              activeRange === "last30"
+                ? "border-primary bg-primary/5 text-primary shadow-none hover:bg-primary/10 hover:text-primary"
+                : ""
+            }`}
             onClick={() => handleQuickRange("last30")}
           >
             Last 30
           </Button>
-          <div className="flex items-center gap-1.5 rounded-full border border-input bg-background px-3 py-1.5">
+          <div className="flex items-center gap-2 rounded-xl bg-muted px-3.5 py-2">
             <Calendar className="size-3.5 text-muted-foreground" />
             <input
               type="date"
@@ -357,6 +369,7 @@ export default function DailyCollectionPage() {
   type="button"
   size="sm"
   variant="ghost"
+  className="text-primary hover:text-primary"
   disabled={!dateFrom && !dateTo && !activeCity}
   onClick={handleClearFilters}
 >
@@ -364,14 +377,20 @@ export default function DailyCollectionPage() {
 </Button>
         </div>
 
-        <div className="text-right">
-          <div className="text-xs text-muted-foreground">Total collection</div>
-          <div className="text-lg font-semibold">{formatCurrency(totalCollection, "INR")}</div>
+        <div className="flex items-center gap-5">
+          <div className="text-right">
+            <div className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+              Total collection
+            </div>
+            <div className="text-2xl font-extrabold tracking-tight">
+              {formatCurrency(totalCollection, "INR")}
+            </div>
+          </div>
           <Button
             type="button"
             size="sm"
-            variant="outline"
-            className="mt-2 gap-2"
+            variant="default"
+            className="h-10 gap-2 rounded-xl px-4"
             disabled={filteredGroups.length === 0}
             onClick={() => setBillOpen(true)}
           >
