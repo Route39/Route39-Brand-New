@@ -68,7 +68,7 @@ class _AddCreditDialogState extends State<AddCreditDialog> {
     openRazorpayCheckout(
       keyId: order.keyId,
       orderId: order.orderId,
-      amountInPaise: amount! * 100,
+      amountInPaise: (amount! * 100).roundToDouble(),
       name: 'Route39 Wallet Top-up',
       description: 'Wallet recharge',
       onSuccess: (paymentId, respOrderId, signature) async {
@@ -153,6 +153,13 @@ class _AddCreditDialogState extends State<AddCreditDialog> {
                 print('[PAY-DEBUG] Button pressed, amount=\$amount, formValid=\${formKey.currentState?.validate()}');
                 if (formKey.currentState?.validate() == true) {
                   formKey.currentState?.save();
+                  final a = amount;
+                  if (a == null || a < 1 || a != a.roundToDouble()) {
+                    context.showSnackBar(
+                      message: 'Enter a whole amount of 1 or more',
+                    );
+                    return;
+                  }
                   _startRazorpayPayment(context);
                 }
               },
