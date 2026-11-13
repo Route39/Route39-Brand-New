@@ -13,7 +13,7 @@
     <application
         android:label="Route39 Pilot"
         android:enableOnBackInvokedCallback="true"
-        android:name="${applicationName}"
+        android:name="com.ridy.taxi.driver_flutter.MainApplication"
         android:icon="@mipmap/launcher_icon">
         <meta-data android:name="com.google.android.geo.API_KEY"
                android:value="AIzaSyBP78zsF1LbtnZ8KX6IV0OxbIH4C8VHJs4"/>

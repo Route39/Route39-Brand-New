@@ -13,19 +13,20 @@ class DesktopLayoutDelegate extends MultiChildLayoutDelegate {
 
   @override
   void performLayout(Size size) {
+    const sheetMaxWidth = 520.0;
+    final sheetWidth = size.width < sheetMaxWidth ? size.width : sheetMaxWidth;
     final bottomSheetSize = layoutChild(
       bottomSheetLayoutId,
-      BoxConstraints(
-        maxWidth: size.width,
-        maxHeight: size.height * 0.5,
-      ),
+      BoxConstraints(maxWidth: sheetWidth, maxHeight: size.height * 0.5),
     );
     positionChild(
-        bottomSheetLayoutId, Offset(0, size.height - bottomSheetSize.height));
+        bottomSheetLayoutId,
+        Offset((size.width - bottomSheetSize.width) / 2,
+            size.height - bottomSheetSize.height));
     final searchRadiusButtonSize =
         layoutChild(searchRadiusButtonId, const BoxConstraints());
 
-    const navbarTopOffset = 20.0;
+    const navbarTopOffset = 0.0;
     Size navbarSize;
 
     if (bottomSheetSize.height < 50) {
@@ -46,7 +47,7 @@ class DesktopLayoutDelegate extends MultiChildLayoutDelegate {
       positionChild(
         myLocationButtonId,
         Offset(
-          size.width - 60,
+          size.width - 400 - 60,
           size.height - 60,
         ),
       );
@@ -55,7 +56,7 @@ class DesktopLayoutDelegate extends MultiChildLayoutDelegate {
         mapLayoutId,
         BoxConstraints(
           maxWidth: size.width,
-          maxHeight: size.height - bottomSheetSize.height + 20,
+          maxHeight: size.height,
         ),
       );
       positionChild(mapLayoutId, Offset.zero);

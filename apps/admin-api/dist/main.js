@@ -82403,6 +82403,7 @@ async function bootstrap() {
     }));
     if ((process.env.STORAGE_DRIVER ?? 'local').toLowerCase() === 'local') {
         app.useStaticAssets((0, _path.join)(process.env.LOCAL_ROOT ?? '', 'uploads'), {
+            setHeaders: (res)=>res.setHeader('Access-Control-Allow-Origin', '*'),
             prefix: '/uploads/'
         });
     }

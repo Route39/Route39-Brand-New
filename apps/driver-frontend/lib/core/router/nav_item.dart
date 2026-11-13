@@ -103,11 +103,11 @@ extension NavItemX on NavItem {
         showAboutDialog(
           // ignore: use_build_context_synchronously
           context: context,
-          applicationIcon: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Assets.images.logo.image(
-              width: 100,
-              height: 100,
+          applicationIcon: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+            child: Assets.images.route39Logo.image(
+              width: 160,
+              fit: BoxFit.contain,
             ),
           ),
           applicationVersion: "${platformInfo.version} (Build ${platformInfo.buildNumber})",

@@ -4,7 +4,9 @@ import 'dart:convert';
 
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 @pragma('vm:entry-point')
@@ -26,6 +28,8 @@ class _RideRequestOverlayCardState extends State<RideRequestOverlayCard> {
   static const _red = Color(0xFFB30000);
 
   StreamSubscription? _sub;
+  Timer? _poll;
+  final AudioPlayer _player = AudioPlayer();
   Timer? _timer;
   Map<String, dynamic> _data = const {};
   int _left = _total;
@@ -34,30 +38,69 @@ class _RideRequestOverlayCardState extends State<RideRequestOverlayCard> {
   void initState() {
     super.initState();
     _sub = FlutterOverlayWindow.overlayListener.listen(_onData);
+    _poll = Timer.periodic(const Duration(milliseconds: 600), (_) => _checkPending());
+    _checkPending();
+  }
+
+  Future<void> _checkPending() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.reload();
+      final raw = p.getString('r39_pending_offer');
+      if (raw == null) return;
+      final d = jsonDecode(raw) as Map<String, dynamic>;
+      final ts = (d['ts'] as num?)?.toInt() ?? 0;
+      if (DateTime.now().millisecondsSinceEpoch - ts > 15000) return;
+      if (_data['type'] == 'new_order' && '${_data['orderId']}' == '${d['orderId']}') return;
+      debugPrint('R39_OVERLAY_PENDING ${d['orderId']}');
+      if (!mounted) return;
+      setState(() => _data = d);
+      _startTimer();
+    } catch (e) { debugPrint('R39_PENDING_ERR $e'); }
+  }
+
+  Future<void> _playSound() async {
+    try {
+      if (_player.state == PlayerState.playing) return;
+      await _player.setReleaseMode(ReleaseMode.loop);
+      await _player.play(AssetSource('notification.mp3'));
+      debugPrint('R39_SOUND_PLAY');
+    } catch (e) { debugPrint('R39_SOUND_ERR $e'); }
+  }
+
+  void _stopSound() { try { _player.stop(); } catch (_) {} }
+
+  Future<void> _clearPending() async {
+    try { (await SharedPreferences.getInstance()).remove('r39_pending_offer'); } catch (_) {}
   }
 
   @override
   void dispose() {
     _sub?.cancel();
+    _poll?.cancel();
+    _player.dispose();
     _timer?.cancel();
     super.dispose();
   }
 
   void _onData(dynamic e) {
+    debugPrint('R39_OVERLAY_GOT ${e.runtimeType} $e');
     if (e is! String) return;
     try {
       final d = jsonDecode(e) as Map<String, dynamic>;
       setState(() => _data = d);
-      if (d['type'] == 'new_order') _startTimer();
+      if (d['type'] == 'new_order') { _startTimer(); } else { _stopSound(); }
     } catch (_) {}
   }
 
   void _startTimer() {
     _timer?.cancel();
+    _playSound();
     setState(() => _left = _total);
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (_left <= 1) {
         t.cancel();
+        _stopSound();
         return;
       }
       setState(() => _left--);
@@ -66,6 +109,8 @@ class _RideRequestOverlayCardState extends State<RideRequestOverlayCard> {
 
   Future<void> _send(String action) async {
     _timer?.cancel();
+    await _clearPending();
+    _stopSound();
     try {
       FlutterOverlayWindow.shareData(jsonEncode({'action': action}));
       debugPrint('R39_OVERLAY_SENT $action');
@@ -91,6 +136,8 @@ class _RideRequestOverlayCardState extends State<RideRequestOverlayCard> {
   Future<void> _decline() async {
     _timer?.cancel();
     debugPrint("R39_DECLINE_TAP");
+    await _clearPending();
+    _stopSound();
     try {
       final url = _s('gqlUrl'), token = _s('token'), id = _s('orderId');
       if (url.isNotEmpty && token.isNotEmpty && id.isNotEmpty) {
@@ -114,6 +161,7 @@ class _RideRequestOverlayCardState extends State<RideRequestOverlayCard> {
   @override
   Widget build(BuildContext context) {
     final type = _data['type'];
+    debugPrint('R39_OVERLAY_BUILD type=$type');
     if (type == 'new_order') return _card();
     if (type == 'bubble') return _bubble();
     return const SizedBox.shrink();

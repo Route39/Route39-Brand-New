@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useQuery } from "@apollo/client";
 import { Search, ArrowUpDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -31,15 +32,15 @@ type VehicleRow = {
 };
 
 const CITY_TABS: { value: string; label: string; dot: string }[] = [
-  { value: "", label: "All cities", dot: "bg-neutral-400" },
-  { value: "Tiruppur", label: "Tiruppur", dot: "bg-sky-400" },
-  { value: "Coimbatore", label: "Coimbatore", dot: "bg-rose-500" },
-  { value: "Chennai", label: "Chennai", dot: "bg-violet-500" },
-  { value: "Bangalore", label: "Bangalore", dot: "bg-emerald-500" },
+  { value: "", label: "All cities", dot: "" },
+  { value: "Bangalore", label: "Bangalore", dot: "bg-emerald-400" },
+  { value: "Tiruppur", label: "Tiruppur", dot: "bg-violet-400" },
+  { value: "Coimbatore", label: "Coimbatore", dot: "bg-red-400" },
+  { value: "Chennai", label: "Chennai", dot: "bg-blue-400" },
 ];
 
 const TYPE_TABS: { value: string; label: string; dot: string }[] = [
-  { value: "", label: "All", dot: "bg-neutral-400" },
+  { value: "", label: "All", dot: "" },
   { value: "false", label: "Auto", dot: "bg-violet-500" },
   { value: "true", label: "Cargo", dot: "bg-rose-500" },
 ];
@@ -60,13 +61,13 @@ function TabPill({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors",
+        "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
         active
-          ? "border-white bg-white text-black"
-          : "border-neutral-800 bg-transparent text-neutral-400 hover:text-neutral-200"
+          ? "border-[#c62828] bg-[#c62828]/5 text-[#c62828]"
+          : "border-border bg-background text-foreground hover:bg-muted"
       )}
     >
-      <span className={cn("size-2 rounded-full", dot)} />
+      {dot ? <span className={cn("size-2 shrink-0 rounded-full", dot)} /> : null}
       {label}
     </button>
   );
@@ -109,6 +110,7 @@ export default function VehiclesListPage() {
   const [cityValue, setCityValue] = useFilterField("city", "eq");
   const [typeValue, setTypeValue] = useFilterField("vehicleType", "eq");
   const [statusFilter, setStatusFilter] = useStatusState<string | null>(null);
+  const [activityFilter, setActivityFilter] = useStatusState<"all" | "active" | "inactive">("all");
 
   // canDeliver isn't filterable on the backend DriverFilter type, so we
   // exclude it from the server-side filter and apply it client-side below.
@@ -165,7 +167,12 @@ export default function VehiclesListPage() {
     if (key === "pending") return n === "waitingdocuments" || n === "pendingapproval";
     return true;
   };
-  const tableRows = statusFilter ? rows.filter((r) => matchesStatus(r.status, statusFilter)) : rows;
+  const tableRows = rows.filter((r) => {
+    if (statusFilter && !matchesStatus(r.status, statusFilter)) return false;
+    if (activityFilter === "active") return isActiveStatus(r.status);
+    if (activityFilter === "inactive") return !isActiveStatus(r.status);
+    return true;
+  });
   const pickStatus = (key: string) => setStatusFilter(key === "all" || statusFilter === key ? null : key);
   const summaryCards = [
     { key: "all", label: "Total vehicles", value: totalCount, dot: "bg-slate-400" },
@@ -283,7 +290,7 @@ export default function VehiclesListPage() {
         }
       />
 
-      <div className="flex flex-wrap gap-2 rounded-xl border border-neutral-800 p-2">
+      <div className="flex flex-wrap items-center gap-2">
         {CITY_TABS.map((tab) => (
           <TabPill
             key={tab.value || "all"}
@@ -295,7 +302,7 @@ export default function VehiclesListPage() {
         ))}
       </div>
 
-      <div className="flex flex-wrap gap-2 rounded-xl border border-neutral-800 p-2 w-fit">
+      <div className="flex flex-wrap items-center gap-2">
         {TYPE_TABS.map((tab) => (
           <TabPill
             key={tab.value || "all"}
@@ -307,23 +314,37 @@ export default function VehiclesListPage() {
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 rounded-xl border border-neutral-800 p-3">
-        <div className="flex flex-1 min-w-[240px] items-center gap-2 rounded-lg border border-neutral-800 px-3 py-2">
-          <Search className="size-4 text-muted-foreground" />
-          <input
-            className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="relative">
+          <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="search"
             placeholder="Search by number, owner, driver..."
+            className="h-9 w-72 pl-8"
           />
         </div>
-        <div className="flex items-center gap-2 rounded-lg border border-white bg-white px-3 py-1.5 text-sm font-medium text-black">
-          All <span>{totalCount}</span>
-        </div>
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          Active <span className="text-foreground">{activeCount}</span>
-        </div>
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          Inactive <span className="text-foreground">{inactiveCount}</span>
-        </div>
+        {(
+          [
+            { key: "all", label: "All", count: totalCount },
+            { key: "active", label: "Active", count: activeCount },
+            { key: "inactive", label: "Inactive", count: inactiveCount },
+          ] as const
+        ).map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            onClick={() => setActivityFilter(t.key)}
+            className={cn(
+              "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
+              activityFilter === t.key
+                ? "border-[#c62828] bg-[#c62828]/5 text-[#c62828]"
+                : "border-border bg-background text-foreground hover:bg-muted",
+            )}
+          >
+            {t.label}
+            <span className={activityFilter === t.key ? "" : "text-foreground"}>{t.count}</span>
+          </button>
+        ))}
         <div className="ml-auto flex items-center gap-1 text-sm text-muted-foreground">
           <ArrowUpDown className="size-4" />
           Sort: number
@@ -331,7 +352,7 @@ export default function VehiclesListPage() {
       </div>
 
       <div className="text-xs uppercase tracking-wide text-muted-foreground">
-        // {totalCount} vehicles · sorted by number
+        // {tableRows.length} vehicles · sorted by number
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">

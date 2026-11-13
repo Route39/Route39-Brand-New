@@ -206,6 +206,16 @@ export function buildFilterInput(filters: FilterEntry[]): Record<string, any> {
       continue;
     }
     if (!f.value && !["isNull", "isNotNull"].includes(f.operator)) continue;
+    // City tab "Tiruppur" must also match the alternate spelling "Tirupur".
+    const cityValue = f.value.trim().toLowerCase();
+    if (
+      f.field === "city" &&
+      f.operator === "eq" &&
+      (cityValue === "tiruppur" || cityValue === "tirupur")
+    ) {
+      out[f.field] = { in: ["Tiruppur", "Tirupur"] };
+      continue;
+    }
     out[f.field] ??= {};
     if (f.operator === "in" || f.operator === "notIn") {
       out[f.field][f.operator] = f.value.split(",").map((v) => v.trim()).filter(Boolean);

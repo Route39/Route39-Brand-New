@@ -1,3 +1,6 @@
+import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:firebase_messaging/firebase_messaging.dart' show FirebaseMessaging;
+import 'package:ridy_driver/core/notifications/incoming_ride_notifications.dart' show firebaseMessagingBackgroundHandler;
 import 'core/services/ios_update_gate.dart';
 import 'core/services/app_update_checker.dart';
 import 'package:better_localization/l10n/messages.dart';
@@ -391,6 +394,7 @@ class _InfoItem extends StatelessWidget {
 }
 
 void main() async {
+  usePathUrlStrategy();
   try {
     SentryWidgetsFlutterBinding.ensureInitialized();
     Future.delayed(const Duration(seconds: 4), () => checkForAppUpdate(force: true));
@@ -413,6 +417,7 @@ void main() async {
         rethrow;
       }
     }
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
     if (dotenv.maybeGet('SENTRY_DSN') != null) {
       await SentryFlutter.init((options) {
         options.dsn = dotenv.maybeGet('SENTRY_DSN');

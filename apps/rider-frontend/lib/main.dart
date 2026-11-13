@@ -1,3 +1,4 @@
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'core/services/ios_update_gate.dart';
 import 'core/services/app_update_checker.dart';
 import 'package:better_localization/l10n/messages.dart';
@@ -23,6 +24,7 @@ import 'core/presentation/route39_splash.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 void main() async {
+  usePathUrlStrategy();
   try {
     SentryWidgetsFlutterBinding.ensureInitialized();
     Future.delayed(const Duration(seconds: 4), () => checkForAppUpdate(force: false));
