@@ -163,7 +163,7 @@ class _RideRequestOverlayCardState extends State<RideRequestOverlayCard> {
     final type = _data['type'];
     debugPrint('R39_OVERLAY_BUILD type=$type');
     if (type == 'new_order') return _card();
-    if (type == 'bubble') return _bubble();
+    if (type == 'bubble' && MediaQuery.of(context).size.height < 300) return _bubble();
     return const SizedBox.shrink();
   }
 

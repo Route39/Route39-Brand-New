@@ -2,7 +2,7 @@ name: ridy
 description: Ride-sharing
 publish_to: "none"
 
-version: 4.0.5+334
+version: 4.0.6+335
 
 environment:
   sdk: ">=3.9.0 <4.0.0"

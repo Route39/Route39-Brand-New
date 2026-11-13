@@ -31,6 +31,7 @@ Future<void> showRideOfferOverlay(Map<String, dynamic> data) async {
   // bottom half of whatever app the driver is using stays untouched and
   // tappable.
   WidgetsFlutterBinding.ensureInitialized();
+  DartPluginRegistrant.ensureInitialized();
   // No screen exists in the FCM background isolate - use a fixed height (dp).
   int topHalfHeight = 1700;
   try {
@@ -46,6 +47,8 @@ Future<void> showRideOfferOverlay(Map<String, dynamic> data) async {
   // The bubble may still be showing - the plugin destroys itself if showOverlay
   // is called while a window is active, so close it first (same as RideOverlayService).
   if (await FlutterOverlayWindow.isActive()) {
+    await FlutterOverlayWindow.shareData(jsonEncode({"type": "none"}));
+    await Future.delayed(const Duration(milliseconds: 50));
     await FlutterOverlayWindow.closeOverlay();
     for (var i = 0; i < 15 && await FlutterOverlayWindow.isActive(); i++) {
       await Future.delayed(const Duration(milliseconds: 200));
