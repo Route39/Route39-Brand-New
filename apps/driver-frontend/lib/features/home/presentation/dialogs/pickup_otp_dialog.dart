@@ -97,7 +97,10 @@ class _PickupOtpDialogState extends State<PickupOtpDialog> {
           canPop: false,
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-            child: Dialog(
+            child: Center(
+              child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Dialog(
               backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               child: Padding(
@@ -191,7 +194,7 @@ class _PickupOtpDialogState extends State<PickupOtpDialog> {
                   ],
                 ),
               ),
-            ),
+            ))),
           ),
         ),
       ),

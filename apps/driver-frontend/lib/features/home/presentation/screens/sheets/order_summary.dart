@@ -57,7 +57,7 @@ class OrderSummary extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
+          Flexible(
             child: SingleChildScrollView(
               padding: const EdgeInsets.only(bottom: 16),
               child: Column(
@@ -68,7 +68,9 @@ class OrderSummary extends StatelessWidget {
                     children: [
                       Container(
                         height: 80,
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
                         decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(16)),
                           gradient: LinearGradient(
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
@@ -121,8 +123,10 @@ class OrderSummary extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
+                  _tripDetails(context, pickup, drop, km, mins),
+                  const SizedBox(height: 16),
                   Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
                     child: Invoice(
                       currency: order.currency,
                       total: _total.toDouble(),

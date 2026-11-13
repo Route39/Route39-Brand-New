@@ -216,7 +216,7 @@ class ActiveOrderSheet extends StatelessWidget {
                       AnimatedSwitcher(
                         duration: AnimationDuration.pageStateTransitionMobile,
                         child: Padding(
-                          padding: const EdgeInsets.all(10).copyWith(bottom: 6),
+                          padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
                           child:
                               order.status.toEntity ==
                                   OrderStatus.driverAccepted

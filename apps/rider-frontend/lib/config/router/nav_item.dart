@@ -140,8 +140,8 @@ extension NavItemX on NavItem {
         final platform = await PackageInfo.fromPlatform();
         showAboutDialog(
           context: context,
-          applicationIcon: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+          applicationIcon: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
             child: Image.asset(
               dotenv.maybeGet('LOGO') ?? Assets.images.route39Logo.path,
               width: 160,

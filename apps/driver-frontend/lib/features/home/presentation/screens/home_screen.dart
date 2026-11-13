@@ -185,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             return StatefulBuilder(
                               builder: (context, setDialogState) {
                                 return AppResponsiveDialog(
-                                  type: DialogType.bottomSheet,
+                                  type: MediaQuery.of(context).size.width > 700 ? DialogType.dialog : DialogType.bottomSheet,
                                   header: (
                                     Icons.star_outline,
                                     context.translate.howWasYourTrip,

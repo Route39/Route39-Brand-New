@@ -16,7 +16,6 @@ import '../components/today_earnings_bar.dart';
 import 'sheets/active_order_sheet.dart';
 import 'sheets/online_offline_sheet.dart';
 import 'sheets/order_summary.dart';
-import 'sheets/order_reqeusts_list.dart';
 
 class HomeScreenDesktop extends StatelessWidget {
   const HomeScreenDesktop({super.key});
@@ -51,7 +50,18 @@ class HomeScreenDesktop extends StatelessWidget {
                     bottom: Radius.circular(12),
                   ),
                 ),
-                const TodayEarningsBar(),
+                BlocBuilder<HomeBloc, HomeState>(
+                  buildWhen: (p, c) => p.driverStatus != c.driverStatus,
+                  builder: (context, state) {
+                    if (state.driverStatus == HomeStateDriverStatus.onTrip) {
+                      return const SizedBox.shrink();
+                    }
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: TodayEarningsBar(),
+                    );
+                  },
+                ),
               ],
             ),
           ),
