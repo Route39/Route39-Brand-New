@@ -99,7 +99,7 @@ class _CategoryTilesState extends State<CategoryTiles> {
     selectedCategoryIdNotifier.value = c.id;
     selectedServiceIdNotifier.value = null;
     premiumSelectedNotifier.value = false;
-    locator<HomeBloc>().add(const HomeEvent.onRideOptionSelected());
+    locator<HomeBloc>().add(_isCargo(c) ? const HomeEvent.onDeliveryOptionSelected() : const HomeEvent.onRideOptionSelected());
   }
 
   @override
@@ -143,7 +143,9 @@ class _CategoryTilesState extends State<CategoryTiles> {
                             height: 44,
                             child: Image.asset('assets/images/car_moving.png', width: 72, fit: BoxFit.contain),
                           )
-                        : (url == null
+                        : (_isCargo(c)
+                            ? Image.asset('assets/images/route39_cargo_icon.png', height: 44, fit: BoxFit.contain)
+                            : url == null
                             ? Image.asset('assets/images/ev_auto_icon.png', height: 44, fit: BoxFit.contain)
                             : Image.network(url, height: 44, fit: BoxFit.contain,
                                 errorBuilder: (_, __, ___) => Image.asset('assets/images/ev_auto_icon.png', height: 44))),
