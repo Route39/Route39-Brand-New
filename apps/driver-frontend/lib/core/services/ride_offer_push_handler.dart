@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:convert';
 import 'dart:ui';
 
@@ -101,8 +102,9 @@ Future<void> showRideOfferOverlay(Map<String, dynamic> data) async {
     'gqlUrl': '',
   };
   try {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('r39_pending_offer', jsonEncode({...payload, 'ts': DateTime.now().millisecondsSinceEpoch}));
+    final f = File('/data/data/com.route39.pilot/files/r39_pending_offer.json');
+    await f.parent.create(recursive: true);
+    await f.writeAsString(jsonEncode({...payload, 'ts': DateTime.now().millisecondsSinceEpoch}), flush: true);
     print("R39_PENDING_SAVED");
   } catch (e) { print("R39_PENDING_SAVE_ERR $e"); }
   // The overlay engine needs a moment to start listening - retry a few times.

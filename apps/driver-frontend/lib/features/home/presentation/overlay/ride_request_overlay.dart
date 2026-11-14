@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -44,10 +45,10 @@ class _RideRequestOverlayCardState extends State<RideRequestOverlayCard> {
 
   Future<void> _checkPending() async {
     try {
-      final p = await SharedPreferences.getInstance();
-      await p.reload();
-      final raw = p.getString('r39_pending_offer');
-      if (raw == null) return;
+      final f = File('/data/data/com.route39.pilot/files/r39_pending_offer.json');
+      if (!await f.exists()) return;
+      final raw = await f.readAsString();
+      if (raw.isEmpty) return;
       final d = jsonDecode(raw) as Map<String, dynamic>;
       final ts = (d['ts'] as num?)?.toInt() ?? 0;
       if (DateTime.now().millisecondsSinceEpoch - ts > 15000) return;
@@ -71,7 +72,7 @@ class _RideRequestOverlayCardState extends State<RideRequestOverlayCard> {
   void _stopSound() { try { _player.stop(); } catch (_) {} }
 
   Future<void> _clearPending() async {
-    try { (await SharedPreferences.getInstance()).remove('r39_pending_offer'); } catch (_) {}
+    try { final f = File('/data/data/com.route39.pilot/files/r39_pending_offer.json'); if (await f.exists()) await f.delete(); } catch (_) {}
   }
 
   @override
