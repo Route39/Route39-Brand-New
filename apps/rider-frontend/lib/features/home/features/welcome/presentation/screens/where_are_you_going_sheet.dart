@@ -26,7 +26,6 @@ import 'package:ridy/core/presentation/place_lookup_state_view.dart';
 import 'package:ridy/core/presentation/place_result_item.dart';
 import 'package:ridy/gen/assets.gen.dart';
 
-import '../../../../presentation/blocs/destination_suggestions.bloc.dart';
 import '../components/where_are_you_going_button.dart';
 import '../popular_search_notifier.dart';
 import '../premium_notifier.dart';
@@ -142,77 +141,6 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                   BlocBuilder<HomeBloc, HomeState>(
                     bloc: locator<HomeBloc>(),
                     builder: (context, homeState) {
-                      final isRide =
-                          homeState.orderType == Enum$TaxiOrderType.Ride;
-                      Widget optionCard({
-                        required String label,
-                        required String assetPath,
-                        required bool selected,
-                        required VoidCallback onTap,
-                      }) {
-                        return GestureDetector(
-                          onTap: onTap,
-                          child: Container(
-                            height: 104,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 8,
-                              horizontal: 4,
-                            ),
-                            margin: const EdgeInsets.only(right: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: selected
-                                    ? Colors.red
-                                    : Colors.grey.shade300,
-                                width: selected ? 2 : 1,
-                              ),
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Stack(
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    Image.asset(
-                                      assetPath,
-                                      height: 40,
-                                      fit: BoxFit.contain,
-                                    ),
-                                    if (label.contains('Premium'))
-                                      const Positioned(
-                                        right: -8,
-                                        top: -6,
-                                        child: Icon(
-                                          Icons.workspace_premium,
-                                          color: Color(0xFFD4A017),
-                                          size: 22,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  label,
-                                  maxLines: 2,
-                                  textAlign: TextAlign.center,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: context.bodySmall?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 12,
-                                    color: selected
-                                        ? Colors.black
-                                        : Colors.black54,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }
-
                       return const CategoryTiles();
                     },
                   ),
@@ -224,7 +152,7 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                         selectedServiceIdNotifier.value = null;
                         premiumSelectedNotifier.value = false;
                         final bloc = locator<HomeBloc>();
-                        bloc.add(cargo
+                        bloc.add((cargo || bloc.state.orderType == Enum$TaxiOrderType.ParcelDelivery)
                             ? const HomeEvent.onDeliveryOptionSelected()
                             : const HomeEvent.onRideOptionSelected());
                         bloc.add(const HomeEvent.changeOrderSubmissionPage(
@@ -303,7 +231,7 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                                 currentDistrict.isNotEmpty) {
                               filteredPlaces = places
                                   .where(
-                                    (p) => (p.address ?? '')
+                                    (p) => p.address
                                         .toLowerCase()
                                         .contains(
                                           currentDistrict.toLowerCase(),
@@ -414,7 +342,7 @@ class _WhereAreYouGoingSheetState extends State<WhereAreYouGoingSheet> {
                                         final recents = _recentsNotSaved(sug);
                                         final isFav = index < favs.length;
                                         final Place place = isFav
-                                            ? Place(LatLng(favs[index].location.lat, favs[index].location.lng), favs[index].details ?? favs[index].title, favs[index].title)
+                                            ? Place(LatLng(favs[index].location.lat, favs[index].location.lng), favs[index].details, favs[index].title)
                                             : recents[index - favs.length];
                                         return PlaceResultItem(
                                           subtitle: place.address,
@@ -537,7 +465,7 @@ Future<void> _toggleSavedPlace(Place place, String? favoriteId, VoidCallback ref
       final r = await repo.deleteFavoriteLocation(id: favoriteId);
     debugPrint('[SAVED] delete result: $r');
     } else {
-      final r = await repo.addFavoriteLocation(
+      await repo.addFavoriteLocation(
         input: UpdateFavoriteLocationInput(
           name: place.title ?? place.address,
           type: Enum$RiderAddressType.Other,

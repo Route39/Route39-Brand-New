@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart'
-    show Icons, Colors, BoxFit, Image, FilterQuality;
+    show Icons, Colors;
 import 'package:ridy/core/extensions/extensions.dart';
 
 class WhereAreYouGoingButton extends StatelessWidget {
@@ -18,7 +18,7 @@ class WhereAreYouGoingButton extends StatelessWidget {
     return CupertinoButton(
       onPressed: onPressed,
       padding: const EdgeInsets.all(0),
-      minimumSize: Size(0, 0),
+      minimumSize: const Size(0, 0),
       child: Container(
         clipBehavior: Clip.hardEdge,
         padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),

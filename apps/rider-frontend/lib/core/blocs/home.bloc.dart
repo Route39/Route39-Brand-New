@@ -1,3 +1,4 @@
+import 'package:ridy/core/blocs/location.bloc.dart';
 import 'package:ridy/features/home/presentation/blocs/home.extensions.dart';
 import 'package:ridy/config/locator/locator.dart';
 import 'package:ridy/core/datasources/graphql_datasource.dart';
@@ -113,29 +114,41 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         case HomeEvent$DriverRouteRequested():
           final driverLoc = state.activeOrder?.driver?.location;
           final dest = state.activeOrder?.nextDestination;
-          if (driverLoc == null || dest == null || dest.role != Enum$WaypointRole.Pickup) {
-            if (state.driverRoute.isNotEmpty) emit(state.copyWith(driverRoute: []));
+          if (driverLoc == null ||
+              dest == null ||
+              dest.role != Enum$WaypointRole.Pickup) {
+            if (state.driverRoute.isNotEmpty)
+              emit(state.copyWith(driverRoute: []));
             break;
           }
           final last = state.driverRouteFetchedAt;
-          if (last != null && DateTime.now().difference(last).inSeconds < 20) break;
+          if (last != null && DateTime.now().difference(last).inSeconds < 20)
+            break;
           emit(state.copyWith(driverRouteFetchedAt: DateTime.now()));
           final d = driverLoc.toLatLng;
           final p = dest.toPlace.latLng;
           final res = await locator<GraphqlDatasource>().query(
             Options$Query$GetRouteDistance(
               variables: Variables$Query$GetRouteDistance(
-                input: Input$GetRouteDistanceInput(points: [
-                  Input$PointInput(lat: d.latitude, lng: d.longitude),
-                  Input$PointInput(lat: p.latitude, lng: p.longitude),
-                ]),
+                input: Input$GetRouteDistanceInput(
+                  points: [
+                    Input$PointInput(lat: d.latitude, lng: d.longitude),
+                    Input$PointInput(lat: p.latitude, lng: p.longitude),
+                  ],
+                ),
               ),
             ),
           );
           final dirs = res.data?.getRouteDistance.directions ?? [];
           if (dirs.isNotEmpty) {
             final firstFit = state.driverRoute.isEmpty;
-            emit(state.copyWith(driverRoute: dirs.map((e) => Fragment$Coordinate(lat: e.lat, lng: e.lng)).toList()));
+            emit(
+              state.copyWith(
+                driverRoute: dirs
+                    .map((e) => Fragment$Coordinate(lat: e.lat, lng: e.lng))
+                    .toList(),
+              ),
+            );
             if (firstFit) {
               try {
                 state.mapViewController?.fitBounds([d, p]);
@@ -217,11 +230,13 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           switch (state.orderSubmissionPage) {
             case OrderSubmissionPage.welcome:
               if (selectedLocation.data == null) return;
-              emit(state.copyWith(
-                waypoints: state.waypoints
-                    .mapIndexed((i, e) => i == 0 ? selectedLocation.data : e)
-                    .toList(),
-              ));
+              emit(
+                state.copyWith(
+                  waypoints: state.waypoints
+                      .mapIndexed((i, e) => i == 0 ? selectedLocation.data : e)
+                      .toList(),
+                ),
+              );
               await _showDriversAround(
                 waypoints: state.currentWaypoints
                     .mapIndexed(
@@ -292,7 +307,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
         case HomeEvent$ShowPreview(:final destination):
           if (destination != null) {
-            if (state.waypoints.firstOrNull == null) {
+            final pickup =
+                state.waypoints.firstOrNull ??
+                locator<LocationCubit>().state.place;
+            if (pickup == null) {
               emit(
                 state.copyWith(
                   ridePreviewFareResponse: ApiResponse.error(
@@ -303,10 +321,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
               emit(
                 state.copyWith(ridePreviewFareResponse: ApiResponse.initial()),
               );
+              return;
             }
-            emit(
-              state.copyWith(waypoints: [state.waypoints.first, destination]),
-            );
+            emit(state.copyWith(waypoints: [pickup, destination]));
           }
           if (state.waypoints.nonNulls.length < 2) {
             emit(
@@ -357,12 +374,19 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             final catPickId = selectedCategoryIdNotifier.value;
             final catPicked = catPickId == null
                 ? null
-                : fares.data?.services.firstWhereOrNull((cat) => cat.id == catPickId);
-            final categoryToUse = pickedCategory ?? catPicked ??
-                selectedCategory ?? fares.data?.services.firstOrNull;
+                : fares.data?.services.firstWhereOrNull(
+                    (cat) => cat.id == catPickId,
+                  );
+            final categoryToUse =
+                pickedCategory ??
+                catPicked ??
+                selectedCategory ??
+                fares.data?.services.firstOrNull;
 
             final serviceToUse =
-                categoryToUse?.services.firstWhereOrNull((s) => s.id == pickedId) ??
+                categoryToUse?.services.firstWhereOrNull(
+                  (s) => s.id == pickedId,
+                ) ??
                 categoryToUse?.services.firstWhereOrNull(
                   (s) =>
                       s.name.toLowerCase().contains('premium') ==

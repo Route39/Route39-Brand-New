@@ -233,6 +233,7 @@ class _HomeMapState extends State<HomeMap> with SingleTickerProviderStateMixin {
                       }
                     },
               onMapMoved: (event) {
+debugPrint('[MapMove] type=${event.type} mode=${state.mapViewMode} page=${state.orderSubmissionPage} place=${event.place.address}');
                 if (event.type == MapMoveEventType.start) return;
                 if (state.mapViewMode == MapViewMode.picker) {
                   locator<HomeBloc>().add(

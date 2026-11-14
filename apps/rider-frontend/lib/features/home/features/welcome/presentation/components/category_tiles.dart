@@ -1,5 +1,4 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:ridy/config/env.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:graphql/client.dart';
@@ -34,7 +33,7 @@ class _CategoryTilesState extends State<CategoryTiles> {
 
   bool _computeBangalore(dynamic state) {
     try {
-      final place = state.currentLocationResponse.data;
+      final place = (state.waypoints as List).firstOrNull ?? state.currentLocationResponse.data;
       if (place == null) return false;
       final addr = (place.address ?? '').toString().toLowerCase();
       if (addr.contains('bangalore') || addr.contains('bengaluru') || addr.contains('bengalooru')) return true;
