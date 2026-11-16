@@ -12,6 +12,8 @@ export class ServiceCategoryDTO {
   description?: string;
   @Field(() => Int, { nullable: false })
   displayPriority!: number;
+  @Field(() => Boolean, { nullable: false })
+  showLaunchingSoon!: boolean;
   @Field(() => MediaDTO, { nullable: true })
   media?: MediaDTO;
   @Field(() => [ServiceDTO], { nullable: false })

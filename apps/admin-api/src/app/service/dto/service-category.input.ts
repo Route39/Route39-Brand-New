@@ -14,4 +14,6 @@ export class ServiceCategoryInput {
   isEnabled?: boolean;
   @Field(() => ID, { nullable: true })
   mediaId?: number;
+  @Field(() => Boolean, { nullable: true })
+  showLaunchingSoon?: boolean;
 }

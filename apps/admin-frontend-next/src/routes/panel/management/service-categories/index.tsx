@@ -26,6 +26,7 @@ type Draft = {
   description: string;
   displayPriority: string;
   isEnabled: boolean;
+  showLaunchingSoon: boolean;
   mediaId: string | null;
   imageUrl: string | null;
 };
@@ -36,6 +37,7 @@ const EMPTY: Draft = {
   description: "",
   displayPriority: "0",
   isEnabled: true,
+  showLaunchingSoon: false,
   mediaId: null,
   imageUrl: null,
 };
@@ -90,6 +92,7 @@ export default function ServiceCategoriesPage() {
       description: draft.description.trim() || null,
       displayPriority: Number(draft.displayPriority) || 0,
       isEnabled: draft.isEnabled,
+      showLaunchingSoon: draft.showLaunchingSoon,
       mediaId: draft.mediaId,
     };
     setSaving(true);
@@ -116,6 +119,7 @@ export default function ServiceCategoriesPage() {
       description: c.description ?? "",
       displayPriority: String(c.displayPriority ?? 0),
       isEnabled: c.isEnabled ?? true,
+      showLaunchingSoon: c.showLaunchingSoon ?? false,
       mediaId: c.mediaId ?? null,
       imageUrl: c.media?.address ?? null,
     });
@@ -229,6 +233,13 @@ export default function ServiceCategoriesPage() {
                   onCheckedChange={(v) => setDraft((d) => ({ ...d, isEnabled: v === true }))}
                 />
                 Show in rider app
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={draft.showLaunchingSoon}
+                  onCheckedChange={(v) => setDraft((d) => ({ ...d, showLaunchingSoon: v === true }))}
+                />
+                Enable launching soon badge
               </label>
             </div>
           </div>

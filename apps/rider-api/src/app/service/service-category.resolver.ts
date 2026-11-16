@@ -37,6 +37,7 @@ export class ServiceCategoryResolver {
         .map((s) => ({ ...s, name: (s as any).name ?? (s as any).title, options: [] }));
       return { ...c, services } as unknown as ServiceCategoryDTO;
     });
+    if (typeof lat === 'number' && typeof lng === 'number' && regionId === null) return [];
     return regionId === null ? out : out.filter((c) => c.services.length > 0);
   }
 }

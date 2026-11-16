@@ -19,6 +19,9 @@ export class ServiceCategoryEntity {
     @Column({ default: true })
     isEnabled!: boolean;
 
+    @Column({ default: false })
+    showLaunchingSoon!: boolean;
+
     @OneToOne(() => MediaEntity, { eager: true, nullable: true })
     @JoinColumn()
     media?: MediaEntity;

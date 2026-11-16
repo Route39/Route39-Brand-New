@@ -644,6 +644,7 @@ type ServiceCategory {
   name: String!
   description: String
   displayPriority: Int!
+  showLaunchingSoon: Boolean!
   media: Media
   services: [Service!]!
 }

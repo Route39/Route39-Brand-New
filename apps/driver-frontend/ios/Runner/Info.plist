@@ -89,6 +89,8 @@
 		</array>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>By allowing the app to access photo library you can use it to upload the necessary documents or profile picutre.</string>
+		<key>NSCameraUsageDescription</key>
+		<string>By allowing the app to access the camera you can take photos to upload the necessary documents or profile picture.</string>
 		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 		<string>By allowing the app to access the location, the app will be able to locate your current location and update your current rider about your current location in real-time.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>

@@ -5,6 +5,7 @@ import 'package:ridy_driver/core/blocs/auth_bloc.dart';
 import 'package:ridy_driver/core/blocs/location.bloc.dart';
 import 'package:ridy_driver/core/graphql/schema.gql.dart';
 import 'package:flutter_common/core/presentation/buttons/app_bordered_button.dart';
+import 'package:flutter_common/core/presentation/buttons/app_close_button.dart';
 import 'package:flutter_common/core/presentation/double_tap_to_exit.dart';
 import 'package:flutter_common/core/presentation/responsive_dialog/app_responsive_dialog.dart';
 import 'package:flutter_common/core/presentation/snackbar/snackbar.dart';
@@ -240,20 +241,48 @@ class _HomeScreenState extends State<HomeScreen> {
                       case Enum$EphemeralMessageType.RiderCanceled:
                         await showDialog(
                           context: context,
-                          useSafeArea: false,
-                          builder: (context) {
-                            return AppResponsiveDialog(
-                              type: DialogType.bottomSheet,
-                              header: (
-                                Icons.cancel_outlined,
-                                context.translate.canceled,
-                                "The rider has canceled the ride.",
+                          builder: (dialogContext) {
+                            return Dialog(
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              child: Stack(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(24, 36, 24, 20),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.cancel_outlined, size: 48, color: Colors.red),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          dialogContext.translate.canceled,
+                                          textAlign: TextAlign.center,
+                                          style: Theme.of(dialogContext).textTheme.titleLarge,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        const Text(
+                                          'The rider has cancelled the ride.',
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        const SizedBox(height: 24),
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: AppBorderedButton(
+                                            onPressed: () => Navigator.of(dialogContext).pop(),
+                                            title: dialogContext.translate.ok,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 8,
+                                    right: 8,
+                                    child: AppCloseButton(
+                                      onPressed: () => Navigator.of(dialogContext).pop(),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              primaryButton: AppBorderedButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                title: context.translate.ok,
-                              ),
-                              child: const SizedBox(),
                             );
                           },
                         );

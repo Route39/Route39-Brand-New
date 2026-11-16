@@ -4505,6 +4505,12 @@ service_category_entity_ts_decorate([
     service_category_entity_ts_metadata("design:type", Boolean)
 ], ServiceCategoryEntity.prototype, "isEnabled", void 0);
 service_category_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: false
+    }),
+    service_category_entity_ts_metadata("design:type", Boolean)
+], ServiceCategoryEntity.prototype, "showLaunchingSoon", void 0);
+service_category_entity_ts_decorate([
     (0,external_typeorm_.OneToOne)(function() {
         return MediaEntity;
     }, {
@@ -28769,7 +28775,7 @@ var DriverNotificationService = /*#__PURE__*/ function() {
     var _proto = DriverNotificationService.prototype;
     _proto.requests = function requests() {
         return driver_notification_service_async_to_generator(function(tokens, orderId, orderData) {
-            var _process_env_REQUEST_SOUND, notificationResult, error;
+            var _process_env_REQUEST_SOUND, _orderData_currency, notificationResult, error;
             return driver_notification_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -28804,15 +28810,21 @@ var DriverNotificationService = /*#__PURE__*/ function() {
                                     priority: 'high'
                                 },
                                 apns: {
+                                    headers: {
+                                        'apns-priority': '10',
+                                        'apns-push-type': 'alert'
+                                    },
                                     payload: {
-                                        aps: {
+                                        aps: driver_notification_service_extends({
                                             sound: (_process_env_REQUEST_SOUND = process.env.REQUEST_SOUND) != null ? _process_env_REQUEST_SOUND : 'default',
                                             badge: 1,
                                             alert: {
                                                 title: 'New ride request',
-                                                body: 'Tap to view the request'
+                                                body: orderData.fareEstimate ? (((_orderData_currency = orderData.currency) != null ? _orderData_currency : '') + " " + orderData.fareEstimate + (orderData.pickupAddress ? ' • ' + orderData.pickupAddress : '')).trim() : 'Tap to view the request'
                                             }
-                                        }
+                                        }, {
+                                            'interruption-level': 'time-sensitive'
+                                        })
                                     }
                                 }
                             })
@@ -48091,6 +48103,7 @@ let ServiceCategoryResolver = class ServiceCategoryResolver {
                 services
             };
         });
+        if (typeof lat === 'number' && typeof lng === 'number' && regionId === null) return [];
         return regionId === null ? out : out.filter((c)=>c.services.length > 0);
     }
 };
@@ -48166,6 +48179,12 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", Number)
 ], ServiceCategoryDTO.prototype, "displayPriority", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>Boolean, {
+        nullable: false
+    }),
+    _ts_metadata._("design:type", Boolean)
+], ServiceCategoryDTO.prototype, "showLaunchingSoon", void 0);
 _ts_decorate._([
     (0, _graphql.Field)(()=>_mediadto.MediaDTO, {
         nullable: true
@@ -49534,6 +49553,22 @@ let RiderOrderService = class RiderOrderService {
                 cancelReasonNote: input.reason
             });
             await this.activeOrderRedisService.deleteOrder(activeOrder.id);
+            try {
+                await this.driverRedisService.createEphemeralMessage(activeOrder.driverId, {
+                    messageId: `rider-canceled-${activeOrder.id}`,
+                    type: _database.DriverEphemeralMessageType.RiderCanceled,
+                    orderId: parseInt(activeOrder.id),
+                    serviceImageUrl: activeOrder.serviceImageAddress,
+                    serviceName: activeOrder.serviceName,
+                    riderFullName: activeOrder.riderFirstName ?? null,
+                    riderProfileUrl: activeOrder.riderAvatarUrl ?? null,
+                    amount: null,
+                    createdAt: new Date(),
+                    expiresAt: new Date(Date.now() + 60 * 60 * 1000)
+                });
+            } catch (e) {
+                _common.Logger.warn(`Could not create RiderCanceled message for order ${activeOrder.id}: ${e}`);
+            }
             this.driverNotificationService.canceled(driver?.fcmTokens?.[0]);
             this.pubsub.publish('driver.event', {
                 driverId: parseInt(activeOrder.driverId)

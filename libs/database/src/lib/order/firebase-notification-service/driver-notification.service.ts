@@ -24,14 +24,22 @@ export class DriverNotificationService {
           priority: 'high',
         },
         apns: {
+          headers: {
+            'apns-priority': '10',
+            'apns-push-type': 'alert',
+          },
           payload: {
             aps: {
               sound: process.env.REQUEST_SOUND ?? 'default',
               badge: 1,
               alert: {
                 title: 'New ride request',
-                body: 'Tap to view the request',
+                body: orderData.fareEstimate
+                  ? `${orderData.currency ?? ''} ${orderData.fareEstimate}${orderData.pickupAddress ? ' • ' + orderData.pickupAddress : ''}`.trim()
+                  : 'Tap to view the request',
               },
+              // Not in firebase-admin's Aps type, so spread it in to avoid a TS error
+              ...({ 'interruption-level': 'time-sensitive' } as Record<string, string>),
             },
           },
         },

@@ -1,9 +1,10 @@
-query ServiceCategories {
-  serviceCategories {
+query ServiceCategories($lat: Float, $lng: Float) {
+  serviceCategories(lat: $lat, lng: $lng) {
     id
     name
     description
     displayPriority
+    showLaunchingSoon
     media {
       address
     }

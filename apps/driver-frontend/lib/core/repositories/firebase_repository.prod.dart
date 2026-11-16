@@ -24,6 +24,7 @@ class FirebaseRepositoryImpl implements FirebaseRepository {
   bool _overlayPermissionRequested = false;
 
   Future<void> _ensureOverlayPermission() async {
+    if (defaultTargetPlatform != TargetPlatform.android) return;
     if (_overlayPermissionRequested) return;
     _overlayPermissionRequested = true;
     try {
@@ -54,7 +55,7 @@ class FirebaseRepositoryImpl implements FirebaseRepository {
         badge: true,
         carPlay: true,
         criticalAlert: false,
-        provisional: true,
+        provisional: false,
         sound: true,
       );
       debugPrint('FCM permission status: ${settings.authorizationStatus}');

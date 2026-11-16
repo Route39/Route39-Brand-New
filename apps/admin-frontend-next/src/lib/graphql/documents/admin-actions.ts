@@ -170,6 +170,7 @@ export const SERVICE_CATEGORIES_LIST_QUERY = graphql(`
       description
       displayPriority
       isEnabled
+      showLaunchingSoon
       mediaId
       media {
         id

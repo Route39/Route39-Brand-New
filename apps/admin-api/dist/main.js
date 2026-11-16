@@ -4621,6 +4621,12 @@ service_category_entity_ts_decorate([
     service_category_entity_ts_metadata("design:type", Boolean)
 ], ServiceCategoryEntity.prototype, "isEnabled", void 0);
 service_category_entity_ts_decorate([
+    (0,external_typeorm_.Column)({
+        default: false
+    }),
+    service_category_entity_ts_metadata("design:type", Boolean)
+], ServiceCategoryEntity.prototype, "showLaunchingSoon", void 0);
+service_category_entity_ts_decorate([
     (0,external_typeorm_.OneToOne)(function() {
         return MediaEntity;
     }, {
@@ -28885,7 +28891,7 @@ var DriverNotificationService = /*#__PURE__*/ function() {
     var _proto = DriverNotificationService.prototype;
     _proto.requests = function requests() {
         return driver_notification_service_async_to_generator(function(tokens, orderId, orderData) {
-            var _process_env_REQUEST_SOUND, notificationResult, error;
+            var _process_env_REQUEST_SOUND, _orderData_currency, notificationResult, error;
             return driver_notification_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -28920,15 +28926,21 @@ var DriverNotificationService = /*#__PURE__*/ function() {
                                     priority: 'high'
                                 },
                                 apns: {
+                                    headers: {
+                                        'apns-priority': '10',
+                                        'apns-push-type': 'alert'
+                                    },
                                     payload: {
-                                        aps: {
+                                        aps: driver_notification_service_extends({
                                             sound: (_process_env_REQUEST_SOUND = process.env.REQUEST_SOUND) != null ? _process_env_REQUEST_SOUND : 'default',
                                             badge: 1,
                                             alert: {
                                                 title: 'New ride request',
-                                                body: 'Tap to view the request'
+                                                body: orderData.fareEstimate ? (((_orderData_currency = orderData.currency) != null ? _orderData_currency : '') + " " + orderData.fareEstimate + (orderData.pickupAddress ? ' • ' + orderData.pickupAddress : '')).trim() : 'Tap to view the request'
                                             }
-                                        }
+                                        }, {
+                                            'interruption-level': 'time-sensitive'
+                                        })
                                     }
                                 }
                             })
@@ -65886,6 +65898,10 @@ _ts_decorate._([
     _ts_metadata._("design:type", Boolean)
 ], ServiceCategoryDTO.prototype, "isEnabled", void 0);
 _ts_decorate._([
+    (0, _graphql.Field)(()=>Boolean),
+    _ts_metadata._("design:type", Boolean)
+], ServiceCategoryDTO.prototype, "showLaunchingSoon", void 0);
+_ts_decorate._([
     (0, _graphql.Field)(()=>_graphql.ID, {
         nullable: true
     }),
@@ -66402,6 +66418,12 @@ _ts_decorate._([
     }),
     _ts_metadata._("design:type", Number)
 ], ServiceCategoryInput.prototype, "mediaId", void 0);
+_ts_decorate._([
+    (0, _graphql.Field)(()=>Boolean, {
+        nullable: true
+    }),
+    _ts_metadata._("design:type", Boolean)
+], ServiceCategoryInput.prototype, "showLaunchingSoon", void 0);
 ServiceCategoryInput = _ts_decorate._([
     (0, _graphql.InputType)()
 ], ServiceCategoryInput);

@@ -128,7 +128,33 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
                       .map((message) => Map<String, dynamic>.from(message.toJson()))
                       .toList(),
                 );
-                return state.copyWith(ephemeralMessages: data);
+
+                // If the rider cancelled a ride we are still holding locally,
+                // remove it from state right away. Without this, the
+                // "PROTECTING ACCEPTED ORDER" logic in the activeOrders stream
+                // keeps the cancelled ride on screen until a page refresh.
+                final riderCanceledOrderIds = data
+                    .where((m) => m.type == Enum$EphemeralMessageType.RiderCanceled)
+                    .map((m) => m.orderId.toString())
+                    .toSet();
+
+                final hasCanceledActiveOrder = state.activeOrders.any(
+                  (o) => riderCanceledOrderIds.contains(o.id.toString()),
+                );
+
+                if (!hasCanceledActiveOrder) {
+                  return state.copyWith(ephemeralMessages: data);
+                }
+
+                return state.copyWith(
+                  ephemeralMessages: data,
+                  activeOrders: state.activeOrders
+                      .where((o) => !riderCanceledOrderIds.contains(o.id.toString()))
+                      .toList(),
+                  currentOrderId: riderCanceledOrderIds.contains(state.currentOrderId)
+                      ? null
+                      : state.currentOrderId,
+                );
               },
             ),
             emit.forEach(

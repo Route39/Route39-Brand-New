@@ -18,6 +18,19 @@ class _CategoryTilesState extends State<CategoryTiles> {
   List<Query$ServiceCategories$serviceCategories> _items = _cache ?? [];
   bool _loading = _cache == null;
   bool _inBangalore = false;
+  String? _lastLocKey;
+
+  List<double>? _riderLatLng(dynamic state) {
+    try {
+      final place = (state.waypoints as List).firstOrNull ?? state.currentLocationResponse.data;
+      if (place == null) return null;
+      return [place.latLng.latitude as double, place.latLng.longitude as double];
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String _locKey(List<double>? p) => p == null ? 'none' : '${p[0].toStringAsFixed(2)},${p[1].toStringAsFixed(2)}';
   StreamSubscription? _sub;
 
   @override
@@ -46,6 +59,8 @@ class _CategoryTilesState extends State<CategoryTiles> {
   }
 
   void _updateCity(dynamic state) {
+    final key = _locKey(_riderLatLng(state));
+    if (_lastLocKey != null && key != _lastLocKey) _load();
     final b = _computeBangalore(state);
     if (b == _inBangalore) return;
     _inBangalore = b;
@@ -54,10 +69,10 @@ class _CategoryTilesState extends State<CategoryTiles> {
   }
 
   void _enforce() {
-    if (_inBangalore || _items.isEmpty) return;
+    if (_items.isEmpty) return;
     final sel = _items.where((c) => c.id == selectedCategoryIdNotifier.value).toList();
-    if (sel.isEmpty || _isEv(sel.first)) {
-      final firstOk = _items.where((c) => !_isEv(c)).toList();
+    if (sel.isEmpty || sel.first.showLaunchingSoon) {
+      final firstOk = _items.where((c) => !c.showLaunchingSoon).toList();
       if (firstOk.isNotEmpty) _select(firstOk.first);
     }
   }
@@ -74,9 +89,17 @@ class _CategoryTilesState extends State<CategoryTiles> {
 
   Future<void> _load() async {
     try {
+      final loc = _riderLatLng(locator<HomeBloc>().state);
+      final myKey = _locKey(loc);
+      _lastLocKey = myKey;
+      if (loc == null) return;
       final res = await locator<GraphQLClient>().query$ServiceCategories(
-        Options$Query$ServiceCategories(fetchPolicy: FetchPolicy.networkOnly),
+        Options$Query$ServiceCategories(
+          variables: Variables$Query$ServiceCategories(lat: loc[0], lng: loc[1]),
+          fetchPolicy: FetchPolicy.networkOnly,
+        ),
       );
+      if (_lastLocKey != myKey) return;
       final all = res.parsedData?.serviceCategories ?? [];
       final list = all.where((c) => c.services.isNotEmpty).toList();
       _cache = list;
@@ -84,7 +107,7 @@ class _CategoryTilesState extends State<CategoryTiles> {
       setState(() { _items = list; _loading = false; });
       final keep = list.any((c) => c.id == selectedCategoryIdNotifier.value);
       if (list.isNotEmpty && keep == false) {
-        final ok = list.where((c) => _inBangalore || !_isEv(c)).toList();
+        final ok = list.where((c) => !c.showLaunchingSoon).toList();
         _select(ok.isNotEmpty ? ok.first : list.first);
       }
       _enforce();
@@ -94,7 +117,7 @@ class _CategoryTilesState extends State<CategoryTiles> {
   }
 
   void _select(Query$ServiceCategories$serviceCategories c) {
-    if (_isEv(c) && !_inBangalore) return;
+    if (c.showLaunchingSoon) return;
     selectedCategoryIdNotifier.value = c.id;
     selectedServiceIdNotifier.value = null;
     premiumSelectedNotifier.value = false;
@@ -120,7 +143,7 @@ class _CategoryTilesState extends State<CategoryTiles> {
           separatorBuilder: (_, __) => const SizedBox(width: 10),
           itemBuilder: (context, i) {
             final c = _items[i];
-            final locked = _isEv(c) && !_inBangalore;
+            final locked = c.showLaunchingSoon;
             final selected = selId == c.id && !locked;
             final rawUrl = c.media?.address ?? (c.services.isEmpty ? null : c.services.first.media?.address);
             final url = (rawUrl == null || rawUrl.isEmpty) ? null : (rawUrl.startsWith('http') ? rawUrl : '${dotenv.env['MEDIA_BASE_URL'] ?? 'https://route39.in/uploads/'}${rawUrl.startsWith('/') ? rawUrl.substring(1) : rawUrl}');
@@ -140,7 +163,10 @@ class _CategoryTilesState extends State<CategoryTiles> {
                     locked
                         ? SizedBox(
                             height: 44,
-                            child: Image.asset('assets/images/car_moving.png', width: 72, fit: BoxFit.contain),
+                            child: url == null
+                                ? Image.asset('assets/images/car_moving.png', width: 72, fit: BoxFit.contain)
+                                : Image.network(url, width: 72, fit: BoxFit.contain,
+                                    errorBuilder: (_, __, ___) => Image.asset('assets/images/car_moving.png', width: 72, fit: BoxFit.contain)),
                           )
                         : (_isCargo(c)
                             ? Image.asset('assets/images/route39_cargo_icon.png', height: 44, fit: BoxFit.contain)
@@ -152,7 +178,7 @@ class _CategoryTilesState extends State<CategoryTiles> {
                     Text(c.name, maxLines: 2, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13,
                             color: selected ? Colors.black : Colors.black54)),
-                    if (locked)
+                    if (c.showLaunchingSoon)
                       Container(
                         margin: const EdgeInsets.only(top: 4),
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

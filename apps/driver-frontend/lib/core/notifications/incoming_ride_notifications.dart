@@ -1,5 +1,6 @@
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:android_intent_plus/flag.dart';
+import 'dart:io' show Platform;
 import 'dart:typed_data';
 import 'dart:async';
 
@@ -31,6 +32,7 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (message.data['type'] != 'requests') return;
+  if (!Platform.isAndroid) return;
   final orderId = message.data['orderId'];
   if (orderId == null) return;
   if (await FlutterOverlayWindow.isPermissionGranted()) {

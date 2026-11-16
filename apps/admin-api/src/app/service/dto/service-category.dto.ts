@@ -27,6 +27,8 @@ export class ServiceCategoryDTO {
   displayPriority!: number;
   @Field(() => Boolean)
   isEnabled!: boolean;
+  @Field(() => Boolean)
+  showLaunchingSoon!: boolean;
   @Field(() => ID, { nullable: true })
   mediaId?: number;
 }

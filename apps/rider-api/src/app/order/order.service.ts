@@ -262,6 +262,22 @@ export class RiderOrderService {
         cancelReasonNote: input.reason,
       });
       await this.activeOrderRedisService.deleteOrder(activeOrder.id);
+      try {
+        await this.driverRedisService.createEphemeralMessage(activeOrder.driverId, {
+          messageId: `rider-canceled-${activeOrder.id}`,
+          type: DriverEphemeralMessageType.RiderCanceled,
+          orderId: parseInt(activeOrder.id),
+          serviceImageUrl: activeOrder.serviceImageAddress,
+          serviceName: activeOrder.serviceName,
+          riderFullName: activeOrder.riderFirstName ?? null,
+          riderProfileUrl: activeOrder.riderAvatarUrl ?? null,
+          amount: null,
+          createdAt: new Date(),
+          expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+        });
+      } catch (e) {
+        Logger.warn(`Could not create RiderCanceled message for order ${activeOrder.id}: ${e}`);
+      }
       this.driverNotificationService.canceled(driver?.fcmTokens?.[0]);
       this.pubsub.publish(
         'driver.event',

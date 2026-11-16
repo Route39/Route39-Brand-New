@@ -9496,6 +9496,7 @@ type ServiceCategory {
   description: String
   displayPriority: Int!
   isEnabled: Boolean!
+  showLaunchingSoon: Boolean!
   mediaId: ID
   media: Media
   services(
@@ -9552,6 +9553,7 @@ type ServiceCategoryDeleteResponse {
   description: String
   displayPriority: Int
   isEnabled: Boolean
+  showLaunchingSoon: Boolean
   mediaId: ID
 }
 
@@ -18076,6 +18078,7 @@ input ServiceCategoryInput {
   displayPriority: Int
   isEnabled: Boolean
   mediaId: ID
+  showLaunchingSoon: Boolean
 }
 
 input UpdateOneServiceCategoryInput {
