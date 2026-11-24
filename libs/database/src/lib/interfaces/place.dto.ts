@@ -9,4 +9,6 @@ export class PlaceDTO {
   title?: string;
   @Field(() => String)
   address!: string;
+  @Field(() => String, { nullable: true })
+  city?: string;
 }

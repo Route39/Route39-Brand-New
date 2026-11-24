@@ -145,8 +145,22 @@ class _LocateFavoriteLocationScreenMobileState extends State<LocateFavoriteLocat
                       SizedBox(
                         width: double.infinity,
                         child: AppPrimaryButton(
-                          onPressed: () {
-                            context.router.maybePop(selectedPlace);
+                          onPressed: () async {
+                            var place = selectedPlace;
+                            // Address can still be empty if Confirm is tapped before it is resolved
+                            if (place != null && place.address.trim().isEmpty) {
+                              final settingsState = locator<SettingsCubit>().state;
+                              final result = await locator<GeoDatasource>().getAddressForLocation(
+                                latLng: place.latLng,
+                                language: settingsState.locale,
+                                mapProvider: settingsState.mapProvider,
+                              );
+                              if (result is ApiResponseLoaded<Place>) {
+                                place = place.copyWith(address: result.data.address);
+                              }
+                            }
+                            if (!mounted) return;
+                            context.router.maybePop(place);
                           },
                           child: Text(context.translate.confirm),
                         ),

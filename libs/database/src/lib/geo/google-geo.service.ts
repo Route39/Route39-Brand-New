@@ -33,7 +33,7 @@ export class GoogleGeoService {
   }
 
   private reverseGeoKey(lang: string | undefined) {
-    return `geo:reverse:${(lang ?? 'any').toLowerCase()}:v1`; // GEO index
+    return `geo:reverse:${(lang ?? 'any').toLowerCase()}:v3`; // GEO index
   }
 
   private reverseHashKey(memberId: string) {
@@ -163,6 +163,7 @@ export class GoogleGeoService {
           point: { lat: parseFloat(h.lat), lng: parseFloat(h.lng) },
           title: h.title || '',
           address: h.address,
+          city: h.city || undefined,
         };
       }
     }
@@ -190,6 +191,22 @@ export class GoogleGeoService {
           },
           title: place.address_components.map((c) => c.long_name).join(', '),
           address: place.formatted_address || 'Address not found',
+          city:
+            Array.from(
+              new Set(
+                place.address_components
+                  .filter((c) =>
+                    c.types.some((t) =>
+                      [
+                        'locality',
+                        'administrative_area_level_2',
+                        'administrative_area_level_3',
+                      ].includes(t as string),
+                    ),
+                  )
+                  .map((c) => c.long_name),
+              ),
+            ).join('|') || undefined,
         }
       : {
           point: { lat: input.lat, lng: input.lng },
@@ -212,6 +229,7 @@ export class GoogleGeoService {
         lng: String(dto.point.lng),
         title: dto.title,
         address: dto.address,
+        city: dto.city ?? '',
       })
       .catch(() => {});
     await this.redis.expire(geoKey, this.TTL_REVERSE_SEC).catch(() => {});

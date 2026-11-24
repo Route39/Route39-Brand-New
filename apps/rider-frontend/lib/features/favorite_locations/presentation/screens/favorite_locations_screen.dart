@@ -12,7 +12,9 @@ class FavoriteLocationsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Scaffold(
+      backgroundColor: ColorPalette.neutralVariant99,
+      body: Container(
       color: ColorPalette.neutralVariant99,
       child: SafeArea(
         child: context.responsive(
@@ -24,6 +26,7 @@ class FavoriteLocationsScreen extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 

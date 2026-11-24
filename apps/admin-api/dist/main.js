@@ -16963,6 +16963,14 @@ place_dto_ts_decorate([
     }),
     place_dto_ts_metadata("design:type", String)
 ], PlaceDTO.prototype, "address", void 0);
+place_dto_ts_decorate([
+    (0,graphql_.Field)(function() {
+        return String;
+    }, {
+        nullable: true
+    }),
+    place_dto_ts_metadata("design:type", String)
+], PlaceDTO.prototype, "city", void 0);
 PlaceDTO = place_dto_ts_decorate([
     (0,graphql_.ObjectType)()
 ], PlaceDTO);
@@ -27836,7 +27844,7 @@ var GoogleGeoService = /*#__PURE__*/ function() {
         return "geo:places:" + (lang != null ? lang : 'any').toLowerCase() + ":" + keyword.trim().toLowerCase() + ":city:" + cityCell + ":v1";
     };
     _proto.reverseGeoKey = function reverseGeoKey(lang) {
-        return "geo:reverse:" + (lang != null ? lang : 'any').toLowerCase() + ":v1"; // GEO index
+        return "geo:reverse:" + (lang != null ? lang : 'any').toLowerCase() + ":v3"; // GEO index
     };
     _proto.reverseHashKey = function reverseHashKey(memberId) {
         return "geo:reverse:hash:" + memberId; // payload for reverse GEO member
@@ -27987,7 +27995,7 @@ var GoogleGeoService = /*#__PURE__*/ function() {
     };
     _proto.reverseGeocode = function reverseGeocode(input) {
         return google_geo_service_async_to_generator(function() {
-            var geoKey, hits, _hits__member, memberId, h, config, client, response, place, dto, memberId1;
+            var geoKey, hits, _hits__member, memberId, h, config, client, response, place, dto, memberId1, _dto_city;
             return google_geo_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -28044,7 +28052,8 @@ var GoogleGeoService = /*#__PURE__*/ function() {
                                     lng: parseFloat(h.lng)
                                 },
                                 title: h.title || '',
-                                address: h.address
+                                address: h.address,
+                                city: h.city || undefined
                             }
                         ];
                     case 5:
@@ -28082,7 +28091,18 @@ var GoogleGeoService = /*#__PURE__*/ function() {
                             title: place.address_components.map(function(c) {
                                 return c.long_name;
                             }).join(', '),
-                            address: place.formatted_address || 'Address not found'
+                            address: place.formatted_address || 'Address not found',
+                            city: Array.from(new Set(place.address_components.filter(function(c) {
+                                return c.types.some(function(t) {
+                                    return [
+                                        'locality',
+                                        'administrative_area_level_2',
+                                        'administrative_area_level_3'
+                                    ].includes(t);
+                                });
+                            }).map(function(c) {
+                                return c.long_name;
+                            }))).join('|') || undefined
                         } : {
                             point: {
                                 lat: input.lat,
@@ -28109,7 +28129,8 @@ var GoogleGeoService = /*#__PURE__*/ function() {
                                 lat: String(dto.point.lat),
                                 lng: String(dto.point.lng),
                                 title: dto.title,
-                                address: dto.address
+                                address: dto.address,
+                                city: (_dto_city = dto.city) != null ? _dto_city : ''
                             }).catch(function() {})
                         ];
                     case 9:

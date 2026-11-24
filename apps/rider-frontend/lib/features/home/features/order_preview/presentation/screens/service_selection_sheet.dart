@@ -59,6 +59,29 @@ class _ServicesSelectionSheetState extends State<ServicesSelectionSheet> {
 
   final Map<String, Future<double?>> _routeDistanceCache = {};
 
+  // Same-city restriction: pickup and drop-off must be in the same city
+  bool _sameCity = true;
+  String _sameCityKey = '';
+
+  void _ensureSameCityCheck(List<Place?> waypoints) {
+    final points = waypoints.whereType<Place>().toList();
+    final key = points
+        .map((p) =>
+            '${p.latLng.latitude.toStringAsFixed(6)},${p.latLng.longitude.toStringAsFixed(6)}')
+        .join('|');
+    if (key == _sameCityKey) return;
+    _sameCityKey = key;
+    if (points.length < 2) {
+      _sameCity = true;
+      return;
+    }
+    waypointsInSameCity(points).then((ok) {
+      if (mounted && _sameCityKey == key) {
+        setState(() => _sameCity = ok);
+      }
+    });
+  }
+
   static const _dayLabels = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
   @override
@@ -149,6 +172,7 @@ final dropoff =
     state.waypoints.length > 1
         ? state.waypoints.last
         : null;
+          _ensureSameCityCheck(state.waypoints);
           return SizedBox.expand(
             child: SafeArea(
             top: false,
@@ -208,12 +232,39 @@ _buildVehicleList(context, state, selectedService),                          con
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        if (!_sameCity)
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFF1F0),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.red),
+                            ),
+                            child: const Row(
+                              children: [
+                                Icon(Icons.info_outline,
+                                    color: Colors.red, size: 20),
+                                SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Pickup and drop location should be in the same city.',
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         _buildTotalRow(context, state, selectedService),
                         const SizedBox(height: 16),
                         Row(
                           children: [
                             AppPrimaryButton(
-                              isDisabled: !state.canSubmitOrder,
+                              isDisabled: !state.canSubmitOrder || !_sameCity,
                               color: PrimaryButtonColor.error,
                               onPressed: () async {
                                 final result = await showDialog<DateTime>(
@@ -238,7 +289,7 @@ _buildVehicleList(context, state, selectedService),                          con
                             const SizedBox(width: 16),
                             Expanded(
                               child: AppPrimaryButton(
-                                isDisabled: !state.canSubmitOrder,
+                                isDisabled: !state.canSubmitOrder || !_sameCity,
                                 color: PrimaryButtonColor.error,
                                 onPressed: () {
                                   homeBloc.add(

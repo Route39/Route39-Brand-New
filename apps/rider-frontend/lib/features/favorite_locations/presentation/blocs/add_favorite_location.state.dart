@@ -15,7 +15,7 @@ sealed class AddFavoriteLocationState with _$AddFavoriteLocationState {
         addressType: null,
         addressName: null,
         selectedLocation: null,
-        addressPhone: (Constants.defaultCountry, null),
+        addressPhone: (CountryCode.parseByIso('IN')!, null),
         createFavoriteLocationState: ApiResponseInitial(),
       );
 }

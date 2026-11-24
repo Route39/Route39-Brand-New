@@ -75,7 +75,7 @@ class EditFavoriteLocationCubit extends Cubit<EditFavoriteLocationState> {
     );
   }
 
-  void delete(String id) async {
+  Future<ApiResponse<Mutation$DeleteFavoriteLocation>> delete(String id) async {
     emit(
       state.copyWith(
         deleteFavoriteLocationState: ApiResponse.loading(),
@@ -89,6 +89,7 @@ class EditFavoriteLocationCubit extends Cubit<EditFavoriteLocationState> {
         deleteFavoriteLocationState: deleteFavoriteLocationResponse,
       ),
     );
+    return deleteFavoriteLocationResponse;
   }
 
   void updateAddressPhone((CountryCode, String?)? p1) => emit(

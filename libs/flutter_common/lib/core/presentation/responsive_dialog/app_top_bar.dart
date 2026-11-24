@@ -7,12 +7,14 @@ class AppTopBar extends StatelessWidget {
   final String title;
   final String? subtitle;
   final Widget? trailing;
+  final VoidCallback? onBack;
 
   const AppTopBar({
     super.key,
     required this.title,
     this.subtitle,
     this.trailing,
+    this.onBack,
   });
 
   @override
@@ -23,7 +25,7 @@ class AppTopBar extends StatelessWidget {
         Row(
           children: [
             AppBackButton(
-              onPressed: () => context.router.maybePop(),
+              onPressed: onBack ?? () => context.router.maybePop(),
             ),
             if (trailing != null) ...[
               const Spacer(),

@@ -1,4 +1,7 @@
 import 'package:ridy/core/blocs/location.bloc.dart';
+import 'package:ridy/core/blocs/settings.bloc.dart';
+import 'package:ridy/core/enums/map_provider.prod.dart';
+import 'package:graphql/client.dart' show QueryOptions, FetchPolicy, gql;
 import 'package:ridy/features/home/presentation/blocs/home.extensions.dart';
 import 'package:ridy/config/locator/locator.dart';
 import 'package:ridy/core/datasources/graphql_datasource.dart';
@@ -36,6 +39,66 @@ import '../../features/home/domain/repositories/home_repository.dart';
 part 'home.state.dart';
 part 'home.event.dart';
 part 'home.bloc.freezed.dart';
+
+/// Asks the backend (reverse geocode) for the city/district of a place.
+/// Returns null if it can't be determined.
+Future<String?> _cityOfPlace(Place place) async {
+  try {
+    final settings = locator<SettingsCubit>().state;
+    final res = await locator<GraphqlDatasource>().query<String?>(
+      QueryOptions<String?>(
+        document: gql(r'''
+          query ReverseGeocodeCity(
+            $lat: Float!
+            $lng: Float!
+            $language: String!
+            $provider: GeoProvider!
+          ) {
+            reverseGeocode(
+              location: { lat: $lat, lng: $lng }
+              language: $language
+              provider: $provider
+            ) {
+              city
+            }
+          }
+        '''),
+        fetchPolicy: FetchPolicy.cacheFirst,
+        variables: {
+          'lat': place.latLng.latitude,
+          'lng': place.latLng.longitude,
+          'language': settings.locale,
+          'provider': settings.mapProvider.toGql().name,
+        },
+        parserFn: (data) => data['reverseGeocode']?['city'] as String?,
+      ),
+    );
+    final city = res.data?.trim().toLowerCase();
+    return (city == null || city.isEmpty) ? null : city;
+  } catch (_) {
+    return null;
+  }
+}
+
+/// True when all waypoints are in the same city. A place whose city can't
+/// be determined is ignored, so it never blocks a booking by itself.
+Future<bool> waypointsInSameCity(List<Place> waypoints) async {
+  if (waypoints.length < 2) return true;
+  final cities = await Future.wait(waypoints.map(_cityOfPlace));
+  debugPrint('[CityCheck] $cities');
+  final known = cities
+      .whereType<String>()
+      .map((c) => c
+          .split('|')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toSet())
+      .toList();
+  if (known.length < 2) return true;
+  // Same city if every place shares at least one name with the first place
+  final first = known.first;
+  return known.skip(1).every((names) => names.intersection(first).isNotEmpty);
+}
 
 @lazySingleton
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
@@ -472,6 +535,29 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
               ),
             );
             return;
+          }
+
+          // Only allow rides where pickup and drop-off are in the same city
+          final bookingWaypoints = state.waypoints.nonNulls.toList();
+          if (bookingWaypoints.length > 1) {
+            // loading disables the buttons while the city check runs
+            emit(state.copyWith(createOrderResponse: ApiResponse.loading()));
+            final sameCity = await waypointsInSameCity(bookingWaypoints);
+            if (!sameCity) {
+              emit(
+                state.copyWith(
+                  createOrderResponse: ApiResponse.error(
+                    'Pickup and drop-off must be in the same city. '
+                    'Intercity rides are not allowed.',
+                  ),
+                ),
+              );
+              // reset so the message shows again on the next tap
+              emit(
+                state.copyWith(createOrderResponse: ApiResponse.initial()),
+              );
+              return;
+            }
           }
 
           debugPrint(

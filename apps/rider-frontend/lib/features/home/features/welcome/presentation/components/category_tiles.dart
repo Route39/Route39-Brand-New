@@ -87,6 +87,31 @@ class _CategoryTilesState extends State<CategoryTiles> {
 
   bool _isCargo(Query$ServiceCategories$serviceCategories c) => c.name.toLowerCase().contains('cargo');
 
+  bool _isBus(Query$ServiceCategories$serviceCategories c) => RegExp(r'\bbus\b').hasMatch(c.name.toLowerCase());
+
+  bool _isCab(Query$ServiceCategories$serviceCategories c) => RegExp(r'\b(cab|car)\b').hasMatch(c.name.toLowerCase());
+
+  /// Default image: bus icon for the bus category, otherwise the normal fallback.
+  Widget _fallbackImage(Query$ServiceCategories$serviceCategories c, String normalAsset, {double? width, double? height}) {
+    Widget normal() => Image.asset(normalAsset, width: width, height: height, fit: BoxFit.contain);
+    if (_isCab(c)) {
+      return Image.asset(
+        'assets/images/car_moving.png',
+        width: width,
+        height: height,
+        fit: BoxFit.contain,
+      );
+    }
+    if (!_isBus(c)) return normal();
+    return Image.asset(
+      'assets/images/ev_bus_icon.png',
+      width: width,
+      height: height,
+      fit: BoxFit.contain,
+      errorBuilder: (_, __, ___) => normal(),
+    );
+  }
+
   Future<void> _load() async {
     try {
       final loc = _riderLatLng(locator<HomeBloc>().state);
@@ -164,16 +189,22 @@ class _CategoryTilesState extends State<CategoryTiles> {
                         ? SizedBox(
                             height: 44,
                             child: url == null
-                                ? Image.asset('assets/images/car_moving.png', width: 72, fit: BoxFit.contain)
+                                ? _fallbackImage(c, 'assets/images/car_moving.png', width: 72)
                                 : Image.network(url, width: 72, fit: BoxFit.contain,
-                                    errorBuilder: (_, __, ___) => Image.asset('assets/images/car_moving.png', width: 72, fit: BoxFit.contain)),
+                                    errorBuilder: (_, e, __) {
+                                      debugPrint('[CategoryImage] ${c.name} failed to load $url: $e');
+                                      return _fallbackImage(c, 'assets/images/car_moving.png', width: 72);
+                                    }),
                           )
                         : (_isCargo(c)
                             ? Image.asset('assets/images/route39_cargo_icon.png', height: 44, fit: BoxFit.contain)
                             : url == null
-                            ? Image.asset('assets/images/ev_auto_icon.png', height: 44, fit: BoxFit.contain)
+                            ? _fallbackImage(c, 'assets/images/ev_auto_icon.png', height: 44)
                             : Image.network(url, height: 44, fit: BoxFit.contain,
-                                errorBuilder: (_, __, ___) => Image.asset('assets/images/ev_auto_icon.png', height: 44))),
+                                errorBuilder: (_, e, __) {
+                                debugPrint('[CategoryImage] ${c.name} failed to load $url: $e');
+                                return _fallbackImage(c, 'assets/images/ev_auto_icon.png', height: 44);
+                              })),
                     const SizedBox(height: 6),
                     Text(c.name, maxLines: 2, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13,

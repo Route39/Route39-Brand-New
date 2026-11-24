@@ -38,6 +38,42 @@ class EditFavoriteLocationScreen extends StatefulWidget {
 class _EditFavoriteLocationScreenState extends State<EditFavoriteLocationScreen> {
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
+  Future<void> _confirmAndDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete address'),
+        content: const Text('Are you sure you want to delete this address?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Delete', style: TextStyle(color: ColorPalette.error40)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final result = await locator<EditFavoriteLocationCubit>().delete(widget.entity.id);
+    if (!mounted) return;
+    switch (result) {
+      case ApiResponseLoaded():
+        locator<FavoriteLocationsCubit>().onStarted();
+        locator<DestinationSuggestionsCubit>().onStarted();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Address deleted successfully')),
+        );
+        context.router.maybePop();
+      case ApiResponseError(:final message):
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      case _:
+    }
+  }
+
   @override
   void initState() {
     locator<FavoriteLocationsDesktopMapCubit>().viewOne(
@@ -53,7 +89,7 @@ class _EditFavoriteLocationScreenState extends State<EditFavoriteLocationScreen>
         null,
       ),
       addressPhone: (
-        CountryCode.parseByIso(widget.entity.phoneNumber?.countryCode) ?? Constants.defaultCountry,
+        CountryCode.parseByIso('IN')!,
         widget.entity.phoneNumber?.number,
       ),
     );
@@ -79,7 +115,7 @@ class _EditFavoriteLocationScreenState extends State<EditFavoriteLocationScreen>
                 trailing: CupertinoButton(
                   padding: EdgeInsets.zero,
                   onPressed: () {
-                    locator<EditFavoriteLocationCubit>().delete(widget.entity.id);
+                    _confirmAndDelete();
                   },
                   minimumSize: Size(0, 0),
                   child: const Icon(Ionicons.trash, color: ColorPalette.error40),
@@ -130,7 +166,8 @@ class _EditFavoriteLocationScreenState extends State<EditFavoriteLocationScreen>
                           ),
                           const SizedBox(height: 16),
                           AppPhoneNumberTextField(
-                            initalValue: (Constants.defaultCountry, null),
+                            showCountryPicker: false, // locked to India (+91)
+                            initalValue: (CountryCode.parseByIso('IN')!, null),
                             validator: (value) =>
                                 (value?.$2?.isEmpty ?? true) ? context.translate.fieldIsRequired : null,
                             onChanged: editBloc.updateAddressPhone,

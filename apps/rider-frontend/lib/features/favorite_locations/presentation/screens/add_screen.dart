@@ -8,7 +8,9 @@ import 'package:flutter_common/features/country_code_dialog/country_code.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:flutter_common/core/color_palette/color_palette.dart';
 import 'package:ridy/config/locator/locator.dart';
+import 'package:ridy/config/router/app_router.dart';
 import 'package:ridy/core/enums/address_type.dart';
+import 'package:better_localization/country_code/country_code.dart';
 import 'package:ridy/core/extensions/extensions.dart';
 import 'package:flutter_common/core/presentation/buttons/app_primary_button.dart';
 import 'package:flutter_common/core/presentation/buttons/app_text_button.dart';
@@ -18,6 +20,7 @@ import 'package:ridy/features/favorite_locations/models/update_favorite_location
 import 'package:ridy/features/favorite_locations/presentation/blocs/add_favorite_location.bloc.dart';
 import 'package:ridy/features/favorite_locations/presentation/blocs/favorite_locations.bloc.dart';
 import 'package:ridy/features/favorite_locations/presentation/components/select_place_form_field.dart';
+import 'package:ridy/features/favorite_locations/presentation/components/inline_place_search_field.dart';
 import 'package:ridy/features/home/presentation/blocs/destination_suggestions.bloc.dart';
 
 @RoutePage()
@@ -32,6 +35,15 @@ class AddFavoriteLocationScreen extends StatefulWidget {
 
 class _AddFavoriteLocationScreenState extends State<AddFavoriteLocationScreen> {
   final formKey = GlobalKey<FormState>();
+
+  /// Go back; if the page was opened directly (nothing to pop), open the list.
+  void _closeScreen() {
+    if (context.router.canPop()) {
+      context.router.maybePop();
+    } else {
+      context.router.replace(const FavoriteLocationsListRoute());
+    }
+  }
 
   @override
   void initState() {
@@ -54,7 +66,8 @@ class _AddFavoriteLocationScreenState extends State<AddFavoriteLocationScreen> {
               case ApiResponseLoaded():
                 locator<FavoriteLocationsCubit>().onStarted();
                 locator<DestinationSuggestionsCubit>().onStarted();
-                context.router.maybePop();
+                context.showSnackBar(message: 'Address saved successfully');
+                _closeScreen();
               case ApiResponseError(:final message):
                 context.showSnackBar(message: message);
               case _:
@@ -66,10 +79,11 @@ class _AddFavoriteLocationScreenState extends State<AddFavoriteLocationScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  AppTopBar(title: context.translate.createAFavoriteLocation),
+                  AppTopBar(title: context.translate.createAFavoriteLocation, onBack: _closeScreen),
                   const SizedBox(height: 24),
                   Expanded(
-                    child: Form(
+                    child: SingleChildScrollView(
+                      child: Form(
                       key: formKey,
                       child: Column(
                         children: [
@@ -96,14 +110,21 @@ class _AddFavoriteLocationScreenState extends State<AddFavoriteLocationScreen> {
                             onChanged: addBloc.updateAddressName,
                           ),
                           const SizedBox(height: 16),
+                          InlinePlaceSearchField(
+                            selected: state.selectedLocation,
+                            onChanged: addBloc.updateSelectedLocation,
+                          ),
+                          const SizedBox(height: 16),
                           AppPhoneNumberTextField(
-                            initalValue: (Constants.defaultCountry, null),
+                            showCountryPicker: false, // locked to India (+91)
+                            initalValue: (CountryCode.parseByIso('IN')!, null),
                             validator: (value) =>
                                 (value?.$2?.isEmpty ?? true) ? context.translate.fieldIsRequired : null,
                             onChanged: addBloc.updateAddressPhone,
                           ),
                           const SizedBox(height: 32),
                           SelectPlaceFormField(
+                            key: ValueKey('${state.selectedLocation?.latLng.latitude}_${state.selectedLocation?.latLng.longitude}'),
                             onSaved: addBloc.updateSelectedLocation,
                             initialValue: state.selectedLocation,
                             onChanged: addBloc.updateSelectedLocation,
@@ -111,6 +132,7 @@ class _AddFavoriteLocationScreenState extends State<AddFavoriteLocationScreen> {
                           ),
                         ],
                       ),
+                    ),
                     ),
                   ),
                   AppPrimaryButton(
@@ -133,9 +155,7 @@ class _AddFavoriteLocationScreenState extends State<AddFavoriteLocationScreen> {
                   ),
                   AppTextButton(
                     text: context.translate.cancel,
-                    onPressed: () {
-                      context.router.maybePop();
-                    },
+                    onPressed: _closeScreen,
                   ),
                 ],
               ),

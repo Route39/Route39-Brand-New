@@ -56,7 +56,11 @@ class AppFavoriteLocationItem extends StatelessWidget {
                 ),
                 if (address != null) ...[
                   Text(
-                    address?.details ?? '-',
+                    (address != null &&
+                            address!.details.trim().isNotEmpty &&
+                            address!.details.trim() != '-')
+                        ? address!.details
+                        : (address?.title ?? '-'),
                     style: context.bodyMedium?.copyWith(
                       color: ColorPalette.neutralVariant50,
                     ),
