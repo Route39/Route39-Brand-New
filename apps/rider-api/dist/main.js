@@ -27568,6 +27568,11 @@ RedisSearchMigrationService = redis_index_initializer_service_ts_decorate([
 ;// external "@googlemaps/google-maps-services-js"
 const google_maps_services_js_namespaceObject = require("@googlemaps/google-maps-services-js");
 ;// ../../libs/database/src/lib/geo/google-geo.service.ts
+function google_geo_service_array_like_to_array(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+    for(var i = 0, arr2 = new Array(len); i < len; i++)arr2[i] = arr[i];
+    return arr2;
+}
 function google_geo_service_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
     try {
         var info = gen[key](arg);
@@ -27596,6 +27601,34 @@ function google_geo_service_async_to_generator(fn) {
             _next(undefined);
         });
     };
+}
+function google_geo_service_unsupported_iterable_to_array(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return google_geo_service_array_like_to_array(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(n);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return google_geo_service_array_like_to_array(o, minLen);
+}
+function google_geo_service_create_for_of_iterator_helper_loose(o, allowArrayLike) {
+    var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
+    if (it) return (it = it.call(o)).next.bind(it);
+    if (Array.isArray(o) || (it = google_geo_service_unsupported_iterable_to_array(o)) || allowArrayLike && o && typeof o.length === "number") {
+        if (it) o = it;
+        var i = 0;
+        return function() {
+            if (i >= o.length) {
+                return {
+                    done: true
+                };
+            }
+            return {
+                done: false,
+                value: o[i++]
+            };
+        };
+    }
+    throw new TypeError("Invalid attempt to iterate non-iterable instance.\\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
 }
 function google_geo_service_ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -27742,7 +27775,7 @@ var GoogleGeoService = /*#__PURE__*/ function() {
     };
     _proto.getPlaces = function getPlaces(input) {
         return google_geo_service_async_to_generator(function() {
-            var _autocompleteResp_data, pipeline, cityKey, c, cached, config, client, locationParam, autocompleteResp, _autocompleteResp_data_predictions, predictions, detailPromises, detailsResponses, results, i, _dResp_data, _result_geometry, dResp, result, _predictions_i_structured_formatting, _predictions_i_structured_formatting1, ttl;
+            var _autocompleteResp_data, pipeline, cityKey, c, cached, config, client, locationParam, autocompleteResp, _autocompleteResp_data_predictions, predictions, detailPromises, detailsResponses, results, i, _dResp_data, _result_geometry, dResp, result, _predictions_i_structured_formatting, _predictions_i_structured_formatting1, _loop, _ts_data, ts, _ts_data_results, _iterator, _step, _ret, _results, pri, _i, _iter, pre, _r_data_results, _r_data, _top_geometry, r, top, loc, same, merged, o, rad, km, near, _results1, _r_data1, r1, rad1, km1, stations, _r_data_results1, _iterator1, _step1, t, _t_geometry, loc1, types, nm, ttl;
             return google_geo_service_ts_generator(this, function(_state) {
                 switch(_state.label){
                     case 0:
@@ -27762,7 +27795,7 @@ var GoogleGeoService = /*#__PURE__*/ function() {
                             3
                         ];
                         c = this.cityCell(input.location.lat, input.location.lng);
-                        cityKey = this.placesCityKey(input.language, input.keyword, c);
+                        cityKey = this.placesCityKey(input.language, input.keyword, c) + ':v5';
                         return [
                             4,
                             this.redis.get(cityKey).catch(function() {
@@ -27856,19 +27889,204 @@ var GoogleGeoService = /*#__PURE__*/ function() {
                                 });
                             }
                         }
-                        if (!cityKey) return [
+                        if (!(results.length < 3)) return [
                             3,
                             8
+                        ];
+                        _loop = function() {
+                            var r = _step.value;
+                            var _r_geometry;
+                            var loc = (_r_geometry = r.geometry) == null ? void 0 : _r_geometry.location;
+                            if (!loc) return "continue";
+                            var dup = results.some(function(x) {
+                                return Math.abs(x.point.lat - loc.lat) < 0.0005 && Math.abs(x.point.lng - loc.lng) < 0.0005;
+                            });
+                            if (dup) return "continue";
+                            results.push({
+                                point: {
+                                    lat: loc.lat,
+                                    lng: loc.lng
+                                },
+                                title: r.name || '',
+                                address: r.formatted_address || ''
+                            });
+                            if (results.length >= 10) return "break";
+                        };
+                        return [
+                            4,
+                            client.textSearch({
+                                params: {
+                                    query: input.keyword,
+                                    key: config.backendMapsAPIKey,
+                                    language: input.language,
+                                    location: locationParam,
+                                    radius: input.location ? 30000 : undefined,
+                                    region: 'in'
+                                }
+                            }).catch(function() {
+                                return null;
+                            })
+                        ];
+                    case 7:
+                        ts = _state.sent();
+                        for(_iterator = google_geo_service_create_for_of_iterator_helper_loose((_ts_data_results = ts == null ? void 0 : (_ts_data = ts.data) == null ? void 0 : _ts_data.results) != null ? _ts_data_results : []); !(_step = _iterator()).done;){
+                            _ret = _loop();
+                            if (_ret === "break") break;
+                        }
+                        _state.label = 8;
+                    case 8:
+                        if (!/^bus stand\b/i.test(input.keyword.trim())) return [
+                            3,
+                            13
+                        ];
+                        pri = [];
+                        _i = 0, _iter = [
+                            'New',
+                            'Old'
+                        ];
+                        _state.label = 9;
+                    case 9:
+                        if (!(_i < _iter.length)) return [
+                            3,
+                            12
+                        ];
+                        pre = _iter[_i];
+                        return [
+                            4,
+                            client.textSearch({
+                                params: {
+                                    query: pre + " " + input.keyword,
+                                    key: config.backendMapsAPIKey,
+                                    language: input.language,
+                                    location: locationParam,
+                                    radius: input.location ? 30000 : undefined,
+                                    region: 'in'
+                                }
+                            }).catch(function() {
+                                return null;
+                            })
+                        ];
+                    case 10:
+                        r = _state.sent();
+                        top = r == null ? void 0 : (_r_data = r.data) == null ? void 0 : (_r_data_results = _r_data.results) == null ? void 0 : _r_data_results[0];
+                        loc = top == null ? void 0 : (_top_geometry = top.geometry) == null ? void 0 : _top_geometry.location;
+                        if (top && loc) pri.push({
+                            point: {
+                                lat: loc.lat,
+                                lng: loc.lng
+                            },
+                            title: top.name || "" + pre + " Bus Stand",
+                            address: top.formatted_address || ''
+                        });
+                        _state.label = 11;
+                    case 11:
+                        _i++;
+                        return [
+                            3,
+                            9
+                        ];
+                    case 12:
+                        same = function(a1, b1) {
+                            return Math.abs(a1.point.lat - b1.point.lat) < 0.0005 && Math.abs(a1.point.lng - b1.point.lng) < 0.0005;
+                        };
+                        merged = [].concat(pri, results.filter(function(x) {
+                            return !pri.some(function(p) {
+                                return same(p, x);
+                            });
+                        }));
+                        merged = merged.filter(function(x, i) {
+                            return merged.findIndex(function(y) {
+                                return same(x, y);
+                            }) === i;
+                        });
+                        if (input.location) {
+                            o = input.location;
+                            rad = function(d) {
+                                return d * Math.PI / 180;
+                            };
+                            km = function(q) {
+                                var h = Math.pow(Math.sin(rad(q.lat - o.lat) / 2), 2) + Math.cos(rad(o.lat)) * Math.cos(rad(q.lat)) * Math.pow(Math.sin(rad(q.lng - o.lng) / 2), 2);
+                                return 12742 * Math.asin(Math.sqrt(h));
+                            };
+                            near = merged.filter(function(x) {
+                                return km(x.point) <= 25;
+                            });
+                            if (near.length) merged = near;
+                        }
+                        (_results = results).splice.apply(_results, [].concat([
+                            0,
+                            results.length
+                        ], merged));
+                        _state.label = 13;
+                    case 13:
+                        if (!/^railway station\b/i.test(input.keyword.trim())) return [
+                            3,
+                            15
+                        ];
+                        return [
+                            4,
+                            client.textSearch({
+                                params: {
+                                    query: input.keyword,
+                                    type: 'train_station',
+                                    key: config.backendMapsAPIKey,
+                                    language: input.language,
+                                    location: locationParam,
+                                    radius: input.location ? 30000 : undefined,
+                                    region: 'in'
+                                }
+                            }).catch(function() {
+                                return null;
+                            })
+                        ];
+                    case 14:
+                        r1 = _state.sent();
+                        rad1 = function(d) {
+                            return d * Math.PI / 180;
+                        };
+                        km1 = function(q) {
+                            if (!input.location) return 0;
+                            var o = input.location;
+                            var h = Math.pow(Math.sin(rad1(q.lat - o.lat) / 2), 2) + Math.cos(rad1(o.lat)) * Math.cos(rad1(q.lat)) * Math.pow(Math.sin(rad1(q.lng - o.lng) / 2), 2);
+                            return 12742 * Math.asin(Math.sqrt(h));
+                        };
+                        stations = [];
+                        for(_iterator1 = google_geo_service_create_for_of_iterator_helper_loose((_r_data_results1 = r1 == null ? void 0 : (_r_data1 = r1.data) == null ? void 0 : _r_data1.results) != null ? _r_data_results1 : []); !(_step1 = _iterator1()).done;){
+                            t = _step1.value;
+                            ;
+                            loc1 = (_t_geometry = t.geometry) == null ? void 0 : _t_geometry.location;
+                            types = t.types || [];
+                            if (!loc1 || !(types.includes('train_station') || types.includes('transit_station'))) continue;
+                            if (km1(loc1) > 25) continue;
+                            nm = t.name || '';
+                            stations.push({
+                                point: {
+                                    lat: loc1.lat,
+                                    lng: loc1.lng
+                                },
+                                title: /station|junction|jn\b|terminus|halt/i.test(nm) ? nm : "" + nm + " Railway Station",
+                                address: t.formatted_address || ''
+                            });
+                        }
+                        if (stations.length) (_results1 = results).splice.apply(_results1, [].concat([
+                            0,
+                            results.length
+                        ], stations));
+                        _state.label = 15;
+                    case 15:
+                        if (!cityKey) return [
+                            3,
+                            17
                         ];
                         ttl = results.length ? this.TTL_PLACES_SEC : 600; // negative cache 10m if empty
                         return [
                             4,
                             this.redis.setEx(cityKey, ttl, JSON.stringify(results)).catch(function() {})
                         ];
-                    case 7:
+                    case 16:
                         _state.sent();
-                        _state.label = 8;
-                    case 8:
+                        _state.label = 17;
+                    case 17:
                         return [
                             2,
                             results

@@ -1939,6 +1939,14 @@ class $AssetsImagesGen {
   AssetGenImage get evAutoIconSmall =>
       const AssetGenImage('assets/images/ev_auto_icon_small.png');
 
+  /// File path: assets/images/ev_bus_icon.jpeg
+  AssetGenImage get evBusIconJpeg =>
+      const AssetGenImage('assets/images/ev_bus_icon.jpeg');
+
+  /// File path: assets/images/ev_bus_icon.png
+  AssetGenImage get evBusIconPng =>
+      const AssetGenImage('assets/images/ev_bus_icon.png');
+
   /// File path: assets/images/language.png
   AssetGenImage get language =>
       const AssetGenImage('assets/images/language.png');
@@ -2004,6 +2012,8 @@ class $AssetsImagesGen {
     cityBg,
     evAutoIcon,
     evAutoIconSmall,
+    evBusIconJpeg,
+    evBusIconPng,
     language,
     logoHeader,
     logo,

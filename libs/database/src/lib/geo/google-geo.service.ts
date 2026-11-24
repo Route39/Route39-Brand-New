@@ -65,7 +65,7 @@ export class GoogleGeoService {
     let cityKey: string | null = null;
     if (input.location) {
       const c = this.cityCell(input.location.lat, input.location.lng);
-      cityKey = this.placesCityKey(input.language, input.keyword, c);
+      cityKey = this.placesCityKey(input.language, input.keyword, c) + ':v5';
       const cached = await this.redis.get(cityKey).catch(() => null);
       if (cached) {
         await this.redis.hIncrBy('geo:stats', 'getPlaces:cacheHits', 1);
@@ -122,6 +122,78 @@ export class GoogleGeoService {
              address: predictions[i].structured_formatting?.secondary_text || result.formatted_address || '',
           });
        }
+    }
+    // Like Google Maps search: if autocomplete gives few results, add Text Search results
+    if (results.length < 3) {
+      const ts = await client.textSearch({
+        params: {
+          query: input.keyword,
+          key: config.backendMapsAPIKey!,
+          language: input.language as any,
+          location: locationParam,
+          radius: input.location ? 30000 : undefined,
+          region: 'in',
+        },
+      }).catch(() => null);
+      for (const r of ts?.data?.results ?? []) {
+        const loc = r.geometry?.location;
+        if (!loc) continue;
+        const dup = results.some((x) => Math.abs(x.point.lat - loc.lat) < 0.0005 && Math.abs(x.point.lng - loc.lng) < 0.0005);
+        if (dup) continue;
+        results.push({ point: { lat: loc.lat, lng: loc.lng }, title: r.name || '', address: r.formatted_address || '' });
+        if (results.length >= 10) break;
+      }
+    }
+
+    // Popular "Bus Stand": New / Old Bus Stand first (exact Google names), only nearby bus stands
+    if (/^bus stand\b/i.test(input.keyword.trim())) {
+      const pri: PlaceDTO[] = [];
+      for (const pre of ['New', 'Old']) {
+        const r = await client.textSearch({
+          params: { query: `${pre} ${input.keyword}`, key: config.backendMapsAPIKey!, language: input.language as any, location: locationParam, radius: input.location ? 30000 : undefined, region: 'in' },
+        }).catch(() => null);
+        const top = r?.data?.results?.[0];
+        const loc = top?.geometry?.location;
+        if (top && loc) pri.push({ point: { lat: loc.lat, lng: loc.lng }, title: top.name || `${pre} Bus Stand`, address: top.formatted_address || '' });
+      }
+      const same = (a1: PlaceDTO, b1: PlaceDTO) => Math.abs(a1.point.lat - b1.point.lat) < 0.0005 && Math.abs(a1.point.lng - b1.point.lng) < 0.0005;
+      let merged = [...pri, ...results.filter((x) => !pri.some((p) => same(p, x)))];
+      merged = merged.filter((x, i) => merged.findIndex((y) => same(x, y)) === i);
+      if (input.location) {
+        const o = input.location;
+        const rad = (d: number) => (d * Math.PI) / 180;
+        const km = (q: { lat: number; lng: number }) => {
+          const h = Math.sin(rad(q.lat - o.lat) / 2) ** 2 + Math.cos(rad(o.lat)) * Math.cos(rad(q.lat)) * Math.sin(rad(q.lng - o.lng) / 2) ** 2;
+          return 12742 * Math.asin(Math.sqrt(h));
+        };
+        const near = merged.filter((x) => km(x.point) <= 25);
+        if (near.length) merged = near;
+      }
+      results.splice(0, results.length, ...merged);
+    }
+
+    // Popular "Railway station": only real train stations, exact Google names, nearby
+    if (/^railway station\b/i.test(input.keyword.trim())) {
+      const r = await client.textSearch({
+        params: { query: input.keyword, type: 'train_station' as any, key: config.backendMapsAPIKey!, language: input.language as any, location: locationParam, radius: input.location ? 30000 : undefined, region: 'in' },
+      }).catch(() => null);
+      const rad = (d: number) => (d * Math.PI) / 180;
+      const km = (q: { lat: number; lng: number }) => {
+        if (!input.location) return 0;
+        const o = input.location;
+        const h = Math.sin(rad(q.lat - o.lat) / 2) ** 2 + Math.cos(rad(o.lat)) * Math.cos(rad(q.lat)) * Math.sin(rad(q.lng - o.lng) / 2) ** 2;
+        return 12742 * Math.asin(Math.sqrt(h));
+      };
+      const stations: PlaceDTO[] = [];
+      for (const t of r?.data?.results ?? []) {
+        const loc = t.geometry?.location;
+        const types = (t.types || []) as string[];
+        if (!loc || !(types.includes('train_station') || types.includes('transit_station'))) continue;
+        if (km(loc) > 25) continue;
+        const nm = t.name || '';
+        stations.push({ point: { lat: loc.lat, lng: loc.lng }, title: /station|junction|jn\b|terminus|halt/i.test(nm) ? nm : `${nm} Railway Station`, address: t.formatted_address || '' });
+      }
+      if (stations.length) results.splice(0, results.length, ...stations);
     }
 
     // Cache at city scope if we can

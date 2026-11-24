@@ -155,17 +155,17 @@ class _CategoryTilesState extends State<CategoryTiles> {
       return const SizedBox(height: 104, child: Center(child: CircularProgressIndicator(strokeWidth: 2)));
     }
     if (_items.isEmpty) return const SizedBox.shrink();
-    final per = _items.length < 3 ? _items.length : 3;
+    final double per = _items.length <= 4 ? _items.length.toDouble() : 4.5;
     return LayoutBuilder(builder: (context, cons) {
-    final w = (cons.maxWidth - 10 * (per - 1)) / per;
+    final w = (cons.maxWidth - 8 * (per.ceil() - 1)) / per;
     return ValueListenableBuilder<String?>(
       valueListenable: selectedCategoryIdNotifier,
       builder: (context, selId, _) => SizedBox(
-        height: 110,
+        height: 96,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: _items.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 10),
+          separatorBuilder: (_, __) => const SizedBox(width: 8),
           itemBuilder: (context, i) {
             final c = _items[i];
             final locked = c.showLaunchingSoon;
@@ -176,7 +176,7 @@ class _CategoryTilesState extends State<CategoryTiles> {
               onTap: locked ? null : () => _select(c),
               child: Container(
                 width: w,
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
                 decoration: BoxDecoration(
                   color: locked ? Colors.grey.shade200 : Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -187,34 +187,34 @@ class _CategoryTilesState extends State<CategoryTiles> {
                   children: [
                     locked
                         ? SizedBox(
-                            height: 44,
+                            height: 36,
                             child: url == null
-                                ? _fallbackImage(c, 'assets/images/car_moving.png', width: 72)
-                                : Image.network(url, width: 72, fit: BoxFit.contain,
+                                ? _fallbackImage(c, 'assets/images/car_moving.png', width: 56)
+                                : Image.network(url, width: 56, fit: BoxFit.contain,
                                     errorBuilder: (_, e, __) {
                                       debugPrint('[CategoryImage] ${c.name} failed to load $url: $e');
-                                      return _fallbackImage(c, 'assets/images/car_moving.png', width: 72);
+                                      return _fallbackImage(c, 'assets/images/car_moving.png', width: 56);
                                     }),
                           )
                         : (_isCargo(c)
-                            ? Image.asset('assets/images/route39_cargo_icon.png', height: 44, fit: BoxFit.contain)
+                            ? Image.asset('assets/images/route39_cargo_icon.png', height: 36, fit: BoxFit.contain)
                             : url == null
-                            ? _fallbackImage(c, 'assets/images/ev_auto_icon.png', height: 44)
-                            : Image.network(url, height: 44, fit: BoxFit.contain,
+                            ? _fallbackImage(c, 'assets/images/ev_auto_icon.png', height: 36)
+                            : Image.network(url, height: 36, fit: BoxFit.contain,
                                 errorBuilder: (_, e, __) {
                                 debugPrint('[CategoryImage] ${c.name} failed to load $url: $e');
-                                return _fallbackImage(c, 'assets/images/ev_auto_icon.png', height: 44);
+                                return _fallbackImage(c, 'assets/images/ev_auto_icon.png', height: 36);
                               })),
                     const SizedBox(height: 6),
-                    Text(c.name, maxLines: 2, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13,
+                    Text(c.name, maxLines: 1, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12,
                             color: selected ? Colors.black : Colors.black54)),
                     if (c.showLaunchingSoon)
                       Container(
                         margin: const EdgeInsets.only(top: 4),
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                         decoration: BoxDecoration(color: Colors.orange.shade100, borderRadius: BorderRadius.circular(8)),
-                        child: const Text('Launching soon', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.deepOrange)),
+                        child: const FittedBox(fit: BoxFit.scaleDown, child: Text('Launching soon', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: Colors.deepOrange))),
                       ),
                   ],
                 ),
